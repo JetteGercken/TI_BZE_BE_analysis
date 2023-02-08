@@ -1,2 +1,13 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
-# Analaysis of the forest inventory accompanying the peatland soil inventory
+# Analysis of the forest inventory accompanying the peat land soil inventory
+# Trees 
+
+
+# ----- 0. SETUP ---------------------------------------------------------------
+# ----- 0.1. Packages  ---------------------------------------------------------
+# ----- 0.2. library   ---------------------------------------------------------
+# ----- 0.3. working directory -------------------------------------------------
+
+# ----- 1. DATA ----------------------------------------------------------------
+# ----- 1.1. import ------------------------------------------------------------
+
