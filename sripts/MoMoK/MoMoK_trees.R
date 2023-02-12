@@ -10,9 +10,9 @@ install.packages("tidyverse")
 install.packages("ggplot2")
 install.packages("here")
 install.packages("tibble")
-install.packages("")
 install.packages("dplyr")
 install.packages("stargazer")
+
 
 # ----- 0.2. library   ---------------------------------------------------------
 library("usethis")
@@ -40,11 +40,38 @@ colnames(trees_total) <- c("MoMoK_nr", "location_name", "state", "date", "CCS_nr
                            "azimut_g", "azimut_d", "dist_m")
 
 
-# general structure to import stuff with here:  data <- read_csv(here("datafolder", "subfolder", "datafile.csv"))
-#, header = TRUE, sep = ";", dec = ",")
+
+
+
+# ----- 2. linear regression height ---------------------------------------
+
+# ----- 2.1. change unit height from dm to m ------------------------------
+# to calculate individual tree heights I will create a linear regression for the heights
+
+# convert height in dm to m
+# https://suzan.rbind.io/2018/02/dplyr-tutorial-2/#mutate-at-to-change-specific-columns
+  # msleep %>%
+  #   select(name, sleep_total:awake) %>%
+  #   mutate_at(vars(contains("sleep")), ~(.*60))
+
+trees_total <- trees_total %>%
+  filter(drop_na(H_dm))
+  mutate(H_m = H_dm*0.1)
+
+
+mutate_at(c("height", "mass"), scale2)
+
+# ----- 2.2. create one linear model per species --------------------------
+
+
+
+
 
 
 
 
 # ----- NOTES ------------------------------------------------------------------
+
+
+
 
