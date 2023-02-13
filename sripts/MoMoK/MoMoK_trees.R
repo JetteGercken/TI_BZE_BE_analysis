@@ -50,13 +50,13 @@ getwd()
 
 trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv")) %>% 
   select(-Bemerkung)
-colnames(trees_total) <- c("MoMoK_nr", "location_name", "state", "date", "CCS_nr", 
+colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                             "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
                             "Kraft", "age", "age_m", "DBH_mm", "DBH_h_cm", 
                             "DBH_p_mm", "DBH_class", "H_dm", "CH_dm", 
                             "azimut_g", "azimut_d", "dist_m")
 trees_total$C_layer <- as.numeric(trees_total$C_layer)
-trees_total$Kraft <- as.numeric(trees_total$Kraft)
+#trees_total$Kraft <- as.numeric(trees_total$Kraft)
 trees_total$SP_code <- as.factor(trees_total$SP_code)
 
 
@@ -78,17 +78,17 @@ trees_height_total <- trees_total %>%
   mutate(H_m = H_dm*0.1, 
          H_cm =H_dm*10, 
          DBH_cm = DBH_mm*0.1)# %>% 
-  #group_by(MoMoK_nr, SP_code)# %>% 
+  #group_by(plot_ID, SP_code)# %>% 
  # mutate_at(.cols = `Hoehe [dm]`, ~(.*0.1))  # --> doesn´t work
 
 # get regression coefficients per species per plot if there are more then 3 heights measured per species and plot
-# filter dataframe for heights for >= 3 height measurements per SP_code and MoMoK_nr
+# filter dataframe for heights for >= 3 height measurements per SP_code and plot_ID
 min3h_plot_SP <- trees_total %>% 
-  dplyr::select(MoMoK_nr, SP_code, H_dm, DBH_mm) %>% 
+  dplyr::select(plot_ID, SP_code, H_dm, DBH_mm) %>% 
   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
-  group_by(MoMoK_nr, SP_code) %>% 
+  group_by(plot_ID, SP_code) %>% 
   filter(n() >= 3)%>% 
-  arrange(MoMoK_nr, SP_code)
+  arrange(plot_ID, SP_code)
 
 # data.table package
 # https://www.tutorialspoint.com/how-to-perform-group-wise-linear-regression-for-a-data-frame-in-r
@@ -98,7 +98,7 @@ trees_height_total.dt[,as.list(coef(lm(H_m ~ DBH_cm))), by= SP_code]
 # broom package
 # https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
 trees_height_total %>% 
-  group_by(MoMoK_nr, SP_code) %>% 
+  group_by(plot_ID, SP_code) %>% 
   do(model = lm(as.numeric(H_m) ~ as.numeric(DBH_cm), data = .)) %>% 
   rowwise() %>% 
   tidy(model)
@@ -108,7 +108,7 @@ trees_height_total %>%
 trees_height_total.df <- data.frame(trees_height_total)
 
 trees_height_total.df %>% 
-  group_by(MoMoK_nr, SP_code) %>% 
+  group_by(plot_ID, SP_code) %>% 
   nest() %>% 
   mutate(model = map(trees_height_total.df, 
                      ~lm(H_m ~ DBH_cm, data = trees_height_total.df)))
@@ -119,7 +119,7 @@ trees_height_total.df %>%
   # lm_table(
   #   trees_height_total.df,
   #   H_m ~ DBH_cm,
-  #   .groups = c("SP_code", "MoMoK_nr"),
+  #   .groups = c("SP_code", "plot_ID"),
   #   output = "table",
   #   est.name = "est",
   #   keep_model = FALSE)
@@ -127,36 +127,36 @@ trees_height_total.df %>%
 
 # doesn´t work to do all at once
 coeff_height <-  trees_total %>% 
-   select(MoMoK_nr, SP_code, H_dm, DBH_mm, DBH_class) %>% 
-   filter(!is.na(H_dm) & !is.na(DBH_mm) & !is.na(DBH_class)) %>% 
-   mutate(H_m = H_dm*0.1, 
-          H_cm =H_dm*10, 
-          DBH_cm = DBH_mm*0.1) %>% 
-   group_by(MoMoK_nr, SP_code) %>% 
-  # filter for plots where there is at least 3 heights measured for each species
-  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
-   filter(n() >= 3)%>%    
-   #group_by(MoMoK_nr, SP_code) %>% 
-   lm_table(H_m ~ DBH_cm) %>% 
-   arrange(MoMoK_nr, SP_code) 
- 
-# find the plots and species that won´t ahve a height regression model
- trees_total %>% 
-   select(MoMoK_nr, SP_code, H_dm, DBH_mm, Kraft) %>% 
+   select(plot_ID, SP_code, H_dm, DBH_mm, ) %>% 
    filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
    mutate(H_m = H_dm*0.1, 
           H_cm =H_dm*10, 
           DBH_cm = DBH_mm*0.1) %>% 
-   group_by(MoMoK_nr, SP_code) %>% 
+   group_by(plot_ID, SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+   filter(n() >= 3)%>%    
+   #group_by(plot_ID, SP_code) %>% 
+   lm_table(H_m ~ DBH_cm) %>% 
+   arrange(plot_ID, SP_code) 
+ 
+# find the plots and species that won´t have a height regression model
+ trees_total %>% 
+   select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
+   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+   mutate(H_m = H_dm*0.1, 
+          H_cm =H_dm*10, 
+          DBH_cm = DBH_mm*0.1) %>% 
+   group_by(plot_ID, SP_code) %>% 
    filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
-   #group_by(MoMoK_nr, SP_code) %>% 
+   #group_by(plot_ID, SP_code) %>% 
    #lm_table(H_m ~ DBH_cm) %>% 
-   arrange(MoMoK_nr, SP_code)
+   arrange(plot_ID, SP_code)
  
  
 # join coefficients to the main dataset
-left_join(trees_total, coeff_height %>% 
-            select(MoMoK_nr, SP_code, b0, b1), by = c(MoMoK_nr, SP_code))
+trees_total <- left_join(trees_total, coeff_height %>% 
+            select(plot_ID, SP_code, b0, b1, Rsqr), by = c("plot_ID", "SP_code"))
 
 
 # ----- 2.2. create one height model for all species ---------------------------
