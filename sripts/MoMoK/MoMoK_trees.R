@@ -17,9 +17,9 @@
 # install.packages("AICcmodavg")
 # install.packages("reshape2")
 # install.packages("data.table")
-install.packages("broom")
-install.packages("purrr")
-install.packages("forestmangr")
+# install.packages("broom")
+# install.packages("purrr")
+# install.packages("forestmangr")
 
 
 # ----- 0.2. library   ---------------------------------------------------------
