@@ -15,6 +15,11 @@
 # install.packages("stargazer")
 # install.packages("corrplot")
 # install.packages("AICcmodavg")
+# install.packages("reshape2")
+# install.packages("data.table")
+install.packages("broom")
+install.packages("purrr")
+install.packages("forestmangr")
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -28,6 +33,11 @@ library("dplyr")
 library("stargazer")
 library("corrplot")
 library("AICcmodavg")
+library("reshape2")
+library("data.table")
+library("broom")
+library("purrr")
+library("forestmangr")
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -51,8 +61,7 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 
 
 
-# ----- 2. linear regression height ---------------------------------------
-
+# ----- 2. linear regression for missing tree heights ---------------------------------------
 # ----- 2.1. change unit height from dm to m ------------------------------
 # to calculate individual tree heights I will create a linear regression for the heights
 
@@ -62,16 +71,92 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
   #   select(name, sleep_total:awake) %>%
   #   mutate_at(vars(contains("sleep")), ~(.*60))
 
-# i cannot use the hanged variable names it seems 
-# https://www.appsloveworld.com/r/100/32/error-attempt-to-use-zero-length-variable-name
 
 # filter for those rows where height is measured
 trees_height_total <- trees_total %>%
-  filter(!is.na(H_dm)) %>% # & !is.na(`Alt`) )%>% 
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>%# & !is.na(`Alt`) )%>% 
   mutate(H_m = H_dm*0.1, 
          H_cm =H_dm*10, 
-         DBH_cm = DBH_mm*0.1) # %>% 
+         DBH_cm = DBH_mm*0.1)# %>% 
+  #group_by(MoMoK_nr, SP_code)# %>% 
  # mutate_at(.cols = `Hoehe [dm]`, ~(.*0.1))  # --> doesn´t work
+
+# get regression coefficients per species per plot if there are more then 3 heights measured per species and plot
+# filter dataframe for heights for >= 3 height measurements per SP_code and MoMoK_nr
+min3h_plot_SP <- trees_total %>% 
+  dplyr::select(MoMoK_nr, SP_code, H_dm, DBH_mm) %>% 
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+  group_by(MoMoK_nr, SP_code) %>% 
+  filter(n() >= 3)%>% 
+  arrange(MoMoK_nr, SP_code)
+
+# data.table package
+# https://www.tutorialspoint.com/how-to-perform-group-wise-linear-regression-for-a-data-frame-in-r
+trees_height_total.dt <- data.table(trees_height_total)
+trees_height_total.dt[,as.list(coef(lm(H_m ~ DBH_cm))), by= SP_code]
+
+# broom package
+# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
+trees_height_total %>% 
+  group_by(MoMoK_nr, SP_code) %>% 
+  do(model = lm(as.numeric(H_m) ~ as.numeric(DBH_cm), data = .)) %>% 
+  rowwise() %>% 
+  tidy(model)
+
+#tidyverse package
+# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
+trees_height_total.df <- data.frame(trees_height_total)
+
+trees_height_total.df %>% 
+  group_by(MoMoK_nr, SP_code) %>% 
+  nest() %>% 
+  mutate(model = map(trees_height_total.df, 
+                     ~lm(H_m ~ DBH_cm, data = trees_height_total.df)))
+
+
+#forestmanager package
+# https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
+  # lm_table(
+  #   trees_height_total.df,
+  #   H_m ~ DBH_cm,
+  #   .groups = c("SP_code", "MoMoK_nr"),
+  #   output = "table",
+  #   est.name = "est",
+  #   keep_model = FALSE)
+
+
+# doesn´t work to do all at once
+coeff_height <-  trees_total %>% 
+   select(MoMoK_nr, SP_code, H_dm, DBH_mm, DBH_class) %>% 
+   filter(!is.na(H_dm) & !is.na(DBH_mm) & !is.na(DBH_class)) %>% 
+   mutate(H_m = H_dm*0.1, 
+          H_cm =H_dm*10, 
+          DBH_cm = DBH_mm*0.1) %>% 
+   group_by(MoMoK_nr, SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+   filter(n() >= 3)%>%    
+   #group_by(MoMoK_nr, SP_code) %>% 
+   lm_table(H_m ~ DBH_cm) %>% 
+   arrange(MoMoK_nr, SP_code) 
+ 
+# find the plots and species that won´t ahve a height regression model
+ trees_total %>% 
+   select(MoMoK_nr, SP_code, H_dm, DBH_mm, Kraft) %>% 
+   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+   mutate(H_m = H_dm*0.1, 
+          H_cm =H_dm*10, 
+          DBH_cm = DBH_mm*0.1) %>% 
+   group_by(MoMoK_nr, SP_code) %>% 
+   filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
+   #group_by(MoMoK_nr, SP_code) %>% 
+   #lm_table(H_m ~ DBH_cm) %>% 
+   arrange(MoMoK_nr, SP_code)
+ 
+ 
+# join coefficients to the main dataset
+left_join(trees_total, coeff_height %>% 
+            select(MoMoK_nr, SP_code, b0, b1), by = c(MoMoK_nr, SP_code))
 
 
 # ----- 2.2. create one height model for all species ---------------------------
@@ -190,7 +275,8 @@ plot(h.3.val)
 # Multiple R-squared:  0.7349,	Adjusted R-squared:  0.7089 
 # F-statistic: 28.28 on 5 and 51 DF,  p-value: 1.324e-13
 
-  
+
+
 # calcuate estimated heights via model h.tot.3: 
   # assign trees species as variables
 GKI <- trees_height_total$SP_code[trees_height_total$SP_code == "GKI"]
@@ -200,7 +286,8 @@ GFI <- trees_height_total$SP_code[trees_height_total$SP_code == "GFI"]
 MBI <- trees_height_total$SP_code[trees_height_total$SP_code == "MBI"]
 BKI <- trees_height_total$SP_code[trees_height_total$SP_code == "BKI"]
  
-  trees_height_total <- trees_height_total %>% 
+ # ass column with estimated tree heights 
+trees_height_total <- trees_height_total %>% 
   mutate(H_m_est = 1.1088 + DBH_class*2.6664+
             as.numeric(SP_code)) # I know that the numeric doesn´t make sense
            #as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342 + as.numeric(BKI))
@@ -208,6 +295,8 @@ BKI <- trees_height_total$SP_code[trees_height_total$SP_code == "BKI"]
            #as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342)
            #GKI*1.2593 + RER*5.9254 + STK*2.5248 + GFI*4.4935 + MBI*6.7342)
 
+# plot estiamted vs. mesured tree height
+# scatter plot
 ggplot(data=trees_height_total, aes(x = H_m_est, y = H_m))+
   geom_point()+
   stat_smooth(method="lm",se=TRUE)+
@@ -217,7 +306,32 @@ ggplot(data=trees_height_total, aes(x = H_m_est, y = H_m))+
   theme_light()+
   theme(legend.position = "non")
 
-t.test(trees_height_total$H_m, trees_height_total$H_m_est)
+# boxlot
+# create dataset for boxplot
+box_h_mes <- trees_height_total %>% 
+  dplyr::select(H_m) %>% 
+  mutate(H_meth = "sampled",
+         height_m = H_m) 
+box_h_est <- trees_height_total %>% 
+  dplyr::select(H_m_est) %>% 
+  mutate(H_meth = "estimated", 
+         height_m = H_m_est)
+box_h <- rbind(box_h_mes %>% select(H_meth, height_m), box_h_est%>% select(H_meth, height_m))
+
+ggplot(box_h, aes(x = as.factor(H_meth), y = height_m))+
+  geom_boxplot()+
+  xlab("predicted by model h.tot.3 vs. sampled tree height") +
+  ylab("height [m]")+
+  ggtitle("all species: measured height [m] vs. height [m] predicted by model h.tot.3")+
+  theme_light()+
+  theme(legend.position = "non")
+
+
+
+# checking if the heights are signidicantly diffferent
+shapiro.test(trees_height_total$H_m) # not normally distributed
+wilcox.test(trees_height_total$H_m, trees_height_total$H_m_est) 
+# --> means of predicted and sampled height are significantly different
 
 
 
@@ -234,7 +348,7 @@ trees_total %>% group_by(SP_code) %>%
 
 
 # ----- 2.3.2. Rot Erle Alnus rubra --------------------------------------------
-# ----- 2.3.2.1. filer rows where height = NA and species = Alnus rubra --------
+# ----- 2.3.2.1. filer rows where height != NA and species = Alnus rubra --------
 height_RER <- trees_height_total %>% 
   filter(!is.na(H_cm) & !is.na(Kraft) & !is.na(C_layer) & SP_code == "RER") #%>% 
   # mutate(H_m = `Hoehe [dm]`*0.1, 
@@ -314,6 +428,7 @@ ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
   ggtitle("Alnus rubra: measured height [m] vs. height [m] predicted by model h_RER")+
   theme_light()+
   theme(legend.position = "non")
+
 
 
 
