@@ -49,9 +49,9 @@ getwd()
 # ----- 1.1. import ------------------------------------------------------------
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
-
 trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv")) %>% 
   select(-Bemerkung)
+# ----- 1.2. modification ------------------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                             "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
                             "Kraft", "age", "age_m", "DBH_mm", "DBH_h_cm", 
@@ -63,74 +63,24 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 
 
 
-# ----- 2. linear regression for missing tree heights ---------------------------------------
-# ----- 2.1. change unit height from dm to m ------------------------------
-# to calculate individual tree heights I will create a linear regression for the heights
-
-# convert height in dm to m
-# https://suzan.rbind.io/2018/02/dplyr-tutorial-2/#mutate-at-to-change-specific-columns
-  # msleep %>%
-  #   select(name, sleep_total:awake) %>%
-  #   mutate_at(vars(contains("sleep")), ~(.*60))
+# ----- 2. CALCULATIONS --------------------------------------------------------
+# ----- 2.1. assign DBH class to trees where CBH_class == 'NA' -----------------
 
 
-# filter for those rows where height is measured
-trees_height_total <- trees_total %>%
-  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>%# & !is.na(`Alt`) )%>% 
-  mutate(H_m = H_dm*0.1, 
-         H_cm =H_dm*10, 
-         DBH_cm = DBH_mm*0.1)# %>% 
-  #group_by(plot_ID, SP_code)# %>% 
- # mutate_at(.cols = `Hoehe [dm]`, ~(.*0.1))  # --> doesn´t work
 
-# get regression coefficients per species per plot if there are more then 3 heights measured per species and plot
-# filter dataframe for heights for >= 3 height measurements per SP_code and plot_ID
-min3h_plot_SP <- trees_total %>% 
-  dplyr::select(plot_ID, SP_code, H_dm, DBH_mm) %>% 
-  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
-  group_by(plot_ID, SP_code) %>% 
-  filter(n() >= 3)%>% 
-  arrange(plot_ID, SP_code)
-
-# data.table package
-# https://www.tutorialspoint.com/how-to-perform-group-wise-linear-regression-for-a-data-frame-in-r
-trees_height_total.dt <- data.table(trees_height_total)
-trees_height_total.dt[,as.list(coef(lm(H_m ~ DBH_cm))), by= SP_code]
-
-# broom package
-# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
-trees_height_total %>% 
-  group_by(plot_ID, SP_code) %>% 
-  do(model = lm(as.numeric(H_m) ~ as.numeric(DBH_cm), data = .)) %>% 
-  rowwise() %>% 
-  tidy(model)
-
-#tidyverse package
-# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
-trees_height_total.df <- data.frame(trees_height_total)
-
-trees_height_total.df %>% 
-  group_by(plot_ID, SP_code) %>% 
-  nest() %>% 
-  mutate(model = map(trees_height_total.df, 
-                     ~lm(H_m ~ DBH_cm, data = trees_height_total.df)))
-
+# ----- 3. linear regression for missing tree heights --------------------------
+# ----- 3.1. get coefficents per SP and plot when >= 3 heights measured --------
+# to calculate individual tree heights for trees of the samme species and plot 
+# where the height has not been sampled I will create a linear regression for the heights
+# in the following i will create a dataframe with regression coefficients per 
+# species per plot if there are more then 3 heights measured per species and plot
 
 #forestmanager package
 # https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
-  # lm_table(
-  #   trees_height_total.df,
-  #   H_m ~ DBH_cm,
-  #   .groups = c("SP_code", "plot_ID"),
-  #   output = "table",
-  #   est.name = "est",
-  #   keep_model = FALSE)
-
-
-# doesn´t work to do all at once
 coeff_height <-  trees_total %>% 
    select(plot_ID, SP_code, H_dm, DBH_mm, ) %>% 
    filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+  # change units of height and diameter 
    mutate(H_m = H_dm*0.1, 
           H_cm =H_dm*10, 
           DBH_cm = DBH_mm*0.1) %>% 
@@ -139,10 +89,20 @@ coeff_height <-  trees_total %>%
   #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
    filter(n() >= 3)%>%    
    #group_by(plot_ID, SP_code) %>% 
-   lm_table(H_m ~ DBH_cm) %>% 
+   lm_table(H_m ~ DBH_cm) %>%      # the lm models the height based on the diamater at breast heigt 
    arrange(plot_ID, SP_code) 
- 
+
+# ----- 3.2. analysing the quality of the models  ------------------------------
+ # from my previous attempts to fit and validate species specific but also total 
+ # dataset including regression models for the height, I know that actually the 
+ # DBH class is the better predictor 
+ # but on the other hand the diameter class is also less precise
+ # and I´ll have to 
+
+
+
 # find the plots and species that won´t have a height regression model
+# ---> think about way to deal with them !!!!
  trees_total %>% 
    select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
    filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
@@ -161,8 +121,82 @@ trees_total <- left_join(trees_total, coeff_height %>%
             select(plot_ID, SP_code, b0, b1, Rsqr), by = c("plot_ID", "SP_code"))
 
 
-# ----- 2.2. create one height model for all species ---------------------------
-# ----- 2.2.2. create training and testing / validation dataset ----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ----- NOTES ------------------------------------------------------------------
+# ----- N.1. Notes regarding linear regression of height for total dataset -----
+# ----- N.1.1. units & filter dataset ------------------------------------------
+# convert height in dm to m via mutate at 
+# --> doesn´t work # https://suzan.rbind.io/2018/02/dplyr-tutorial-2/#mutate-at-to-change-specific-columns
+# msleep %>%
+#   select(name, sleep_total:awake) %>%
+#   mutate_at(vars(contains("sleep")), ~(.*60))
+
+trees_height_total <- trees_total %>%
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% # & !is.na(`Alt`) )%>%  # filter for those rows where height is measured
+  mutate(H_m = H_dm*0.1,                    # convert height in dm to m
+         H_cm =H_dm*10, 
+         DBH_cm = DBH_mm*0.1)# %>% 
+#group_by(plot_ID, SP_code)# %>% 
+# mutate_at(.cols = `Hoehe [dm]`, ~(.*0.1))  
+
+# ----- N.1.2. attempts to extract regression coefficents form whole dataset grouped by SP and plot ID ------------------------------------------
+# filter dataframe for heights for >= 3 height measurements per SP_code and plot_ID
+min3h_plot_SP <- trees_total %>% 
+  dplyr::select(plot_ID, SP_code, H_dm, DBH_mm) %>% 
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  filter(n() >= 3)%>% 
+  arrange(plot_ID, SP_code)
+
+# data.table package
+# https://www.tutorialspoint.com/how-to-perform-group-wise-linear-regression-for-a-data-frame-in-r
+min3h_plot_SP.dt <- data.table(min3h_plot_SP)
+min3h_plot_SP.dt[,as.list(coef(lm(H_m ~ DBH_cm))), by= SP_code]
+
+# broom package
+# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
+min3h_plot_SP %>% 
+  group_by(plot_ID, SP_code) %>% 
+  do(model = lm(as.numeric(H_m) ~ as.numeric(DBH_cm), data = .)) %>% 
+  rowwise() %>% 
+  tidy(model)
+
+#tidyverse package
+# https://stackoverflow.com/questions/1169539/linear-regression-and-group-by-in-r
+min3h_plot_SP.df <- data.frame(min3h_plot_SP)
+
+min3h_plot_SP.df %>% 
+  group_by(plot_ID, SP_code) %>% 
+  nest() %>% 
+  mutate(model = map(min3h_plot_SP.df, 
+                     ~lm(H_m ~ DBH_cm, data = min3h_plot_SP.df)))
+
+
+
+
+
+# ----- N.2. properly fit height model -----------------------------------------
+
+# ----- N.2.2. height model for all species together ---------------------------
+# ----- N.2.2.2. create training and testing / validation dataset --------------
 # https://stackoverflow.com/questions/17200114/how-to-split-data-into-training-testing-sets-using-sample-function
 ## set sample size to 50% of the dataset --> split data in half
 smp_size <- floor(0.75 * nrow(trees_height_total))
@@ -173,11 +207,10 @@ train_ind <- sample(seq_len(nrow(trees_height_total)), size = smp_size)
 h_train <- trees_height_total[train_ind, ]
 h_test <- trees_height_total[-train_ind, ]
 
-
-# ----- 2.2.3. check out potential explainatory variables  ---------------------
+# ----- N.2.2.3. check out potential explainatory variables  ---------------------
 pairs(h_train %>% dplyr::select(H_m, SP_code, SP_nr, C_layer, Kraft, 
-                                   DBH_class, age,
-                                   CH_dm, DBH_cm))
+                                DBH_class, age,
+                                CH_dm, DBH_cm))
 
 # potetial explainatory variables: 
 #   - SP_code
@@ -186,10 +219,10 @@ pairs(h_train %>% dplyr::select(H_m, SP_code, SP_nr, C_layer, Kraft,
 #   - Kraft
 #   - DBH_cm
 
-# ----- 2.2.4 build model with train data --------------------------------------
+# ----- N.2.2.4 build model with train data --------------------------------------
 # create different models with different combinations of the explainatory variables 
 h.tot.1 <- lm(formula = H_m ~ DBH_class + as.factor(SP_code) + Kraft + DBH_cm, 
-            data = h_train)
+              data = h_train)
 h.tot.2 <- lm(formula = H_m ~ DBH_class + as.factor(SP_code) + Kraft, 
               data = h_train)
 h.tot.3 <- lm(formula = H_m ~ DBH_class + as.factor(SP_code), 
@@ -206,8 +239,8 @@ h.tot.8 <- lm(formula = H_m ~  as.factor(SP_code) + DBH_cm,
               data = h_train)
 
 # check AIC of the models: 
- # https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/AIC
- # https://www.statology.org/aic-in-r/
+# https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/AIC
+# https://www.statology.org/aic-in-r/
 models.h.tot <- list(h.tot.1, h.tot.2, h.tot.3, h.tot.4, h.tot.5, h.tot.6, h.tot.7, h.tot.8)
 AIC(h.tot.1, h.tot.2, h.tot.3, h.tot.4, h.tot.5, h.tot.6, h.tot.7, h.tot.8)
 # RESULTS AIC:
@@ -254,8 +287,8 @@ plot(h.tot.3)
 # resuting function: 
 # h_m_est = 1.1088 + DBH_class*2.6664 + GKI*1.2593 + RER*5.9254 + STK*2.5248 + GFI*4.4935 + MBI*6.7342 + BKI 
 
-
-# ----- 2.2.5 validate model with test data --------------------------------------
+# ----- N.2.2.5 validate model with test data ------------------------------------
+# ----- N.2.2.5.1. fit h.tot.3 for test data -------------------------------------
 h.3.val <- lm(formula = H_m ~ DBH_class + as.factor(SP_code), data = h_test)
 summary(h.3.val)
 anova(h.3.val) # only DBH_class is significant
@@ -277,26 +310,30 @@ plot(h.3.val)
 # Multiple R-squared:  0.7349,	Adjusted R-squared:  0.7089 
 # F-statistic: 28.28 on 5 and 51 DF,  p-value: 1.324e-13
 
-
-
-# calcuate estimated heights via model h.tot.3: 
-  # assign trees species as variables
+# ----- N.2.2.5.2. estimate heights via model h.tot.3 for height dataset -------
+# assign trees species as variables
 GKI <- trees_height_total$SP_code[trees_height_total$SP_code == "GKI"]
 RER <- trees_height_total$SP_code[trees_height_total$SP_code == "RER"]
 STK <- trees_height_total$SP_code[trees_height_total$SP_code == "STK"]
 GFI <- trees_height_total$SP_code[trees_height_total$SP_code == "GFI"]
 MBI <- trees_height_total$SP_code[trees_height_total$SP_code == "MBI"]
 BKI <- trees_height_total$SP_code[trees_height_total$SP_code == "BKI"]
- 
- # ass column with estimated tree heights 
+
+# ass column with estimated tree heights 
 trees_height_total <- trees_height_total %>% 
   mutate(H_m_est = 1.1088 + DBH_class*2.6664+
-            as.numeric(SP_code)) # I know that the numeric doesn´t make sense
-           #as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342 + as.numeric(BKI))
-  # actually I would have to write it like this: https://advstats.psychstat.org/book/mregression/catpredictor.php
-           #as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342)
-           #GKI*1.2593 + RER*5.9254 + STK*2.5248 + GFI*4.4935 + MBI*6.7342)
+           as.numeric(SP_code)) # I know that the numeric doesn´t make sense
+#as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342 + as.numeric(BKI))
+# actually I would have to write it like this: https://advstats.psychstat.org/book/mregression/catpredictor.php
+#as.numeric(GKI)*1.2593 + as.numeric(RER)*5.9254 + as.numeric(STK)*2.5248 + as.numeric(GFI)*4.4935 + as.numeric(MBI)*6.7342)
+#GKI*1.2593 + RER*5.9254 + STK*2.5248 + GFI*4.4935 + MBI*6.7342)
 
+# checking if the heights are signidicantly diffferent
+shapiro.test(trees_height_total$H_m) # not normally distributed
+wilcox.test(trees_height_total$H_m, trees_height_total$H_m_est) 
+# --> means of predicted and sampled height are significantly different
+
+# ----- N.2.2.5.3. visualize estim. vs. sampled heights ------------------------
 # plot estiamted vs. mesured tree height
 # scatter plot
 ggplot(data=trees_height_total, aes(x = H_m_est, y = H_m))+
@@ -330,15 +367,8 @@ ggplot(box_h, aes(x = as.factor(H_meth), y = height_m))+
 
 
 
-# checking if the heights are signidicantly diffferent
-shapiro.test(trees_height_total$H_m) # not normally distributed
-wilcox.test(trees_height_total$H_m, trees_height_total$H_m_est) 
-# --> means of predicted and sampled height are significantly different
-
-
-
-# ----- 2.3. create one linear model per species -------------------------------
-# ----- 2.3.1. find out how many species are there -----------------------------
+# ----- N.2.3. properly fit one linear model per species -----------------------
+# ----- N.2.3.1. find out how many species are there ---------------------------
 trees_total %>% group_by(SP_code) %>% 
   distinct(SP_code)
 # RER   Rot Erle                      Alnus rubra
@@ -349,15 +379,15 @@ trees_total %>% group_by(SP_code) %>%
 # GKI   Gemeine Kiefer                Pinus silvatica
 
 
-# ----- 2.3.2. Rot Erle Alnus rubra --------------------------------------------
-# ----- 2.3.2.1. filer rows where height != NA and species = Alnus rubra --------
+# ----- N.2.3.2. Rot Erle Alnus rubra --------------------------------------------
+# ----- N.2.3.2.1. filer rows where height != NA and species = Alnus rubra --------
 height_RER <- trees_height_total %>% 
   filter(!is.na(H_cm) & !is.na(Kraft) & !is.na(C_layer) & SP_code == "RER") #%>% 
-  # mutate(H_m = `Hoehe [dm]`*0.1, 
-  #        H_cm = `Hoehe [dm]`*10, 
-  #        DBH_cm = `BHD [mm]`/10)   # add column with height in meter 1dm = 0.1m
-  
-# ----- 2.3.2.2. create training and testing / validation dataset --------------
+# mutate(H_m = `Hoehe [dm]`*0.1, 
+#        H_cm = `Hoehe [dm]`*10, 
+#        DBH_cm = `BHD [mm]`/10)   # add column with height in meter 1dm = 0.1m
+
+# ----- N.2.3.2.2. create training and testing / validation dataset --------------
 # https://stackoverflow.com/questions/17200114/how-to-split-data-into-training-testing-sets-using-sample-function
 ## set sample size to 50% of the dataset --> split data in half
 smp_size <- floor(0.75 * nrow(height_RER))
@@ -368,14 +398,13 @@ train_ind <- sample(seq_len(nrow(height_RER)), size = smp_size)
 h_RER_train <- height_RER[train_ind, ]
 h_RER_test <- height_RER[-train_ind, ]
 
-# ----- 2.3.2.3. check out potetial explainatory variables ---------------------
+# ----- N.2.3.2.3. check out potetial explainatory variables ---------------------
 pairs(height_RER %>% dplyr::select(H_dm, H_m, C_layer, Kraft, 
-                                            DBH_class, 
-                                            CH_dm, DBH_mm))
+                                   DBH_class, 
+                                   CH_dm, DBH_mm))
+# --> DBH class seems most promissing
 
-# DBH class seems most promissing
-
-# ----- 2.3.2.3. create model based on diameter --------------------------------
+# ----- N.2.3.2.3. create model based on diameter --------------------------------
 h.RER <- lm(formula = H_m ~ DBH_class, 
             data = h_RER_train)
 summary(h.RER) # model summary
@@ -395,8 +424,7 @@ plot(h.RER)
 # Multiple R-squared:  0.4214,	Adjusted R-squared:  0.3951 
 # F-statistic: 16.02 on 1 and 22 DF,  p-value: 0.0005993
 
-
-# ----- 2.3.2.4. validate model based on diameter with test data----------------
+# ----- N.2.3.2.4. validate model based on diameter with test data----------------
 h.RER.val <- lm(formula = H_m ~ DBH_class, data = h_RER_test)
 summary(h.RER.val)
 anova(h.RER.val) # --> Pr(>F) = 0.001278 ** --> significant
@@ -406,22 +434,23 @@ plot(h.RER.val)
 #              Estimate   Std. Error t value  Pr(>|t|)   
 # (Intercept)  10.2311    2.0548     4.979    0.00108 **
 #   DBH_class  2.0900     0.4313     4.846    0.00128 **
-  ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-# 
-# Residual standard error: 331 on 8 degrees of freedom
-# (14 Beobachtungen als fehlend gelöscht)
-# Multiple R-squared:  0.7459,	Adjusted R-squared:  0.7141 
-# F-statistic: 23.48 on 1 and 8 DF,  p-value: 0.001278
-
+---
+  #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+  # 
+  # Residual standard error: 331 on 8 degrees of freedom
+  # (14 Beobachtungen als fehlend gelöscht)
+  # Multiple R-squared:  0.7459,	Adjusted R-squared:  0.7141 
+  # F-statistic: 23.48 on 1 and 8 DF,  p-value: 0.001278
+  
   
 # create column for predicted height and plot predicated and measured height against each other 
-
-height_RER <- height_RER %>% 
+  height_RER <- height_RER %>% 
   mutate(H_m_est = (12.5041 + DBH_class*1.6400)) 
 
+# test for differences between predicted and sampled height
 t.test(height_RER$H_m, height_RER$H_m_est) # p-value = 2.907e-06 --> significantly different :/
 
+# visualize differences between estimated and measured height
 ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
   geom_point()+
   stat_smooth(method="lm",se=TRUE)+
@@ -430,15 +459,3 @@ ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
   ggtitle("Alnus rubra: measured height [m] vs. height [m] predicted by model h_RER")+
   theme_light()+
   theme(legend.position = "non")
-
-
-
-
-
-
-
-# ----- NOTES ------------------------------------------------------------------
-
-
-
-
