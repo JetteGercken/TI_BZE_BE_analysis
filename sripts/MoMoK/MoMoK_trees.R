@@ -65,7 +65,10 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
 # ----- 2.1. assign DBH class to trees where CBH_class == 'NA' -----------------
-
+labs <- c(seq(5, 105, by = 5)) #BEST WAY TO DO ITs
+mutate(DC_03 = cut(DBH_03, breaks = c(seq(0, 100, by = 5), Inf), #BEST WAY TO DO IT
+                   labels = labs, 
+                   right = FALSE)) 
 
 
 # ----- 3. linear regression for missing tree heights --------------------------
