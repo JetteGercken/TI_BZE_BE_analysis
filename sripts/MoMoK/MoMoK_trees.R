@@ -20,6 +20,7 @@
 # install.packages("broom")
 # install.packages("purrr")
 # install.packages("forestmangr")
+# install.packages("rBDAT")
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -38,6 +39,7 @@ library("data.table")
 library("broom")
 library("purrr")
 library("forestmangr")
+library("rBDAT")
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
