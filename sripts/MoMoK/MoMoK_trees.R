@@ -49,7 +49,7 @@ getwd()
 # ----- 1.1. import ------------------------------------------------------------
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
-trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv")) %>% 
+trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv"), delim = ";") %>% 
   select(-Bemerkung)
 # ----- 1.2. modification ------------------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
@@ -77,7 +77,7 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 
 #forestmanager package
 # https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
-coeff_height <-  trees_total %>% 
+coeff_heigsht <-  trees_total %>% 
    select(plot_ID, SP_code, H_dm, DBH_mm, ) %>% 
    filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
   # change units of height and diameter 
