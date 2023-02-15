@@ -5,39 +5,58 @@
 
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
+## datamanagement
 # install.packages("usethis")
-# install.packages("tidyverse")
-# install.packages("ggplot2")
 # install.packages("here")
 # install.packages("readr")
+# install.packages("tidyverse")
 # install.packages("tibble")
 # install.packages("dplyr")
-# install.packages("stargazer")
-# install.packages("corrplot")
-# install.packages("AICcmodavg")
-# install.packages("reshape2")
 # install.packages("data.table")
 # install.packages("broom")
 # install.packages("purrr")
+## laTex
+# install.packages("stargazer")  #for compatability with Latex
+# install.packages("tikzDevice") #for compatability with Latex
+## visualisation
+# install.packages("ggthemes")
+# install.packages("ggplot2")
+# install.packages("reshape2") #for multiple y values
+# install.packages("ggforce") #for zooming in parts of the plot
+# options(tz="CA")
+# install.packages("reshape2")
+## analysis
+# install.packages("corrplot")
+# install.packages("AICcmodavg")
+# # forest related
 # install.packages("forestmangr")
 # install.packages("rBDAT")
 
-
 # ----- 0.2. library   ---------------------------------------------------------
+# datamanagement
 library("usethis")
-library("tidyverse")
-library("ggplot2")
 library("here")
 library("readr")
+library("tidyverse")
 library("tibble")
 library("dplyr")
-library("stargazer")
-library("corrplot")
-library("AICcmodavg")
-library("reshape2")
 library("data.table")
 library("broom")
 library("purrr")
+# laTex
+library("stargazer")  #for compatability with Latex
+library("tikzDevice") #for compatability with Latex
+# visualisation
+library("ggthemes")
+library("ggplot2")
+library("reshape2") #for multiple y values
+library("ggforce") #for zooming in parts of the plot
+options(tz="CA")
+library("reshape2")
+# analysis
+library("corrplot")
+library("AICcmodavg")
+# forest related
 library("forestmangr")
 library("rBDAT")
 
@@ -51,7 +70,7 @@ getwd()
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
 trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv"), delim = ";") %>% 
   select(-Bemerkung)
-# ----- 1.2. modification ------------------------------------------------------
+# ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                             "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
                             "Kraft", "age", "age_m", "DBH_mm", "DBH_h_cm", 
@@ -61,16 +80,31 @@ trees_total$C_layer <- as.numeric(trees_total$C_layer)
 #trees_total$Kraft <- as.numeric(trees_total$Kraft)
 trees_total$SP_code <- as.factor(trees_total$SP_code)
 
+# ----- 1.3. dealing with NAs ---------------------------------------------------
+# check for variabels with NAs
+summary(trees_total)
 
+# ----- 1.3.1 assign DBH class to trees where DBH_class == 'NA' -----------------
+# find min./ max to set create label 
+summary(trees_total$DBH_mm)
+#    Min. 1st Qu.  Median    Mean  3rd Qu.    Max. 
+#.  71.0   107.0   164.0   299.3   234.8    5445.0 --> that´s 544.5cm so 5.445m --> TYPO? 
+
+# create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
+labs <- c(seq(5, 550, by = 5)) 
+# replace missing DBH_class values with labels according to DBH_cm
+trees_total <- trees_total%>%
+  # change unit of height and diameter
+  mutate(H_m = H_dm*0.1,  # transform height in dm into height in m 
+         DBH_cm = DBH_mm*0.1) %>%  # transform DBH in mm into DBH in cm 
+  mutate(DBH_class = ifelse(is.na(DBH_class),  # mutate the column DBH_class if DBH_class is NA
+                            cut(DBH_cm,        # cut the diameter
+                                breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5
+                                labels = labs,                         # and label it according to labs
+                                right = FALSE),
+                            as.numeric(DBH_class)))  # else keep existing DBH class as numeric
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-# ----- 2.1. assign DBH class to trees where CBH_class == 'NA' -----------------
-labs <- c(seq(5, 105, by = 5)) #BEST WAY TO DO ITs
-mutate(DC_03 = cut(DBH_03, breaks = c(seq(0, 100, by = 5), Inf), #BEST WAY TO DO IT
-                   labels = labs, 
-                   right = FALSE)) 
-
-
 # ----- 3. linear regression for missing tree heights --------------------------
 # ----- 3.1. get coefficents per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
@@ -80,13 +114,9 @@ mutate(DC_03 = cut(DBH_03, breaks = c(seq(0, 100, by = 5), Inf), #BEST WAY TO DO
 
 #forestmanager package
 # https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
-coeff_heigsht <-  trees_total %>% 
-   select(plot_ID, SP_code, H_dm, DBH_mm, ) %>% 
-   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
-  # change units of height and diameter 
-   mutate(H_m = H_dm*0.1, 
-          H_cm =H_dm*10, 
-          DBH_cm = DBH_mm*0.1) %>% 
+coeff_heights <-  trees_total %>% 
+   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+   filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
    group_by(plot_ID, SP_code) %>% 
   # filter for plots where there is at least 3 heights measured for each species
   #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
@@ -94,6 +124,19 @@ coeff_heigsht <-  trees_total %>%
    #group_by(plot_ID, SP_code) %>% 
    lm_table(H_m ~ DBH_cm) %>%      # the lm models the height based on the diamater at breast heigt 
    arrange(plot_ID, SP_code) 
+
+
+
+# find the plots and species that won´t have a height regression model
+# ---> think about way to deal with them !!!!
+trees_total %>% 
+  select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
+  #group_by(plot_ID, SP_code) %>% 
+  #lm_table(H_m ~ DBH_cm) %>% 
+  arrange(plot_ID, SP_code)
 
 # ----- 3.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
@@ -103,28 +146,23 @@ coeff_heigsht <-  trees_total %>%
  # and I´ll have to 
 
 
+summary(coeff_heights)
+# the R2 is pretty poor for some plots 
+coeff_heights %>% filter(Rsqr <= 0.3)
 
-# find the plots and species that won´t have a height regression model
-# ---> think about way to deal with them !!!!
- trees_total %>% 
-   select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
-   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
-   mutate(H_m = H_dm*0.1, 
-          H_cm =H_dm*10, 
-          DBH_cm = DBH_mm*0.1) %>% 
-   group_by(plot_ID, SP_code) %>% 
-   filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
-   #group_by(plot_ID, SP_code) %>% 
-   #lm_table(H_m ~ DBH_cm) %>% 
-   arrange(plot_ID, SP_code)
+
+view(trees_total %>% filter(plot_ID == 32080))
  
- 
-# join coefficients to the main dataset
-trees_total <- left_join(trees_total, coeff_height %>% 
-            select(plot_ID, SP_code, b0, b1, Rsqr), by = c("plot_ID", "SP_code"))
+# ----- 3.3. join coefficients to the main dataset  ----------------------------
+trees_total <- left_join(trees_total, coeff_heights %>% 
+            select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code"))
+  
+ view(trees_total %>% 
+   mutate(H_m = case_when(H_m == NA ~ (b0 + b1*as.numeric(DBH_cm)),
+                         TRUE ~ as.numeric(H_m))))
 
 
-
+# ----- 3.4. estimate missing heights  -----------------------------------------
 
 
 
@@ -145,6 +183,25 @@ trees_total <- left_join(trees_total, coeff_height %>%
 
 # ----- NOTES ------------------------------------------------------------------
 # ----- N.1. Notes regarding linear regression of height for total dataset -----
+# ----- N.1.0. adding missing DBH classes  -------------------------------------
+# https://stackoverflow.com/questions/32683599/r-ifelse-to-replace-values-in-a-column
+trees_total$DBH_class <- ifelse(is.na(trees_total$DBH_class),  # if DBH_class is NA
+                                cut(trees_total$DBH_cm,                    # cut the diameter 
+                                    breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5 
+                                    labels = labs,                         # and label it according to labs
+                                    right = FALSE),
+                                as.numeric(trees_total$DBH_class)) # else keep DBH class
+
+
+# https://stackoverflow.com/questions/19379081/how-to-replace-na-values-in-a-table-for-selected-columns
+trees_total_3 <- trees_total  %>%
+  mutate(H_m = H_dm*0.1, 
+         H_cm =H_dm*10, 
+         DBH_cm = DBH_mm*0.1)  %>%
+  mutate(DBH_class, ~replace_na(., cut(DBH_cm,
+                                       breaks = c(seq(0, 545, by = 5), Inf),
+                                       labels = labs,
+                                       right = FALSE)))
 # ----- N.1.1. units & filter dataset ------------------------------------------
 # convert height in dm to m via mutate at 
 # --> doesn´t work # https://suzan.rbind.io/2018/02/dplyr-tutorial-2/#mutate-at-to-change-specific-columns
@@ -462,3 +519,8 @@ ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
   ggtitle("Alnus rubra: measured height [m] vs. height [m] predicted by model h_RER")+
   theme_light()+
   theme(legend.position = "non")
+
+
+
+
+
