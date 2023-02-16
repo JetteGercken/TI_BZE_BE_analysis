@@ -154,12 +154,13 @@ coeff_heights %>% filter(Rsqr <= 0.3)
 view(trees_total %>% filter(plot_ID == 32080))
  
 # ----- 3.3. join coefficients to the main dataset  ----------------------------
-trees_total <- left_join(trees_total, coeff_heights %>% 
-            select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code"))
-  
- view(trees_total %>% 
-   mutate(H_m = case_when(H_m == NA ~ (b0 + b1*as.numeric(DBH_cm)),
-                         TRUE ~ as.numeric(H_m))))
+trees_total <- left_join(trees_total, coeff_heights %>%
+                           select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code")) %>% 
+  mutate(H_m = ifelse(is.na(H_m),
+                      (b0 + b1*as.numeric(DBH_cm)),
+                      as.numeric(H_m)))
+
+trees_total %>% filter(is.na(H_m))
 
 
 # ----- 3.4. estimate missing heights  -----------------------------------------
