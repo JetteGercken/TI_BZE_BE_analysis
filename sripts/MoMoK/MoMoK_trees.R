@@ -221,7 +221,11 @@ trees_height_total <- trees_total %>%
 # ----- N.1.2. attempts to extract regression coefficents form whole dataset grouped by SP and plot ID ------------------------------------------
 # filter dataframe for heights for >= 3 height measurements per SP_code and plot_ID
 min3h_plot_SP <- trees_total %>% 
-  dplyr::select(plot_ID, SP_code, H_dm, DBH_mm) %>% 
+  dplyr::select(plot_ID, 
+                SP_code, SP_nr, 
+                C_layer, Kraft, CH_dm,
+                H_dm, DBH_mm, H_m, DBH_cm, DBH_class, 
+                age) %>% 
   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
   group_by(plot_ID, SP_code) %>% 
   filter(n() >= 3)%>% 
@@ -260,17 +264,17 @@ min3h_plot_SP.df %>%
 # ----- N.2.2.2. create training and testing / validation dataset --------------
 # https://stackoverflow.com/questions/17200114/how-to-split-data-into-training-testing-sets-using-sample-function
 ## set sample size to 50% of the dataset --> split data in half
-smp_size <- floor(0.75 * nrow(trees_height_total))
+smp_size <- floor(0.75 * nrow(min3h_plot_SP))
 ## set the seed to make your partition reproducible
 set.seed(123) 
-train_ind <- sample(seq_len(nrow(trees_height_total)), size = smp_size)
+train_ind <- sample(seq_len(nrow(min3h_plot_SP)), size = smp_size)
 # create training and testin/ validation dataset
-h_train <- trees_height_total[train_ind, ]
-h_test <- trees_height_total[-train_ind, ]
+h_train <- min3h_plot_SP[train_ind, ]
+h_test <- min3h_plot_SP[-train_ind, ]
 
 # ----- N.2.2.3. check out potential explainatory variables  ---------------------
-pairs(h_train %>% dplyr::select(H_m, SP_code, SP_nr, C_layer, Kraft, 
-                                DBH_class, age,
+pairs(h_train %>% dplyr::select(H_m, as.numeric(SP_code), as.numeric(SP_nr), C_layer, Kraft, 
+                                DBH_class,
                                 CH_dm, DBH_cm))
 
 # potetial explainatory variables: 
@@ -442,8 +446,8 @@ trees_total %>% group_by(SP_code) %>%
 
 # ----- N.2.3.2. Rot Erle Alnus rubra --------------------------------------------
 # ----- N.2.3.2.1. filer rows where height != NA and species = Alnus rubra --------
-height_RER <- trees_height_total %>% 
-  filter(!is.na(H_cm) & !is.na(Kraft) & !is.na(C_layer) & SP_code == "RER") #%>% 
+height_RER <- min3h_plot_SP %>% 
+  filter(!is.na(H_m) & !is.na(Kraft) & !is.na(C_layer) & SP_code == "RER") #%>% 
 # mutate(H_m = `Hoehe [dm]`*0.1, 
 #        H_cm = `Hoehe [dm]`*10, 
 #        DBH_cm = `BHD [mm]`/10)   # add column with height in meter 1dm = 0.1m
@@ -525,5 +529,60 @@ ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
 
 
 
+# ----- N.2.3.3.1. fit non linear model for RER heights -----------------------------
+
+# https://data-flair.training/blogs/r-nonlinear-regression/
+# model<- nls(bone~a-b*exp(-c*age),start=list(a=120,b=110,c=0.064))
+
+h.RER.nls <- nls(H_m~a-b*exp(-c*DBH_cm),
+             start=list(a=110,b=120,c=0.1),
+            data = h_RER_train)
+summary(h.RER.nls) # model summary
+plot(h.RER.nls)
 
 
+# ----- N.2.3.2.4. validate model based on diameter with test data----------------
+h.RER.val.nls <- nls(H_m~a-b*exp(-c*DBH_cm),
+                     start=list(a=21.73725,b=32.54252,c=0.09471),
+                     data = h_RER_test)
+summary(h.RER.val.nls)
+plot(h.RER.val.nls)
+
+
+# create column for predicted height and plot predicated and measured height against each other 
+  height_RER <- height_RER %>% 
+  mutate(H_m_est_nls = 21.73725-32.54252*exp(-0.09471*DBH_cm))
+            
+
+# test for differences between predicted and sampled height
+t.test(height_RER$H_m, height_RER$H_m_est_nls)
+
+# visualize differences between estimated and measured height
+ggplot(data=height_RER, aes(x = H_m_est_nls, y = H_m))+
+  geom_point()+
+  stat_smooth(method="lm",se=TRUE)+
+  xlab("height [m] predicted by model h_RER") +
+  ylab("height [m] measured")+
+  ggtitle("Alnus rubra: measured height [m] vs. height [m] predicted by model h_RER")+
+  theme_light()+
+  theme(legend.position = "non")
+
+ggplot(data=height_RER, aes(x = DBH_cm, y = H_m_est_nls))+
+  geom_point()+
+  #geom_point(aes(x = DBH_cm, y = H_m))+
+  stat_smooth(method = "loess", se=TRUE)+
+  xlab("DBH in cm ") +
+  ylab("height [m] predicted by model h_RER")+
+  ggtitle("Alnus rubra: height [m] predicted by model h_RER vs. DBH")+
+  theme_light()+
+  theme(legend.position = "non")
+
+ggplot(data=height_RER, aes(x = DBH_cm, y = H_m))+
+  geom_point()+
+  #geom_point(aes(x = DBH_cm, y = H_m))+
+  stat_smooth(method = "loess", se=TRUE)+
+  xlab("DBH in cm ") +
+  ylab("height [m] sampled ")+
+  ggtitle("Alnus rubra: height [m] sampled vs. DBH")+
+  theme_light()+
+  theme(legend.position = "non")
