@@ -460,7 +460,8 @@ h_RER_train <- height_RER[train_ind, ]
 h_RER_test <- height_RER[-train_ind, ]
 
 # ----- N.2.3.2.3. check out potetial explainatory variables ---------------------
-pairs(height_RER %>% dplyr::select(H_dm, H_m, C_layer, Kraft, 
+pairs(height_RER %>% dplyr::select(H_dm, H_m, #as.numeric(C_layer), 
+                                   #as.numeric(Kraft), 
                                    DBH_class, 
                                    CH_dm, DBH_mm))
 # --> DBH class seems most promissing
@@ -490,6 +491,7 @@ h.RER.val <- lm(formula = H_m ~ DBH_class, data = h_RER_test)
 summary(h.RER.val)
 anova(h.RER.val) # --> Pr(>F) = 0.001278 ** --> significant
 plot(h.RER.val)
+
 
 # Coefficients:
 #              Estimate   Std. Error t value  Pr(>|t|)   
