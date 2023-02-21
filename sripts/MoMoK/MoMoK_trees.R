@@ -68,7 +68,7 @@ getwd()
 # ----- 1.1. import ------------------------------------------------------------
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
-trees_total <- read_delim(file = here("data/input/trees_MoMoK_total.csv"), delim = ";") %>% 
+trees_total <- read.delim(file = here("data/input/trees_MoMoK_total.csv"), sep = ";", dec = ",") %>% 
   select(-Bemerkung)
 # ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
@@ -95,8 +95,8 @@ labs <- c(seq(5, 550, by = 5))
 # replace missing DBH_class values with labels according to DBH_cm
 trees_total <- trees_total%>%
   # change unit of height and diameter
-  mutate(H_m = H_dm/10,#transform height in dm into height in m 
-         DBH_cm = DBH_mm/10) %>%  # transform DBH in mm into DBH in cm 
+  mutate(H_m = H_dm*0.1,#transform height in dm into height in m 
+         DBH_cm = DBH_mm*0.1) %>%  # transform DBH in mm into DBH in cm 
   mutate(DBH_class = ifelse(is.na(DBH_class),  # mutate the column DBH_class if DBH_class is NA
                             cut(DBH_cm,        # cut the diameter
                                 breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5
@@ -129,7 +129,8 @@ coeff_heights <-  trees_total %>%
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
 coeff_heights_nls <-  trees_total %>% 
   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-  filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
+  #filter(DBH_cm <= 150) %>% 
   group_by(plot_ID, SP_code) %>% 
   # filter for plots where there is at least 3 heights measured for each species
   #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
@@ -143,7 +144,7 @@ coeff_heights_nls <-  trees_total %>%
 # adding bias, rmse and rsqrd to the coefficent dataframe
 coeff_heights_nls <- left_join(trees_total %>% 
   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-  filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
   group_by(plot_ID, SP_code) %>% 
   filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
@@ -155,37 +156,68 @@ coeff_heights_nls <- left_join(trees_total %>%
              bias = bias_per(y = H_m, yhat = H_est),
              rsme = rmse_per(y = H_m, yhat = H_est),
 #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-             rsqrd = max(cor(H_m, H_est),0)^2)
+             rsqrd = max(cor(H_m, H_est),0)^2,
+#https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+             mean_h = mean(H_m), 
+             N = length(H_m), 
+             SSres = sum((H_m-H_est)^2), 
+             SStot = sum((H_m-mean_h)^2), 
+             pseu_R2 = 1-(SSres/SStot), 
+             diff_h = mean(H_m - H_est))
 
-# plot estimated against sampled heights 
+# nls: plot estimated heights against dbh 
 ggplot(data = (left_join(trees_total %>% 
             select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
             filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
             group_by(plot_ID, SP_code) %>% 
+              #filter(DBH_cm <= 150) %>% 
             filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
-  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), aes(x = DBH_cm, y = H_est))+
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+  aes(x = DBH_cm, y = H_est, color = SP_code))+
   geom_point()+
-  stat_smooth(method = "loess", se=TRUE)+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(SP_code~plot_ID)+
   xlab("diameter ") +
   ylab("estimated height [m]")+
+  #ylim(0, 50)+
   ggtitle("height estimated vs. diameter")+
   theme_light()+
   theme(legend.position = "non")
 
+# nls: plot sampled heights against DBH
+ggplot(data = trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           filter(n() >= 3),
+       aes(x = DBH_cm, y = H_m, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(SP_code~plot_ID)+
+  xlab("diameter ") +
+  ylab("sampled height [m]")+
+  ylim(0, 50)+
+  ggtitle("height sampled vs. diameter")+
+  theme_light()+
+  theme(legend.position = "bottom")
+
+# nls: plot estimated vs. sampled heights 
 ggplot(data = (left_join(trees_total %>% 
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
                            group_by(plot_ID, SP_code) %>% 
                            filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
                  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
-       aes(x = DBH_cm, y = H_m))+
+       aes(x = H_m, y = H_est, color = SP_code))+
   geom_point()+
-  stat_smooth(method = "loess", se=TRUE)+
-  xlab("diameter ") +
-  ylab("sampled height [m]")+
-  ggtitle("height sampled vs. diameter")+
+  geom_smooth(method = "lm", se=TRUE)+
+  facet_wrap(plot_ID ~ SP_code)+
+  xlab("sampled height [m]") +
+  ylab("estimated height nls model")+
+  ggtitle("height estimated via nls vs. sampled height")+
   theme_light()+
   theme(legend.position = "non")
+
 
 
 # find the plots and species that won´t have a height regression model
@@ -199,6 +231,12 @@ trees_total %>%
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
 
+
+# find the plots/ trees with particularly high diameters --> measurement/ assemssment errors
+view(trees_total %>% filter(DBH_mm >= 1000) %>% 
+            select(plot_ID, loc_name, state, date, CCS_nr, t_ID,
+                   SP_code, DBH_mm, DBH_cm, H_m, H_dm))
+
 # ----- 3.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
  # dataset including regression models for the height, I know that actually the 
@@ -211,6 +249,7 @@ view(trees_total %>% filter(plot_ID == 32080))
 
 
 summary(coeff_heights_nls)
+coeff_heights_nls %>% filter(diff_h >= 0.75)
  
 # ----- 3.3. join coefficients to the main dataset  ----------------------------
 trees_total <- left_join(trees_total, coeff_heights %>%
