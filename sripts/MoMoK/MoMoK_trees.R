@@ -95,8 +95,8 @@ labs <- c(seq(5, 550, by = 5))
 # replace missing DBH_class values with labels according to DBH_cm
 trees_total <- trees_total%>%
   # change unit of height and diameter
-  mutate(H_m = H_dm*0.1,  # transform height in dm into height in m 
-         DBH_cm = DBH_mm*0.1) %>%  # transform DBH in mm into DBH in cm 
+  mutate(H_m = H_dm/10,#transform height in dm into height in m 
+         DBH_cm = DBH_mm/10) %>%  # transform DBH in mm into DBH in cm 
   mutate(DBH_class = ifelse(is.na(DBH_class),  # mutate the column DBH_class if DBH_class is NA
                             cut(DBH_cm,        # cut the diameter
                                 breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5
