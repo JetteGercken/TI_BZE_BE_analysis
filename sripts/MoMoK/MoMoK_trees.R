@@ -125,6 +125,67 @@ coeff_heights <-  trees_total %>%
    lm_table(H_m ~ DBH_cm) %>%      # the lm models the height based on the diamater at breast heigt 
    arrange(plot_ID, SP_code) 
 
+# coefficents of non-linear height model 
+# https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+coeff_heights_nls <-  trees_total %>% 
+  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+  filter(n() >= 3)%>%    
+  group_by(plot_ID, SP_code) %>%
+  nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+             mod_start = c(b0=23, b1=0.03, b2 =1.3), 
+             output = "table") %>%
+  arrange(plot_ID, SP_code)
+
+# adding bias, rmse and rsqrd to the coefficent dataframe
+coeff_heights_nls <- left_join(trees_total %>% 
+  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  summarise( b0 = mean(b0), 
+             b1 = mean(b1), 
+             b2 = mean(b2), 
+#https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+             bias = bias_per(y = H_m, yhat = H_est),
+             rsme = rmse_per(y = H_m, yhat = H_est),
+#https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+             rsqrd = max(cor(H_m, H_est),0)^2)
+
+# plot estimated against sampled heights 
+ggplot(data = (left_join(trees_total %>% 
+            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+            group_by(plot_ID, SP_code) %>% 
+            filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), aes(x = DBH_cm, y = H_est))+
+  geom_point()+
+  stat_smooth(method = "loess", se=TRUE)+
+  xlab("diameter ") +
+  ylab("estimated height [m]")+
+  ggtitle("height estimated vs. diameter")+
+  theme_light()+
+  theme(legend.position = "non")
+
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = DBH_cm, y = H_m))+
+  geom_point()+
+  stat_smooth(method = "loess", se=TRUE)+
+  xlab("diameter ") +
+  ylab("sampled height [m]")+
+  ggtitle("height sampled vs. diameter")+
+  theme_light()+
+  theme(legend.position = "non")
 
 
 # find the plots and species that won´t have a height regression model
@@ -143,15 +204,13 @@ trees_total %>%
  # dataset including regression models for the height, I know that actually the 
  # DBH class is the better predictor 
  # but on the other hand the diameter class is also less precise
- # and I´ll have to 
-
-
 summary(coeff_heights)
 # the R2 is pretty poor for some plots 
 coeff_heights %>% filter(Rsqr <= 0.3)
-
-
 view(trees_total %>% filter(plot_ID == 32080))
+
+
+summary(coeff_heights_nls)
  
 # ----- 3.3. join coefficients to the main dataset  ----------------------------
 trees_total <- left_join(trees_total, coeff_heights %>%
@@ -530,7 +589,7 @@ ggplot(data=height_RER, aes(x = H_m_est, y = H_m))+
 
 
 # ----- N.2.3.3.1. fit non linear model for RER heights -----------------------------
-
+# https://stackoverflow.com/questions/33033176/using-r-to-fit-a-sigmoidal-curve
 # https://data-flair.training/blogs/r-nonlinear-regression/
 # model<- nls(bone~a-b*exp(-c*age),start=list(a=120,b=110,c=0.064))
 
@@ -567,7 +626,7 @@ ggplot(data=height_RER, aes(x = H_m_est_nls, y = H_m))+
   theme_light()+
   theme(legend.position = "non")
 
-ggplot(data=height_RER, aes(x = DBH_cm, y = H_m_est_nls))+
+ggplot(data=height_RER, aes(x = DBH_class, y = H_m_est_nls))+
   geom_point()+
   #geom_point(aes(x = DBH_cm, y = H_m))+
   stat_smooth(method = "loess", se=TRUE)+
@@ -577,7 +636,7 @@ ggplot(data=height_RER, aes(x = DBH_cm, y = H_m_est_nls))+
   theme_light()+
   theme(legend.position = "non")
 
-ggplot(data=height_RER, aes(x = DBH_cm, y = H_m))+
+ggplot(data=height_RER, aes(x = DBH_class, y = H_m))+
   geom_point()+
   #geom_point(aes(x = DBH_cm, y = H_m))+
   stat_smooth(method = "loess", se=TRUE)+
