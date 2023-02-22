@@ -102,14 +102,32 @@ trees_total <- trees_total%>%
                                 breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5
                                 labels = labs,                         # and label it according to labs
                                 right = FALSE),
-                            as.numeric(DBH_class)))  # else keep existing DBH class as numeric
+                            as.numeric(DBH_class)),    # else keep existing DBH class as numeric
+         BA_m2 = ((DBH_cm/2)^2*pi)*0.0001,             # 0.0001 to change unit from cm2 to m2
+         plot_A_ha = (12.62^2*pi)*0.0001)              # 0.0001 to change unit from m2 to hectar
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-
-
-# ----- 2.1. Basal area ---------------------------------------------------
-
-
+# ----- 2.1. Basal area & species composition --------------------------------------------------------
+trees_plot <- left_join((
+  # dataset with BA per species
+  trees_total %>%
+  group_by(plot_ID, SP_code) %>%                 # group by plot and species to calculate BA per species 
+  summarise(SP_BA_plot = sum(BA_m2),             # calculate BA per species per plot in m2
+            plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
+  mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha)),    # calculate BA per species per plot in m2/ ha
+  # dataset with total BA per plot
+  (trees_total %>%
+    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  by=c("plot_ID", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>% 
+  # mutating BA proportion to trees_plot dataset 
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%  # calculate proportion of each species to total BA in percent
+  left_join(., trees_plot %>% 
+              group_by(plot_ID), 
+            )
 
 # ----- 2.2. REGRESSION for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
@@ -123,7 +141,6 @@ trees_total %>%
   #group_by(plot_ID, SP_code) %>% 
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
-
 
 # ----- 2.2.1. get coefficents per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
