@@ -6,7 +6,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-# install.packages("usethis")
+# install.packages("usethis")s
 # install.packages("here")
 # install.packages("readr")
 # install.packages("tidyverse")
@@ -59,6 +59,7 @@ library("AICcmodavg")
 # forest related
 library("forestmangr")
 library("rBDAT")
+require(data.table)
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -122,12 +123,17 @@ trees_plot <- left_join((
               plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
     mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
   by=c("plot_ID", "plot_A_ha")) %>% 
-  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>% 
+  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>%  # remove 
   # mutating BA proportion to trees_plot dataset 
-  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%  # calculate proportion of each species to total BA in percent
-  left_join(., trees_plot %>% 
-              group_by(plot_ID), 
-            )
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
+# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
+trees_plot <- left_join(trees_plot, 
+                        (as.data.table(trees_plot)[as.data.table(trees_plot)[, .I[BA_SP_per == max(BA_SP_per)], 
+                                                                             by= plot_ID]$V1]) %>% 
+              rename(., dom_SP = SP_code) %>% 
+              select(plot_ID, dom_SP), 
+            by = "plot_ID")
+
 
 # ----- 2.2. REGRESSION for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
