@@ -86,13 +86,9 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 summary(trees_total)
 
 # ----- 1.3.1 assign DBH class to trees where DBH_class == 'NA' -----------------
-# find min./ max to set create label 
-summary(trees_total$DBH_mm)
-#    Min. 1st Qu.  Median    Mean  3rd Qu.    Max. 
-#.  71.0   107.0   164.0   299.3   234.8    5445.0 --> that´s 544.5cm so 5.445m --> TYPO? 
 
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
-labs <- c(seq(5, 550, by = 5)) 
+labs <- c(seq(5, 55, by = 5)) 
 # replace missing DBH_class values with labels according to DBH_cm
 trees_total <- trees_total%>%
   # change unit of height and diameter
@@ -100,7 +96,7 @@ trees_total <- trees_total%>%
          DBH_cm = DBH_mm*0.1) %>%  # transform DBH in mm into DBH in cm 
   mutate(DBH_class = ifelse(is.na(DBH_class),  # mutate the column DBH_class if DBH_class is NA
                             cut(DBH_cm,        # cut the diameter
-                                breaks = c(seq(5, 550, by = 5), Inf),  # in sequences of 5
+                                breaks = c(seq(5, 55, by = 5), Inf),  # in sequences of 5
                                 labels = labs,                         # and label it according to labs
                                 right = FALSE),
                             as.numeric(DBH_class)),    # else keep existing DBH class as numeric
@@ -148,7 +144,7 @@ trees_total %>%
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
 
-# ----- 2.2.1. get coefficents per SP and plot when >= 3 heights measured --------
+# ----- 2.2.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
 # where the height has not been sampled I will create a linear regression for the heights
 # in the following i will create a dataframe with regression coefficients per 
@@ -194,7 +190,7 @@ coeff_heights_nls <- left_join(trees_total %>%
              pseu_R2 = 1-(SSres/SStot), 
              diff_h = mean(H_m - H_est))
 
-# ----- 2.2.2. get coefficents per SP over all plots when >= 3 heights measured --------
+# ----- 2.2.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
 coeff_heights_nls_all <-  trees_total %>% 
@@ -364,17 +360,19 @@ coeff_heights_nls %>% filter(diff_h >= 0.75)
 
  
 # ----- 2.2.4. join coefficients to the main dataset  ----------------------------
-# The issue is the following: if the R2 of the species per plot is really poor, 
-# o want the coefficients of a more general model over all plots to be joined 
-# if the respective r2 is still to low, r want  to use an external/ different model 
+# The issue is the following: if the R2 of the species per plot is really poor,
+# we need the coefficients of a more general model over all plots or plot groups to be joined
+# if the respective r2 of that modelis still to low, we want R to use an external/ different model
 
-# thus I have two ideas: 
+# thus I have two ideas:
 # 1. preparing coefficent dataset
 # either I modify the coefficents table, meaning that i replace the coefficients
-# plots and species where r2 < threshold. this, however, only word if the 
+# plots and species where r2 < threshold. this, however, only word if the
 # coefficents are exactly the same, so not for external models
-# 2. trying an conditional join 
-# here i try to create a conditional joint/ merge of the coefficients which states 
+# 2. trying an conditional join
+# here i try to create a conditional joint/ merge of the coefficients which states that for a given (previously joined) R2 R should choose the coefficients or even fomulas to use from different datasets
+# 3. coefficents
+# I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
 
 trees_total <- left_join(trees_total, coeff_heights %>%
                            select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code")) %>% 
