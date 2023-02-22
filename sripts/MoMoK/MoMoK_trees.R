@@ -105,25 +105,25 @@ trees_total <- trees_total%>%
                             as.numeric(DBH_class)))  # else keep existing DBH class as numeric
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-# ----- 3. linear regression for missing tree heights --------------------------
+# ----- 3. regression for missing tree heights ---------------------------------
+# find the plots and species that won´t have a height regression model because 
+# there are less then 3 measurements per plot
+# ---> think about way to deal with them !!!!
+trees_total %>% 
+  select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
+  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
+  #group_by(plot_ID, SP_code) %>% 
+  #lm_table(H_m ~ DBH_cm) %>% 
+  arrange(plot_ID, SP_code)
+
+
 # ----- 3.1. get coefficents per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
 # where the height has not been sampled I will create a linear regression for the heights
 # in the following i will create a dataframe with regression coefficients per 
 # species per plot if there are more then 3 heights measured per species and plot
-
-#forestmanager package
-# https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
-coeff_heights <-  trees_total %>% 
-   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-   filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-   group_by(plot_ID, SP_code) %>% 
-  # filter for plots where there is at least 3 heights measured for each species
-  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
-   filter(n() >= 3)%>%    
-   #group_by(plot_ID, SP_code) %>% 
-   lm_table(H_m ~ DBH_cm) %>%      # the lm models the height based on the diamater at breast heigt 
-   arrange(plot_ID, SP_code) 
 
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
@@ -156,7 +156,7 @@ coeff_heights_nls <- left_join(trees_total %>%
              bias = bias_per(y = H_m, yhat = H_est),
              rsme = rmse_per(y = H_m, yhat = H_est),
 #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-             rsqrd = max(cor(H_m, H_est),0)^2,
+             R2 = max(cor(H_m, H_est),0)^2,
 #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
              mean_h = mean(H_m), 
              N = length(H_m), 
@@ -165,7 +165,53 @@ coeff_heights_nls <- left_join(trees_total %>%
              pseu_R2 = 1-(SSres/SStot), 
              diff_h = mean(H_m - H_est))
 
-# nls: plot estimated heights against dbh 
+# ----- 3.2. get coefficents per SP over all plots when >= 3 heights measured --------
+# coefficents of non-linear height model 
+# https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+coeff_heights_nls_all <-  trees_total %>% 
+  select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
+  #filter(DBH_cm <= 150) %>% 
+  group_by(SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+  filter(n() >= 3)%>%    
+  group_by(SP_code) %>%
+  nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+             mod_start = c(b0=23, b1=0.03, b2 =1.3), 
+             output = "table") %>%
+  arrange(SP_code)
+
+# adding bias, rmse and rsqrd to the coefficent dataframe
+coeff_heights_nls_all <- left_join(trees_total %>% 
+                                 select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+                                 filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                                 group_by(SP_code) %>% 
+                                 filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+  group_by(SP_code) %>% 
+  summarise( b0 = mean(b0), 
+             b1 = mean(b1), 
+             b2 = mean(b2), 
+             #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+             bias = bias_per(y = H_m, yhat = H_est),
+             rsme = rmse_per(y = H_m, yhat = H_est),
+             #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+             R2 = max(cor(H_m, H_est),0)^2,
+             #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+             mean_h = mean(H_m), 
+             N = length(H_m), 
+             SSres = sum((H_m-H_est)^2), 
+             SStot = sum((H_m-mean_h)^2), 
+             pseu_R2 = 1-(SSres/SStot), 
+             diff_h = mean(H_m - H_est))
+
+
+
+
+# ----- 3.3. visualization height regression -------------------------------------------------------------
+# ----- 3.3.1. visualization height regression by plot and species ---------------------------------------
+# nls: plot estimated heights against dbh by plot and species
 ggplot(data = (left_join(trees_total %>% 
             select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
             filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
@@ -218,24 +264,59 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
+# ----- 3.3.2. visualization height regression by species over all plot ------------------------------------
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           #filter(DBH_cm <= 150) %>% 
+                           filter(n() >= 3),coeff_heights_nls_all, by = "SP_code")%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = DBH_cm, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("diameter ") +
+  ylab("estimated height [m]")+
+  #ylim(0, 50)+
+  ggtitle("height estimated vs. diameter")+
+  theme_light()+
+  theme(legend.position = "non")
 
+# nls: plot sampled heights against DBH
+ggplot(data = trees_total %>% 
+         select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+         filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+         group_by(SP_code) %>% 
+         filter(n() >= 3),
+       aes(x = DBH_cm, y = H_m, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("diameter ") +
+  ylab("sampled height [m]")+
+  ylim(0, 50)+
+  ggtitle("height sampled vs. diameter")+
+  theme_light()+
+  theme(legend.position = "bottom")
 
-# find the plots and species that won´t have a height regression model
-# ---> think about way to deal with them !!!!
-trees_total %>% 
-  select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
-  filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
-  group_by(plot_ID, SP_code) %>% 
-  filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
-  #group_by(plot_ID, SP_code) %>% 
-  #lm_table(H_m ~ DBH_cm) %>% 
-  arrange(plot_ID, SP_code)
+# nls: plot estimated vs. sampled heights 
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           filter(n() >= 3),coeff_heights_nls_all, by = "SP_code")%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = H_m, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "lm", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("sampled height [m]") +
+  ylab("estimated height nls model")+
+  ggtitle("height estimated via nls vs. sampled height")+
+  theme_light()+
+  theme(legend.position = "non")
 
-
-# find the plots/ trees with particularly high diameters --> measurement/ assemssment errors
-view(trees_total %>% filter(DBH_mm >= 1000) %>% 
-            select(plot_ID, loc_name, state, date, CCS_nr, t_ID,
-                   SP_code, DBH_mm, DBH_cm, H_m, H_dm))
 
 # ----- 3.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
@@ -247,11 +328,25 @@ summary(coeff_heights)
 coeff_heights %>% filter(Rsqr <= 0.3)
 view(trees_total %>% filter(plot_ID == 32080))
 
-
 summary(coeff_heights_nls)
 coeff_heights_nls %>% filter(diff_h >= 0.75)
+view(coeff_heights_nls %>% filter(rsqrd<=0.5))
+
+
  
 # ----- 3.3. join coefficients to the main dataset  ----------------------------
+# The issue is the following: if the R2 of the species per plot is really poor, 
+# o want the coefficients of a more general model over all plots to be joined 
+# if the respective r2 is still to low, r want  to use an external/ different model 
+
+# thus I have two ideas: 
+# 1. preparing coefficent dataset
+# either I modify the coefficents table, meaning that i replace the coefficients
+# plots and species where r2 < threshold. this, however, only word if the 
+# coefficents are exactly the same, so not for external models
+# 2. trying an conditional join 
+# here i try to create a conditional joint/ merge of the coefficients which states 
+
 trees_total <- left_join(trees_total, coeff_heights %>%
                            select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code")) %>% 
   mutate(H_m = ifelse(is.na(H_m),
@@ -352,6 +447,22 @@ min3h_plot_SP.df %>%
   mutate(model = map(min3h_plot_SP.df, 
                      ~lm(H_m ~ DBH_cm, data = min3h_plot_SP.df)))
 
+
+
+# THIS ONE WORKS!!!!
+# extracting table for coefficient for linear regression 
+#forestmanager package
+# https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
+coeff_heights <-  trees_total %>% 
+  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+  filter(n() >= 3)%>%    
+  #group_by(plot_ID, SP_code) %>% 
+  lm_table(H_m ~ DBH_cm) %>%      # the lm models the height based on the diamater at breast heigt 
+  arrange(plot_ID, SP_code) 
 
 
 
