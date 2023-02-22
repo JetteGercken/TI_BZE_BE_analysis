@@ -105,7 +105,13 @@ trees_total <- trees_total%>%
                             as.numeric(DBH_class)))  # else keep existing DBH class as numeric
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-# ----- 3. regression for missing tree heights ---------------------------------
+
+
+# ----- 2.1. Basal area ---------------------------------------------------
+
+
+
+# ----- 2.2. REGRESSION for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
 # there are less then 3 measurements per plot
 # ---> think about way to deal with them !!!!
@@ -119,7 +125,7 @@ trees_total %>%
   arrange(plot_ID, SP_code)
 
 
-# ----- 3.1. get coefficents per SP and plot when >= 3 heights measured --------
+# ----- 2.2.1. get coefficents per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
 # where the height has not been sampled I will create a linear regression for the heights
 # in the following i will create a dataframe with regression coefficients per 
@@ -165,7 +171,7 @@ coeff_heights_nls <- left_join(trees_total %>%
              pseu_R2 = 1-(SSres/SStot), 
              diff_h = mean(H_m - H_est))
 
-# ----- 3.2. get coefficents per SP over all plots when >= 3 heights measured --------
+# ----- 2.2.2. get coefficents per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
 coeff_heights_nls_all <-  trees_total %>% 
@@ -209,8 +215,8 @@ coeff_heights_nls_all <- left_join(trees_total %>%
 
 
 
-# ----- 3.3. visualization height regression -------------------------------------------------------------
-# ----- 3.3.1. visualization height regression by plot and species ---------------------------------------
+# ----- 2.2.3. visualization height regression -------------------------------------------------------------
+# ----- 2.2.3.1. visualization height regression by plot and species ---------------------------------------
 # nls: plot estimated heights against dbh by plot and species
 ggplot(data = (left_join(trees_total %>% 
             select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
@@ -264,7 +270,7 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
-# ----- 3.3.2. visualization height regression by species over all plot ------------------------------------
+# ----- 2.2.3.2. visualization height regression by species over all plot ------------------------------------
 ggplot(data = (left_join(trees_total %>% 
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
@@ -278,7 +284,7 @@ ggplot(data = (left_join(trees_total %>%
   facet_wrap(~SP_code)+
   xlab("diameter ") +
   ylab("estimated height [m]")+
-  #ylim(0, 50)+
+  ylim(0, 50)+
   ggtitle("height estimated vs. diameter")+
   theme_light()+
   theme(legend.position = "non")
@@ -318,7 +324,7 @@ ggplot(data = (left_join(trees_total %>%
   theme(legend.position = "non")
 
 
-# ----- 3.2. analysing the quality of the models  ------------------------------
+# ----- 2.2.3.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
  # dataset including regression models for the height, I know that actually the 
  # DBH class is the better predictor 
@@ -326,15 +332,15 @@ ggplot(data = (left_join(trees_total %>%
 summary(coeff_heights)
 # the R2 is pretty poor for some plots 
 coeff_heights %>% filter(Rsqr <= 0.3)
-view(trees_total %>% filter(plot_ID == 32080))
+#view(trees_total %>% filter(plot_ID == 32080))
 
 summary(coeff_heights_nls)
 coeff_heights_nls %>% filter(diff_h >= 0.75)
-view(coeff_heights_nls %>% filter(rsqrd<=0.5))
+#view(coeff_heights_nls %>% filter(rsqrd<=0.5))
 
 
  
-# ----- 3.3. join coefficients to the main dataset  ----------------------------
+# ----- 2.2.4. join coefficients to the main dataset  ----------------------------
 # The issue is the following: if the R2 of the species per plot is really poor, 
 # o want the coefficients of a more general model over all plots to be joined 
 # if the respective r2 is still to low, r want  to use an external/ different model 
@@ -350,13 +356,22 @@ view(coeff_heights_nls %>% filter(rsqrd<=0.5))
 trees_total <- left_join(trees_total, coeff_heights %>%
                            select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code")) %>% 
   mutate(H_m = ifelse(is.na(H_m),
-                      (b0 + b1*as.numeric(DBH_cm)),
+                      (b0 * (1 - exp( -b1 * DBH_cm))^b2),
                       as.numeric(H_m)))
 
 trees_total %>% filter(is.na(H_m))
 
 
-# ----- 3.4. estimate missing heights  -----------------------------------------
+# ----- 2.2.5. estimate missing heights  -----------------------------------------
+
+
+
+
+
+
+
+
+
 
 
 
