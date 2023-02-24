@@ -386,13 +386,51 @@ coeff_heights_nls %>% filter(diff_h >= 0.75)
 # 3. coefficents
 # I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
 
-trees_total <- left_join(trees_total, coeff_heights %>%
-                           select(plot_ID, SP_code, b0, b1), by = c("plot_ID", "SP_code")) %>% 
-  mutate(H_m = ifelse(is.na(H_m),
-                      (b0 * (1 - exp( -b1 * DBH_cm))^b2),
-                      as.numeric(H_m)))
 
-trees_total %>% filter(is.na(H_m))
+
+# first I join the R2
+trees_total <- left_join(trees_total %>% 
+                          mutate(plot_ID = as.factor(plot_ID)), # this is just to enable the join with the coefficients datasets                          # join coefficients to trees for plots where there were enough trees to build a nls
+                          coeff_nls_h_combined %>% filter(plot_ID != 'all') %>%  select(plot_ID, SP_code, R2), 
+                          by = c("plot_ID", "SP_code")) 
+
+# if there is an R2 per plot per species 
+# if (trees_total[c('plot_ID', 'SP_code')] %in% 
+#     #join it to the trees dataset from the columns in coeff-combined that have oefficients per plot and species
+#     coeff_nls_h_combined){
+#   merge(trees_total, coeff_nls_h_combined[, c("plot_ID", "SP_code", "R2")],
+#         by = c('plot_ID', 'SP_code'))
+#   # if there is an R2 or the R2 is above 0.75 merge the coefficeints from the coeffcients per Sp per  plots dataset
+#   } 
+
+
+# via if statement 
+                # if the R2 joined from the SP and plotwise height coefficients is NA 
+trees_total_1 <- if (is.na(trees_total$R2)){
+  # join the coefficients of 
+   merge(trees_total, coeff_nls_h_combined[, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+        by = c('plot_ID', 'SP_code'))
+    # if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
+} else if(trees_total$R2 <= 0.75) {
+  merge(trees_total, 
+        coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+        by = 'SP_code')
+       
+     }else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+                 by = 'SP_code')
+
+
+
+# via ifelse statment
+# ifelse(condition, do_if_true, do_if_false) 
+# trees_total.1 <- ifelse (trees_total$R2 != 'NA' | trees_total$R2 >= 0.75, 
+#        left_join(trees_total, 
+#                  coeff_nls_h_combined %>% filter(plot_ID != "all") %>% select("plot_ID", "SP_code", "b0", "b1", "b2"), 
+#                   by = c('plot_ID', 'SP_code')), 
+  # if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
+#        left_join(trees_total, coeff_heights_nls_all %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
+#                   by = "SP_code"))
+
 
 
 # ----- 2.2.5. estimate missing heights  -----------------------------------------
