@@ -166,29 +166,6 @@ coeff_heights_nls <-  trees_total %>%
              output = "table") %>%
   arrange(plot_ID, SP_code)
 
-# adding bias, rmse and rsqrd to the coefficent dataframe
-coeff_heights_nls <- left_join(trees_total %>% 
-  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
-  group_by(plot_ID, SP_code) %>% 
-  filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
-  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
-  group_by(plot_ID, SP_code) %>% 
-  summarise( b0 = mean(b0), 
-             b1 = mean(b1), 
-             b2 = mean(b2), 
-#https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-             bias = bias_per(y = H_m, yhat = H_est),
-             rsme = rmse_per(y = H_m, yhat = H_est),
-#https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-             R2 = max(cor(H_m, H_est),0)^2,
-#https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
-             mean_h = mean(H_m), 
-             N = length(H_m), 
-             SSres = sum((H_m-H_est)^2), 
-             SStot = sum((H_m-mean_h)^2), 
-             pseu_R2 = 1-(SSres/SStot), 
-             diff_h = mean(H_m - H_est))
 
 # ----- 2.2.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
@@ -207,31 +184,66 @@ coeff_heights_nls_all <-  trees_total %>%
              output = "table") %>%
   arrange(SP_code)
 
-# adding bias, rmse and rsqrd to the coefficent dataframe
-coeff_heights_nls_all <- left_join(trees_total %>% 
-                                 select(SP_code, H_m, DBH_cm, DBH_class) %>% 
-                                 filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
-                                 group_by(SP_code) %>% 
-                                 filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
-  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
-  group_by(SP_code) %>% 
-  summarise( b0 = mean(b0), 
-             b1 = mean(b1), 
-             b2 = mean(b2), 
-             #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-             bias = bias_per(y = H_m, yhat = H_est),
-             rsme = rmse_per(y = H_m, yhat = H_est),
-             #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-             R2 = max(cor(H_m, H_est),0)^2,
-             #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
-             mean_h = mean(H_m), 
-             N = length(H_m), 
-             SSres = sum((H_m-H_est)^2), 
-             SStot = sum((H_m-mean_h)^2), 
-             pseu_R2 = 1-(SSres/SStot), 
-             diff_h = mean(H_m - H_est))
 
-
+# ----- 2.2.3. combining coefficents per species & plot + per species & across all plots, adding predictors for model quality   --------
+# rbind coefficientdataset
+coeff_nls_h_combined <- rbind(
+  # this 1st left join is the height coefficients dataset per plot and species with the respective predictors
+  (left_join(trees_total %>% 
+                  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                  group_by(plot_ID, SP_code) %>% 
+                  filter(n() >= 3),
+  # joining the coefficents per species and plot to the trees dataset 
+             coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+       # predict the heights per speces and plot via joined coefficients and calculate RSME, BIAS, R2, etc. 
+    mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+               plot_ID = as.factor(plot_ID)) %>% 
+        group_by(plot_ID, SP_code) %>% 
+        summarise( b0 = mean(b0), 
+                   b1 = mean(b1), 
+                   b2 = mean(b2), 
+      # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
+                   #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+                   bias = bias_per(y = H_m, yhat = H_est),
+                   rsme = rmse_per(y = H_m, yhat = H_est),
+                   #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+                   R2 = max(cor(H_m, H_est),0)^2,
+                   #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+                   mean_h = mean(H_m), 
+                   N = length(H_m), 
+                   SSres = sum((H_m-H_est)^2), 
+                   SStot = sum((H_m-mean_h)^2), 
+                   pseu_R2 = 1-(SSres/SStot), 
+                   diff_h = mean(H_m - H_est))), 
+  # this left join creates a dataset with height coefficients per species over all plots and model predictors by
+  # joining the tree dataset with the coefficients_all dataset 
+      (left_join(trees_total %>% 
+                  select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                  group_by(SP_code) %>% 
+                  filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+      # estimate height through joined parameters and calcualte RSME, BIAS, R2 etc. 
+        mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+        group_by(SP_code) %>% 
+        summarise( b0 = mean(b0), 
+                   b1 = mean(b1), 
+                   b2 = mean(b2), 
+     # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
+                   #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+                   bias = bias_per(y = H_m, yhat = H_est),
+                   rsme = rmse_per(y = H_m, yhat = H_est),
+                   #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+                   R2 = max(cor(H_m, H_est),0)^2,
+                   #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+                   mean_h = mean(H_m), 
+                   N = length(H_m), 
+                   SSres = sum((H_m-H_est)^2), 
+                   SStot = sum((H_m-mean_h)^2), 
+                   pseu_R2 = 1-(SSres/SStot), 
+                   diff_h = mean(H_m - H_est)) %>% 
+        mutate(plot_ID = as.factor("all")) %>% 
+        select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)))
 
 
 # ----- 2.2.3. visualization height regression -------------------------------------------------------------
@@ -486,10 +498,11 @@ min3h_plot_SP.df %>%
 
 
 # THIS ONE WORKS!!!!
+
 # extracting table for coefficient for linear regression 
 #forestmanager package
 # https://search.r-project.org/CRAN/refmans/forestmangr/html/lm_table.html
-coeff_heights <-  trees_total %>% 
+coeff_heights_lm <-  trees_total %>% 
   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
   filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
   group_by(plot_ID, SP_code) %>% 
@@ -502,6 +515,85 @@ coeff_heights <-  trees_total %>%
 
 
 
+
+
+# ----- N.1.2.1. SUCCESSFULL attempt to extract COEFFICIENTS for n --------
+# extracting height coefficients for non.linear models: 
+# to calculate individual tree heights for trees of the samme species and plot 
+# where the height has not been sampled I will create a linear regression for the heights
+# in the following i will create a dataframe with regression coefficients per 
+# species per plot if there are more then 3 heights measured per species and plot
+
+# ----- N.1.2.1.1. nls coefficients per species and plot ------------------
+
+
+# coefficents of non-linear height model 
+# https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+coeff_heights_nls <-  trees_total %>% 
+  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
+  #filter(DBH_cm <= 150) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+  filter(n() >= 3)%>%    
+  group_by(plot_ID, SP_code) %>%
+  nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+             mod_start = c(b0=23, b1=0.03, b2 =1.3), 
+             output = "table") %>%
+  arrange(plot_ID, SP_code)
+
+# adding bias, rmse and rsqrd to the coefficent dataframe
+coeff_heights_nls <- left_join(trees_total %>% 
+                                 select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                                 filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                                 group_by(plot_ID, SP_code) %>% 
+                                 filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  summarise( b0 = mean(b0), 
+             b1 = mean(b1), 
+             b2 = mean(b2), 
+             #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+             bias = bias_per(y = H_m, yhat = H_est),
+             rsme = rmse_per(y = H_m, yhat = H_est),
+             #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+             R2 = max(cor(H_m, H_est),0)^2,
+             #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+             mean_h = mean(H_m), 
+             N = length(H_m), 
+             SSres = sum((H_m-H_est)^2), 
+             SStot = sum((H_m-mean_h)^2), 
+             pseu_R2 = 1-(SSres/SStot), 
+             diff_h = mean(H_m - H_est))
+
+# per species but over all plots: 
+
+# adding bias, rmse and rsqrd to the coefficent dataframe
+coeff_heights_nls_all <- left_join(trees_total %>% 
+                                     select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+                                     filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                                     group_by(SP_code) %>% 
+                                     filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+  group_by(SP_code) %>% 
+  summarise( b0 = mean(b0), 
+             b1 = mean(b1), 
+             b2 = mean(b2), 
+             #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+             bias = bias_per(y = H_m, yhat = H_est),
+             rsme = rmse_per(y = H_m, yhat = H_est),
+             #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+             R2 = max(cor(H_m, H_est),0)^2,
+             #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+             mean_h = mean(H_m), 
+             N = length(H_m), 
+             SSres = sum((H_m-H_est)^2), 
+             SStot = sum((H_m-mean_h)^2), 
+             pseu_R2 = 1-(SSres/SStot), 
+             diff_h = mean(H_m - H_est)) %>% 
+  mutate(plot_ID = 'all') %>% 
+  select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
 # ----- N.2. properly fit height model -----------------------------------------
 
@@ -831,3 +923,10 @@ ggplot(data=height_RER, aes(x = DBH_class, y = H_m))+
   ggtitle("Alnus rubra: height [m] sampled vs. DBH")+
   theme_light()+
   theme(legend.position = "non")
+
+
+
+
+
+
+
