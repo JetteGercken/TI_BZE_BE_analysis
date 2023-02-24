@@ -366,7 +366,7 @@ coeff_heights %>% filter(Rsqr <= 0.3)
 #view(trees_total %>% filter(plot_ID == 32080))
 
 summary(coeff_heights_nls)
-coeff_heights_nls %>% filter(diff_h >= 0.75)
+coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 #view(coeff_heights_nls %>% filter(rsqrd<=0.5))
 
 
@@ -394,6 +394,9 @@ trees_total <- left_join(trees_total %>%
                           coeff_nls_h_combined %>% filter(plot_ID != 'all') %>%  select(plot_ID, SP_code, R2), 
                           by = c("plot_ID", "SP_code")) 
 
+trees_total %>% filter(is.na(R2)) %>% group_by(plot_ID)
+trees_total %>% filter(R2 <= 0.75)  %>% group_by(plot_ID) %>% distinct()
+
 # if there is an R2 per plot per species 
 # if (trees_total[c('plot_ID', 'SP_code')] %in% 
 #     #join it to the trees dataset from the columns in coeff-combined that have oefficients per plot and species
@@ -405,23 +408,41 @@ trees_total <- left_join(trees_total %>%
 
 
 # via if statement 
-                # if the R2 joined from the SP and plotwise height coefficients is NA 
-trees_total_1 <- if (is.na(trees_total$R2)){
-  # join the coefficients of 
-   merge(trees_total, coeff_nls_h_combined[, c("plot_ID", "SP_code", "b0", "b1", "b2")],
-        by = c('plot_ID', 'SP_code'))
-    # if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
-} else if(trees_total$R2 <= 0.75) {
-  merge(trees_total, 
-        coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+# if nte joined R2 is below 0.5
+trees_total_1 <- if(trees_total$R2 <= 0.5){
+     merge(trees_total, 
+           coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all' & coeff_nls_h_combined$R2 > 0.5, ][, c("SP_code", "b0", "b1", "b2")],
+          by = 'SP_code') 
+  #if non of statements is not true, so R2 >= 0.75, join coefficients of the SP- and Plot-wise models 
+  } else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+                                         by = c('plot_ID', 'SP_code'))
+
+# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
+trees_total_2 <- if (trees_total$R2 =='NA'){
+  # join the coefficients and R2 of the height models across all plots 
+  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
         by = 'SP_code')
-       
-     }else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
-                 by = 'SP_code')
+}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+            by = c('plot_ID', 'SP_code'))
+
+# via nested if else statement: 
+# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
+trees_total_2 <- if (trees_total$R2 =='NA'){
+  # join the coefficients and R2 of the height models across all plots 
+  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+        by = 'SP_code')
+# this was my attempt of an nested if statement but it doesn´t work :(
+  # if the R two is too low, use the coefficients of the height models across all plots
+   } else if(trees_total$R2 <= 0.75) {
+     merge(trees_total, 
+           coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "b0", "b1", "b2")],
+           by = 'SP_code')
+  # if non of these statements is true, neiter R2 == NA nor R2 <= 0.75, join coefficients of the SP- and Plot-wise models   
+}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+            by = c('plot_ID', 'SP_code'))
 
 
-
-# via ifelse statment
+# via ifelse statment: 
 # ifelse(condition, do_if_true, do_if_false) 
 # trees_total.1 <- ifelse (trees_total$R2 != 'NA' | trees_total$R2 >= 0.75, 
 #        left_join(trees_total, 
@@ -431,6 +452,18 @@ trees_total_1 <- if (is.na(trees_total$R2)){
 #        left_join(trees_total, coeff_heights_nls_all %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
 #                   by = "SP_code"))
 
+
+
+# as non of this works i have to find another solution. 
+# my ideas are as follows: 
+# something like dyplr and join by R2 < R2? 
+# what i want to do is: 
+# coefficients and r2  originating from Sp and Plot specific models should be replaced by coefficients 
+# if their R2 is higher then the R2 of the respective excisting column
+# in a second step i want those coefficients that are linked to a poor R2 
+# (so an R2 below a certain threshold) to be replaced by coefficients/ models with better performance
+# but first I have to find these models somehow... or get the heights from BD for those plots & species where the R2 was poor 
+# I coul dput R2 Na to 0 so that i can be sure the respective coeffcients of a more general model is joined to the dataset
 
 
 # ----- 2.2.5. estimate missing heights  -----------------------------------------
