@@ -31,6 +31,7 @@
 # # forest related
 # install.packages("forestmangr")
 # install.packages("rBDAT")
+# install.packages("TapeR")
 
 # ----- 0.2. library   ---------------------------------------------------------
 # datamanagement
@@ -41,6 +42,7 @@ library("tidyverse")
 library("tibble")
 library("dplyr")
 library("data.table")
+require(data.table)
 library("broom")
 library("purrr")
 # laTex
@@ -59,7 +61,7 @@ library("AICcmodavg")
 # forest related
 library("forestmangr")
 library("rBDAT")
-require(data.table)
+library("TapeR")
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -104,34 +106,7 @@ trees_total <- trees_total%>%
          plot_A_ha = (12.62^2*pi)*0.0001)              # 0.0001 to change unit from m2 to hectar
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-# ----- 2.1. Basal area & species composition --------------------------------------------------------
-trees_plot <- left_join((
-  # dataset with BA per species
-  trees_total %>%
-  group_by(plot_ID, SP_code) %>%                 # group by plot and species to calculate BA per species 
-  summarise(SP_BA_plot = sum(BA_m2),             # calculate BA per species per plot in m2
-            plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-  mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha)),    # calculate BA per species per plot in m2/ ha
-  # dataset with total BA per plot
-  (trees_total %>%
-    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
-    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
-  by=c("plot_ID", "plot_A_ha")) %>% 
-  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>%  # remove 
-  # mutating BA proportion to trees_plot dataset 
-  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
-# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
-trees_plot <- left_join(trees_plot, 
-                        (as.data.table(trees_plot)[as.data.table(trees_plot)[, .I[BA_SP_per == max(BA_SP_per)], 
-                                                                             by= plot_ID]$V1]) %>% 
-              rename(., dom_SP = SP_code) %>% 
-              select(plot_ID, dom_SP), 
-            by = "plot_ID")
-
-
-# ----- 2.2. REGRESSION for missing tree heights ---------------------------------
+# ----- 2.1. REGRESSION for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
 # there are less then 3 measurements per plot
 # ---> think about way to deal with them !!!!
@@ -144,7 +119,7 @@ trees_total %>%
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
 
-# ----- 2.2.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
+# ----- 2.1.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
 # where the height has not been sampled I will create a linear regression for the heights
 # in the following i will create a dataframe with regression coefficients per 
@@ -250,7 +225,7 @@ coeff_nls_h_combined <- rbind(
               diff_h = mean(H_m - H_est))
 
 
-# ----- 2.2.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
+# ----- 2.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
 coeff_heights_nls_all <-  trees_total %>% 
@@ -295,8 +270,8 @@ coeff_heights_nls_all <-  trees_total %>%
    select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
 
-# ----- 2.2.3. visualization height regression -------------------------------------------------------------
-# ----- 2.2.3.1. visualization height regression by plot and species ---------------------------------------
+# ----- 2.1.3. visualization height regression -------------------------------------------------------------
+# ----- 2.1.3.1. visualization height regression by plot and species ---------------------------------------
 # nls: plot estimated heights against dbh by plot and species
 ggplot(data = (left_join(trees_total %>% 
             select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
@@ -350,7 +325,7 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
-# ----- 2.2.3.2. visualization height regression by species over all plot ------------------------------------
+# ----- 2.1.3.2. visualization height regression by species over all plot ------------------------------------
 ggplot(data = (left_join(trees_total %>% 
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
@@ -404,7 +379,7 @@ ggplot(data = (left_join(trees_total %>%
   theme(legend.position = "non")
 
 
-# ----- 2.2.3.2. analysing the quality of the models  ------------------------------
+# ----- 2.1.3.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
  # dataset including regression models for the height, I know that actually the 
  # DBH class is the better predictor 
@@ -420,7 +395,7 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
  
-# ----- 2.2.4. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
+# ----- 2.1.4. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
 # The issue is the following: if the R2 of the species per plot is really poor,
 # we need the coefficients of a more general model over all plots or plot groups to be joined
 # if the respective r2 of that modelis still to low, we want R to use an external/ different model
@@ -461,7 +436,35 @@ trees_total <- left_join(trees_total,
   
   
 
-
+# ----- 2.2. Basal area & species composition --------------------------------------------------------
+trees_plot <- left_join((
+  # dataset with BA per species
+  trees_total %>%
+    group_by(plot_ID, SP_code) %>%                 # group by plot and species to calculate BA per species 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
+              sd_DBH_cm = sd(DBH_cm),
+              mean_H_m = mean(H_m), 
+              sd_height_m = sd(H_m),
+              SP_BA_plot = sum(BA_m2),             # calculate BA per species per plot in m2
+              plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha)),    # calculate BA per species per plot in m2/ ha
+  # dataset with total BA per plot
+  (trees_total %>%
+     group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+     summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+               plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+     mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  by=c("plot_ID", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>%  # remove 
+  # mutating BA proportion to trees_plot dataset 
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
+# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
+trees_plot <- left_join(trees_plot, 
+                        (as.data.table(trees_plot)[as.data.table(trees_plot)[, .I[BA_SP_per == max(BA_SP_per)], 
+                                                                             by= plot_ID]$V1]) %>% 
+                          rename(., dom_SP = SP_code) %>% 
+                          select(plot_ID, dom_SP), 
+                        by = "plot_ID")
 
 
 
