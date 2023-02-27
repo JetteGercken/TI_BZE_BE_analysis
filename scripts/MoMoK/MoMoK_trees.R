@@ -139,7 +139,7 @@ trees_total %>%
   select(plot_ID, SP_code, H_dm, DBH_mm, Kraft) %>% 
   filter(!is.na(H_dm) & !is.na(DBH_mm)) %>% 
   group_by(plot_ID, SP_code) %>% 
-  filter(n() <= 3)%>%    # filter for plots where there are less then 3 heights measured for each species
+  filter(n() < 3)%>%    # filter for plots where there are less then 3 heights measured for each species
   #group_by(plot_ID, SP_code) %>% 
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
@@ -166,6 +166,89 @@ coeff_heights_nls <-  trees_total %>%
              output = "table") %>%
   arrange(plot_ID, SP_code)
 
+# biuilding one dataset with all coefficients, thse of the genearl model and those of the species and plot specific models
+coeff_nls_h_combined <- rbind(
+  # this 1st left join is the height coefficients dataset per plot and species with the respective predictors
+  (left_join(trees_total %>% 
+               select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+               filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+               group_by(plot_ID, SP_code) %>% 
+               filter(n() >= 3),
+             # joining the coefficents per species and plot to the trees dataset 
+             coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+     # predict the heights per speces and plot via joined coefficients and calculate RSME, BIAS, R2, etc. 
+     mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+            plot_ID = as.factor(plot_ID)) %>% 
+     group_by(plot_ID, SP_code) %>% 
+     summarise( b0 = mean(b0), 
+                b1 = mean(b1), 
+                b2 = mean(b2), 
+                # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
+                #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+                bias = bias_per(y = H_m, yhat = H_est),
+                rsme = rmse_per(y = H_m, yhat = H_est),
+                #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+                R2 = max(cor(H_m, H_est),0)^2,
+                #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+                mean_h = mean(H_m), 
+                N = length(H_m), 
+                SSres = sum((H_m-H_est)^2), 
+                SStot = sum((H_m-mean_h)^2), 
+                pseu_R2 = 1-(SSres/SStot), 
+                diff_h = mean(H_m - H_est))), 
+  # this left join creates a dataset with height coefficients per species over all plots and model predictors by
+  # joining the tree dataset with the coefficients_all dataset 
+  (left_join(trees_total %>% 
+               select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+               filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+               group_by(SP_code) %>% 
+               filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+     # estimate height through joined parameters and calcualte RSME, BIAS, R2 etc. 
+     mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+     group_by(SP_code) %>% 
+     summarise( b0 = mean(b0), 
+                b1 = mean(b1), 
+                b2 = mean(b2), 
+                # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
+                #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+                bias = bias_per(y = H_m, yhat = H_est),
+                rsme = rmse_per(y = H_m, yhat = H_est),
+                #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+                R2 = max(cor(H_m, H_est),0)^2,
+                #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+                mean_h = mean(H_m), 
+                N = length(H_m), 
+                SSres = sum((H_m-H_est)^2), 
+                SStot = sum((H_m-mean_h)^2), 
+                pseu_R2 = 1-(SSres/SStot), 
+                diff_h = mean(H_m - H_est)) %>% 
+     mutate(plot_ID = as.factor("all")) %>% 
+     select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)))
+
+ # building separate dataframe for speicies and plot soecific models adding adding bias, rmse and rsqrd 
+ coeff_heights_nls <- left_join(trees_total %>% 
+                                  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                                  group_by(plot_ID, SP_code) %>% 
+                                  filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+   group_by(plot_ID, SP_code) %>% 
+   summarise( b0 = mean(b0), 
+              b1 = mean(b1), 
+              b2 = mean(b2), 
+              #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+              bias = bias_per(y = H_m, yhat = H_est),
+              rsme = rmse_per(y = H_m, yhat = H_est),
+              #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+              R2 = max(cor(H_m, H_est),0)^2,
+              #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+              mean_h = mean(H_m), 
+              N = length(H_m), 
+              SSres = sum((H_m-H_est)^2), 
+              SStot = sum((H_m-mean_h)^2), 
+              pseu_R2 = 1-(SSres/SStot), 
+              diff_h = mean(H_m - H_est))
+
 
 # ----- 2.2.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
@@ -184,66 +267,32 @@ coeff_heights_nls_all <-  trees_total %>%
              output = "table") %>%
   arrange(SP_code)
 
-
-# ----- 2.2.3. combining coefficents per species & plot + per species & across all plots, adding predictors for model quality   --------
-# rbind coefficientdataset
-coeff_nls_h_combined <- rbind(
-  # this 1st left join is the height coefficients dataset per plot and species with the respective predictors
-  (left_join(trees_total %>% 
-                  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
-                  group_by(plot_ID, SP_code) %>% 
-                  filter(n() >= 3),
-  # joining the coefficents per species and plot to the trees dataset 
-             coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
-       # predict the heights per speces and plot via joined coefficients and calculate RSME, BIAS, R2, etc. 
-    mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2, 
-               plot_ID = as.factor(plot_ID)) %>% 
-        group_by(plot_ID, SP_code) %>% 
-        summarise( b0 = mean(b0), 
-                   b1 = mean(b1), 
-                   b2 = mean(b2), 
-      # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
-                   #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-                   bias = bias_per(y = H_m, yhat = H_est),
-                   rsme = rmse_per(y = H_m, yhat = H_est),
-                   #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-                   R2 = max(cor(H_m, H_est),0)^2,
-                   #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
-                   mean_h = mean(H_m), 
-                   N = length(H_m), 
-                   SSres = sum((H_m-H_est)^2), 
-                   SStot = sum((H_m-mean_h)^2), 
-                   pseu_R2 = 1-(SSres/SStot), 
-                   diff_h = mean(H_m - H_est))), 
-  # this left join creates a dataset with height coefficients per species over all plots and model predictors by
-  # joining the tree dataset with the coefficients_all dataset 
-      (left_join(trees_total %>% 
-                  select(SP_code, H_m, DBH_cm, DBH_class) %>% 
-                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
-                  group_by(SP_code) %>% 
-                  filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
-      # estimate height through joined parameters and calcualte RSME, BIAS, R2 etc. 
-        mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
-        group_by(SP_code) %>% 
-        summarise( b0 = mean(b0), 
-                   b1 = mean(b1), 
-                   b2 = mean(b2), 
-     # adding Bias, RSME, R2, pseudo R2 and difference between predicted and sampled heights to dataframe
-                   #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-                   bias = bias_per(y = H_m, yhat = H_est),
-                   rsme = rmse_per(y = H_m, yhat = H_est),
-                   #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
-                   R2 = max(cor(H_m, H_est),0)^2,
-                   #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
-                   mean_h = mean(H_m), 
-                   N = length(H_m), 
-                   SSres = sum((H_m-H_est)^2), 
-                   SStot = sum((H_m-mean_h)^2), 
-                   pseu_R2 = 1-(SSres/SStot), 
-                   diff_h = mean(H_m - H_est)) %>% 
-        mutate(plot_ID = as.factor("all")) %>% 
-        select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)))
+# per species but over all plots: 
+#  # building separate dataframe for speicies soecific models adding adding bias, rmse and rsqrd 
+ coeff_heights_nls_all <- left_join(trees_total %>% 
+                                      select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+                                      filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
+                                      group_by(SP_code) %>% 
+                                      filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
+   group_by(SP_code) %>% 
+   summarise( b0 = mean(b0), 
+              b1 = mean(b1), 
+              b2 = mean(b2), 
+              #https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+              bias = bias_per(y = H_m, yhat = H_est),
+              rsme = rmse_per(y = H_m, yhat = H_est),
+              #https://stackoverflow.com/questions/14530770/calculating-r2-for-a-nonlinear-least-squares-fit
+              R2 = max(cor(H_m, H_est),0)^2,
+              #https://stats.stackexchange.com/questions/11676/pseudo-r-squared-formula-for-glms
+              mean_h = mean(H_m), 
+              N = length(H_m), 
+              SSres = sum((H_m-H_est)^2), 
+              SStot = sum((H_m-mean_h)^2), 
+              pseu_R2 = 1-(SSres/SStot), 
+              diff_h = mean(H_m - H_est)) %>% 
+   mutate(plot_ID = 'all') %>% 
+   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
 
 # ----- 2.2.3. visualization height regression -------------------------------------------------------------
@@ -371,7 +420,7 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
  
-# ----- 2.2.4. join coefficients to the main dataset  ----------------------------
+# ----- 2.2.4. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
 # The issue is the following: if the R2 of the species per plot is really poor,
 # we need the coefficients of a more general model over all plots or plot groups to be joined
 # if the respective r2 of that modelis still to low, we want R to use an external/ different model
@@ -387,90 +436,30 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 # I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
 
 
-
-# first I join the R2
-trees_total <- left_join(trees_total %>% 
-                          mutate(plot_ID = as.factor(plot_ID)), # this is just to enable the join with the coefficients datasets                          # join coefficients to trees for plots where there were enough trees to build a nls
-                          coeff_nls_h_combined %>% filter(plot_ID != 'all') %>%  select(plot_ID, SP_code, R2), 
-                          by = c("plot_ID", "SP_code")) 
-
-trees_total %>% filter(is.na(R2)) %>% group_by(plot_ID)
-trees_total %>% filter(R2 <= 0.75)  %>% group_by(plot_ID) %>% distinct()
-
-# if there is an R2 per plot per species 
-# if (trees_total[c('plot_ID', 'SP_code')] %in% 
-#     #join it to the trees dataset from the columns in coeff-combined that have oefficients per plot and species
-#     coeff_nls_h_combined){
-#   merge(trees_total, coeff_nls_h_combined[, c("plot_ID", "SP_code", "R2")],
-#         by = c('plot_ID', 'SP_code'))
-#   # if there is an R2 or the R2 is above 0.75 merge the coefficeints from the coeffcients per Sp per  plots dataset
-#   } 
-
-
-# via if statement 
-# if nte joined R2 is below 0.5
-trees_total_1 <- if(trees_total$R2 <= 0.5){
-     merge(trees_total, 
-           coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all' & coeff_nls_h_combined$R2 > 0.5, ][, c("SP_code", "b0", "b1", "b2")],
-          by = 'SP_code') 
-  #if non of statements is not true, so R2 >= 0.75, join coefficients of the SP- and Plot-wise models 
-  } else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
-                                         by = c('plot_ID', 'SP_code'))
-
-# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
-trees_total_2 <- if (trees_total$R2 =='NA'){
-  # join the coefficients and R2 of the height models across all plots 
-  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
-        by = 'SP_code')
-}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
-            by = c('plot_ID', 'SP_code'))
-
-# via nested if else statement: 
-# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
-trees_total_2 <- if (trees_total$R2 =='NA'){
-  # join the coefficients and R2 of the height models across all plots 
-  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
-        by = 'SP_code')
-# this was my attempt of an nested if statement but it doesn´t work :(
-  # if the R two is too low, use the coefficients of the height models across all plots
-   } else if(trees_total$R2 <= 0.75) {
-     merge(trees_total, 
-           coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "b0", "b1", "b2")],
-           by = 'SP_code')
-  # if non of these statements is true, neiter R2 == NA nor R2 <= 0.75, join coefficients of the SP- and Plot-wise models   
-}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
-            by = c('plot_ID', 'SP_code'))
+# first I join the coefficient of the models fitted per plot and species
+trees_total <- left_join(trees_total,
+                          coeff_heights_nls %>% 
+                          select(plot_ID, SP_code, R2, b0, b1, b2), 
+                          by = c("plot_ID", "SP_code")) %>% 
+  # if R2 or the coefficients are NA use the respective columns of the more general model
+  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+   # if R2 or coefficients are NA or R2of the species- & plotwise models is lower then the R2 of the spcieswise models across all plots
+   # ise the respecitive column 
+  mutate(R2 = ifelse(is.na(R2.x)| R2.x < R2.y, R2.y, R2.x), 
+         b0 = ifelse(is.na(b0.x)| R2.x < R2.y, b0.y, b0.x), 
+         b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x), 
+         b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
+  select(-c(ends_with(".x"), ends_with(".y"))) %>%
+  mutate(H_m = is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)
+  
+  
+# the unsolved issue here is: 
+# how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
 
 
-# via ifelse statment: 
-# ifelse(condition, do_if_true, do_if_false) 
-# trees_total.1 <- ifelse (trees_total$R2 != 'NA' | trees_total$R2 >= 0.75, 
-#        left_join(trees_total, 
-#                  coeff_nls_h_combined %>% filter(plot_ID != "all") %>% select("plot_ID", "SP_code", "b0", "b1", "b2"), 
-#                   by = c('plot_ID', 'SP_code')), 
-  # if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
-#        left_join(trees_total, coeff_heights_nls_all %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
-#                   by = "SP_code"))
-
-
-
-# as non of this works i have to find another solution. 
-# my ideas are as follows: 
-# something like dyplr and join by R2 < R2? 
-# what i want to do is: 
-# coefficients and r2  originating from Sp and Plot specific models should be replaced by coefficients 
-# if their R2 is higher then the R2 of the respective excisting column
-# in a second step i want those coefficients that are linked to a poor R2 
-# (so an R2 below a certain threshold) to be replaced by coefficients/ models with better performance
-# but first I have to find these models somehow... or get the heights from BD for those plots & species where the R2 was poor 
-# I coul dput R2 Na to 0 so that i can be sure the respective coeffcients of a more general model is joined to the dataset
-
-
-# ----- 2.2.5. estimate missing heights  -----------------------------------------
-
-
-
-
+  
+  
 
 
 
@@ -665,6 +654,147 @@ coeff_heights_nls_all <- left_join(trees_total %>%
              diff_h = mean(H_m - H_est)) %>% 
   mutate(plot_ID = 'all') %>% 
   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
+
+
+
+
+
+
+# ----- N.1.2.2. Attempts to join coefficients to tree dataset depending on --------
+
+# THIS ONE WORKS
+# checking if the code worked and the right columns were picked
+trees_total_1 <- left_join(trees_total,
+                           coeff_heights_nls %>% 
+                             select(plot_ID, SP_code, R2, b0, b1, b2), 
+                           by = c("plot_ID", "SP_code")) %>% 
+  # if R2 or the coefficients are NA use the more general model
+  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+  mutate(R2 = ifelse(is.na(R2.x), R2.y, R2.x), 
+         b0 = ifelse(is.na(b0.x), b0.y, b0.x), 
+         b1 = ifelse(is.na(b1.x), b1.y, b1.x), 
+         b2 = ifelse(is.na(b2.x), b2.y, b2.x)) %>% 
+  # if the R2 of the species and plot specific regressions is lower then the R2 of the regressions across plots, use the coefficients from more general models
+  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+  mutate(R2 = ifelse(R2.x.x < R2.y.y, R2.y.y, R2.x.x), 
+         b0 = ifelse(R2.x.x < R2.y.y, b0.y.y, b0.x.x), 
+         b1 = ifelse(R2.x.x < R2.y.y, b1.y.y, b1.x.x), 
+         b2 = ifelse(R2.x.x < R2.y.y, b2.y.y, b2.x.x)) 
+  # remove the columns that were created by joiing the same variable multiple times (which was necesarry to compare)
+  #select(-c(ends_with(c(".x", ".x.x")), ends_with(c(".y", ".y.y")))) %>% 
+  #mutate(H_m = is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)
+  
+  view(trees_total_1 %>% filter(is.na(R2.x)| R2.x.x < R2.y.y) %>% select(plot_ID, SP_code, R2.x, R2.y, R2.x.x, R2.y.y, R2, b0.x.x, b0.y.y, b0)) 
+
+  
+# check if the sorter verion of this code used above is also accurate
+ identical(trees_total[['R2']],trees_total_1[['R2']]) # --> yes it is
+  
+  
+  
+  
+# as non of the follwing codes workd i had to find another solution. 
+# my ideas are as follows: 
+# something like dyplr and join by R2 < R2? 
+# what i want to do is: 
+# coefficients and r2  originating from Sp and Plot specific models should be replaced by coefficients 
+# if their R2 is higher then the R2 of the respective excisting column
+# in a second step i want those coefficients that are linked to a poor R2 
+# (so an R2 below a certain threshold) to be replaced by coefficients/ models with better performance
+# but first I have to find these models somehow... or get the heights from BD for those plots & species where the R2 was poor 
+# I coul dput R2 Na to 0 so that i can be sure the respective coeffcients of a more general model is joined to the dataset
+
+
+# if there is an R2 per plot per species 
+if (trees_total[c('plot_ID', 'SP_code')] %in% 
+    #join it to the trees dataset from the columns in coeff-combined that have oefficients per plot and species
+    coeff_nls_h_combined){
+  merge(trees_total, coeff_nls_h_combined[, c("plot_ID", "SP_code", "R2")],
+        by = c('plot_ID', 'SP_code'))
+  # if there is an R2 or the R2 is above 0.75 merge the coefficeints from the coeffcients per Sp per  plots dataset
+} 
+
+
+# via hested if statment
+# if the plot ID and SP code appear in the plot and species wise coefficient dataset, join the coefficients of models that were fitted plot- and species-wise
+# 1. CONDITION: if the merged R2 is lower then the R2 from the general model                            
+trees_total_3 <- if (trees_total$R2[trees_total$SP_code] < coeff_heights_nls_all$R2[coeff_heights_nls_all$SP_code]){
+  # 2. CONDITION : if the merged R2 is NA --> if there was no plot & species specific model
+  if (is.na(trees_total$R2)){
+    #  join the coefficients of a more general model, fitted per species across all plots
+    merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+          by = 'SP_code')
+  } # else merge the coefficients and R squared of the plot $ species specific models
+}else merge(trees_total, coeff_heights_nls[, c("plot_ID", "SP_code", "R2", "b0", "b1", "b2")],
+            by = c('plot_ID', 'SP_code')) 
+
+
+# if the R2 of the species- and plotwise models is lower then the species wise model accross all plots
+trees_total_4 <- if (coeff_heights_nls$R2 < coeff_heights_nls_all$R2) { 
+  # DO IF TRUE: merge coefficients form a more general model to the tree dataset
+  merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+        by = 'SP_code')
+  
+}else merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+            by = 'SP_code')
+# else join the coefficients of a more general model, fitted per species across all plots
+
+# look where errors occure: 
+anti_join(trees_total, trees_total_3, by = c("plot_ID", "SP_code"))
+
+
+
+
+
+
+
+
+# via if statement 
+# if nte joined R2 is below 0.5
+trees_total_1 <- if(trees_total$R2 <= 0.5){
+  merge(trees_total, 
+        coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all' & coeff_nls_h_combined$R2 > 0.5, ][, c("SP_code", "b0", "b1", "b2")],
+        by = 'SP_code') 
+  #if non of statements is not true, so R2 >= 0.75, join coefficients of the SP- and Plot-wise models 
+} else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+             by = c('plot_ID', 'SP_code'))
+
+# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
+trees_total_2 <- if (trees_total$R2 =='NA'){
+  # join the coefficients and R2 of the height models across all plots 
+  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+        by = 'SP_code')
+}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+            by = c('plot_ID', 'SP_code'))
+
+# via nested if else statement: 
+# if the R2 joined from the SP and plotwise height coefficients is NA (so there was no model build for these plots and species) 
+trees_total_2 <- if (trees_total$R2 =='NA'){
+  # join the coefficients and R2 of the height models across all plots 
+  merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "R2", "b0", "b1", "b2")],
+        by = 'SP_code')
+  # this was my attempt of an nested if statement but it doesn´t work :(
+  # if the R two is too low, use the coefficients of the height models across all plots
+} else if(trees_total$R2 <= 0.75) {
+  merge(trees_total, 
+        coeff_nls_h_combined[coeff_nls_h_combined$plot_ID == 'all', ][, c("SP_code", "b0", "b1", "b2")],
+        by = 'SP_code')
+  # if non of these statements is true, neiter R2 == NA nor R2 <= 0.75, join coefficients of the SP- and Plot-wise models   
+}else merge(trees_total, coeff_nls_h_combined[coeff_nls_h_combined$plot_ID != 'all', ][, c("plot_ID", "SP_code", "b0", "b1", "b2")],
+            by = c('plot_ID', 'SP_code'))
+
+
+# via ifelse statment: 
+# ifelse(condition, do_if_true, do_if_false) 
+# trees_total.1 <- ifelse (trees_total$R2 != 'NA' | trees_total$R2 >= 0.75, 
+#        left_join(trees_total, 
+#                  coeff_nls_h_combined %>% filter(plot_ID != "all") %>% select("plot_ID", "SP_code", "b0", "b1", "b2"), 
+#                   by = c('plot_ID', 'SP_code')), 
+# if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
+#        left_join(trees_total, coeff_heights_nls_all %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
+#                   by = "SP_code"))
 
 # ----- N.2. properly fit height model -----------------------------------------
 
