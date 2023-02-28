@@ -112,8 +112,8 @@ trees_total <- trees_total%>%
                                 labels = labs,                         # and label it according to labs
                                 right = FALSE),
                             as.numeric(DBH_class)),    # else keep existing DBH class as numeric
-         BA_m2 = ((DBH_cm/2)^2*pi)*0.0001,             # 0.0001 to change unit from cm2 to m2
-         plot_A_ha = (12.62^2*pi)*0.0001)              # 0.0001 to change unit from m2 to hectar
+         BA_m2 = c_A(DBH_cm/2)*0.0001,             # 0.0001 to change unit from cm2 to m2
+         plot_A_ha = c_A(12.62)*0.0001)              # 0.0001 to change unit from m2 to hectar
 
 # ----- 1.4. joins -------------------------------------------------------------
 # ----- 1.4.1. species names <-> trees -----------------------------------------
@@ -153,6 +153,13 @@ trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group
 # has to be removed when the raw data are created/ assessed
 
 
+# ---- 1.5 functions ------------------------------------------------------
+
+# circle area
+c_A = function(x){
+  circle_area <- x^2*pi
+  return(circle_area)
+}
 
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
@@ -177,7 +184,7 @@ trees_total %>%
 
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-coeff_heights_nls <-  trees_total %>% 
+coeff_H_SP_plot <-  trees_total %>% 
   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
   filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
   #filter(DBH_cm <= 150) %>% 
@@ -194,7 +201,7 @@ coeff_heights_nls <-  trees_total %>%
 # ----- 2.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-coeff_heights_nls_all <-  trees_total %>% 
+coeff_H_SP <-  trees_total %>% 
   select(SP_code, H_m, DBH_cm, DBH_class) %>% 
   filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
   #filter(DBH_cm <= 150) %>% 
@@ -220,7 +227,7 @@ coeff_nls_h_combined <- rbind(
                group_by(plot_ID, SP_code) %>% 
                filter(n() >= 3),
              # joining the coefficents per species and plot to the trees dataset 
-             coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+             coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
      # predict the heights per speces and plot via joined coefficients and calculate RSME, BIAS, R2, etc. 
      mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2, 
             plot_ID = as.factor(plot_ID)) %>% 
@@ -247,7 +254,7 @@ coeff_nls_h_combined <- rbind(
                select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                group_by(SP_code) %>% 
-               filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+               filter(n() >= 3),coeff_H_SP, by = c("SP_code"))%>%
      # estimate height through joined parameters and calcualte RSME, BIAS, R2 etc. 
      mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
      group_by(SP_code) %>% 
@@ -274,11 +281,11 @@ coeff_nls_h_combined <- rbind(
 
 # ----- 2.1.4. seprate dataframes for coefficients including statistical indicators --------
  # building separate dataframe for speicies and plot soecific models adding adding bias, rmse and rsqrd 
- coeff_heights_nls <- left_join(trees_total %>% 
+ coeff_H_SP_plot <- left_join(trees_total %>% 
                                   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                                   filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                                   group_by(plot_ID, SP_code) %>% 
-                                  filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+                                  filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
    mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
    group_by(plot_ID, SP_code) %>% 
    summarise( b0 = mean(b0), 
@@ -299,11 +306,11 @@ coeff_nls_h_combined <- rbind(
 
 # per species but over all plots: 
 #  # building separate dataframe for speicies soecific models adding adding bias, rmse and rsqrd 
- coeff_heights_nls_all <- left_join(trees_total %>% 
+ coeff_H_SP <- left_join(trees_total %>% 
                                       select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                                       filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                                       group_by(SP_code) %>% 
-                                      filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+                                      filter(n() >= 3),coeff_H_SP, by = c("SP_code"))%>%
    mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
    group_by(SP_code) %>% 
    summarise( b0 = mean(b0), 
@@ -333,7 +340,7 @@ ggplot(data = (left_join(trees_total %>%
             filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
             group_by(plot_ID, SP_code) %>% 
               #filter(DBH_cm <= 150) %>% 
-            filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+            filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
   aes(x = DBH_cm, y = H_est, color = SP_code))+
   geom_point()+
@@ -368,7 +375,7 @@ ggplot(data = (left_join(trees_total %>%
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
                            group_by(plot_ID, SP_code) %>% 
-                           filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+                           filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
                  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
        aes(x = H_m, y = H_est, color = SP_code))+
   geom_point()+
@@ -386,7 +393,7 @@ ggplot(data = (left_join(trees_total %>%
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
                            group_by(plot_ID, SP_code) %>% 
                            #filter(DBH_cm <= 150) %>% 
-                           filter(n() >= 3),coeff_heights_nls_all, by = "SP_code")%>%
+                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
                  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
        aes(x = DBH_cm, y = H_est, color = SP_code))+
   geom_point()+
@@ -421,7 +428,7 @@ ggplot(data = (left_join(trees_total %>%
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
                            group_by(plot_ID, SP_code) %>% 
-                           filter(n() >= 3),coeff_heights_nls_all, by = "SP_code")%>%
+                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
                  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
        aes(x = H_m, y = H_est, color = SP_code))+
   geom_point()+
@@ -444,9 +451,9 @@ summary(coeff_heights)
 coeff_heights %>% filter(Rsqr <= 0.3)
 #view(trees_total %>% filter(plot_ID == 32080))
 
-summary(coeff_heights_nls)
+summary(coeff_H_SP_plot)
 coeff_nls_h_combined %>% filter(diff_h >= 0.75)
-#view(coeff_heights_nls %>% filter(rsqrd<=0.5))
+#view(coeff_H_SP_plot %>% filter(rsqrd<=0.5))
 
 
  
@@ -465,28 +472,61 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 # 3. coefficents
 # I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
 
-
+# joining respective coefficients with ifelse
 # first I join the coefficient of the models fitted per plot and species
-trees_total <- left_join(trees_total,
-                          coeff_heights_nls %>% 
-                          select(plot_ID, SP_code, R2, b0, b1, b2), 
-                          by = c("plot_ID", "SP_code")) %>% 
-  # if R2 or the coefficients are NA use the respective columns of the more general model
-  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
-            by = "SP_code") %>% 
-   # if R2 or coefficients are NA or R2of the species- & plotwise models is lower then the R2 of the spcieswise models across all plots
-   # ise the respecitive column 
-  mutate(R2 = ifelse(is.na(R2.x)| R2.x < R2.y, R2.y, R2.x), 
-         b0 = ifelse(is.na(b0.x)| R2.x < R2.y, b0.y, b0.x), 
-         b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x), 
-         b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
-  select(-c(ends_with(".x"), ends_with(".y"))) %>%
-  # adding column to be able to track if the height was measured or estimated by the model
-  mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
-         # estimate missing heights
-         H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
+# trees_total_1 <- left_join(trees_total,
+#                           coeff_H_SP_plot %>% 
+#                           select(plot_ID, SP_code, R2, b0, b1, b2), 
+#                           by = c("plot_ID", "SP_code")) %>% 
+#   # if R2 or the coefficients are NA use the respective columns of the more general model
+#   left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+#             by = "SP_code") %>% 
+#   # if R2 or coefficients are NA or R2of the species- & plotwise models is lower then the R2 of the spcieswise models across all plots
+#   # ise the respecitive column
+#   mutate(R2 = ifelse(is.na(R2.x)| R2.x < R2.y, R2.y, R2.x), 
+#          b0 = ifelse(is.na(b0.x)| R2.x < R2.y, b0.y, b0.x),
+#          b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x),
+#          b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
+#   select(-c(ends_with(".x"), ends_with(".y"))) %>%
+#   # adding column to be able to track if the height was measured or estimated by the model
+#   mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+#          # estimate missing heights
+#          H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
+
+
+ 
+# joining respective coefficients with function
+             # for x, y,a, b (can be whatever)
+f = function(x,y,a,b){
+  # do the following: if x is na, or x is smaller then y, then use a, if not use b 
+  answer <- ifelse(is.na(x)| x < y, a, b)
+  return(answer)}  
+
+  trees_total <- trees_total %>%
+    left_join(.,coeff_H_SP_plot %>% 
+                select(plot_ID, SP_code, R2, b0, b1, b2), 
+              by = c("plot_ID", "SP_code")) %>% 
+    # if R2 or the coefficients are NA use the respective columns of the more general model
+    left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+              by = "SP_code") %>% 
+  # this reffers to the function and meas: if R2 from coeff_H_SP_plot is NA or if 
+  # R2 from coeff_H_SP_plot is smaller then R2 from coeff_H_SP then use the coeff_H_SP values
+  # if not, keep the coeff_H_SP_plot values
+  mutate(R2 = f(R2.x, R2.y, R2.y, R2.x), 
+         b0 = f(R2.x, R2.y, b0.y, b0.x), 
+         b1 = f(R2.x, R2.y, b1.y, b1.x),
+         b2 = f(R2.x, R2.y, b2.y, b2.x)) %>% 
+    mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+           # estimate missing heights
+           H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
+    select(-c(ends_with(".x"), ends_with(".y")))
   
 
+
+
+
+
+  
 # ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
@@ -713,7 +753,7 @@ coeff_heights_lm <-  trees_total %>%
 
 # coefficents of non-linear height model 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-coeff_heights_nls <-  trees_total %>% 
+coeff_H_SP_plot <-  trees_total %>% 
   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
   filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
   #filter(DBH_cm <= 150) %>% 
@@ -728,11 +768,11 @@ coeff_heights_nls <-  trees_total %>%
   arrange(plot_ID, SP_code)
 
 # adding bias, rmse and rsqrd to the coefficent dataframe
-coeff_heights_nls <- left_join(trees_total %>% 
+coeff_H_SP_plot <- left_join(trees_total %>% 
                                  select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                                  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                                  group_by(plot_ID, SP_code) %>% 
-                                 filter(n() >= 3),coeff_heights_nls, by = c("plot_ID", "SP_code"))%>%
+                                 filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
   group_by(plot_ID, SP_code) %>% 
   summarise( b0 = mean(b0), 
@@ -754,11 +794,11 @@ coeff_heights_nls <- left_join(trees_total %>%
 # per species but over all plots: 
 
 # adding bias, rmse and rsqrd to the coefficent dataframe
-coeff_heights_nls_all <- left_join(trees_total %>% 
+coeff_H_SP <- left_join(trees_total %>% 
                                      select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                                      filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                                      group_by(SP_code) %>% 
-                                     filter(n() >= 3),coeff_heights_nls_all, by = c("SP_code"))%>%
+                                     filter(n() >= 3),coeff_H_SP, by = c("SP_code"))%>%
   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
   group_by(SP_code) %>% 
   summarise( b0 = mean(b0), 
@@ -789,18 +829,18 @@ coeff_heights_nls_all <- left_join(trees_total %>%
 # THIS ONE WORKS
 # checking if the code worked and the right columns were picked
 trees_total_1 <- left_join(trees_total,
-                           coeff_heights_nls %>% 
+                           coeff_H_SP_plot %>% 
                              select(plot_ID, SP_code, R2, b0, b1, b2), 
                            by = c("plot_ID", "SP_code")) %>% 
   # if R2 or the coefficients are NA use the more general model
-  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
+  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
             by = "SP_code") %>% 
   mutate(R2 = ifelse(is.na(R2.x), R2.y, R2.x), 
          b0 = ifelse(is.na(b0.x), b0.y, b0.x), 
          b1 = ifelse(is.na(b1.x), b1.y, b1.x), 
          b2 = ifelse(is.na(b2.x), b2.y, b2.x)) %>% 
   # if the R2 of the species and plot specific regressions is lower then the R2 of the regressions across plots, use the coefficients from more general models
-  left_join(., coeff_heights_nls_all %>% select(SP_code, R2, b0, b1, b2),
+  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
             by = "SP_code") %>% 
   mutate(R2 = ifelse(R2.x.x < R2.y.y, R2.y.y, R2.x.x), 
          b0 = ifelse(R2.x.x < R2.y.y, b0.y.y, b0.x.x), 
@@ -844,24 +884,24 @@ if (trees_total[c('plot_ID', 'SP_code')] %in%
 # via hested if statment
 # if the plot ID and SP code appear in the plot and species wise coefficient dataset, join the coefficients of models that were fitted plot- and species-wise
 # 1. CONDITION: if the merged R2 is lower then the R2 from the general model                            
-trees_total_3 <- if (trees_total$R2[trees_total$SP_code] < coeff_heights_nls_all$R2[coeff_heights_nls_all$SP_code]){
+trees_total_3 <- if (trees_total$R2[trees_total$SP_code] < coeff_H_SP$R2[coeff_H_SP$SP_code]){
   # 2. CONDITION : if the merged R2 is NA --> if there was no plot & species specific model
   if (is.na(trees_total$R2)){
     #  join the coefficients of a more general model, fitted per species across all plots
-    merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+    merge(trees_total, coeff_H_SP[, c("SP_code", "R2", "b0", "b1", "b2")],
           by = 'SP_code')
   } # else merge the coefficients and R squared of the plot $ species specific models
-}else merge(trees_total, coeff_heights_nls[, c("plot_ID", "SP_code", "R2", "b0", "b1", "b2")],
+}else merge(trees_total, coeff_H_SP_plot[, c("plot_ID", "SP_code", "R2", "b0", "b1", "b2")],
             by = c('plot_ID', 'SP_code')) 
 
 
 # if the R2 of the species- and plotwise models is lower then the species wise model accross all plots
-trees_total_4 <- if (coeff_heights_nls$R2 < coeff_heights_nls_all$R2) { 
+trees_total_4 <- if (coeff_H_SP_plot$R2 < coeff_H_SP$R2) { 
   # DO IF TRUE: merge coefficients form a more general model to the tree dataset
-  merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+  merge(trees_total, coeff_H_SP[, c("SP_code", "R2", "b0", "b1", "b2")],
         by = 'SP_code')
   
-}else merge(trees_total, coeff_heights_nls_all[, c("SP_code", "R2", "b0", "b1", "b2")],
+}else merge(trees_total, coeff_H_SP[, c("SP_code", "R2", "b0", "b1", "b2")],
             by = 'SP_code')
 # else join the coefficients of a more general model, fitted per species across all plots
 
@@ -917,7 +957,7 @@ trees_total_2 <- if (trees_total$R2 =='NA'){
 #                  coeff_nls_h_combined %>% filter(plot_ID != "all") %>% select("plot_ID", "SP_code", "b0", "b1", "b2"), 
 #                   by = c('plot_ID', 'SP_code')), 
 # if there is no R2 or the R2 is below 0.75 merge the coefficeints from the coeffcients per Sp across all plots dataset
-#        left_join(trees_total, coeff_heights_nls_all %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
+#        left_join(trees_total, coeff_H_SP %>% filter(plot_ID == "all") %>%  select("SP_code", "b0", "b1", "b2"),
 #                   by = "SP_code"))
 
 # ----- N.2. properly fit height model -----------------------------------------
