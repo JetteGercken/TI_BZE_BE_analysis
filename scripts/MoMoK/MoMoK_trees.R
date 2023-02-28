@@ -71,8 +71,15 @@ getwd()
 # ----- 1.1. import ------------------------------------------------------------
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
-trees_total <- read.delim(file = here("data/input/trees_MoMoK_total.csv"), sep = ";", dec = ",") %>% 
+trees_total <- read.delim(file = here("data/input/MoMoK/trees_MoMoK_total.csv"), sep = ";", dec = ",") %>% 
   select(-Bemerkung)
+# this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
+  # \\fswo01-ew\INSTITUT\a7forum\LEVEL I\BZE\Moormonitoring\Arbeitsanleitungen\MoMoK
+  # I´l use it to assign the latin names to the assessed speices to then use them in TapeR and BDAT 
+SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart.csv"), sep = ",", dec = ",")
+SP_names_M <- read.delim(file = here("data/input/MoMoK/SP_names.csv"), sep = ";", dec = ",")
+
+
 # ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                             "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
@@ -82,6 +89,9 @@ colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr",
 trees_total$C_layer <- as.numeric(trees_total$C_layer)
 #trees_total$Kraft <- as.numeric(trees_total$Kraft)
 trees_total$SP_code <- as.factor(trees_total$SP_code)
+colnames(SP_names_M) <- c("Nr_code", "Chr_code", "name", "bot_name", "Flora_EU", "IPC_For")
+colnames(SP_names) <- c("ID", "Chr_code", "name", "valid_since", "valid_until")
+
 
 # ----- 1.3. dealing with NAs ---------------------------------------------------
 # check for variabels with NAs
@@ -104,6 +114,46 @@ trees_total <- trees_total%>%
                             as.numeric(DBH_class)),    # else keep existing DBH class as numeric
          BA_m2 = ((DBH_cm/2)^2*pi)*0.0001,             # 0.0001 to change unit from cm2 to m2
          plot_A_ha = (12.62^2*pi)*0.0001)              # 0.0001 to change unit from m2 to hectar
+
+# ----- 1.4. joins -------------------------------------------------------------
+# ----- 1.4.1. species names <-> trees -----------------------------------------
+# assiging the correct latin name to the individual trees through SP_names dataset 
+# when trying to assign the correct latinn manes to the respective trees via their species code or species number 
+# it became evident that neither the abbreviations of the common species names, nor the species numbers correspond
+# further the species numbers are wronlgy assigned in the trees dataset
+# the most coherent or common variables appears to be the species common names abbrevations in the SP_names and trees_total dataset
+# though the character codes in the SP_names dataset are assessed in a mix of capital and not capital letters, 
+# while all abrevations of common species names in the trees_total dataset are all in capital lettres
+# thus, I´ll transform all the abrevations of common species names in the SP_names dataset into capital letters, 
+# to enable the join.
+
+# first I join all the species name related inforamtion together
+SP_names <- left_join(SP_names, SP_names_M, by= c("name", "Chr_code")) %>% 
+  # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
+  # there is species related information for Alnus rubra missing, so I am adding it manually
+  add_row(ID = "rer", 
+          Chr_code = "REr", 
+          name = "Rot-Erle", 
+          valid_since = NA, 
+          valid_until = NA, 
+          Nr_code = 511, # unsure about this, but that´s what is written in the trees dataset tho here the number 511 is used for multiple species
+          bot_name = "Alnus rubra", 
+          Flora_EU = NA, 
+          IPC_For = NA)  %>% 
+  # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
+  mutate(Chr_code_cap = toupper(Chr_code))
+
+# then I join the latin names into the tree dataset
+trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Chr_code_cap, Chr_code, bot_name), by = c("SP_code" = "Chr_code_cap"))
+
+# checking for species names that were net part of the species dataset
+trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
+# in case of this dataset it is only RER meaning "Rot Erle" which does not have a latin name assigned, 
+# so I´ll do it manually. but for later analysis this has to be automatised or the source of error
+# has to be removed when the raw data are created/ assessed
+
+
+
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
 # ----- 2.1. REGRESSION for missing tree heights ---------------------------------
@@ -141,6 +191,26 @@ coeff_heights_nls <-  trees_total %>%
              output = "table") %>%
   arrange(plot_ID, SP_code)
 
+# ----- 2.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
+# coefficents of non-linear height model 
+# https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
+coeff_heights_nls_all <-  trees_total %>% 
+  select(SP_code, H_m, DBH_cm, DBH_class) %>% 
+  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
+  #filter(DBH_cm <= 150) %>% 
+  group_by(SP_code) %>% 
+  # filter for plots where there is at least 3 heights measured for each species
+  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
+  filter(n() >= 3)%>%    
+  group_by(SP_code) %>%
+  nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+             mod_start = c(b0=23, b1=0.03, b2 =1.3), 
+             output = "table") %>%
+  arrange(SP_code)
+
+
+
+# ----- 2.1.3. combined coeffcient dataframe wth statistical indic ---------------------
 # biuilding one dataset with all coefficients, thse of the genearl model and those of the species and plot specific models
 coeff_nls_h_combined <- rbind(
   # this 1st left join is the height coefficients dataset per plot and species with the respective predictors
@@ -200,6 +270,9 @@ coeff_nls_h_combined <- rbind(
      mutate(plot_ID = as.factor("all")) %>% 
      select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)))
 
+
+
+# ----- 2.1.4. seprate dataframes for coefficients including statistical indicators --------
  # building separate dataframe for speicies and plot soecific models adding adding bias, rmse and rsqrd 
  coeff_heights_nls <- left_join(trees_total %>% 
                                   select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
@@ -223,24 +296,6 @@ coeff_nls_h_combined <- rbind(
               SStot = sum((H_m-mean_h)^2), 
               pseu_R2 = 1-(SSres/SStot), 
               diff_h = mean(H_m - H_est))
-
-
-# ----- 2.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
-# coefficents of non-linear height model 
-# https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
-coeff_heights_nls_all <-  trees_total %>% 
-  select(SP_code, H_m, DBH_cm, DBH_class) %>% 
-  filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
-  #filter(DBH_cm <= 150) %>% 
-  group_by(SP_code) %>% 
-  # filter for plots where there is at least 3 heights measured for each species
-  #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
-  filter(n() >= 3)%>%    
-  group_by(SP_code) %>%
-  nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
-             mod_start = c(b0=23, b1=0.03, b2 =1.3), 
-             output = "table") %>%
-  arrange(SP_code)
 
 # per species but over all plots: 
 #  # building separate dataframe for speicies soecific models adding adding bias, rmse and rsqrd 
@@ -270,8 +325,8 @@ coeff_heights_nls_all <-  trees_total %>%
    select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
 
-# ----- 2.1.3. visualization height regression -------------------------------------------------------------
-# ----- 2.1.3.1. visualization height regression by plot and species ---------------------------------------
+# ----- 2.1.5. visualization height regression -------------------------------------------------------------
+# ----- 2.1.5.1. visualization height regression by plot and species ---------------------------------------
 # nls: plot estimated heights against dbh by plot and species
 ggplot(data = (left_join(trees_total %>% 
             select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
@@ -325,7 +380,7 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
-# ----- 2.1.3.2. visualization height regression by species over all plot ------------------------------------
+# ----- 2.1.5.2. visualization height regression by species over all plot ------------------------------------
 ggplot(data = (left_join(trees_total %>% 
                            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
@@ -379,7 +434,7 @@ ggplot(data = (left_join(trees_total %>%
   theme(legend.position = "non")
 
 
-# ----- 2.1.3.2. analysing the quality of the models  ------------------------------
+# ----- 2.1.5.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
  # dataset including regression models for the height, I know that actually the 
  # DBH class is the better predictor 
@@ -395,7 +450,7 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
  
-# ----- 2.1.4. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
+# ----- 2.1.6. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
 # The issue is the following: if the R2 of the species per plot is really poor,
 # we need the coefficients of a more general model over all plots or plot groups to be joined
 # if the respective r2 of that modelis still to low, we want R to use an external/ different model
@@ -426,17 +481,25 @@ trees_total <- left_join(trees_total,
          b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x), 
          b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
   select(-c(ends_with(".x"), ends_with(".y"))) %>%
-  mutate(H_m = is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)
+  # adding column to be able to track if the height was measured or estimated by the model
+  mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+         # estimate missing heights
+         H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
   
-  
+
+# estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR  
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
+help("E_HDx_HmDm_HT.f")
+Dx <- trees_total$DBH_cm[is.na(trees_total$R2)]
+Hm <- trees_total$H_m[trees_total$H_method == 'samp']
+Dm <- trees_total$DBH_cm[trees_total$H_method == 'samp']
 
 
-  
-  
+TapeR::E_HDx_HmDm_HT.f()
 
-# ----- 2.2. Basal area & species composition --------------------------------------------------------
+
+# ----- 2.2. Plot & Species wise data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 trees_plot <- left_join((
   # dataset with BA per species
   trees_total %>%
@@ -455,7 +518,7 @@ trees_plot <- left_join((
                plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
      mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
   by=c("plot_ID", "plot_A_ha")) %>% 
-  select(- c(plot_A_ha, SP_BA_plot, tot_BA_plot)) %>%  # remove 
+  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove 
   # mutating BA proportion to trees_plot dataset 
   mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
 # joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
@@ -465,9 +528,6 @@ trees_plot <- left_join(trees_plot,
                           rename(., dom_SP = SP_code) %>% 
                           select(plot_ID, dom_SP), 
                         by = "plot_ID")
-
-
-
 
 
 

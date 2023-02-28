@@ -1,0 +1,13 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+f1,f1,sehr gering (<1 %),1989-01-01,
+f2,f2,gering (1 bis <2 %),1989-01-01,
+f3,f3,mittel (2 bis <5 %),1989-01-01,
+f4,f4,hoch (5 bis <10 %),1989-01-01,
+f5,f5,hoch (10 bis <30 %),1989-01-01,
+f6,f6,extrem hoch (30 bis <50 %),1989-01-01,
+f7,f7,überwiegend (50 bis <70 %),1989-01-01,
+f8,f8,vorherrschend (70 bis <90 %),1989-01-01,
+f9,f9,fast ausschließlich (>=90 %),1989-01-01,

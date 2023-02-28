@@ -1,0 +1,33 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,1989-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+0,Wiederholung bereits BZE I+II,Wiederholung (Aufnahmen bei BZE1 UND BZE2),2006-01-01,
+1,Wiederholung nur BZE II,"BZE-Punkt wurde bei BZE II, BZE III (aber nicht BZE I) beprobt",2022-01-01,
+3,Wiederholung nur BZE I,"BZE-Punkt wurde bei BZE I und BZE III beprobt, nicht bei BZE II",2022-01-01,
+10,Neuanlage,Neuanlage der aktuellen BZE ,1989-01-01,2009-01-01
+11,Erstaufforstung,Neuanlage: Erstaufforstung (Nichtwald oder Nichtholzboden bei BZE I/II),1989-01-01,
+12,Wiederaufforstung,Neuanlage: Wiederaufforstung,1989-01-01,
+13,Sukzession,Neuanlage: Sukzession (Nichtwald oder Nichtholzboden bei BZE1),1989-01-01,
+14,Rasterverschiebung1,Neuanlage: Rasterverschiebung,1989-01-01,
+15,Intensivierung,Neuanlage: Rasterumstellung (Intensivierung),1989-01-01,
+16,Aufnahme nicht möglich,Neuanlage: BZE-Punkt in vorheriger Inventur nicht gefunden / nicht beprobbar ,1989-01-01,
+17,Aufnahme übersehen,"Neuanlage: Punkt wurde bisher nicht aufgenommen, obwohl zur Waldfläche gehörend",1989-01-01,
+18,Aufnahme z.T. möglich,"aber eingeschränkte Aufnahme, nur teilweise Datenlieferung (z.B. keine Bodenbeprobung)",1989-01-01,2009-01-01
+19,Neu sonstiges,Neuanlage: Sonstiges,1989-01-01,
+20,Ausfall,Ausfall: BZE-Punkt Grund unbekannt ,1989-01-01,2009-01-01
+21,Waldumwandlung,Ausfall: Waldumwandlung (Nichtwald oder Nichtholzboden),1989-01-01,
+22,nicht gefunden,"Ausfall: BZE-Punkt nicht gefunden, deswegen Neuanlage",1989-01-01,
+23,nicht erreichbar,"Ausfall: Punkt nicht mehr erreichbar (z.B. Truppenübungsplatz; Moorrenaturierung, Waldbrand)",1989-01-01,
+24,keine Erlaubnis,Ausfall: keine Probenahmeerlaubnis,1989-01-01,
+25,Rasterverschiebung2,Ausfall: Rasterverschiebung,1989-01-01,
+26,Extensivierung,Ausfall: Rasterumstellung (Extensivierung/Netzweite geändert),1989-01-01,
+27,Bereinigung,Ausfall: Rasterüberprüfung (Punkt gehört nicht zum Rasternetz),1989-01-01,
+28,EPS,Ausfall: Eichenprozessionsspinner,2022-01-01,
+29,Gesundheitsgefahr,Ausfall: Gesundheitsgefahr (außer EPS),2022-01-01,
+30,Arbeitsschutz,Ausfall: Arbeitsschutz (ASP),2022-01-01,
+39,Ausfall sonstiges,Ausfall: sonstiges,2022-01-01,
+40,Error,Raus: Koordinaten- und/oder Punktnummern-Fehler (z.B. mehrfache gleiche Koordinatenpaare oder Nr.),1989-01-01,
+50,WZE-Punkt,WZE-Punkt aber kein BZE-Punkt,1989-01-01,
+60,Level2-Punkt,Level2-Punkt,1989-01-01,
+70,Sachsen-Projekt,Sachsen-Projekt 2011/2012 (Erik Grüneberg),1989-01-01,2022-01-01

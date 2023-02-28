@@ -1,0 +1,12 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
+1,Naturschutzgebiet,(NSG)Naturschutzgebiet geregelt im Bundesnaturschutzgesetz,2022-01-01,
+2,Biosphärenreservat,Biosphärenreservat ist von der UNESCO initiierte Modellregion,2022-01-01,
+3,Landschaftsschutzgebiet,(LSG/LS)  Gebietsschutzkategorie des Naturschutzrechts IUCN,2022-01-01,
+4,FFH-Fläche,"Fauna-Flora-Habitatrichtlinie und Vogelschutzrichtlinie - Schutzgebietssystem ""Natura 2000"" (europäisches Netz)",2022-01-01,
+5,Nationalpark,"Schutzgebiete, die umfangreiche Naturräume mitsamt den vorkommenden Arten und Ökosystemen langfristig schützen sollen  IUCN",2022-01-01,
+6,Truppenübungsplatz,TrÜbPl - größere staatseigene Landflächen zur militärischen Nutzung,2022-01-01,
+9,keinen Schutzstatus,keinen Schutzstatus,2022-01-01,
+99,unbekannt,unbekannt,2022-01-01,2022-01-01

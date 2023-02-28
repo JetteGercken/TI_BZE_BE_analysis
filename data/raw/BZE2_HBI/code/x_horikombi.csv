@@ -1,0 +1,15 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+keine,keine,keine Probe,2006-01-01,
+l,L,L-Lage,2006-01-01,2022-01-01
+of,Of,Of-Lage,2006-01-01,
+oh,Oh,Oh-Lage,2006-01-01,
+l+of,L+Of,Mischprobe aus L- und Of-Lage,2006-01-01,2022-01-01
+of+oh,Of+Oh,Mischprobe aus Of- und Oh-Lage,2006-01-01,
+l+of+oh,L+Of+Oh,"Mischprobe aus L-, Of- und Oh-Lage",2006-01-01,2022-01-01
+hsch,HSch,Hackschnitzel (nur bei Kalamitätsflächen),2022-01-01,
+ol,Ol,Ol-Lage (Horizont),2022-01-01,
+ol+of,Ol+Of,Ol- und Of-Lage,2022-01-01,
+ol+of+oh,Ol+Of+Oh,"Ol-, Of- und Oh-Lage",2022-01-01,

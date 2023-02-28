@@ -1,0 +1,7 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
+1,N_NW,390 Gon/ 350 Gon - Nord bei Boden bzw. NW bei Bestand,2022-01-01,
+2,O_NO,90 Gon/ 50 Gon - Ost bei Boden bzw. NO bei Bestand,2022-01-01,
+3,W_SW,290 Gon / 250 Gon -Westen bei Boden bzw. SW  bei Bestand,2022-01-01,

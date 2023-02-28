@@ -1,0 +1,12 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+bs,BS,Baumschicht,2006-01-01,2022-01-01
+ss,SS,Strauchschicht,2006-01-01,
+ks,KS,Krautschicht,2006-01-01,
+ms,MS,Moosschicht (egigäische Moose),2006-01-01,
+em,EM,Epiphytische Moose,2006-01-01,
+ef,EF,Epiphytische Flechten,2006-01-01,
+b1,B1,1. Baumschicht,2006-01-01,
+b2,B2,2. Baumschicht,2006-01-01,

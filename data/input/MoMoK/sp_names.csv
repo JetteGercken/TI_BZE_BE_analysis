@@ -1,0 +1,75 @@
+﻿Code;Kurzzeichen;Name;Botanischer Name;Flora Europaea;ICP Forests
+-9;;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;;;
+-1;;Merkmal nicht erhoben;;;
+132;FAh;Feldahorn;Acer campestre;95.001.003;1
+308;FrA;Französische Ahorn;Acer monspessulanum;95.001.013;2
+309;SbA;Schneeball-Ahorn;Acer opalus;95.001.008;3
+101;SAh;Spitz-Ahorn;Acer platanoides;95.001.001;4
+102;BAh;Berg-Ahorn;Acer pseudoplatanus;95.001.005;5
+100;Ah;Ahorn;Acer spp.;095.001.999.DL;215
+144;RKa;Rosskastanie;Aesculus hippocastanum;97.001.001;221
+104;SEr;Schwarz-Erle;Alnus glutinosa;34.002.002;7
+105;WEr;Grau-Erle;Alnus incana;34.002.004;8
+103;Er;Erle;Alnus spp.;34.002.999;216
+136;GEr;Gruenerle;Alnus viridis;34.002.001;9
+107;SBi;Sand-Birke;Betula pendula;34.001.001;10
+139;JBi;Japanbirke;Betula platyphylla var. Japonica;;99
+108;MBi;Moor-Birke;Betula pubescens;34.001.002;11
+106;Bi;Birke;Betula spp.;034.001.999.DL;212
+109;HBu;Hainbuche;Carpinus betulus;35.001.001;13
+110;EKa;Edel-Kastanie;Castanea sativa;36.003.001;15
+111;RBu;Rot-Buche;Fagus sylvatica;36.001.001;20
+112;GEs;Gewoehnliche Esche;Fraxinus exelsior;139.004.003;22
+142;Nu;Walnussbaum;Juglans regia;33.001.001;26
+154;Tu;Tulpenbaum;Liriodendron tulipifera;64.001.001;99
+157;WAp;Wildapfel;Malus sylvestris;80.027.003;220
+168;HPa;Hybrid Pappel;Populus hybrides;;33
+147;SPa;Schwarzpappel;Populus nigra;31.022.008;34
+114;Pa;Pappel;Populus spp.;031.002.999.DL;211
+126;As;Aspe/Zitterpappel;Populus tremula;31.002.004;35
+113;Kir;Vogel-Kirsche;Prunus avium;80.035.014;36
+152;FTk;Fruehbl. Traubenkirsche;Prunus padus;80.035.017;38
+153;STk;Spaetbl. Traubenkirsche;Prunus serotina;80.035.018;39
+311;KBi;Kulturbirne;Pyrus communis;80.026.013;40
+158;WBi;Wildbirne;Pyrus pyraster;80.026.004;99
+160;ZEi;Zerreiche;Quercus cerris;36.004.008;41
+116;TEi;Trauben-Eiche;Quercus petraea;36.004.011;48
+117;SEi;Stiel-Eiche;Quercus robur;36.004.014;51
+118;REi;Rot-Eiche;Quercus rubra;36.004.001;53
+119;Rob;Robinie;Robina pseudoacacia;81.030.001;56
+145;SWe;Salweide;Salix caprea;31.001.041;58
+120;Wei;Weide;Salix spp.;031.001.999.DL;62
+140;Me;Mehlbeere;Sorbus aria;80.028.005;63
+121;Vbe;Vogelbeere;Sorbus aucuparia;80.028.002;64
+148;Sp;Speierling;Sorbus domestica;80.028.001;65
+130;Els;Elsbeere;Sorbus torminalis;80.028.003;66
+123;WLi;Winter-Linde;Tilia cordata;105.001.005;68
+124;SLi;Sommer-Linde;Tilia platyphyllos;105.001.003;69
+122;Li;Linde;Tilia spp.;105.001.999.DL;210
+128;BUl;Bergulme;Ulmus glabra;37.001.001;70
+134;FLu;Flatterulme;Ulmus effusa;;71
+125;Ul;Ulme;Ulmus spp.;037.001.999.DL;213
+151;SuE;Sumpfeiche;Quercus palustris;36.004.002;99
+163;Ei;Eiche;Quercus robur x petraea;036.004.999.DL;98
+199;sLb;sonstige Laubbaeume;other deciduous tree;999.999.001.DL;99
+200;Ta;Tanne;Abies spp.;026.001.999.DL;219
+201;WTa;Weiß-Tanne;Abies alba;26.001.006;100
+202;KTa;Kuesten-Tanne;Abies grandis;26.001.002;103
+226;NTa;Nordmannstanne;Abies nordmanniana;26.001.005;104
+218;ETa;Edeltanne;Abies procera;26.001.001;106
+204;ELa;Europaeische Laerche;Larix decidua;26.005.002;116
+205;JLa;Japanische Laerche;Larix kaempferi;26.005.001;117
+203;Lae;Laerche;Larix spp.;026.005.999.DL;218
+207;GFi;Gewoehnliche Fichte;Picea abies;26.004.001;118
+213;KiB;Bankskiefer;Pinus banksiana;26.007.004;199
+239;ZKi;Zirbelkiefer;Pinus cembra;26.007.014;123
+214;BKi;Bergkiefer;Pinus mugo;26.007.008;128
+210;SKi;Schwarz-Kiefer;Pinus nigra;26.007.006;129
+208;SFi;Sitka-Fichte;Picea sitchensis;26.004.006;120
+235;Str;Strobe;Pinus strobus;26.007.018;133
+211;GKi;Gewoehnliche Kiefer;Pinus sylvestris;26.007.007;134
+212;Dgl;Douglasie;Pseudotsuga menziesii;26.002.001;136
+219;Eib;Eibe;Taxus baccata;29.001.001;137
+223;Le;Lebensbaum;Thuja spp.;;138
+220;HTa;Hemlocktanne;Tsuga spp.;;139
+299;sNd;sonstige Nadelbaeume;other conifer;999.999.002.DL;199

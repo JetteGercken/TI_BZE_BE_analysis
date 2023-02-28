@@ -1,0 +1,8 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
+i,I,geologische Schicht 1,2022-01-01,
+ii,II,geologische Schicht 2,2022-01-01,
+iii,III,geologische Schicht 3,2022-01-01,
+iv,IV,geologische Schicht 4,2022-01-01,

@@ -1,0 +1,21 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+ein,ein,Einzelkorngefüge,2006-01-01,
+kit,kit,"Kittgefüge, Hüllengefüge",2006-01-01,
+koh,koh,Kohärentgefüge,2006-01-01,
+ris,ris,Rissgefüge,2006-01-01,
+sau,sau,Säulengefüge,2006-01-01,
+shi,shi,Schichtgefüge,2006-01-01,
+kru,kru,Krümelgefüge,2006-01-01,
+sub,sub,Subpolyedergefüge,2006-01-01,
+pol,pol,Polyedergefüge,2006-01-01,
+pri,pri,Prismengefüge,2006-01-01,
+pla,pla,Plattengefüge,2006-01-01,
+fra,fra,Gefügefragment (allgemein),2006-01-01,
+rol,rol,Rollaggreate,2006-01-01,
+bro,bro,Bröckelgefüge,2006-01-01,
+klu,klu,Klumpengefüge,2006-01-01,
+gra,gra,Makrogrobgefüge,2022-01-01,2006-01-01
+gre,gre,Makrofeingefüge,2022-01-01,2006-01-01

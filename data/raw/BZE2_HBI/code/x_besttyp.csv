@@ -1,0 +1,18 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+1,Fi-Rein,Fichten(rein)bestand (>= 70 % Fichte),1989-01-01,
+2,Ki-Rein,Kiefern(rein)bestand (>= 70 % Kiefer),1989-01-01,
+3,sonst-Nd,sonstige Nadelbaumart (>= 70 % sonstiges Nadelholz),1989-01-01,
+4,Bu-Rein,Buchen(rein)bestand (>= 70 % Buche),1989-01-01,
+5,Ei-Rein,Eichen(rein)bestand (>= 70 % Eiche),1989-01-01,
+6,Nd-Lb-Misch,Laubholzreiche Nadelmischbestände (> 30 % Laubholz),1989-01-01,
+7,Lb-Nd-Misch,Nadelholzreiche Laubholzmischbestände (> 30 % Nadelholz),1989-01-01,
+8,sonst-Lb,sonstige Laubbaumart (>= 70 % sonstiges Laubholz),1989-01-01,
+9,Nb-Lb<30,Nadelholzmischbestand (< 30 % Laubholz),2022-01-01,
+10,Lb-NB<30,Laubholzmischbestand (< 30 % Nadelholz),2022-01-01,
+11,abgeleitet,wird aus den Einzelbaumdaten abgeleitet,2022-01-01,
+91,Lb,Laubbestand (nicht näher spezifizierbar),2006-01-01,2006-01-01
+92,Nb,Nadelbestand (nicht näher spezifizierbar),2006-01-01,2006-01-01
+99,Unbekannt,Unbekannter Bestandestyp,2022-01-01,

@@ -1,0 +1,13 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+1,keine Anzeichen von Zersetzung,keine Anzeichen von Zersetzung,2006-01-01,
+2,kaum Anzeichen von Zersetzung,"festes Holz, weniger als 10% haben Anzeichen von Zersetzung, Oberfläche fest",2006-01-01,
+3,geringe Anzeichen von Zersetzung,"geringe Zersetzung, 10%-25% des Holzes haben eine veränderte Oberflächenstruktur durch Zersetzung, herauszufinden durch kratzen mit einem scharfen Gegenstand",2006-01-01,
+4,Zersetzung 26%-75%,"Anzeichen von Zersetzung bei 26%-75%, Holz ist weich",2006-01-01,
+5,starke Zersetzung,"stark zersetzt, 76%-100% des Holzes sind weich",2006-01-01,
+10,frisch abgestorben,"frisch abgestorben, Rinde noch am Stamm",2006-01-01,2022-01-01
+20,beginnende Zersetzung,"beginnende Zersetzung, Rinde in Auflösung bisd fehlend, Holz hnoch beilfest, ber Kernfäule < 1/3 des Durchmessers",2006-01-01,2022-01-01
+30,fortgeschrittene Zersetzung,"fortgeschrittene Zerstzung, Splint weich, Kern nur noch teilweise beilfest, bei Kernfäule > 1/3 des Durchmessers",2006-01-01,2022-01-01
+40,stark vermodert,"Holz durchgehend weich, beim Betreten einbrechend, Umrisse aufgelöst",2006-01-01,2022-01-01

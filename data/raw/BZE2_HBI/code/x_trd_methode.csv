@@ -1,0 +1,16 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal wurde vergessen, nicht rekonstruierbar oder unbekannt.",2006-01-01,
+-2,nicht ausgeprägt,"Merkmal wurde erhoben, ist aber nicht ausgeprägt",2006-01-01,
+-1,nicht erhoben,keine Probenahme für TRD-Messung durchgeführt,2006-01-01,
+1,TRD aus BZE 1,Keine Probennahme; TRD aus BZE 1 übernommen,2006-01-01,
+2,TRD im Gelände geschätzt,Keine Probennahme; TRD Schätzwert im Gelände,2006-01-01,2022-01-01
+3,TRD aus Pedotransferfunktionen,Keine Probennahme; TRD aus Pedotransferfunktionen,2006-01-01,2022-01-01
+4,Stechzylinder,Stechzylinder,2006-01-01,
+5,Wurzelbohrer,Wurzelbohrer,2006-01-01,
+6,Rammkernsonde,Rammkernsonde,2006-01-01,
+7,Nmin-Bohrer,Nmin-Bohrer,2006-01-01,2022-01-01
+8,AMS Core Sampler mit Liner,AMS Core Sampler mit Liner,2006-01-01,2022-01-01
+9,Stechkappe Profilwand,Stechkappe (Profilwand),2006-01-01,
+10,Volumenersatzmethode,Volumenersatzmethode,2022-01-01,
+11,Thüringer Verfahren,Thüringer Verfahren,2022-01-01,
+12,Ministechzylinder,Ministechzylinder,2022-01-01,

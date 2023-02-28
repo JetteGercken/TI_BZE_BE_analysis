@@ -1,0 +1,10 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+fha,FHA,Probe von Horizonten des Auflagehumus (mit Stechrahmen an 8 Stellen entnommen),1989-01-01,
+fhg,FHG,Gesamtprobe eines Horizontes (mit Probenbohrer an 8 Stellen horizontbezogen entnommen),1989-01-01,2022-01-01
+pha,PHA,Probe von Horizonten des Auflagehumus am Profil (nicht BZE-Standard),1989-01-01,2022-01-01
+ftg,FTG,Mischprobe aus einer Tiefenstufe (mit Probenbohrer an acht Stellen u. ggf. zusätzlich am Profil nach Tiefenstufen entnommen),2022-01-01,2022-01-01
+fhs,FHS,"Horizontbezogene, volumengerechte Probe für die Bodenphysik (TRD)",2022-01-01,2022-01-01
+fts,FTS,"Tiefenstufenbezogene, volumengerechte Probe für die Bodenphysik (TRD)",2022-01-01,2022-01-01

@@ -1,0 +1,21 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+0,keine,keine bedeutsamen,2006-01-01,
+1,Emission,Stoffeinträge aus benachbarter Emissionsquelle ind. Großanlagen (u.a. Kalkwerk),2006-01-01,
+2,Wasserhaushalt,Einflüsse auf den Wasserhaushalt,2006-01-01,
+3,sonstige,"sonstige, sonst nicht genannte Einwirkungen",2006-01-01,
+11,Industrie,industrielle Großanlagen (u.a. Kalkwerk),2006-01-01,
+12,Massentierhaltung,Massentierhaltung im Stall (z.B. Hühnerfarm),2006-01-01,
+13,Verkehr,Verkehr (Straßen),2006-01-01,
+14,Freilandtierhaltung,bäuerliche Freilandtierhaltung,2006-01-01,
+15,Acker/Grünland,"Acker- und Grünlandbewirtschaftung (Kalkung, Düngung)",2006-01-01,
+16,Steinbrüche,Steinbrüche,2006-01-01,
+17,Eisenbahnlinien,Eisenbahnlinie,2006-01-01,
+18,Kraftwerk,Kraftwerk (Kohle),2022-01-01,
+21,Wassergewinnung,Wassergewinnung (u.a. Tiefbrunnen),2006-01-01,
+22,Gewässerregulierung,Gewässerregulierung (Flussbegradigung),2006-01-01,
+23,Miloration,Milorationsmaßnahmen (Entwässerung),2006-01-01,
+24,Großflughafen,Großflughafen,1989-01-01,2022-01-01
+25,Flugplatz,Flugplatz,1989-01-01,2008-01-01

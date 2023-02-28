@@ -1,0 +1,9 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+0,0,diesjährig - in der letzten Vegetationsperiode gebildet,2006-01-01,
++1,+1,vorjährig - in der vorletzten Vegetationsperiode gebildet,2006-01-01,
++2,+2,zweijährig - 2 Jahre vor der letzten Vegetationsperiode gebildet,2006-01-01,
++3,+3,dreijährig - 3 Jahre vor der letzten Vegetationsperiode gebildet,2006-01-01,
++4,+4,vierjährig - 4 Jahre vor der letzten Vegetationsperiode gebildet,2006-01-01,

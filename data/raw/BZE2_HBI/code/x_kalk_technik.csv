@@ -1,0 +1,10 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,2006-01-01
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+1,Hubschrauber,Luftausbringung (z.B. Hubschrauber),2006-01-01,
+2,Streugerät,Streuen,2006-01-01,
+3,Blasgerät,Verblasen,2006-01-01,
+4,von Hand,Handausbringung,2006-01-01,
+5,andere,andere Technik,2006-01-01,
+9,unbekannt,Technik unbekannt,2006-01-01,

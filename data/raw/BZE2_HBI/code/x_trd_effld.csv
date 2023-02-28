@@ -1,0 +1,10 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+ld0,Ld0,äußerst gering,2022-01-01,
+ld1,Ld1,"sehr gering (< 1,30)",2006-01-01,
+ld2,Ld2,"gering (1,30 bis < 1,55)",2006-01-01,
+ld3,Ld3,"mittel (1,55 bis < 1,80)",2006-01-01,
+ld4,Ld4,"hoch (1,80 bis < 2,05)",2006-01-01,
+ld5,Ld5,"sehr hoch (>= 2,05)",2006-01-01,

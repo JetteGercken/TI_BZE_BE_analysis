@@ -1,0 +1,7 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+0,nein,nein,2022-01-01,
+1,ja,ja,2022-01-01,
+2,entfällt,entfällt,2022-01-01,
+-9,nicht erhoben,missing,2022-01-01,
+-2,nicht ausgeprägt,nicht ausgeprägt,2022-01-01,
+-1,fehlt,nicht erhoben,2022-01-01,

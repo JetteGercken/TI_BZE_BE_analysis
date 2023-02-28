@@ -1,0 +1,25 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+1,Staatswald (Bund),Staatswald (Bund),1989-01-01,
+2,Staatswald (Land),Staatswald (Land),1989-01-01,
+3,Körperschaftswald,Körperschaftswald,1989-01-01,
+4,Privatwald,Privatwald,1989-01-01,
+5,Treuhandwald,Wald in Verwaltung der Treuhand,1989-01-01,
+6,Stiftungswald,Stiftungswald,1989-01-01,2022-01-01
+7,Klosterforst,Klosterforst / Kirchwald,1989-01-01,2022-01-01
+8,Kommunalwald,Kommunalwald,1989-01-01,2022-01-01
+9,unbekannt,unbekannte Eigentumsart,1989-01-01,2022-01-01
+30,Körperschaftswald-Gemeindewald,Gemeindewald,2022-01-01,
+31,Körperschaftswald-Kirchenwald,dem Körperschaftswald zugeordneter Kirchenwald,2022-01-01,
+32,Körperschaftswald-Gemeinschaftswald,dem Körperschaftswald zugeordneter Gemeinschaftswald,2022-01-01,
+33,Körperschaftswald-Genossenschaftswald,dem Körperschaftswald zugeordneter Genossenschaftswald,2022-01-01,
+34,Körperschaftswald-Alleineigentum oder alleiniger Trägerschaft des Landes, Körperschaftswald in Alleineigentum oder alleiniger Trägerschaft des Landes,2022-01-01,
+35,Körperschaftswald-Alleineigentum oder alleiniger Trägerschaft des Bundes,Körperschaftswald in Alleineigentum oder alleiniger Trägerschaft des Bundes,2022-01-01,
+40,Privatwald (im engeren Sinne),Privatwald (im engeren Sinne),2022-01-01,
+41,Privatwald-Kirchenwald,dem Privatwald zugeordneter Kirchenwald,2022-01-01,
+42,Privatwald-Gemeinschaftswald,dem Privatwald zugeordneter Gemeinschaftswald,2022-01-01,
+43,Privatwald-Genossenschaftswald,dem Privatwald zugeordneter Genossenschaftswald,2022-01-01,
+44,Privatwald-Alleineigentum oder alleiniger Trägerschaft des Landes,Privatwald in Alleineigentum oder alleiniger Trägerschaft des Landes,2022-01-01,
+45,Privatwald-Alleineigentum oder alleiniger Trägerschaft des Bundes,Privatwald in Alleineigentum oder alleiniger Trägerschaft des Bundes,2022-01-01,

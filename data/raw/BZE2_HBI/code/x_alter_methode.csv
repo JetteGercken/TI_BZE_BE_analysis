@@ -1,0 +1,10 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
+1,FE,Forsteinrichtung,1989-01-01,
+2,Quirle,Quirlzählung,1989-01-01,
+3,Stubben,Jahrringzählung an frischen Stubben,1989-01-01,
+4,Jahrringe,Jahringzählung an Bohrkern,1989-01-01,
+5,Schätzung,Schätzung,1989-01-01,
+6,Vorklärung,Angabe aus Vorklärung übernommen,1989-01-01,

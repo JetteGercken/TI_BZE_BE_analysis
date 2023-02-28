@@ -1,0 +1,13 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal wurde vergessen, nicht rekonstruierbar oder unbekannt. Obl: Fehler; Fak: Warnung.",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt z.B. aStreuart,1989-01-01,
+-1,nicht erhoben,Merkmal wurde nicht erhoben. Obl: Fehler; Fak: Warnung.,1989-01-01,
+v,V,Streuauflage,1989-01-01,
+vb,Vb,Blattstreu,1989-01-01,
+vn,Vn,Nadelstreu,1989-01-01,
+vg,Vg,Grasauflage,1989-01-01,
+vbg,Vbg,Blatt-/Grasstreugemisch,1989-01-01,
+vbn,Vbn,Blatt-/Nadelstreugemisch,1989-01-01,
+vgn,Vgn,Gras-/Nadelstreugemisch,1989-01-01,
+vw,Vw,Wurzelfilz,1989-01-01,
+vgbn,Vgbn,Gras- / Nadel- / Blattstreugemisch,1989-01-01,

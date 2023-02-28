@@ -1,0 +1,16 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,2006-01-01
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+0,keine,keine Bodenbearbeitung festgestellt / feststellbar,1989-01-01,
+1,bearbeitet,Bodenbearbeitung festgestellt,1989-01-01,2008-01-01
+11,gemulcht,gemulcht,1989-01-01,
+12,gegrubbert,gegrubbert,1989-01-01,
+13,Streifenkultur,Streifenkultur,1989-01-01,
+14,abgeschoben,abgeschoben (Entfernen der Humusauflage),1989-01-01,
+15,Vollumbruch,Vollumbruch,1989-01-01,
+16,Deck-/Mischkulturen,"Deck- oder Mischkulturen (z. B. Sanddeckverfahren, d.h. streifenweiser Auftrag einer 10–20 cm mächtigen Sanddecke aufMoorböden, Fehnkultur, Sandmischverfahren)",1989-01-01,
+17,Rabatten,Rabatten,1989-01-01,
+18,Rigolen,Rigolen (= mit Kies oder anderemdurchlässigem Material ausgefüllte Gräben zur Sammlung/Ableitungvon Wasser),1989-01-01,
+19,sonstige,sonstige Verfahren,1989-01-01,
+99,unbekannt,Verfahren unbekannt,1989-01-01,

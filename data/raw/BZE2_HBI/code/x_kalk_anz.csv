@@ -1,0 +1,16 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,2006-01-01
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+0,keine,(definitiv) keine Kalkung / Düngung seit BZE1,2006-01-01,
+1,1 Kalkung/Düngung,1 Kalkung / Düngung seit BZE1,2006-01-01,
+2,2 Kalkungen/Düngungen,2 Kalkungen / Düngungen seit BZE1,2006-01-01,
+3,3 Kalkungen/Düngungen,3 Kalkungen / Düngungen seit BZE1,2006-01-01,
+4,4 Kalkungen/Düngungen,4 Kalkungen / Düngungen seit BZE1,2006-01-01,
+5,5 Kalkungen/Düngungen,5 Kalkungen / Düngungen seit BZE1,2006-01-01,
+6,6 Kalkungen/Düngungen,6 Kalkungen / Düngungen seit BZE1,2006-01-01,
+7,7 Kalkungen/Düngungen,7 Kalkungen / Düngungen seit BZE1,2006-01-01,
+8,8 Kalkungen/Düngungen,8 Kalkungen / Düngungen seit BZE1,2006-01-01,
+9,9 Kalkungen/Düngungen,9 Kalkungen / Düngungen seit BZE1,2006-01-01,
+10,10 Kalkungen/Düngungen,10 oder mehr Kalkungen / Düngungen seit BZE1,2006-01-01,
+99,Anzahl unbekannt,"gekalkt/gedüngt, aber Anzahl bzw. Mengen nicht bekannt",2006-01-01,

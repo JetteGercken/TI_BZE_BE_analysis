@@ -1,0 +1,14 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+5,5,<5 cm,1989-01-01,
+10,10,<10 cm,1989-01-01,
+20,20,<20 cm,1989-01-01,1989-01-01
+30,30,<30 cm,1989-01-01,
+40,40,<40 cm,1989-01-01,1989-01-01
+60,60,< 60 cm,1989-01-01,
+80,80,<80 cm,1989-01-01,1989-01-01
+90,90,<90 cm,1989-01-01,
+140,140,<140 cm,1989-01-01,
+200,200,<200 cm,1989-01-01,

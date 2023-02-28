@@ -1,0 +1,7 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2022-01-01
+-1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
+1,durchgeführt,Aufnahme wurde erfolgreich durchgeführt,1989-01-01,
+2,"nicht moeglich, ohne Obj.","Aufnahme war nicht möglich, keine Objekte vorhanden",1989-01-01,
+3,"nicht moeglich, sonst.","Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)",1989-01-01,

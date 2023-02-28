@@ -1,0 +1,12 @@
+id,kurz,lang,gueltig_ab,gueltig_bis
+-9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
+-2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
+-1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
+c0,c0,carbonatfrei (0 Masse-%),2006-01-01,
+c1,c1,"sehr carbonatarm (< 0,5 Masse-%)",2006-01-01,
+c2,c2,"carbonatarm (0,5 bis < 2 Masse-%)",2006-01-01,
+c3,c3,carbonathaltig (2 bis < 10 Masse-%),2006-01-01,
+c4,c4,carbonatreich (10 bis < 25 Masse-%),2006-01-01,
+c5,c5,sehr carbonatreich (25 bis< 5 0 Masse-%),2006-01-01,
+c6,c6,extrem carbonatreich (50 bis < 75 Masse-%),2006-01-01,
+c7,c7,Carbonat (>= 75 Masse-%),2006-01-01,
