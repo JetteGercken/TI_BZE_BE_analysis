@@ -136,7 +136,7 @@ SP_names <- left_join(SP_names, SP_names_M, by= c("name", "Chr_code")) %>%
           name = "Rot-Erle", 
           valid_since = NA, 
           valid_until = NA, 
-          Nr_code = 511, # unsure about this, but that´s what is written in the trees dataset tho here the number 511 is used for multiple species
+          Nr_code = 28, # unsure about this, but that´s what is written in the trees dataset tho here the number 511 is used for multiple species
           bot_name = "Alnus rubra", 
           Flora_EU = NA, 
           IPC_For = NA)  %>% 
@@ -144,7 +144,7 @@ SP_names <- left_join(SP_names, SP_names_M, by= c("name", "Chr_code")) %>%
   mutate(Chr_code_cap = toupper(Chr_code))
 
 # then I join the latin names into the tree dataset
-trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Chr_code_cap, Chr_code, bot_name), by = c("SP_code" = "Chr_code_cap"))
+trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Nr_code, Chr_code_cap, Chr_code, bot_name), by = c("SP_code" = "Chr_code_cap"))
 
 # checking for species names that were net part of the species dataset
 trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
@@ -487,19 +487,80 @@ trees_total <- left_join(trees_total,
          H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
   
 
-# estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR  
+# ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
 help("E_HDx_HmDm_HT.f")
 Dx <- trees_total$DBH_cm[is.na(trees_total$R2)]
-Hm <- trees_total$H_m[trees_total$H_method == 'samp']
+Hm <- trees_total$DBH_h_cm[trees_total$H_method == 'samp']
 Dm <- trees_total$DBH_cm[trees_total$H_method == 'samp']
+mHt <- trees_total$H_m[is.na(trees_total$R2)]
 
 
-TapeR::E_HDx_HmDm_HT.f()
+# load example data
 
 
-# ----- 2.2. Plot & Species wise data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
+# prepare the data (could be defined in the function directly)
+Id = trees_total$t_ID [trees_total$H_method == 'samp']
+x = (trees_total$DBH_h_cm[trees_total$H_method == 'samp']/100)/trees_total$H_m[trees_total$H_method == 'samp']
+y = trees_total$DBH_cm[trees_total$H_method == 'samp']
+
+help("getHeight")
+getHeight()
+
+# load example data
+data(DxHx.df)
+
+# prepare the data (could be defined in the function directly)
+Id = DxHx.df[,"Id"]
+x = DxHx.df[,"Hx"]/DxHx.df[,"Ht"]#calculate relative heights
+y = DxHx.df[,"Dx"]
+# define the relative knot positions and order of splines
+# https://stackoverflow.com/questions/51064686/error-in-chol-defaultcxx-the-leading-minor-of-order-is-not-positive-definite
+# I changed the knots to much higher numbers because I kept receiving following error: 
+    # Error in chol.default((value + t(value))/2) : 
+    # the leading minor of order 1 is not positive definite
+knt_x = c(0.0, 0.1, 0.75, 1.0) # B-Spline knots: fix effects
+ord_x = 4 # ord = order (4 = cubic)
+knt_z = c(0.0, 0.1, 1.0); ord_z = 4 # B-Spline knots: rnd effects
+
+# fit the model
+taper.model.1 <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
+                               IdKOVb = "pdSymm", data = trees_total)
+taper.model.1
+
+TapeR::E_HDx_HmDm_HT.f(Dx, 
+                       Hm, 
+                       Dm,
+                       mHt,
+                       sHt = 0, 
+                       par.lme = taper.model$par.lme)
+
+# ----- 2.2.8. getting diameter at 1/3 of the tree height for biomass ----------
+
+#tree <- buildTree(tree = list(spp=1, D1=30, H=27)
+getSpeciesCode()
+
+spp <- getSpeciesCode(trees_total$bot_name, "short") 
+D1 <- as.numeric(trees_total$DBH_cm)
+H1 <- as.numeric(trees_total$DBH_h_cm) 
+H <- as.numeric(trees_total$H_m)
+
+tree <- as.data.frame(cbind(spp, D1, H1, H))
+help("buildTree")
+
+tree <- buildTree(tree)
+
+
+
+# ----- 2.3. Biomass -----------------------------------------------------------
+
+
+
+
+
+
+# ----- 2.4. Plot & Species wise data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 trees_plot <- left_join((
   # dataset with BA per species
   trees_total %>%
