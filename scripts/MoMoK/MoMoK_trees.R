@@ -76,8 +76,14 @@ trees_total <- read.delim(file = here("data/input/MoMoK/trees_MoMoK_total.csv"),
 # this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
   # \\fswo01-ew\INSTITUT\a7forum\LEVEL I\BZE\Moormonitoring\Arbeitsanleitungen\MoMoK
   # I´l use it to assign the latin names to the assessed speices to then use them in TapeR and BDAT 
-SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart.csv"), sep = ",", dec = ",")
-SP_names_M <- read.delim(file = here("data/input/MoMoK/SP_names.csv"), sep = ";", dec = ",")
+SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart_neu.csv"), sep = ";", dec = ",") %>% 
+  select(- c(anmerkung, beginn, ende)) %>% 
+ # creating 
+   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
+  unite(bot_name, genus, species, sep = " ", remove = FALSE) %>% 
+  # the err codes are joined too, which i don´t want, so I´ll 
+  mutate(bot_name = ifelse(bot_name == "-2 -2", -2, bot_name))
+#SP_names_M <- read.delim(file = here("data/input/MoMoK/SP_names.csv"), sep = ";", dec = ",")
 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
@@ -89,16 +95,30 @@ colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr",
 trees_total$C_layer <- as.numeric(trees_total$C_layer)
 #trees_total$Kraft <- as.numeric(trees_total$Kraft)
 trees_total$SP_code <- as.factor(trees_total$SP_code)
-colnames(SP_names_M) <- c("Nr_code", "Chr_code", "name", "bot_name", "Flora_EU", "IPC_For")
-colnames(SP_names) <- c("ID", "Chr_code", "name", "valid_since", "valid_until")
+colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
+                          "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
+                          "BZE_al")
 
 
-# ----- 1.3. dealing with NAs ---------------------------------------------------
+# ---- 1.3 functions ------------------------------------------------------
+# area of a circle
+c_A = function(x){
+  circle_area <- x^2*pi
+  return(circle_area)}
+
+# height coefficient selection
+# this function is used to select the coefficients of the height models depending on the R2
+# for x, y,a, b (can be whatever)
+f = function(x,y,a,b){
+  # do the following: if x is na, or x is smaller then y, then use a, if not use b 
+  answer <- ifelse(is.na(x)| x < y, a, b)
+  return(answer)}
+
+# ----- 1.4. dealing with NAs ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
 
-# ----- 1.3.1 assign DBH class to trees where DBH_class == 'NA' -----------------
-
+# ----- 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
 labs <- c(seq(5, 55, by = 5)) 
 # replace missing DBH_class values with labels according to DBH_cm
@@ -113,10 +133,11 @@ trees_total <- trees_total%>%
                                 right = FALSE),
                             as.numeric(DBH_class)),    # else keep existing DBH class as numeric
          BA_m2 = c_A(DBH_cm/2)*0.0001,             # 0.0001 to change unit from cm2 to m2
-         plot_A_ha = c_A(12.62)*0.0001)              # 0.0001 to change unit from m2 to hectar
+         plot_A_ha = c_A(12.62)*0.0001) %>% # 0.0001 to change unit from m2 to hectar
+  unite(ID, plot_ID, t_ID, sep = "", remove = FALSE)
 
-# ----- 1.4. joins -------------------------------------------------------------
-# ----- 1.4.1. species names <-> trees -----------------------------------------
+# ----- 1.5. joins -------------------------------------------------------------
+# ----- 1.5.1. species names <-> trees -----------------------------------------
 # assiging the correct latin name to the individual trees through SP_names dataset 
 # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
 # it became evident that neither the abbreviations of the common species names, nor the species numbers correspond
@@ -128,23 +149,35 @@ trees_total <- trees_total%>%
 # to enable the join.
 
 # first I join all the species name related inforamtion together
-SP_names <- left_join(SP_names, SP_names_M, by= c("name", "Chr_code")) %>% 
+SP_names <- SP_names %>% 
   # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
   # there is species related information for Alnus rubra missing, so I am adding it manually
-  add_row(ID = "rer", 
-          Chr_code = "REr", 
-          name = "Rot-Erle", 
-          valid_since = NA, 
-          valid_until = NA, 
-          Nr_code = 28, # unsure about this, but that´s what is written in the trees dataset tho here the number 511 is used for multiple species
-          bot_name = "Alnus rubra", 
+  # which is in-official, which is why there are no information on the IPC forest etc.
+  add_row(Nr_code = NA, 
+          Chr_code_ger = "REr",
+          name = "Rot-Erle",
+          bot_name = "Alnus rubra",
+          bot_genus = "Alnus", 
+          bot_species = "rubra",
           Flora_EU = NA, 
-          IPC_For = NA)  %>% 
+          LH_NH = "LH", 
+          IPC = NA,
+          WZE = NA, 
+          BWI = "RER", # this is in-official 
+          BZE_al = NA)  %>%
+  # because the number codes for the species in the trees_total dataset don´t correspond at 
+  # all with the SP_names codes, I have to use the German abbreviations. 
+  # But because those are in capital and non-capital letters I have to create a column where all of 
+  # them are in capital letters, which then corresponds with how the species abbreviations were 
+  # documented for the MoMoK Bestandesaufnahme
+  # it seems, howeverm that there´s also a column in the new, most recent species names dataframe I got, 
+  # which will probably allow to join the datasets just via the codes listed there as they are already in
+  # in capital letters
   # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
-  mutate(Chr_code_cap = toupper(Chr_code))
+  mutate(Chr_ger_cap = toupper(Chr_code_ger))
 
 # then I join the latin names into the tree dataset
-trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Nr_code, Chr_code_cap, Chr_code, bot_name), by = c("SP_code" = "Chr_code_cap"))
+trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name), by = c("SP_code" = "Chr_ger_cap"))
 
 # checking for species names that were net part of the species dataset
 trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
@@ -153,13 +186,7 @@ trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group
 # has to be removed when the raw data are created/ assessed
 
 
-# ---- 1.5 functions ------------------------------------------------------
 
-# circle area
-c_A = function(x){
-  circle_area <- x^2*pi
-  return(circle_area)
-}
 
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
@@ -440,6 +467,21 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
+ggplot(data = (trees_total), 
+       aes(x = DBH_cm, y = H_m, color = H_method))+
+  geom_point()+
+  #geom_line(method = "lm")+
+  #geom_smooth(method = "nls", se=TRUE)+
+  facet_wrap(plot_ID~SP_code)+
+  xlab("DBH") +
+  ylab("height [m]")+
+  ggtitle("height estimated via nls vs. sampled height per plot and species over diamater")+
+  theme_light()+
+  theme(legend.position = "bottom")
+
+
+
+
 
 # ----- 2.1.5.2. analysing the quality of the models  ------------------------------
  # from my previous attempts to fit and validate species specific but also total 
@@ -495,13 +537,7 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
  
-# joining respective coefficients with function
-             # for x, y,a, b (can be whatever)
-f = function(x,y,a,b){
-  # do the following: if x is na, or x is smaller then y, then use a, if not use b 
-  answer <- ifelse(is.na(x)| x < y, a, b)
-  return(answer)}  
-
+# joining respective coefficients with function (1.3.)
   trees_total <- trees_total %>%
     left_join(.,coeff_H_SP_plot %>% 
                 select(plot_ID, SP_code, R2, b0, b1, b2), 
@@ -530,20 +566,31 @@ f = function(x,y,a,b){
 # ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
-help("E_HDx_HmDm_HT.f")
-Dx <- trees_total$DBH_cm[is.na(trees_total$R2)]
-Hm <- trees_total$DBH_h_cm[trees_total$H_method == 'samp']
-Dm <- trees_total$DBH_cm[trees_total$H_method == 'samp']
-mHt <- trees_total$H_m[is.na(trees_total$R2)]
 
 
-# load example data
+# ----- 2.1.7.1.TapeR_FIT_LME.f ----------------------------------------------------------
+# aparently I first have to fit the taper curves in general via TapeR_FIT_LME.f
+# input variabels are: 
+  # Id,
+  # x (heights measured), y (respective diameters measured), 
+  # knt_x (knots position of fixed effects), ord_x (oder of fixed effefcts 4 = cubic),
+  # knt_z (knots position of random effects), ord_z (oder of random effefcts 4 = cubic),
+  # IdKOVb = "pdSymm", control = list()
+
+Id = (trees_total[,"ID"][trees_total$H_method == 'samp'])
+x =  (((trees_total[,"DBH_h_cm"][trees_total$H_method == 'samp'])/100)/(trees_total[,"H_m"][trees_total$H_method == 'samp']))
+y = (trees_total[,"DBH_cm"][trees_total$H_method == 'samp'])
+#na.f <-  function(z) if(is.na(z)) {z=FALSE} else {if(z) {z}}
 
 
-# prepare the data (could be defined in the function directly)
-Id = trees_total$t_ID [trees_total$H_method == 'samp']
-x = (trees_total$DBH_h_cm[trees_total$H_method == 'samp']/100)/trees_total$H_m[trees_total$H_method == 'samp']
-y = trees_total$DBH_cm[trees_total$H_method == 'samp']
+
+knt_x = c(0.0, 0.1, 0.75, 1.0); ord_x = 4 # B-Spline knots: fix effects; order (cubic = 4)
+knt_z = c(0.0, 0.1 ,1.0); ord_z = 4 # B-Spline knots: rnd effects
+# fit the model
+taper.model <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
+                               IdKOVb = "pdSymm")
+
+
 
 help("getHeight")
 getHeight()
