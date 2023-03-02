@@ -32,6 +32,11 @@
 # install.packages("forestmangr")
 # install.packages("rBDAT")
 # install.packages("TapeR")
+install.packages("pkgbuild")
+if (! require("remotes")) 
+  install.packages("remotes")
+remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+
 
 # ----- 0.2. library   ---------------------------------------------------------
 # datamanagement
@@ -62,6 +67,7 @@ library("AICcmodavg")
 library("forestmangr")
 library("rBDAT")
 library("TapeR")
+library("vochr/TapeS")
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
