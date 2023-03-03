@@ -158,6 +158,7 @@ h_curtis <- function(spec, d) {
   return(b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)
 }
 
+
 # self made nls models for heights per species across all plots
 h_nls_SP_aP <- function(spec, d){
   # https://statisticsglobe.com/convert-data-frame-column-to-a-vector-in-r
@@ -485,125 +486,7 @@ coeff_nls_h_combined <- rbind(
    select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
 
-# ----- 2.1.5. visualization height regression -------------------------------------------------------------
-# ----- 2.1.5.1. visualization height regression by plot and species ---------------------------------------
-# nls: plot estimated heights against dbh by plot and species
-ggplot(data = (left_join(trees_total %>% 
-            select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-            filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-            group_by(plot_ID, SP_code) %>% 
-              #filter(DBH_cm <= 150) %>% 
-            filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
-  mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
-  aes(x = DBH_cm, y = H_est, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(SP_code~plot_ID)+
-  xlab("diameter ") +
-  ylab("estimated height [m]")+
-  #ylim(0, 50)+
-  ggtitle("height estimated vs. diameter")+
-  theme_light()+
-  theme(legend.position = "non")
 
-# nls: plot sampled heights against DBH
-ggplot(data = trees_total %>% 
-                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-                           group_by(plot_ID, SP_code) %>% 
-                           filter(n() >= 3),
-       aes(x = DBH_cm, y = H_m, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(SP_code~plot_ID)+
-  xlab("diameter ") +
-  ylab("sampled height [m]")+
-  ylim(0, 50)+
-  ggtitle("height sampled vs. diameter")+
-  theme_light()+
-  theme(legend.position = "bottom")
-
-# nls: plot estimated vs. sampled heights 
-ggplot(data = (left_join(trees_total %>% 
-                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-                           group_by(plot_ID, SP_code) %>% 
-                           filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
-                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
-       aes(x = H_m, y = H_est, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "lm", se=TRUE)+
-  facet_wrap(plot_ID ~ SP_code)+
-  xlab("sampled height [m]") +
-  ylab("estimated height nls model")+
-  ggtitle("height estimated via nls vs. sampled height")+
-  theme_light()+
-  theme(legend.position = "non")
-
-# ----- 2.1.5.2. visualization height regression by species over all plot ------------------------------------
-ggplot(data = (left_join(trees_total %>% 
-                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-                           group_by(plot_ID, SP_code) %>% 
-                           #filter(DBH_cm <= 150) %>% 
-                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
-                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
-       aes(x = DBH_cm, y = H_est, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(~SP_code)+
-  xlab("diameter ") +
-  ylab("estimated height [m]")+
-  ylim(0, 50)+
-  ggtitle("height estimated vs. diameter")+
-  theme_light()+
-  theme(legend.position = "non")
-
-# nls: plot sampled heights against DBH
-ggplot(data = trees_total %>% 
-         select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-         filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-         group_by(SP_code) %>% 
-         filter(n() >= 3),
-       aes(x = DBH_cm, y = H_m, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(~SP_code)+
-  xlab("diameter ") +
-  ylab("sampled height [m]")+
-  ylim(0, 50)+
-  ggtitle("height sampled vs. diameter")+
-  theme_light()+
-  theme(legend.position = "bottom")
-
-# nls: plot estimated vs. sampled heights 
-ggplot(data = (left_join(trees_total %>% 
-                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
-                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
-                           group_by(plot_ID, SP_code) %>% 
-                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
-                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
-       aes(x = H_m, y = H_est, color = SP_code))+
-  geom_point()+
-  geom_smooth(method = "lm", se=TRUE)+
-  facet_wrap(~SP_code)+
-  xlab("sampled height [m]") +
-  ylab("estimated height nls model")+
-  ggtitle("height estimated via nls vs. sampled height")+
-  theme_light()+
-  theme(legend.position = "non")
-
-ggplot(data = trees_total, 
-       aes(x = DBH_cm, y = H_m, color = H_method))+
-  geom_point()+
-  #geom_line(method = "lm")+
-  #geom_smooth(method = "nls", se=TRUE)+
-  facet_wrap(plot_ID~SP_code)+
-  xlab("DBH") +
-  ylab("height [m]")+
-  ggtitle("height estimated via nls vs. sampled height per plot and species over diamater")+
-  theme_light()+
-  theme(legend.position = "bottom")
 
 
 
@@ -660,8 +543,21 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
            H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
     select(-c(ends_with(".x"), ends_with(".y")))
   
-
-
+# first round: if there is no R2 through the plot & species wise coeffiencts 
+# calcualte heights after joining coefficients from coeff_H_SP_plot in, rows without a model should remain NA 
+mutate(H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
+  # join second coeffcient dataset in 
+  left_join(., coeff_H_SP %>% select(SP_code, R2),
+            by = "SP_code") %>%
+  # if the R2from coeff_nls_H_SP is bigger then the R2 from Coeff_SP and
+  # this R2 is bigger then 0.75 or if there´s simply no value for r2 
+  # calculate hm with the h_nls_SPaP function
+  # H_m should remain empty for r2s from the second coeff dataframe where r2 <75
+  mutate(H_m = ifelse(R2.x < R2.y & is.na(H_m) | is.na(R2.x) & is.na(H_m), h_nls_SP_aP(SP_code, DBH_cm), H_m),
+         R2 = ifelse(R2.x < R2.y | is.na(R2.x), R2.y, R2.x) %>% 
+  # if the remaining r2s are 0.75 or R2 is na and H_M is na apply sloboda
+  mutate(H_m = ifelse(R2 < 0.75 | is.na(H_m), ehk_sloboda(BWI_SP_gr, mean_dbh, d_g, h_g)))
+  
 
   
 # ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
@@ -830,7 +726,126 @@ trees_plot <- left_join(trees_plot,
 
 
 
+# ------ 3. VISULAIZATION -------------------------------------------------
+# ----- 3.1.5. visualization height regression -------------------------------------------------------------
+# ----- 3.1.5.1. visualization height regression by plot and species ---------------------------------------
+# nls: plot estimated heights against dbh by plot and species
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           #filter(DBH_cm <= 150) %>% 
+                           filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = DBH_cm, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(SP_code~plot_ID)+
+  xlab("diameter ") +
+  ylab("estimated height [m]")+
+  #ylim(0, 50)+
+  ggtitle("height estimated vs. diameter")+
+  theme_light()+
+  theme(legend.position = "non")
 
+# nls: plot sampled heights against DBH
+ggplot(data = trees_total %>% 
+         select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+         filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+         group_by(plot_ID, SP_code) %>% 
+         filter(n() >= 3),
+       aes(x = DBH_cm, y = H_m, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(SP_code~plot_ID)+
+  xlab("diameter ") +
+  ylab("sampled height [m]")+
+  ylim(0, 50)+
+  ggtitle("height sampled vs. diameter")+
+  theme_light()+
+  theme(legend.position = "bottom")
+
+# nls: plot estimated vs. sampled heights 
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           filter(n() >= 3),coeff_H_SP_plot, by = c("plot_ID", "SP_code"))%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = H_m, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "lm", se=TRUE)+
+  facet_wrap(plot_ID ~ SP_code)+
+  xlab("sampled height [m]") +
+  ylab("estimated height nls model")+
+  ggtitle("height estimated via nls vs. sampled height")+
+  theme_light()+
+  theme(legend.position = "non")
+
+# ----- 2.1.5.2. visualization height regression by species over all plot ------------------------------------
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           #filter(DBH_cm <= 150) %>% 
+                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = DBH_cm, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("diameter ") +
+  ylab("estimated height [m]")+
+  ylim(0, 50)+
+  ggtitle("height estimated vs. diameter")+
+  theme_light()+
+  theme(legend.position = "non")
+
+# nls: plot sampled heights against DBH
+ggplot(data = trees_total %>% 
+         select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+         filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+         group_by(SP_code) %>% 
+         filter(n() >= 3),
+       aes(x = DBH_cm, y = H_m, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("diameter ") +
+  ylab("sampled height [m]")+
+  ylim(0, 50)+
+  ggtitle("height sampled vs. diameter")+
+  theme_light()+
+  theme(legend.position = "bottom")
+
+# nls: plot estimated vs. sampled heights 
+ggplot(data = (left_join(trees_total %>% 
+                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
+                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
+                           group_by(plot_ID, SP_code) %>% 
+                           filter(n() >= 3),coeff_H_SP, by = "SP_code")%>%
+                 mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2)), 
+       aes(x = H_m, y = H_est, color = SP_code))+
+  geom_point()+
+  geom_smooth(method = "lm", se=TRUE)+
+  facet_wrap(~SP_code)+
+  xlab("sampled height [m]") +
+  ylab("estimated height nls model")+
+  ggtitle("height estimated via nls vs. sampled height")+
+  theme_light()+
+  theme(legend.position = "non")
+
+ggplot(data = trees_total, 
+       aes(x = DBH_cm, y = H_m, color = H_method))+
+  geom_point()+
+  #geom_line(method = "lm")+
+  #geom_smooth(method = "nls", se=TRUE)+
+  facet_wrap(plot_ID~SP_code)+
+  xlab("DBH") +
+  ylab("height [m]")+
+  ggtitle("height estimated via nls vs. sampled height per plot and species over diamater")+
+  theme_light()+
+  theme(legend.position = "bottom")
 
 
 
