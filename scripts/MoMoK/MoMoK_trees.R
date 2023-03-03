@@ -6,33 +6,33 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-# install.packages("usethis")s
-# install.packages("here")
-# install.packages("readr")
-# install.packages("tidyverse")
-# install.packages("tibble")
-# install.packages("dplyr")
-# install.packages("data.table")
-# install.packages("broom")
-# install.packages("purrr")
+ install.packages("usethis")
+ install.packages("here")
+ install.packages("readr")
+ install.packages("tidyverse")
+ install.packages("tibble")
+ install.packages("dplyr")
+ install.packages("data.table")
+ install.packages("broom")
+ install.packages("purrr")
 ## laTex
-# install.packages("stargazer")  #for compatability with Latex
-# install.packages("tikzDevice") #for compatability with Latex
-## visualisation
-# install.packages("ggthemes")
-# install.packages("ggplot2")
-# install.packages("reshape2") #for multiple y values
-# install.packages("ggforce") #for zooming in parts of the plot
-# options(tz="CA")
-# install.packages("reshape2")
-## analysis
-# install.packages("corrplot")
-# install.packages("AICcmodavg")
-# # forest related
-# install.packages("forestmangr")
-# install.packages("rBDAT")
-# install.packages("TapeR")
-install.packages("pkgbuild")
+ install.packages("stargazer")  #for compatability with Latex
+ install.packages("tikzDevice") #for compatability with Latex
+# visualisation
+ install.packages("ggthemes")
+ install.packages("ggplot2")
+ install.packages("reshape2") #for multiple y values
+ install.packages("ggforce") #for zooming in parts of the plot
+ options(tz="CA")
+ install.packages("reshape2")
+# analysis
+ install.packages("corrplot")
+ install.packages("AICcmodavg")
+ # forest related
+ install.packages("forestmangr")
+ install.packages("rBDAT")
+ install.packages("TapeR")
+ install.packages("pkgbuild")
 if (! require("remotes")) 
   install.packages("remotes")
 remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
@@ -67,7 +67,8 @@ library("AICcmodavg")
 library("forestmangr")
 library("rBDAT")
 library("TapeR")
-library("vochr/TapeS")
+library("TapeS")
+require(TapeS)
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -90,6 +91,8 @@ SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart_neu.csv"), sep = 
   # the err codes are joined too, which i don´t want, so I´ll 
   mutate(bot_name = ifelse(bot_name == "-2 -2", -2, bot_name))
 #SP_names_M <- read.delim(file = here("data/input/MoMoK/SP_names.csv"), sep = ";", dec = ",")
+SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
+SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
@@ -140,7 +143,7 @@ trees_total <- trees_total%>%
                             as.numeric(DBH_class)),    # else keep existing DBH class as numeric
          BA_m2 = c_A(DBH_cm/2)*0.0001,             # 0.0001 to change unit from cm2 to m2
          plot_A_ha = c_A(12.62)*0.0001) %>% # 0.0001 to change unit from m2 to hectar
-  unite(ID, plot_ID, t_ID, sep = "", remove = FALSE)
+  unite(ID_pt, plot_ID, t_ID, sep = "", remove = FALSE)
 
 # ----- 1.5. joins -------------------------------------------------------------
 # ----- 1.5.1. species names <-> trees -----------------------------------------
@@ -148,49 +151,122 @@ trees_total <- trees_total%>%
 # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
 # it became evident that neither the abbreviations of the common species names, nor the species numbers correspond
 # further the species numbers are wronlgy assigned in the trees dataset
-# the most coherent or common variables appears to be the species common names abbrevations in the SP_names and trees_total dataset
+# the most coherent or common variables appears to be the species common names abbreviations in the SP_names and trees_total dataset
 # though the character codes in the SP_names dataset are assessed in a mix of capital and not capital letters, 
-# while all abrevations of common species names in the trees_total dataset are all in capital lettres
-# thus, I´ll transform all the abrevations of common species names in the SP_names dataset into capital letters, 
+# while all abbreviations of common species names in the trees_total dataset are all in capital letters
+# thus, I´ll transform all the abbreviations of common species names in the SP_names dataset into capital letters, 
 # to enable the join.
 
-# first I join all the species name related inforamtion together
-SP_names <- SP_names %>% 
-  # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
-  # there is species related information for Alnus rubra missing, so I am adding it manually
-  # which is in-official, which is why there are no information on the IPC forest etc.
-  add_row(Nr_code = NA, 
-          Chr_code_ger = "REr",
-          name = "Rot-Erle",
-          bot_name = "Alnus rubra",
-          bot_genus = "Alnus", 
-          bot_species = "rubra",
-          Flora_EU = NA, 
-          LH_NH = "LH", 
-          IPC = NA,
-          WZE = NA, 
-          BWI = "RER", # this is in-official 
-          BZE_al = NA)  %>%
-  # because the number codes for the species in the trees_total dataset don´t correspond at 
-  # all with the SP_names codes, I have to use the German abbreviations. 
-  # But because those are in capital and non-capital letters I have to create a column where all of 
-  # them are in capital letters, which then corresponds with how the species abbreviations were 
-  # documented for the MoMoK Bestandesaufnahme
-  # it seems, howeverm that there´s also a column in the new, most recent species names dataframe I got, 
-  # which will probably allow to join the datasets just via the codes listed there as they are already in
-  # in capital letters
-  # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
-  mutate(Chr_ger_cap = toupper(Chr_code_ger))
-
-# then I join the latin names into the tree dataset
-trees_total <- left_join(trees_total, SP_names %>% dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name), by = c("SP_code" = "Chr_ger_cap"))
+# join the botanic names & german abrrevations into the tree dataset
+trees_total <- left_join(trees_total, 
+                         # joining species related info together 
+                         SP_names %>% 
+                           # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
+                           # there is species related information for Alnus rubra missing, so I am adding it manually
+                           # which is in-official, which is why there are no information on the IPC forest etc.
+                           add_row(Nr_code = NA, 
+                                   Chr_code_ger = "REr",
+                                   name = "Rot-Erle",
+                                   bot_name = "Alnus rubra",
+                                   bot_genus = "Alnus", 
+                                   bot_species = "rubra",
+                                   Flora_EU = NA, 
+                                   LH_NH = "LH", 
+                                   IPC = NA,
+                                   WZE = NA, 
+                                   BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
+                                   BZE_al = NA)  %>%
+                           # because the number codes for the species in the trees_total dataset don´t correspond at 
+                           # all with the SP_names codes, I have to use the German abbreviations. 
+                           # But because those are in capital and non-capital letters I have to create a column where all of 
+                           # them are in capital letters, which then corresponds with how the species abbreviations were 
+                           # documented for the MoMoK Bestandesaufnahme
+                           # it seems, however that there´s also a column in the new, most recent species names dataframe of BZE, 
+                           # which will probably allow to join the datasets just via the codes listed there as they are already in
+                           # in capital letters
+                           # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
+                           mutate(Chr_ger_cap = toupper(Chr_code_ger), 
+                                  # creating a column in SP_names that can be common with TapeS species
+                                  # the changes are carried out according to the anti join between trees_total & TapeS species, not
+                                  # the join between SP_codes from BZE and TapeSP, this has to be done later
+                                  tpS_com_ID = ifelse(BWI == "KI", 'KIE', BWI)) %>% 
+                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, BWI, tpS_com_ID), 
+                         by = c("SP_code" = "Chr_ger_cap")) %>% 
+  left_join(., SP_TapeS %>% 
+              mutate(Chr_ger_cap = toupper(SP_TapeS$kurz)) %>% 
+              rename(tpS_ID = ID) %>% 
+              select(Chr_ger_cap, tpS_ID), 
+            by = c("tpS_com_ID" = "Chr_ger_cap"))
 
 # checking for species names that were net part of the species dataset
 trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
 # in case of this dataset it is only RER meaning "Rot Erle" which does not have a latin name assigned, 
 # so I´ll do it manually. but for later analysis this has to be automatised or the source of error
 # has to be removed when the raw data are created/ assessed
+trees_total %>% filter(is.na(tpS_ID)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
 
+
+# ISSUES LINKNING SPECIES IN TREE TOTAL TO TAPES
+# We need a column with species codes/ names/ numbers that can be regonized by tapeS
+# which is not the case for the current species related column in trees_total or SP_names
+# when trying to join a column from the tapeS species codes dataset it becomes 
+# evident that there is no shared code between the two datasets. Neither the botanical names, 
+# nor the german abbreviations correspond. This is because the species list for the BZE and 
+# the MoMoK locations is much more precise then the TapeS list, which groups species in to 
+# species classes. 
+# At first I thought they would correspond with those species codes and groups assessed in the 
+# BWI (National forest Inventory NFI), but this is not the case. 
+# I tried to link a capital lettered column of the German abbreviations in the TapeS dataset 
+# with the capital lettered columns of the german abbreviation column of the SP_names dateset as well as the BWI column 
+# (wich one would think should correspond), but that is not the case. Similar issues are faced trying to use the latin names
+# for a join, because the Latin names in the SP_names and by that in the trees_total dataset are much more precise then in the 
+# Thus it seems the onlyway to create a column in the trees_total or SP_names dataset. 
+# in thte TapeS dataset the botalical names vary betweeen genus and species and genus spp. which makes it 
+# very hard to find a common variable between the two sets. 
+# where speiceis codes present in tapeS are manually assigned to the respecitive species in the MoMoK dataset. 
+# This is okay, since there are only six species for MoMok
+# for the BZE Bestandeserhebung, however, this will not work. 
+
+# this displays the german species abbreviations in TapeS that cannot be linked to BWI
+# codes in the SP_names dataset
+anti_join(SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
+          SP_names %>% mutate(Chr_ger_cap = toupper(Chr_code_ger)), 
+          by = c("Chr_ger_cap"= "BWI"))
+
+# THis displays the BWI abbreviations in trees_total that don´t find a match in SP_tapes when the brreviations are in capital letters
+anti_join(trees_total, SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
+                      by = c("BWI" = "kurz")) %>%  
+  group_by(BWI) %>% 
+  distinct(BWI, bot_name)
+# which is aparently only the both pine specise: 
+# KI    Pinus mugo      
+# KI    Pinus sylvestris
+# thus, I will create a column in the SP_dataset or the trees_total dataset that 
+# contains the BWI codes that TapeS can read to then join the column from tapeS that is readable to the tapeS package, 
+# because for now I am joinin g based on the german abbreviations in tapeS in capital letters, which are not 
+# part of the original TapeS dataframe ( as I added them with the mutate toupper)
+
+
+
+
+
+# check which sp_codes from trees total are present in the TapeS package
+anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test, 
+          by= c("bot_name" = "scientific")) %>% distinct()
+# these species are present in the trees_total but not in the TapeS package, meaning 
+# they´ll have to be harmonised first, to use TapeS for this dataset 
+# thus I´ll create a column called TapeS_SP where I allocate the species 
+# to the respective TapeS species codes
+# or I add a column with capital latters to the tapes dataset and use it as a key 
+# variable to join a TapeS indentificable column form the tapeS_sp dataset
+#  SP_code         bot_name
+# 1     RER      Alnus rubra
+# 2     STK  Prunus serotina
+# 3     GFI     Picea abies 
+# 4     MBI Betula pubescens
+# 5     BKI       Pinus mugo
+
+trees_total %>% filter(is.na(TpS_ID)) %>% group_by(SP_code) %>% distinct()
 
 
 
@@ -572,6 +648,9 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 # ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
+
+
+
 
 
 # ----- 2.1.7.1.TapeR_FIT_LME.f ----------------------------------------------------------
