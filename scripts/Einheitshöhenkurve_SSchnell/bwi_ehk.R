@@ -4,16 +4,16 @@ library(stringi);
 library(ggplot2)
 library(plotly);
 
-ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g, id_broken) {
 # dmean: mittlerer durchmesser pro plot 
 # dg grunflächenmittelstamm
 # hg höhe grundflächenmittelstamm
 # id_broken: kennzahl, gibt an ob baum gebrochen ist etc. --> Höhenkennziffer
-  
+
+ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g, id_broken) {
   k0 <- c(fi = 0.183, ta = 0.097, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
   k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
   k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
-
+  
   h_mean <- (h_g - 1.3)/(exp(k0[tolower(spec)]*(1 - d_mean/d_g))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_g))) + 1.3;
 
   h_pred <- (1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)));

@@ -123,6 +123,51 @@ f = function(x,y,a,b){
   answer <- ifelse(is.na(x)| x < y, a, b)
   return(answer)}
 
+# einheitshöhenkurve
+# sloboda 
+ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
+k0 <- c(fi = 0.183, ta = 0.097, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
+k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
+k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
+h_mean <- (h_g - 1.3)/(exp(k0[tolower(spec)]*(1 - d_mean/d_g))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_g))) + 1.3;
+h_pred <- (1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)));
+# this part is silenced, because there is no Höhenkennzahl documented for MoMoK 
+# and BZE because they dont do a Winkelzähprobe
+# Reduction factor depending on whether crown or stem is broken or not 
+# if (length(id_broken) == length(d_i)) {
+#   f_red <- rep(1.0, length(d_i));
+#   f_red[which(id_broken == 0)] <- 1.0;
+#   f_red[which(id_broken == 1)] <- 1 - 2/h_pred[which(id_broken == 1)];
+#   f_red[which(id_broken == 2)] <- 1 - k2[tolower(spec[which(id_broken == 2)])];
+# } else if (length(id_broken) == 1) {
+#   if (id_broken == 0) f_red <-  1.0
+#   else if (id_broken == 1) f_red <- 1 - 2/h_pred
+#   else if (id_broken == 2) f_red <- 1 - k2[tolower(spec)]
+# }  
+return(h_pred*f_red)
+}
+
+# Einheitshöhenkurve according to CURTIS 
+# --> this one is only applied when there is litterally not information to calculate the height, 
+# except of the diameter
+h_curtis <- function(spec, d) {
+  b0 <- c(fi = 434.1235, bu = 382.0202, ta = 453.5538, ki = 359.7162, lae = 421.4473, dgl = 481.5531, ei = 348.3262);
+  b1 <- c(fi = -65586.6915, bu = -51800.9382, ta = -81132.5221, ki = -42967.9947, lae = -60241.2948, dgl = -81754.2523, ei = -46547.3645);
+  b2 <- c(fi = 3074967.1738, bu = 2374368.3254, ta = 4285801.5636, ki = 1763359.9972, lae = 2895409.6245, dgl = 4193121.2406, ei = 2119420.9444);
+  
+  return(b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)
+}
+
+# self made nls models for heights per species across all plots
+h_nls_SP_aP <- function(spec, d){
+  # https://statisticsglobe.com/convert-data-frame-column-to-a-vector-in-r
+  b0 <- dplyr::pull(coeff_H_SP, b0, SP_code);
+  b1 <- dplyr::pull(coeff_H_SP, b1, SP_code);
+  b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
+  return(b0 * (1 - exp( -b1 * d))^b2)
+}
+
+
 # ----- 1.4. dealing with NAs ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
@@ -203,6 +248,8 @@ trees_total %>% filter(is.na(bot_name)) %>%  select(SP_code, bot_name)%>%  group
 # in case of this dataset it is only RER meaning "Rot Erle" which does not have a latin name assigned, 
 # so I´ll do it manually. but for later analysis this has to be automatised or the source of error
 # has to be removed when the raw data are created/ assessed
+
+#checking if assignment of the tpS_ID assignment works
 trees_total %>% filter(is.na(tpS_ID)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
 
 
@@ -234,7 +281,8 @@ anti_join(SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)),
           by = c("Chr_ger_cap"= "BWI"))
 
 # THis displays the BWI abbreviations in trees_total that don´t find a match in SP_tapes when the brreviations are in capital letters
-anti_join(trees_total, SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
+anti_join(trees_total, SP_TapeS_test %>% 
+            mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
                       by = c("BWI" = "kurz")) %>%  
   group_by(BWI) %>% 
   distinct(BWI, bot_name)
@@ -245,10 +293,6 @@ anti_join(trees_total, SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_t
 # contains the BWI codes that TapeS can read to then join the column from tapeS that is readable to the tapeS package, 
 # because for now I am joinin g based on the german abbreviations in tapeS in capital letters, which are not 
 # part of the original TapeS dataframe ( as I added them with the mutate toupper)
-
-
-
-
 
 # check which sp_codes from trees total are present in the TapeS package
 anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test, 
@@ -266,7 +310,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 # 4     MBI Betula pubescens
 # 5     BKI       Pinus mugo
 
-trees_total %>% filter(is.na(TpS_ID)) %>% group_by(SP_code) %>% distinct()
+
 
 
 
@@ -549,7 +593,7 @@ ggplot(data = (left_join(trees_total %>%
   theme_light()+
   theme(legend.position = "non")
 
-ggplot(data = (trees_total), 
+ggplot(data = trees_total, 
        aes(x = DBH_cm, y = H_m, color = H_method))+
   geom_point()+
   #geom_line(method = "lm")+
@@ -596,29 +640,6 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 # 3. coefficents
 # I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
 
-# joining respective coefficients with ifelse
-# first I join the coefficient of the models fitted per plot and species
-# trees_total_1 <- left_join(trees_total,
-#                           coeff_H_SP_plot %>% 
-#                           select(plot_ID, SP_code, R2, b0, b1, b2), 
-#                           by = c("plot_ID", "SP_code")) %>% 
-#   # if R2 or the coefficients are NA use the respective columns of the more general model
-#   left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
-#             by = "SP_code") %>% 
-#   # if R2 or coefficients are NA or R2of the species- & plotwise models is lower then the R2 of the spcieswise models across all plots
-#   # ise the respecitive column
-#   mutate(R2 = ifelse(is.na(R2.x)| R2.x < R2.y, R2.y, R2.x), 
-#          b0 = ifelse(is.na(b0.x)| R2.x < R2.y, b0.y, b0.x),
-#          b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x),
-#          b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
-#   select(-c(ends_with(".x"), ends_with(".y"))) %>%
-#   # adding column to be able to track if the height was measured or estimated by the model
-#   mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
-#          # estimate missing heights
-#          H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
-
-
- 
 # joining respective coefficients with function (1.3.)
   trees_total <- trees_total %>%
     left_join(.,coeff_H_SP_plot %>% 
@@ -642,16 +663,59 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
 
-
-
   
 # ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
 # the unsolved issue here is: 
 # how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
 
+# ----- 2.1.7.1. TapeS -----------------------------------------------------------
+#https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
+help("tprBiomass")
 
+# checking if assigning the species works
+tprSpeciesCode(inSp = trees_total$tpS_ID, outSp = c("scientific"))
 
+# https://softwareengineering.stackexchange.com/questions/307639/what-does-mapping-mean-in-programming
+# The map function requires an array and another function. It returns a new array 
+# which is the result of applying that function to all elements of the original array.
+# All other uses of the term can, at least in my experience, be considered analogous 
+# to this specific one. In the most general sense, "mapping" in programming means 
+# taking several things and then somehow associating each of them with another thing
+BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 
+# ----- 2.1.7.1.2. create TapeS object -----------------------------------------------------------
+spp= c(trees_total$tpS_ID[!is.na(trees_total$DBH_h_cm) & trees_total$tpS_ID == 28])
+Dm = c(trees_total$DBH_cm[!is.na(trees_total$DBH_h_cm)& trees_total$tpS_ID == 28])
+Hm = list(c(trees_total$DBH_h_cm[!is.na(trees_total$DBH_h_cm)& trees_total$tpS_ID == 28]/100))
+Ht = c(trees_total$H_m[!is.na(trees_total$DBH_h_cm)& trees_total$tpS_ID == 28])
+Hm= c(1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.20, 1.20, 1.30, 1.20, 1.10, 1.10, 1.20, 1.20, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.10, 1.20, 1.30, 1.30, 1.20, 1.10, 1.30, 1.30, 1.30, 
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 
+      1.30, 1.40, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30,
+      1.30, 1.30, 1.30, 1.50, 1.50, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 
+      1.30, 1.30, 1.60, 1.60, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 1.30, 
+      1.30, 1.30, 1.40, 1.30, 1.30, 1.39, 1.40)
+
+obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+
+obj.t <- tprTrees(spp= c(28, 28),
+                  Dm = c(16, 25.4), 
+                  Hm = c(1.3, 1.3) , 
+                  Ht = c(12.8, 16.9), 
+                  inv = 4)
+plot(obj.t)
+
+tpr <- tprTrees(spp=c(1,3), Dm=c(30, 35), Hm=c(1.3, 1.3), Ht=c(27, 30), inv=4)
+plot(tpr)
 
 # ----- 2.1.7.1.TapeR_FIT_LME.f ----------------------------------------------------------
 # aparently I first have to fit the taper curves in general via TapeR_FIT_LME.f
@@ -982,6 +1046,31 @@ trees_total_1 <- left_join(trees_total,
   #select(-c(ends_with(c(".x", ".x.x")), ends_with(c(".y", ".y.y")))) %>% 
   #mutate(H_m = is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)
   
+
+# !!!!!! THIS ONE WORKS EVEN BETTER !!!!!!
+# joining respective coefficients with ifelse shortend: 
+# first I join the coefficient of the models fitted per plot and species
+ trees_total_1 <- left_join(trees_total,
+                           coeff_H_SP_plot %>% 
+                           select(plot_ID, SP_code, R2, b0, b1, b2), 
+                           by = c("plot_ID", "SP_code")) %>% 
+   # if R2 or the coefficients are NA use the respective columns of the more general model
+   left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+             by = "SP_code") %>% 
+   # if R2 or coefficients are NA or R2of the species- & plotwise models is lower then the R2 of the spcieswise models across all plots
+   # ise the respecitive column
+   mutate(R2 = ifelse(is.na(R2.x)| R2.x < R2.y, R2.y, R2.x), 
+          b0 = ifelse(is.na(b0.x)| R2.x < R2.y, b0.y, b0.x),
+          b1 = ifelse(is.na(b1.x)| R2.x < R2.y, b1.y, b1.x),
+          b2 = ifelse(is.na(b2.x)| R2.x < R2.y, b2.y, b2.x)) %>% 
+   select(-c(ends_with(".x"), ends_with(".y"))) %>%
+   # adding column to be able to track if the height was measured or estimated by the model
+   mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+          # estimate missing heights
+          H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
+
+
+
   view(trees_total_1 %>% filter(is.na(R2.x)| R2.x.x < R2.y.y) %>% select(plot_ID, SP_code, R2.x, R2.y, R2.x.x, R2.y.y, R2, b0.x.x, b0.y.y, b0)) 
 
   
