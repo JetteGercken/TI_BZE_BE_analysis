@@ -342,7 +342,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
-# ----- 2.1. REGRESSION for missing tree heights ---------------------------------
+# ----- 2.1. Regression models for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
 # there are less then 3 measurements per plot
 # ---> think about way to deal with them !!!!
@@ -393,8 +393,6 @@ coeff_H_SP <-  trees_total %>%
              mod_start = c(b0=23, b1=0.03, b2 =1.3), 
              output = "table") %>%
   arrange(SP_code)
-
-
 
 # ----- 2.1.3. combined coeffcient dataframe wth statistical indic ---------------------
 # biuilding one dataset with all coefficients, thse of the genearl model and those of the species and plot specific models
@@ -456,8 +454,6 @@ coeff_nls_h_combined <- rbind(
      mutate(plot_ID = as.factor("all")) %>% 
      select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)))
 
-
-
 # ----- 2.1.4. seprate dataframes for coefficients including statistical indicators --------
 # building separate dataframe for speicies and plot soecific models adding adding bias, rmse and rsqrd 
 coeff_H_SP_plot <- left_join(trees_total %>% 
@@ -512,12 +508,7 @@ coeff_H_SP <- left_join(trees_total %>%
 
 
 
-
-
-
-
-
-# ----- 2.1.5.2. analysing the quality of the models  ------------------------------
+# ----- 2.1.5.2. have a look at the quality of the models  ------------------------------
 # from my previous attempts to fit and validate species specific but also total 
 # dataset including regression models for the height, I know that actually the 
 # DBH class is the better predictor 
@@ -533,107 +524,42 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 
 
 
-# ----- 2.1.6. join coefficients to the tree dataset & calcualte missing heights  ----------------------------
-# The issue is the following: if the R2 of the species per plot is really poor,
-# we need the coefficients of a more general model over all plots or plot groups to be joined
-# if the respective r2 of that modelis still to low, we want R to use an external/ different model
-
-# thus I have two ideas:
-# 1. preparing coefficent dataset
-# either I modify the coefficents table, meaning that i replace the coefficients
-# plots and species where r2 < threshold. this, however, only word if the
-# coefficents are exactly the same, so not for external models
-# 2. trying an conditional join
-# here i try to create a conditional joint/ merge of the coefficients which states that for a given (previously joined) R2 R should choose the coefficients or even fomulas to use from different datasets
-# 3. coefficents
-# I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
-
-
-
-# trying the same but with functions 
-# self made nls models for heights per species across all plots
-h_nls_SP <- function(spec, d){
-  # https://statisticsglobe.com/convert-data-frame-column-to-a-vector-in-r
-  b0 <- dplyr::pull(coeff_H_SP, b0, SP_code);
-  b1 <- dplyr::pull(coeff_H_SP, b1, SP_code);
-  b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
-  return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
-}
-
-
-# self mase nls models for heights per species per plot
-h_nls_SP_P <- function(plot_spec, d) {
-  # because I cannot combine 3 variabels in one vector, 
-  b0 <- coeff_H_SP_plot %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b0, SP_P_ID);
-  b1 <- coeff_H_SP_plot %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b1, SP_P_ID);
-  b2 <- coeff_H_SP_plot %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
-  return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
-}
-
-
+# ----- 2.1.6. join coefficients to the tree data set & calculate missing heights  ----------------------------
+# estimating height by using different functions, depending on the models R2
 trees_total_5 <- trees_total %>%
+  # this is to create a variable fitting to the vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
   unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%
- # mutate(H_method = ifelse(is.na(H_m), 'est', 'samp')) %>% 
-  # mutate() here has to come the statement grouping the species according to their 
   left_join(.,coeff_H_SP_plot %>% 
               select(plot_ID, SP_code, R2) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE), 
             by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
-  # if R2 or the coefficients are NA use the respective columns of the more general model
   left_join(., coeff_H_SP %>% select(SP_code, R2),
             by = "SP_code") %>%
-  # if 
-  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x)) %>% 
-  # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
-  # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
-  # 0.75 then use the SP_P models
-  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ h_nls_SP_P(SP_P_ID, DBH_cm), 
-                             # when H_m is na and R2 coeff_SP_P is empty (so no model for that SP) and plot and the alternative model from coeff_SP
-                             # has a higher 
-                             # or when R2 coeff is lower then R2 coeff_SP use the model from coeff_SP
-                             is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm), 
-                             is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.75 ~ h_curtis(BWI_SP_group, DBH_mm), 
-                             TRUE ~ H_m), 
-         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ "coeff_SP_P", 
-                             # when H_m is na and R2 coeff_SP_P is empty (so no model for that SP) and plot and the alternative model from coeff_SP
-                             # has a higher 
-                             # or when R2 coeff is lower then R2 coeff_SP use the model from coeff_SP
-                             is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
-                             # when there´s still no model per species or plot, or the R2 od both self-made models is below 0.7 
-                             # and hm is na use the curtis function
-                             is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ "h_curtis", 
-                             TRUE ~ "sampled")) #%>% 
- # select(-c(ends_with(".x"), ends_with(".y")))
-         
-
-# joining respective coefficients with function (1.3.)
-trees_total_6 <- trees_total %>%
-  left_join(.,coeff_H_SP_plot %>% 
-              select(plot_ID, SP_code, R2, b0, b1, b2), 
-            by = c("plot_ID", "SP_code")) %>% 
-  # if R2 or the coefficients are NA use the respective columns of the more general model
-  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
-            by = "SP_code") %>% 
-  # this reffers to the function and meas: if R2 from coeff_H_SP_plot is NA or if 
-  # R2 from coeff_H_SP_plot is smaller then R2 from coeff_H_SP then use the coeff_H_SP values
-  # if not, keep the coeff_H_SP_plot values
-  mutate(R2 = f(R2.x, R2.y, R2.y, R2.x), 
-         b0 = f(R2.x, R2.y, b0.y, b0.x), 
-         b1 = f(R2.x, R2.y, b1.y, b1.x),
-         b2 = f(R2.x, R2.y, b2.y, b2.x)) %>% 
-  mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
-         # estimate missing heights
-         H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
-  select(-c(ends_with(".x"), ends_with(".y")))
+  # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x), 
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+        # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
+                         # when there´s still no model per species or plot, or the R2 od both self-made models is below 0.7 
+                         # and hm is na use the curtis function
+                         is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ h_curtis(BWI_SP_group, DBH_mm), 
+                         TRUE ~ H_m)) #%>% 
+# select(-c(ends_with(".x"), ends_with(".y")))
+     
 
 
-         
-         
-# ----- 2.1.7. estimating missing heights/ heights for height models with a poor R2 via bdat/ TapeR-----------------------------------------------------------
-# the unsolved issue here is: 
-# how can I use TapeS for the height estimation if the R2 is to poor or the height is still na (because of the lack of a midel for the species)
+# ----- 2.2. Biomass trees--------------------------------------------------------------
+# input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
+# DBH, diameter at 1/3 of the tree height, species, tree height
 
-# ----- 2.1.7.1. TapeS -----------------------------------------------------------
+# ----- 2.2.1. estimating diameter at 0.3 of tree height with TapeS -----------------------------------------------------------
 #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
 help("tprBiomass")
 
@@ -648,7 +574,7 @@ tprSpeciesCode(inSp = trees_total$tpS_ID, outSp = c("scientific"))
 # taking several things and then somehow associating each of them with another thing
 BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 
-# ----- 2.1.7.1.2. create TapeS object -----------------------------------------------------------
+# ----- 2.2.1.1. create TapeS object -----------------------------------------------------------
 spp= c(trees_total$tpS_ID[!is.na(trees_total$DBH_h_cm) & trees_total$tpS_ID == 28])
 Dm = c(trees_total$DBH_cm[!is.na(trees_total$DBH_h_cm)& trees_total$tpS_ID == 28])
 Hm = list(c(trees_total$DBH_h_cm[!is.na(trees_total$DBH_h_cm)& trees_total$tpS_ID == 28]/100))
@@ -682,115 +608,90 @@ plot(obj.t)
 tpr <- tprTrees(spp=c(1,3), Dm=c(30, 35), Hm=c(1.3, 1.3), Ht=c(27, 30), inv=4)
 plot(tpr)
 
-# ----- 2.1.7.1.TapeR_FIT_LME.f ----------------------------------------------------------
-# aparently I first have to fit the taper curves in general via TapeR_FIT_LME.f
-# input variabels are: 
-# Id,
-# x (heights measured), y (respective diameters measured), 
-# knt_x (knots position of fixed effects), ord_x (oder of fixed effefcts 4 = cubic),
-# knt_z (knots position of random effects), ord_z (oder of random effefcts 4 = cubic),
-# IdKOVb = "pdSymm", control = list()
-
-Id = (trees_total[,"ID"][trees_total$H_method == 'samp'])
-x =  (((trees_total[,"DBH_h_cm"][trees_total$H_method == 'samp'])/100)/(trees_total[,"H_m"][trees_total$H_method == 'samp']))
-y = (trees_total[,"DBH_cm"][trees_total$H_method == 'samp'])
-#na.f <-  function(z) if(is.na(z)) {z=FALSE} else {if(z) {z}}
-
-
-
-knt_x = c(0.0, 0.1, 0.75, 1.0); ord_x = 4 # B-Spline knots: fix effects; order (cubic = 4)
-knt_z = c(0.0, 0.1 ,1.0); ord_z = 4 # B-Spline knots: rnd effects
-# fit the model
-taper.model <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
-                              IdKOVb = "pdSymm")
-
-
-
-help("getHeight")
-getHeight()
-
-# load example data
-data(DxHx.df)
-
-# prepare the data (could be defined in the function directly)
-Id = DxHx.df[,"Id"]
-x = DxHx.df[,"Hx"]/DxHx.df[,"Ht"]#calculate relative heights
-y = DxHx.df[,"Dx"]
-# define the relative knot positions and order of splines
-# https://stackoverflow.com/questions/51064686/error-in-chol-defaultcxx-the-leading-minor-of-order-is-not-positive-definite
-# I changed the knots to much higher numbers because I kept receiving following error: 
-# Error in chol.default((value + t(value))/2) : 
-# the leading minor of order 1 is not positive definite
-knt_x = c(0.0, 0.1, 0.75, 1.0) # B-Spline knots: fix effects
-ord_x = 4 # ord = order (4 = cubic)
-knt_z = c(0.0, 0.1, 1.0); ord_z = 4 # B-Spline knots: rnd effects
-
-# fit the model
-taper.model.1 <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
-                                IdKOVb = "pdSymm", data = trees_total)
-taper.model.1
-
-TapeR::E_HDx_HmDm_HT.f(Dx, 
-                      Hm, 
-                      Dm,
-                      mHt,
-                      sHt = 0, 
-                      par.lme = taper.model$par.lme)
-
-# ----- 2.2.8. getting diameter at 1/3 of the tree height for biomass ----------
-
-#tree <- buildTree(tree = list(spp=1, D1=30, H=27)
-getSpeciesCode()
-
-spp <- getSpeciesCode(trees_total$bot_name, "short") 
-D1 <- as.numeric(trees_total$DBH_cm)
-H1 <- as.numeric(trees_total$DBH_h_cm) 
-H <- as.numeric(trees_total$H_m)
-
-tree <- as.data.frame(cbind(spp, D1, H1, H))
-help("buildTree")
-
-tree <- buildTree(tree)
-
-
-
-# ----- 2.3. Biomass -----------------------------------------------------------
 
 
 
 
+# ----- 2.4. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 
-
-# ----- 2.4. Plot & Species wise data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
-trees_plot <- left_join((
+# ----- 2.4.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
+trees_P_CP_SP <- left_join(
 # dataset with BA per species
-trees_total %>%
-group_by(plot_ID, SP_code) %>%                 # group by plot and species to calculate BA per species 
-summarise(mean_DBH_cm = mean(DBH_cm), 
-   sd_DBH_cm = sd(DBH_cm),
-   mean_H_m = mean(H_m), 
-   sd_height_m = sd(H_m),
-   SP_BA_plot = sum(BA_m2),             # calculate BA per species per plot in m2
-   plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha)),    # calculate BA per species per plot in m2/ ha
+trees_total_5 %>%
+  group_by(plot_ID, C_layer, SP_code) %>%       # group by plot and species to calculate BA per species 
+  summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
+          sd_DBH_cm = sd(DBH_cm),       
+          mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
+          sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
+          SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
+          mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
+          d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply py two to get radius into diameter, multiply by 10 to transform m into cm
+          h_g = sum(DBH_h_cm*BA_m2)/sum(BA_m2)/10,
+          plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
+  mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),    # calculate BA per species per plot in m2/ ha
 # dataset with total BA per plot
-(trees_total %>%
-group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
-summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-    plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha)), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
-by=c("plot_ID", "plot_A_ha")) %>% 
-select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove 
-# mutating BA proportion to trees_plot dataset 
+trees_total_5 %>%
+   group_by(plot_ID, C_layer) %>%                         # group by plot to calculate total BA per plot
+   summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+             plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+   mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+by=c("plot_ID","C_layer", "plot_A_ha")) %>% 
+select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
 mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
 # joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
-trees_plot <- left_join(trees_plot, 
-             (as.data.table(trees_plot)[as.data.table(trees_plot)[, .I[BA_SP_per == max(BA_SP_per)], 
-                                                                  by= plot_ID]$V1]) %>% 
+trees_P_CP_SP <- left_join(trees_P_CP_SP, 
+             (as.data.table(trees_P_CP_SP)[as.data.table(trees_P_CP_SP)[, .I[BA_SP_per == max(BA_SP_per)], 
+                                                                  by= c("plot_ID", "C_layer")]$V1]) %>% 
                rename(., dom_SP = SP_code) %>% 
-               select(plot_ID, dom_SP), 
-             by = "plot_ID")
+               select(plot_ID, C_layer, dom_SP), 
+             by = c("plot_ID", "C_layer"))
 
+# ----- 2.4.2. grouped by Plot species ------------------------------------------------------------
+trees_P_SP <- left_join(
+  # dataset with BA per species
+  trees_total %>%
+    group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
+    summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
+              sd_DBH_cm = sd(DBH_cm),       
+              mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
+              sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
+              SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
+              mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
+              d_g = (sqrt((mean_BA_SP_plot/pi)))*2,  
+              plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),    # calculate BA per species per plot in m2/ ha
+  # dataset with total BA per plot
+  trees_total %>%
+    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  by=c("plot_ID", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
+# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
+trees_P_SP <- left_join(trees_P_SP,
+                        as.data.table(trees_P_SP)[as.data.table(trees_P_SP)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
+                             rename(., dom_SP = SP_code) %>% 
+                             select(plot_ID, dom_SP), 
+                           by = "plot_ID")
+
+
+
+trees_total %>%
+  group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+  summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+            plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+  mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha) %>%   # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  group_by(plot_ID, SP_code, C_layer) %>%       # group by plot and species to calculate BA per species 
+  summarise(mean_DBH_cm = mean(DBH_cm), 
+            sd_DBH_cm = sd(DBH_cm),
+            mean_H_m = mean(H_m), 
+            sd_height_m = sd(H_m),
+            SP_BA_plot = sum(BA_m2),             # calculate BA per species per plot in m2
+            mean_BA_SP_plot = mean(BA_m2)) %>% 
+  mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha, 
+  BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) # mutating BA proportion to trees_plot dataset
 
 
 
@@ -1120,6 +1021,20 @@ coeff_H_SP <- left_join(trees_total %>%
 
 
 # ----- N.1.2.2. Attempts to join coefficients to tree dataset depending on --------
+# The issue is the following: if the R2 of the species per plot is really poor,
+# we need the coefficients of a more general model over all plots or plot groups to be joined
+# if the respective r2 of that modelis still to low, we want R to use an external/ different model
+
+# thus I have two ideas:
+# 1. preparing coefficent dataset
+# either I modify the coefficents table, meaning that i replace the coefficients
+# plots and species where r2 < threshold. this, however, only word if the
+# coefficents are exactly the same, so not for external models
+# 2. trying an conditional join
+# here i try to create a conditional joint/ merge of the coefficients which states that for a given (previously joined) R2 R should choose the coefficients or even fomulas to use from different datasets
+# 3. coefficents
+# I could also create vectors with the coefficents, no? and then tell R to use a, b, c, d, ... etc depending on the respective R2? 
+# 4. use of different functions accordint to R2 
 
 # THIS ONE WORKS
 # checking if the code worked and the right columns were picked
@@ -1169,14 +1084,34 @@ trees_total_1 <- left_join(trees_total,
         H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m))
 
 
+# joining respective coefficients with function (1.3.) 
+# --> this code cannot apply the curtis function yet, but it would be possible to include that too 
+trees_total_6 <- trees_total %>%
+  left_join(.,coeff_H_SP_plot %>% 
+              select(plot_ID, SP_code, R2, b0, b1, b2), 
+            by = c("plot_ID", "SP_code")) %>% 
+  # if R2 or the coefficients are NA use the respective columns of the more general model
+  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+  # this reffers to the function and meas: if R2 from coeff_H_SP_plot is NA or if 
+  # R2 from coeff_H_SP_plot is smaller then R2 from coeff_H_SP then use the coeff_H_SP values
+  # if not, keep the coeff_H_SP_plot values
+  mutate(R2 = f(R2.x, R2.y, R2.y, R2.x), 
+         b0 = f(R2.x, R2.y, b0.y, b0.x), 
+         b1 = f(R2.x, R2.y, b1.y, b1.x),
+         b2 = f(R2.x, R2.y, b2.y, b2.x)) %>% 
+  mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+         # estimate missing heights
+         H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
+  select(-c(ends_with(".x"), ends_with(".y")))
+
+
 
 view(trees_total_1 %>% filter(is.na(R2.x)| R2.x.x < R2.y.y) %>% select(plot_ID, SP_code, R2.x, R2.y, R2.x.x, R2.y.y, R2, b0.x.x, b0.y.y, b0)) 
 
 
 # check if the sorter verion of this code used above is also accurate
 identical(trees_total[['R2']],trees_total_1[['R2']]) # --> yes it is
-
-
 
 
 # as non of the follwing codes workd i had to find another solution. 
@@ -1611,7 +1546,77 @@ ggplot(data=height_RER, aes(x = DBH_class, y = H_m))+
 
 
 
-         
+
+# ----- N.2.2.2. TapeR ----------------------------------------------------
+# ----- 2.2.2.2.TapeR_FIT_LME.f ----------------------------------------------------------
+# aparently I first have to fit the taper curves in general via TapeR_FIT_LME.f
+# input variabels are: 
+# Id,
+# x (heights measured), y (respective diameters measured), 
+# knt_x (knots position of fixed effects), ord_x (oder of fixed effefcts 4 = cubic),
+# knt_z (knots position of random effects), ord_z (oder of random effefcts 4 = cubic),
+# IdKOVb = "pdSymm", control = list()
+
+Id = (trees_total[,"ID"][trees_total$H_method == 'samp'])
+x =  (((trees_total[,"DBH_h_cm"][trees_total$H_method == 'samp'])/100)/(trees_total[,"H_m"][trees_total$H_method == 'samp']))
+y = (trees_total[,"DBH_cm"][trees_total$H_method == 'samp'])
+#na.f <-  function(z) if(is.na(z)) {z=FALSE} else {if(z) {z}}
+
+
+
+knt_x = c(0.0, 0.1, 0.75, 1.0); ord_x = 4 # B-Spline knots: fix effects; order (cubic = 4)
+knt_z = c(0.0, 0.1 ,1.0); ord_z = 4 # B-Spline knots: rnd effects
+# fit the model
+taper.model <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
+                               IdKOVb = "pdSymm")
+
+
+
+help("getHeight")
+getHeight()
+
+# load example data
+data(DxHx.df)
+
+# prepare the data (could be defined in the function directly)
+Id = DxHx.df[,"Id"]
+x = DxHx.df[,"Hx"]/DxHx.df[,"Ht"]#calculate relative heights
+y = DxHx.df[,"Dx"]
+# define the relative knot positions and order of splines
+# https://stackoverflow.com/questions/51064686/error-in-chol-defaultcxx-the-leading-minor-of-order-is-not-positive-definite
+# I changed the knots to much higher numbers because I kept receiving following error: 
+# Error in chol.default((value + t(value))/2) : 
+# the leading minor of order 1 is not positive definite
+knt_x = c(0.0, 0.1, 0.75, 1.0) # B-Spline knots: fix effects
+ord_x = 4 # ord = order (4 = cubic)
+knt_z = c(0.0, 0.1, 1.0); ord_z = 4 # B-Spline knots: rnd effects
+
+# fit the model
+taper.model.1 <- TapeR_FIT_LME.f(Id, x, y, knt_x, ord_x, knt_z, ord_z,
+                                 IdKOVb = "pdSymm", data = trees_total)
+taper.model.1
+
+TapeR::E_HDx_HmDm_HT.f(Dx, 
+                       Hm, 
+                       Dm,
+                       mHt,
+                       sHt = 0, 
+                       par.lme = taper.model$par.lme)
+
+# ----- 2.2.8. getting diameter at 1/3 of the tree height for biomass ----------
+
+#tree <- buildTree(tree = list(spp=1, D1=30, H=27)
+getSpeciesCode()
+
+spp <- getSpeciesCode(trees_total$bot_name, "short") 
+D1 <- as.numeric(trees_total$DBH_cm)
+H1 <- as.numeric(trees_total$DBH_h_cm) 
+H <- as.numeric(trees_total$H_m)
+
+tree <- as.data.frame(cbind(spp, D1, H1, H))
+help("buildTree")
+
+tree <- buildTree(tree)         
          
          
          
