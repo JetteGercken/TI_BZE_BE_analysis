@@ -126,7 +126,7 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
   k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
   h_mean <- (h_g - 1.3)/(exp(k0[tolower(spec)]*(1 - d_mean/d_g))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_g))) + 1.3;
-  h_pred <- (1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)));
+  h_pred <- ((1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)))/10); # divide by 10 to get height in m
   # this part is silenced, because there is no Höhenkennzahl documented for MoMoK 
   # and BZE because they dont do a Winkelzähprobe
   # Reduction factor depending on whether crown or stem is broken or not 
@@ -358,6 +358,10 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
+
+
+
+
 # ----- 2.1. Regression models for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
 # there are less then 3 measurements per plot
@@ -461,14 +465,11 @@ coeff_H_SP <- left_join(trees_total %>%
   mutate(plot_ID = as.factor('all')) %>% 
   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
-
-
 # ----- 2.1.3. combined coefficients of height models ---------------------
-
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
 
 
-# ----- 2.1.5.2. have a look at the quality of the models  ------------------------------
+# ----- 2.1.4. have a look at the quality of the models  ------------------------------
 # from my previous attempts to fit and validate species specific but also total 
 # dataset including regression models for the height, I know that actually the 
 # DBH class is the better predictor 
@@ -483,8 +484,7 @@ coeff_nls_h_combined %>% filter(diff_h >= 0.75)
 #view(coeff_H_SP_P %>% filter(rsqrd<=0.5))
 
 
-
-# ----- 2.1.6. join coefficients to the tree data set & calculate missing heights  ----------------------------
+# ----- 2.1.5. join coefficients to the tree data set & calculate missing heights  ----------------------------
 # estimating height by using different functions, depending on the models R2
 trees_total_5 <- trees_total %>%
   unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
@@ -494,10 +494,18 @@ trees_total_5 <- trees_total %>%
             by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
   left_join(., coeff_H_SP %>% select(SP_code, R2), 
             by = "SP_code") %>%       # joing R2 from coeff_SP data set -> R2.y
+  left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
+              group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
+              summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
+                        mean_H_m = mean(H_m),                   # mean height per species per canopy layer per plot
+                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
+                        H_g = sum(mean(H_dm)*BA_m2)/sum(BA_m2)),  # Höhe des Grundflächenmittelstammes;
+            by = c("plot_ID", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
          H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
                               is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
-                              is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ "h_curtis", 
+                              is.na(H_m) & is.na(R2_comb) & !is.na(h_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(h_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(h_g)| is.na(H_m) & R2_comb < 0.70 & is.na(h_g) ~ "h_curtis", 
                               TRUE ~ "sampled")) %>% 
                          # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
   mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
@@ -506,8 +514,11 @@ trees_total_5 <- trees_total %>%
                          # 0.75 then use the SP_P models
                          is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                         # and hm is na use the curtis function
-                         is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ h_curtis(BWI_SP_group, DBH_mm), 
+                         # and hm is na but there is a h_g and d_G
+                         is.na(H_m) & is.na(R2_comb) & !is.na(h_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(h_g) ~ ehk_sloboda(BWI_SP_group, DBH_mm, mean_DBH_mm, D_g, H_g),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                         is.na(H_m) & is.na(R2_comb) & is.na(h_g)| is.na(H_m) & R2_comb < 0.70 & is.na(h_g) ~ h_curtis(BWI_SP_group, DBH_mm), 
                          TRUE ~ H_m)) #%>% 
 # select(-c(ends_with(".x"), ends_with(".y")))
      
@@ -539,8 +550,6 @@ spp = trees_total_5 %>% dplyr::pull(tpS_ID)
 Dm = as.list(trees_total_5 %>% dplyr::pull(DBH_cm))
 Hm = as.list(trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% dplyr::pull(DBH_h_m))
 Ht = trees_total_5 %>% dplyr::pull(H_m)
-
-
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 #plot(obj)
@@ -548,43 +557,45 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 # ----- 2.2.1.2. diameter at 1/3 tree height -----------------------------------------------------------
 tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)
 
-trees_total_5 %>% mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE))
+# adding diameter at 0.3 tree height to trees_total dataframe
+trees_total_5 <- trees_total_5 %>% mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE))
 
-# ----- 2.4. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 
-# ----- 2.4.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
+# ----- 2.3. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
+
+# ----- 2.3.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
 trees_P_CP_SP <- left_join(
-# dataset with BA per species
-trees_total_5 %>%
-  group_by(plot_ID, C_layer, SP_code) %>%       # group by plot and species to calculate BA per species 
-  summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
-          sd_DBH_cm = sd(DBH_cm),       
-          mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
-          sd_height_m = sd(H_m),               # standard deviation of height --> structural richness indicator
-          SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
-          mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
-          d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-          #h_g = sum(trees_total_5$H_m[!is.na(trees_total_5$H_m) & trees_total_5$H_method == "sampled"]*BA_m2[!is.na(trees_total_5$H_m) & trees_total_5$H_method == "sampled"])/sum(BA_m2[!is.na(trees_total_5$H_m) & trees_total_5$H_method == "sampled"])/10,
-          plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-  mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),    # calculate BA per species per plot in m2/ ha
-# dataset with total BA per plot
-trees_total_5 %>%
-   group_by(plot_ID, C_layer) %>%                         # group by plot to calculate total BA per plot
-   summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-             plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-   mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
-by=c("plot_ID","C_layer", "plot_A_ha")) %>% 
-select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
-mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
+  # dataset with BA per species
+  trees_total_5 %>%
+    group_by(plot_ID, C_layer, SP_code) %>%         # group by plot and species to calculate BA per species 
+    summarise(mean_DBH_cm = mean(DBH_cm),           # mean diameter per species per canopy layer per plot
+              sd_DBH_cm = sd(DBH_cm),       
+              mean_H_m = mean(H_m),                 # mean height per species per canopy layer per plot
+              sd_height_m = sd(H_m),                # standard deviation of height --> structural richness indicator
+              SP_BA_plot = sum(BA_m2),              # calculate BA per species per canopy layer per plot in m2
+              mean_BA_SP_plot = mean(BA_m2),        # calculate mean BA in m2 per species per canopy payer per plot
+              d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply py two to get radius into diameter, multiply by 10 to transform m into cm
+              h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),
+              plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to calculate BA per ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),      # calculate BA per species per plot in m2/ ha
+  # dataset with total BA per plot
+  trees_total_5 %>%
+    group_by(plot_ID, C_layer) %>%                  # group by plot to calculate total BA per plot
+    summarise(tot_BA_plot = sum(BA_m2),             # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+              plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to calculate BA per ha
+    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha),    # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  by=c("plot_ID","C_layer", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, tot_BA_plot)) %>%           # remove unnecessary variables
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
 # joining data set with dominant species using Ana Lucia Mendez Cartin´s code that filters for those species where BA_SP_per is max
 trees_P_CP_SP <- left_join(trees_P_CP_SP, 
-             (as.data.table(trees_P_CP_SP)[as.data.table(trees_P_CP_SP)[, .I[BA_SP_per == max(BA_SP_per)], 
-                                                                  by= c("plot_ID", "C_layer")]$V1]) %>% 
-               rename(., dom_SP = SP_code) %>% 
-               select(plot_ID, C_layer, dom_SP), 
-             by = c("plot_ID", "C_layer"))
+                           (as.data.table(trees_P_CP_SP)[as.data.table(trees_P_CP_SP)[, .I[BA_SP_per == max(BA_SP_per)], 
+                                                                                      by= c("plot_ID", "C_layer")]$V1]) %>% 
+                             rename(., dom_SP = SP_code) %>% 
+                             select(plot_ID, C_layer, dom_SP), 
+                           by = c("plot_ID", "C_layer"))
 
-# ----- 2.4.2. grouped by Plot species ------------------------------------------------------------
+# ----- 2.3.2. grouped by Plot species ------------------------------------------------------------
 trees_P_SP <- left_join(
   # data set with BA per species
   trees_total %>%
@@ -595,7 +606,6 @@ trees_P_SP <- left_join(
               sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
               SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
               mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
-              d_g = (sqrt((mean_BA_SP_plot/pi)))*2,  
               plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),    # calculate BA per species per plot in m2/ ha
   # dataset with total BA per plot
@@ -610,13 +620,9 @@ trees_P_SP <- left_join(
 # joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
 trees_P_SP <- left_join(trees_P_SP,
                         as.data.table(trees_P_SP)[as.data.table(trees_P_SP)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
-                             rename(., dom_SP = SP_code) %>% 
-                             select(plot_ID, dom_SP), 
-                           by = "plot_ID")
-
-
-
-
+                          rename(., dom_SP = SP_code) %>% 
+                          select(plot_ID, dom_SP), 
+                        by = "plot_ID")
 
 
 
