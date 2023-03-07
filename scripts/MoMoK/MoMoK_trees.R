@@ -170,7 +170,7 @@ h_nls_SP_P <- function(plot_spec, d) {
   b0 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b0, SP_P_ID);
   b1 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b1, SP_P_ID);
   b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
-  return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
+  return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
 }
 
 
