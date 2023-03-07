@@ -107,8 +107,8 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
 
 # ---- 1.3 functions ------------------------------------------------------
 # area of a circle
-c_A = function(x){
-  circle_area <- x^2*pi
+c_A = function(r){
+  circle_area <- r^2*pi
   return(circle_area)}
 
 # height coefficient selection
@@ -151,7 +151,7 @@ h_curtis <- function(spec, d) {
   b1 <- c(fi = -65586.6915, bu = -51800.9382, ta = -81132.5221, ki = -42967.9947, lae = -60241.2948, dgl = -81754.2523, ei = -46547.3645);
   b2 <- c(fi = 3074967.1738, bu = 2374368.3254, ta = 4285801.5636, ki = 1763359.9972, lae = 2895409.6245, dgl = 4193121.2406, ei = 2119420.9444);
   
-  return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to trasform into meters
+  return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
 # self made nls models for heights per species across all plots
@@ -160,7 +160,7 @@ h_nls_SP <- function(spec, d){
   b0 <- dplyr::pull(coeff_H_SP, b0, SP_code);
   b1 <- dplyr::pull(coeff_H_SP, b1, SP_code);
   b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
-  return(b0 * (1 - exp( -b1 * d))^b2)
+  return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
 
 
@@ -170,7 +170,7 @@ h_nls_SP_P <- function(plot_spec, d) {
   b0 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b0, SP_P_ID);
   b1 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b1, SP_P_ID);
   b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
-  return(b0 * (1 - exp( -b1 * d))^b2)
+  return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
 
 
