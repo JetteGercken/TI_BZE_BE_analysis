@@ -535,23 +535,20 @@ BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 # ----- 2.2.1.1. create TapeS object -----------------------------------------------------------
 # mashallah it works. i thank god and the wide universe for the dplyr::pull function 
 
-trees_total_5 %>% filter(is.na(DBH_h_cm))
-
 spp = trees_total_5 %>% dplyr::pull(tpS_ID)
 Dm = as.list(trees_total_5 %>% dplyr::pull(DBH_cm))
 Hm = as.list(trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% dplyr::pull(DBH_h_m))
 Ht = trees_total_5 %>% dplyr::pull(H_m)
 
 
-trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% filter(DBH_h_m > H_m)
-
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
-plot(obj)
+#plot(obj)
 
 # ----- 2.2.1.2. diameter at 1/3 tree height -----------------------------------------------------------
 tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)
 
+trees_total_5 %>% mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE))
 
 # ----- 2.4. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 
