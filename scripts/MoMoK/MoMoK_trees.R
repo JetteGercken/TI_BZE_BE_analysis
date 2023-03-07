@@ -497,9 +497,9 @@ trees_total_5 <- trees_total %>%
   left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
               group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
               summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-                        mean_H_m = mean(H_m),                   # mean height per species per canopy layer per plot
+                        mean_H_m = mean(na.omit(H_m)),                   # mean height per species per canopy layer per plot
                         D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-                        H_g = sum(mean(H_m)*BA_m2)/sum(BA_m2)),  # Höhe des Grundflächenmittelstammes;
+                        H_g = sum(mean(na.omit(H_m))*BA_m2[!is.na(H_m)])/sum(BA_m2)[!is.na(H_m)]),  # Höhe des Grundflächenmittelstammes;
             by = c("plot_ID", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
          H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
@@ -524,10 +524,11 @@ trees_total_5 <- trees_total %>%
 
 view(trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
        group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-       summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-                 mean_H_m = mean(H_m),                   # mean height per species per canopy layer per plot
-                 D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-                 H_g = sum(mean(H_m)*BA_m2)/sum(BA_m2)))
+       summarise(mean_DBH_mm = mean(DBH_mm[!is.na(H_m)]),             # mean diameter per species per canopy layer per plot
+                 mean_H_m = mean(H_m[!is.na(H_m)]),                   # mean height per species per canopy layer per plot
+                 D_g = ((sqrt((mean(BA_m2[!is.na(H_m)])/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
+                 H_g = sum(H_m[!is.na(H_m)]*BA_m2[!is.na(H_m)])/sum(BA_m2)[!is.na(H_m)]) %>% 
+  distinct())
 
 
 # ----- 2.2. Biomass trees--------------------------------------------------------------
