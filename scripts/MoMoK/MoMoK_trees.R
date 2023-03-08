@@ -111,6 +111,7 @@ c_A = function(r){
   circle_area <- r^2*pi
   return(circle_area)}
 
+# HEIGHTS
 # height coefficient selection
 # this function is used to select the coefficients of the height models depending on the R2
 # for x, y,a, b (can be whatever)
@@ -163,7 +164,6 @@ h_nls_SP <- function(spec, d){
   return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
 
-
 # self mase nls models for heights per species per plot
 h_nls_SP_P <- function(plot_spec, d) {
   # because I cannot combine 3 variabels in one vector, 
@@ -171,6 +171,52 @@ h_nls_SP_P <- function(plot_spec, d) {
   b1 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b1, SP_P_ID);
   b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
   return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
+}
+
+
+# BIOMASS 
+# https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
+# aboveground biomass in kg per tree, for trees DBH > 10cm
+    # where B = above-ground phytomass in kg per individual tree,
+    # b0,1,2,3 and k1,2 = coefficients of the эarklund function,
+    # DBH = Diameter at breast height in cm,
+    # D03 = Diameter in cm at 30% of tree height,
+    # H = tree height in m/
+aB_DBHa10 <- function(spec, d, d03, h){
+  b0 <- c(fi = 0.75285, ki = 0.33778, bu = 0.16787, ei= 0.09428, shw =0.27278);
+  b1 <- c(fi = 2.84985, ki = 2.84055 , bu = 6.25452, ei= 10.26998, shw =4.19240);
+  b2 <- c(fi = 6.03036, ki = 6.34964, bu = 6.64752, ei= 8.13894, shw = 5.96298);
+  b3 <- c(fi = 0.62188, ki = 0.62755, bu = 0.80745, ei= 0.55845, shw = 0.81031);
+  k1 <- c(fi = 42.0, ki = 18.0, bu = 11.0, ei= 400.0, shw =13.7);
+  k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
+  return(b0[spec]*exp(1)^b1[spec]*(d/(d+k1[spec])*exp(1)^b2[spec]*(d03/(d03+k2[spec]))*h[spec]^b3))
+}
+
+# above ground biomass for trees >1.3m height and < 10cm DBH
+    # B_H1.3_DBHb10 = above-ground phytomass in kg per individual tree,
+    # b0, bs, b3 = coefficients of the function,
+    # DBH = Diameter at breast height in cm,
+    # ds = Diameter-validity boundary for this function = 10 cm/
+aB_H1.3_DBHb10 <- function(spec, d){
+  b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
+  bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
+  b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
+  ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
+  return(b0[spec]+(((bs[spec] - b0[spec])/ds[spec]^2)+b3[spec]*(d-ds[spec]))*d^2)
+}
+
+#above ground biomass for trees <1.3m
+aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+  b0 <- c(NB = 0.23059, LB = 0.04940);
+  b1 <- c(NB = 2.20101, LB = 2.54946);
+  return(b0[spec]*h^b1[spec])
+}
+
+# belowground phytomass
+bB <- function(spec, d){
+  b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shwr =0.000010, shwrs = 0.000116);
+  b0 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shwr =2.529000, shwrs = 2.290300);
+  
 }
 
 
