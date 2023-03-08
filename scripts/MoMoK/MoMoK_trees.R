@@ -489,79 +489,13 @@ trees_total_5 <- trees_total %>%
               select(plot_ID, SP_code, R2) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
             by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
-  left_join(., coeff_H_SP %>% select(SP_code, R2), 
-            by = "SP_code") %>%       # joing R2 from coeff_SP data set -> R2.y
+  left_join(., coeff_H_SP %>% select(SP_code, R2),               # joing R2 from coeff_SP data set -> R2.y
+            by = "SP_code") %>%       
   left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-              group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-              summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-                        mean_H_m = mean(na.omit(H_m)),                   # mean height per species per canopy layer per plot
-                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-                        H_g = sum(mean(na.omit(H_m))*BA_m2[!is.na(H_m)])/sum(BA_m2)[!is.na(H_m)]),  # Höhe des Grundflächenmittelstammes;
-            by = c("plot_ID", "SP_code", "C_layer")) %>% 
-  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
-         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
-                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
-                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
-                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
-                              TRUE ~ "sampled")) %>% 
-                         # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
-  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
-                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
-                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
-                         # 0.75 then use the SP_P models
-                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
-                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                         # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(BWI_SP_group, DBH_mm, mean_DBH_mm, D_g, mean_H_m),
-                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                         # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
-                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(BWI_SP_group, DBH_mm), 
-                         TRUE ~ H_m)) #%>% 
-# select(-c(ends_with(".x"), ends_with(".y")))
-
-
-
-
-# trials and errors for dg, hg
-view(trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-       group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-       summarise(mean_DBH_mm = mean(DBH_mm[!is.na(H_m)]),             # mean diameter per species per canopy layer per plot
-                 mean_H_m = mean(H_m[!is.na(H_m)]),                   # mean height per species per canopy layer per plot
-                 D_g = ((sqrt((mean(BA_m2[!is.na(H_m)])/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-                 H_g = sum(H_m[!is.na(H_m)]*BA_m2[!is.na(H_m)])/sum(BA_m2)[!is.na(H_m)]) %>% 
-  distinct())
-
-
-view(trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-       group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-       #summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-       #          D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10) %>% # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-       summarise(mean_H_m = mean(H_m), 
-                 H_g = sum(H_m*BA_m2)/sum(BA_m2))) # mean height per species per canopy layer per plot)
-  
-
-view(trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-       group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-       summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-                 #mean_H_m = mean(H_m),                   # mean height per species per canopy layer per plot
-                 D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10))#,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-#H_g = sum(H_m*BA_m2)/sum(BA_m2)) %>% 
-distinct())
-
-trees_total_5 <- trees_total %>%
-  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-  left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
-              select(plot_ID, SP_code, R2) %>% 
-              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
-  left_join(., coeff_H_SP %>% select(SP_code, R2), 
-            by = "SP_code") %>%       # joing R2 from coeff_SP data set -> R2.y
-  left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-              group_by(plot_ID, C_layer, SP_code) %>%           # group by plot and species to calculate BA per species 
-              summarise(mean_DBH_mm = mean(DBH_mm),             # mean diameter per species per canopy layer per plot
-                        mean_H_m = mean(H_m),                   # mean height per species per canopy layer per plot
-                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # Durchmesser des Grundflächenmittelstammes; multiply py two to get radius into diameter, multiply by 10 to transform m into cm
-                        H_g = sum(mean(H_m)*BA_m2/sum(BA_m2))),  # Höhe des Grundflächenmittelstammes;
+              group_by(plot_ID, C_layer, SP_code) %>%             # group by plot and species and canopy layer to calcualte dg, hg 
+              summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Höhe des Grundflächemittelstammes, calculation according to S. Schnell
+                        mean_DBH_mm = mean(DBH_mm),               # mean diameter per species per canopy layer per plot
+                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
             by = c("plot_ID", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
          H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
@@ -577,7 +511,7 @@ trees_total_5 <- trees_total %>%
                          is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(BWI_SP_group, DBH_mm, mean_DBH_mm, D_g, mean_H_m),
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(BWI_SP_group, DBH_mm, mean_DBH_mm, D_g, H_g),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(BWI_SP_group, DBH_mm), 
@@ -799,7 +733,7 @@ ggplot(data = (left_join(trees_total %>%
 
 
 # plot estimated and samples heights vs. diameter by species, plot ad height method 
-# (nls-SP-P, nls-SP, curtis, sampled)
+# (nls-SP-P, nls-SP, sloboda, curtis, sampled)
 ggplot(data = trees_total_5, 
       aes(x = DBH_cm, y = H_m, color = H_method))+
  geom_point()+
