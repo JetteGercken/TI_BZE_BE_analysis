@@ -180,7 +180,7 @@ h_nls_SP_P <- function(plot_spec, d) {
 
 # BIOMASS 
 # https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
-# aboveground biomass in kg per tree, for trees DBH > 10cm
+## aboveground biomass in kg per tree, for trees DBH > 10cm
     # where B = above-ground phytomass in kg per individual tree,
     # b0,1,2,3 and k1,2 = coefficients of the эarklund function,
     # DBH = Diameter at breast height in cm,
@@ -196,7 +196,7 @@ aB_DBHa10 <- function(spec, d, d03, h){
   return(b0[spec]*exp(b1[spec])*(d/(d+k1[spec])*exp(b2[spec])*(d03/(d03+k2[spec]))*h^b3[spec]))
 }
 
-# above ground biomass for trees >1.3m height and < 10cm DBH
+## above ground biomass for trees >1.3m height and < 10cm DBH
     # B_H1.3_DBHb10 = above-ground phytomass in kg per individual tree,
     # b0, bs, b3 = coefficients of the function,
     # DBH = Diameter at breast height in cm,
@@ -209,19 +209,62 @@ aB_H1.3_DBHb10 <- function(spec, d){
   return(b0[spec]+(((bs[spec] - b0[spec])/ds[spec]^2)+b3[spec]*(d-ds[spec]))*d^2)
 }
 
-#above ground biomass for trees <1.3m
+## above ground biomass for trees <1.3m
 aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
 }
 
-# belowground phytomass
+## belowground phytomass
 bB <- function(spec, d){
   b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shw = 0.000010);#shwr =0.000010, shwrs = 0.000116);
   b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw =2.529000); #shwr =2.529000, shwrs = 2.290300);
   return(ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))) 
 }
+
+
+## foliage 
+  # according to T. Riedels advice the foliage biomass for coniferous trees is calculated by 
+  # groups of conferous vs. broadleafed trees:
+    # Wirth et al. (2004) (https://www.researchgate.net/publication/8959167_Generic_biomass_functions_for_Norway_spruce_in_Central_Europe_-_A_meta-analysis_approach_toward_prediction_and_uncertainty_estimation) 
+    # for coniferous trees, whereby the models are actually fit for Picea abies, but in our case all coniferous trees are treated/ calculated as Picea abies
+    # Wutzler et al. (2008) (https://www.researchgate.net/profile/Christian-Wirth-4/publication/42089705_Generic_biomass_functions_for_Common_beech_Fagus_sylvatica_in_Central_Europe_Predictions_and_components_of_uncertainty/links/56195fe008aea80367203191/Generic-biomass-functions-for-Common-beech-Fagus-sylvatica-in-Central-Europe-Predictions-and-components-of-uncertainty.pdf?origin=publication_detail)
+    # for broadleaved trees, whereby the models are actually fit for Fagus silvatica, but in our case all broadleaved trees are treated/ calculated as Fagus sylvatica
+
+### foliage coniferous trees
+ # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b5*ln(A) + b6*HSL
+ # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A)
+ # spec = species group, in this case CF/ BL (column: NH_LH), d = Diameter at breast height (cm), 
+ # h = tree height (m), a = age (years), hsl = height above sea level (m)
+fB_N <- function(d, h, a, hsl){
+  b0 = (-0.58133);
+  b1 = 3.653845;
+  b2 = (-0.21336);
+  b3 = (-2.77755);
+  b4 = 0.46540;
+  b6 = (-0.42940);
+  fB <- b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A);
+  # as the inital LMER uses a natural logarithm on the outcome (Ln(W)) I´ll have to back transform it
+  # https://www.geeksforgeeks.org/how-to-find-inverse-log-transformation-in-r/
+  # y (foliage biomass) = ln (x --> whole formula of foliage)    ⇐⇒  e^y  = x
+  return(exp(fB))
+}
+
+## foliage of broadleaved trees according to Wutzler et al. 2008
+fB_L <- function(d, h){
+  b0 = 0.0561;
+  b1 = 2.07;
+  b2 = (-1.09);
+  bssi = 0.0137;
+  bsa = (-0.00000329);
+  # from marks file: (($B$12 + $F$12*O104) * F104^($C$12+$E$12*J104) * G104^$D$12  )/1000*D104
+  return(b0 + bssa)
+}
+  
+
+
+
 
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
@@ -272,21 +315,6 @@ trees_total <- left_join(trees_total %>%
                            unite(ID_pt, plot_ID, t_ID, sep = "", remove = FALSE), # create unique tree ID from combination of plot and tree number for later work with TapeR & TapeS
    # 2. join the botanic names & German abbreviation into the tree data set 
                          SP_names %>% 
-                           # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
-                           # there is species related information for Alnus rubra missing, so I am adding it manually
-                           # which is in-official, which is why there are no information on the IPC forest etc.
-                                   # add_row(Nr_code = NA, 
-                                   #         Chr_code_ger = "REr",
-                                   #         name = "Rot-Erle",
-                                   #         bot_name = "Alnus rubra",
-                                   #         bot_genus = "Alnus", 
-                                   #         bot_species = "rubra",
-                                   #         Flora_EU = NA, 
-                                   #         LH_NH = "LB", 
-                                   #         IPC = NA,
-                                   #         WZE = NA, 
-                                   #         BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
-                                   #         BZE_al = NA)  %>%
                            # because the number codes for the species in the trees_total dataset don´t correspond at 
                            # all with the SP_names codes, the German abbreviations are used for the join, as they are among all 
                            # avaiable codes the most coherent between the two datasets. 
@@ -383,7 +411,7 @@ trees_total <- left_join(trees_total %>%
                                                            LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                                            LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                                            TRUE ~ 'other'))%>% 
-                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, tpS_com_ID, H_SP_group, LH_NH, BWI, Bio_SP_group), 
+                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, tpS_com_ID, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group), 
                          by = c("SP_code" = "Chr_ger_cap")) %>% 
   # 3. joing TapeS species codes via common SP_ID created above (tpS_com_ID)
   left_join(., SP_TapeS %>%                                          
@@ -409,6 +437,8 @@ trees_total %>% filter(is.na(bot_name)) %>%  group_by(SP_code) %>% distinct()
 #checking if assignment of the tpS_ID assignment works
 trees_total %>% filter(is.na(tpS_ID)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
 
+# checking for trees where age is NA
+trees_total %>% select(plot_ID, age) %>% group_by(plot_ID) %>% filter(!is.na(age)) %>% distinct()
 
 # ISSUES LINKNING SPECIES IN TREE TOTAL TO TAPES
 # We need a column with species codes/ names/ numbers that can be regonized by tapeS
@@ -452,7 +482,7 @@ anti_join(trees_total %>% left_join(., SP_names %>%
                                               BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
                                               BZE_al = NA)  %>%
                                       mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
-                                      select(BWI, Chr_ger_cap), 
+                                      select(BWI, Chr_ger_cap, bot_name), 
                                     by = c("SP_code" = "Chr_ger_cap")), 
           SP_TapeS_test %>% 
             mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
@@ -679,7 +709,7 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 #plot(obj)
 
 # ----- 2.2.1.2. diameter at 1/3 tree height -----------------------------------------------------------
-tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)
+#tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)
 
 
 
@@ -815,7 +845,7 @@ ggplot(data = (left_join(trees_total %>%
  theme_light()+
  theme(legend.position = "non")
 
-# ----- 2.1.5.2. visualization height regression by species over all plot ------------------------------------
+# ----- 3.1.5.2. visualization height regression by species over all plot ------------------------------------
 ggplot(data = (left_join(trees_total %>% 
                           select(plot_ID, SP_code, H_m, DBH_cm, DBH_class) %>% 
                           filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
@@ -869,6 +899,11 @@ ggplot(data = (left_join(trees_total %>%
  theme(legend.position = "non")
 
 
+
+
+# ---- 3.1.5.2. visulisation height vs. DBH by different models/ methods ----------------------------------------------------------------
+
+
 # plot estimated and samples heights vs. diameter by species, plot ad height method 
 # (nls-SP-P, nls-SP, sloboda, curtis, sampled)
 ggplot(data = trees_total_5, 
@@ -882,6 +917,19 @@ ggplot(data = trees_total_5,
  ggtitle("height estimated via nls vs. sampled height per plot and species over diamater")+
  theme_light()+
  theme(legend.position = "bottom")
+
+# (nls-SP-P, nls-SP, sloboda, curtis, sampled)
+ggplot(data = trees_total_7, 
+       aes(x = DBH_cm, y = H_m, color = H_method))+
+  geom_point()+
+  #geom_line(method = "lm")+
+  #geom_smooth(method = "nls", se=TRUE)+
+  facet_wrap(plot_ID~SP_code)+
+  xlab("DBH") +
+  ylab("height [m]")+
+  ggtitle("height estimated via nls vs. sampled height per plot and species over diamater")+
+  theme_light()+
+  theme(legend.position = "bottom")
 
 # plot estimated and samples heights vs. diameter by species, plot ad height method
 # (nls-SP-P, nls-SP, sampled)
@@ -925,6 +973,28 @@ trees_total <- trees_total%>%
          BA_m2 = c_A(DBH_cm/2)*0.0001,                 # 0.0001 to change unit from cm2 to m2
          plot_A_ha = c_A(12.62)*0.0001) %>%            # 0.0001 to change unit from m2 to hectar
   unite(ID_pt, plot_ID, t_ID, sep = "", remove = FALSE)# creae unique tree ID from comination of plot and tree number for later work with TapeR & TapeS
+
+
+
+
+
+# ----- N.1.1. adding alnus rubrato species dataset -----------------------
+SP_names %>% 
+  # https://stackoverflow.com/questions/28467068/how-to-add-a-row-to-a-data-frame-in-r
+  # there is species related information for Alnus rubra missing, so I am adding it manually
+  # which is in-official, which is why there are no information on the IPC forest etc.
+   add_row(Nr_code = NA, 
+           Chr_code_ger = "REr",
+           name = "Rot-Erle",
+           bot_name = "Alnus rubra",
+           bot_genus = "Alnus", 
+           bot_species = "rubra",
+           Flora_EU = NA, 
+           LH_NH = "LB", 
+           IPC = NA,
+           WZE = NA, 
+           BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
+           BZE_al = NA)
 
 # ----- N.1. Notes regarding linear regression of height for total dataset -----
 # ----- N.1.0. adding missing DBH classes  -------------------------------------
@@ -1238,15 +1308,21 @@ trees_total_6 <- trees_total %>%
   # this reffers to the function and meas: if R2 from coeff_H_SP_P is NA or if 
   # R2 from coeff_H_SP_P is smaller then R2 from coeff_H_SP then use the coeff_H_SP values
   # if not, keep the coeff_H_SP_P values
+  mutate(H_method = case_when(is.na(H_m) & is.na(R2.x)| is.na(H_m) & R2.x < R2.y ~ "coeff_SP", 
+                              is.na(H_m) & R2.x > R2.y ~ "coeff_SP_P",
+                              !is.na(H_m) ~ "sampled", 
+                              TRUE ~ "other")) %>% 
   mutate(R2 = f(R2.x, R2.y, R2.y, R2.x), 
          b0 = f(R2.x, R2.y, b0.y, b0.x), 
          b1 = f(R2.x, R2.y, b1.y, b1.x),
          b2 = f(R2.x, R2.y, b2.y, b2.x)) %>% 
-  mutate(H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+  mutate(#H_method = ifelse(is.na(H_m), 'est', 'samp'), 
          # estimate missing heights
          H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
   select(-c(ends_with(".x"), ends_with(".y")))
 
+  
+  
 view(trees_total_5 %>% filter(plot_ID == 29090))
 
 view(trees_total_1 %>% filter(is.na(R2.x)| R2.x.x < R2.y.y) %>% select(plot_ID, SP_code, R2.x, R2.y, R2.x.x, R2.y.y, R2, b0.x.x, b0.y.y, b0)) 
@@ -1254,6 +1330,44 @@ view(trees_total_1 %>% filter(is.na(R2.x)| R2.x.x < R2.y.y) %>% select(plot_ID, 
 
 # check if the sorter verion of this code used above is also accurate
 identical(trees_total[['R2']],trees_total_1[['R2']]) # --> yes it is
+
+
+# joining coefficients & curtis function
+trees_total_7 <- trees_total %>%
+  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% select(SP_code, R2), 
+            by = "SP_code") %>%       # joing R2 from coeff_SP data set -> R2.y
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+  # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na use the curtis function
+                         is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ h_curtis(BWI_SP_group, DBH_mm), 
+                         TRUE ~ H_m))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # as non of the follwing codes workd i had to find another solution. 
