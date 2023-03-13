@@ -237,14 +237,14 @@ bB <- function(spec, d){
  # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A)
  # spec = species group, in this case CF/ BL (column: NH_LH), d = Diameter at breast height (cm), 
  # h = tree height (m), a = age (years), hsl = height above sea level (m)
-fB_N <- function(d, h, a, hsl){
+fB_N <- function(d, h, a){
   b0 = (-0.58133);
   b1 = 3.653845;
   b2 = (-0.21336);
   b3 = (-2.77755);
   b4 = 0.46540;
   b6 = (-0.42940);
-  fB <- b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A);
+  fB <- b0 + b1*ln(d) + b2*(ln(d))^2 + b3*ln(h) + b4*(ln(h))^2 + b6*ln(a);
   # as the inital LMER uses a natural logarithm on the outcome (Ln(W)) I´ll have to back transform it
   # https://www.geeksforgeeks.org/how-to-find-inverse-log-transformation-in-r/
   # y (foliage biomass) = ln (x --> whole formula of foliage)    ⇐⇒  e^y  = x
@@ -252,19 +252,22 @@ fB_N <- function(d, h, a, hsl){
 }
 
 ## foliage of broadleaved trees according to Wutzler et al. 2008
-fB_L <- function(d, h){
+  # to aply this function I´ll need the Oberhöhe and the 
+fB_L <- function(d, h, a, si){
+  b = 0;
   b0 = 0.0561;
   b1 = 2.07;
   b2 = (-1.09);
   bssi = 0.0137;
-  bsa = (-0.00000329);
-  # from marks file: (($B$12 + $F$12*O104) * F104^($C$12+$E$12*J104) * G104^$D$12  )/1000*D104
-  return(b0 + bssa)
+  bsalt = (-0.00000329);
+  # from marks file: ((b0 + bsalt*alt) * DBH^(b1+bsi*SI) * H^b2
+  # from Wutzler 2008, Annex 3: 
+          #biomass = (b0+0+bsage*age+bssi*si+bsalt*atitude)*(DBH^b1)*(H^b2)
+  return(# so its either this: (b0 + 0 + bssi*SI + bsalt*alt)*d^b1*h^b2) 
+         # or this from Mark: 
+         (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
 }
   
-
-
-
 
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
@@ -294,8 +297,6 @@ labs <- c(seq(5, 55, by = 5))
 # whereby the first is sometimes also called roterle cause of the woods colour, however, 
 # the distribution of alnus rubra extents mainly to north america so we can assume that those trees labbeled
 # RER are actually supposed to be labelled SER
-
-
 
 
 trees_total <- left_join(trees_total %>% 
@@ -708,19 +709,24 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 #plot(obj)
 
-# ----- 2.2.1.2. diameter at 1/3 tree height -----------------------------------------------------------
-#tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)
 
-
-
-# ----- 2.2.1.3. aboveground biomass -----------------------------------------------------------
-# adding diameter at 0.3 tree height to trees_total dataframe
+# ----- 2.2.1.2. biomass -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
+  # adding diameter at 0.3 tree height to trees_total dataframe
   mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
+  # biomass
+        # aboveground biomass 
   mutate(aB_kg = case_when(DBH_cm >= 10 ~ aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
                            DBH_cm < 10 & H_m >= 1.3 ~ aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
                            H_m >= 1.3 ~ aB_Hb1.3(LH_NH, DBH_cm)),
-         bB_kg = bB(Bio_SP_group, DBH_cm))
+        # belowground biomass
+          bB_kg = bB(Bio_SP_group, DBH_cm)) #%>% 
+        # canopy biomass
+  # mutate(fB_kg = ifelse(LH_NH == "NH", fB_N(DBH_cm, H_m, age), fB_L(alt_m, SI_m, DBH_cm, H_m, b)), 
+  #        # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
+  #        StB_kg = ifelse(LH_NH == "NH", aB_kg-fB_kg, aB_kg), 
+  #        # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
+  #        totaB_kg = ifelse(LH_NH == "NH", aB_kg, aB_kg+fB_kg))
 
 
 
