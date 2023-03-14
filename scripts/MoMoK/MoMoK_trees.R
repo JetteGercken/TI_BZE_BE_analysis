@@ -253,7 +253,7 @@ fB_N <- function(d, h, a){
 
 ## foliage of broadleaved trees according to Wutzler et al. 2008
   # to aply this function I´ll need the Oberhöhe and the 
-fB_L <- function(d, h, a, si){
+fB_L <- function(d, h, alt, si){
   b = 0;
   b0 = 0.0561;
   b1 = 2.07;
@@ -268,6 +268,15 @@ fB_L <- function(d, h, a, si){
          (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
 }
   
+fB_L1 <- function(d, h){
+  b0 = 0.0377;
+  b1 = 2.43;
+  b2 = (-0.913);
+  # from marks file: ((b0 + bsalt*alt) * DBH^(b1+bsi*SI) * H^b2
+  # from Wutzler 2008, Annex 3: 
+  #biomass = (b0+0+bsage*age+bssi*si+bsalt*atitude)*(DBH^b1)*(H^b2)
+  return(b0*d^b1*h^b2)
+}
 
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
@@ -722,7 +731,7 @@ trees_total_5 <- trees_total_5 %>%
         # belowground biomass
           bB_kg = bB(Bio_SP_group, DBH_cm)) #%>% 
         # canopy biomass
-  # mutate(fB_kg = ifelse(LH_NH == "NH", fB_N(DBH_cm, H_m, age), fB_L(alt_m, SI_m, DBH_cm, H_m, b)), 
+  # mutate(fB_kg = ifelse(LH_NH == "NH", fB_N(DBH_cm, H_m, age), fB_L1(DBH_cm, H_m)), 
   #        # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
   #        StB_kg = ifelse(LH_NH == "NH", aB_kg-fB_kg, aB_kg), 
   #        # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
