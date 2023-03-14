@@ -526,8 +526,6 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
-
-
 # ----- 2. CALCULATIONS --------------------------------------------------------
 
 # ----- 2.1. Regression models for missing tree heights ---------------------------------
