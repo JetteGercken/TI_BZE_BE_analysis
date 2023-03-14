@@ -76,6 +76,7 @@ getwd()
 
 # ----- 1. DATA ----------------------------------------------------------------
 # ----- 1.1. import ------------------------------------------------------------
+# TREES
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
 trees_total <- read.delim(file = here("data/input/MoMoK/trees_MoMoK_total.csv"), sep = ";", dec = ",") %>% 
@@ -91,7 +92,8 @@ SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart_neu.csv"), sep = 
 SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
-
+#DEADWOOD
+DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",") 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
@@ -107,6 +109,11 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
+colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
+                        "SP_group", "DW_type", "H_dm", "DBH_cm", "dec_type")
+# type = standing, lying, ...
+# SP_group = Baumartengruppe
+# 
 
 
 # ---- 1.3 functions ------------------------------------------------------
@@ -193,7 +200,7 @@ aB_DBHa10 <- function(spec, d, d03, h){
   b3 <- c(fi = 0.62188, ki = 0.62755, bu = 0.80745, ei= 0.55845, shw = 0.81031);
   k1 <- c(fi = 42.0, ki = 18.0, bu = 11.0, ei= 400.0, shw =13.7);
   k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
-  return(b0[spec]*exp(b1[spec])*(d/(d+k1[spec])*exp(b2[spec])*(d03/(d03+k2[spec]))*h^b3[spec]))
+  return(b0[spec]*exp(b1[spec]*(d/(d+k1[spec])))*exp(b2[spec]*(d03/(d03+k2[spec])))*h^b3[spec])
 }
 
 ## above ground biomass for trees >1.3m height and < 10cm DBH
@@ -696,6 +703,9 @@ help("tprBiomass")
 
 # checking if assigning the species works
 tprSpeciesCode(inSp = trees_total$tpS_ID, outSp = c("scientific"))
+tprBiomass(obj, component=NULL)
+
+
 
 # https://softwareengineering.stackexchange.com/questions/307639/what-does-mapping-mean-in-programming
 # The map function requires an array and another function. It returns a new array 
@@ -713,6 +723,7 @@ Dm = as.list(trees_total_5 %>% dplyr::pull(DBH_cm))
 Hm = as.list(trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% dplyr::pull(DBH_h_m))
 Ht = trees_total_5 %>% dplyr::pull(H_m)
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+
 
 #plot(obj)
 
