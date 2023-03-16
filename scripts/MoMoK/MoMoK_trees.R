@@ -69,6 +69,7 @@ library("rBDAT")
 library("TapeR")
 library("TapeS")
 require(TapeS)
+vignette("tapes", package = "TapeS")
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -110,10 +111,12 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
-                        "SP_group", "DW_type", "H_dm", "DBH_cm", "dec_type")
-# type = standing, lying, ...
-# SP_group = Baumartengruppe
-# 
+                        "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
+
+# SP_group = Baumartengruppe totholz
+# DW_type = standing, lying
+# dec_type = decay type / Zersetzungsgrad
+
 
 
 # ---- 1.3 functions ------------------------------------------------------
@@ -279,10 +282,54 @@ fB_L1 <- function(d, h){
   b0 = 0.0377;
   b1 = 2.43;
   b2 = (-0.913);
-  # from marks file: ((b0 + bsalt*alt) * DBH^(b1+bsi*SI) * H^b2
-  # from Wutzler 2008, Annex 3: 
-  #biomass = (b0+0+bsage*age+bssi*si+bsalt*atitude)*(DBH^b1)*(H^b2)
   return(b0*d^b1*h^b2)
+}
+
+
+# branches
+
+tprVolume()
+
+
+# DEADWOOD BIOMASS
+# volume
+# here we have to consider, that in case of MoMok there were no different types pf diameter taken
+# e.g  min diameter, max diameter, middle diam
+
+# volume for deadwood when 
+    # Dm was taken (Mittendurchmesser) or 
+    # Totholztyp == 3 (liegend, stark, Burchstück) & L_m <3m
+V_DW_T1463 <- function(d, l){
+  d <- dplyr::pull(DW_total, L_dm);  
+  l <- dplyr::pull(DW_total, D_cm);
+  return((((d/100)/2)^2*pi)*l/10)
+}
+
+# Volume for deadwood when 
+   # !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
+V_DW_T253 <- function(obj.dw){          # I don´t know if this can work
+spp = DW_total %>% dplyr::pull(tpS_ID); # for this Ill first have to create species groups that correspond with TapeS
+Dm = as.list(DW_total %>% dplyr::pull(D_cm));
+Hm = as.list(DW_total %>% mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+Ht = DW_total %>% dplyr::pull(L_m);
+obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+return (tprVolume(obj.dw))
+}
+
+# Biomass deadwood occording to GHGI & BWI
+B_DW <- function(V, dec_SP){
+  BEF <- c(NH1 = 0.372, NH2 = 0.308, NH3 = 0.141, NH4 = 0.123,
+           LH1 = 0.58, LH2 = 0.37, LH3 = 0.21, LH4 = 0.26, 
+           EI1 = 0.58, EI2 = 0.37, EI3 = 0.21, EI4 = 0.26);
+  return(V*BEF[dec_SP])
+}
+
+# Carbon deadwood according to IPCC default value from GHGI methodology 2006
+C_DW <- function(V, dec_SP){
+  BEF <- c(NH1 = 0.372, NH2 = 0.308, NH3 = 0.141, NH4 = 0.123,
+           LH1 = 0.58, LH2 = 0.37, LH3 = 0.21, LH4 = 0.26, 
+           EI1 = 0.58, EI2 = 0.37, EI3 = 0.21, EI4 = 0.26);
+  return(V*BEF[dec_SP]*0.5)   # defaul value for carbon content in deadwood = 0.5 according to IPCC GHG methodology 2006
 }
 
 
@@ -728,6 +775,25 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 #plot(obj)
 
 
+# dominant height
+# Arithmetisches Mittel der Höhe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhöhe h100 oder h200 bezeichnet; die WEISE�sche Oberhöhe [ho] entspricht der Höhe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
+# Wichtig: Die Art der Oberhöhe muss jeweils definiert werden.
+# my problem: there are no 100 trees per plot and I don´t know how to estimate the height of the top 100
+
+# https://statisticsglobe.com/select-top-n-highest-values-by-group-in-r#example-2-extract-top-n-highest-values-by-group-using-dplyr-package
+# data %>%                                      # Top N highest values by group
+#   arrange(desc(value)) %>% 
+#   group_by(group) %>%
+#   slice(1:3)
+
+# https://rdrr.io/cran/dplyr/man/top_n.html
+#df %>% top_n(2)  # highest values
+
+# trees_total_5 %>% 
+#   group_by(plot_ID) %>% 
+#   summarize
+
+
 # ----- 2.2.1.2. biomass -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
   # adding diameter at 0.3 tree height to trees_total dataframe
@@ -761,10 +827,11 @@ trees_P_CP_SP <- left_join(
               sd_height_m = sd(H_m),                # standard deviation of height --> structural richness indicator
               SP_BA_plot = sum(BA_m2),              # calculate BA per species per canopy layer per plot in m2
               mean_BA_SP_plot = mean(BA_m2),        # calculate mean BA in m2 per species per canopy payer per plot
-              d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply py two to get radius into diameter, multiply by 10 to transform m into cm
               h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),
+              d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply by two to get radius into diameter, multiply by 10 to transform m into cm
               plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to calculate BA per ha
-    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),      # calculate BA per species per plot in m2/ ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,       # calculate BA per species per plot in m2/ ha
+           Nt_ha = count(t_ID)/ plot_A_ha),         # number of trees per species and layer per hectare  
   # dataset with total BA per plot
   trees_total_5 %>%
     group_by(plot_ID, C_layer) %>%                  # group by plot to calculate total BA per plot
@@ -810,6 +877,7 @@ trees_P_SP <- left_join(trees_P_SP,
                           rename(., dom_SP = SP_code) %>% 
                           select(plot_ID, dom_SP), 
                         by = "plot_ID")
+
 
 
 
