@@ -189,6 +189,7 @@ h_nls_SP_P <- function(plot_spec, d) {
 
 
 # BIOMASS 
+## STEMMWOOD
 # https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
 ## aboveground biomass in kg per tree, for trees DBH > 10cm
     # where B = above-ground phytomass in kg per individual tree,
@@ -234,7 +235,9 @@ bB <- function(spec, d){
 }
 
 
-## foliage 
+## BIOMASS CANOPY
+
+### FOLIAGE
   # according to T. Riedels advice the foliage biomass for coniferous trees is calculated by 
   # groups of conferous vs. broadleafed trees:
     # Wirth et al. (2004) (https://www.researchgate.net/publication/8959167_Generic_biomass_functions_for_Norway_spruce_in_Central_Europe_-_A_meta-analysis_approach_toward_prediction_and_uncertainty_estimation) 
@@ -247,23 +250,26 @@ bB <- function(spec, d){
  # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A)
  # spec = species group, in this case CF/ BL (column: NH_LH), d = Diameter at breast height (cm), 
  # h = tree height (m), a = age (years), hsl = height above sea level (m)
-fB_N <- function(d, h, a){
+fB_N <- function(d, h, a){   # this is one of the lower ranked models, called DHA. the best would be DHAS which includes SI & HSL
   b0 = (-0.58133);
   b1 = 3.653845;
   b2 = (-0.21336);
   b3 = (-2.77755);
   b4 = 0.46540;
   b6 = (-0.42940);
-  fB <- b0 + b1*ln(d) + b2*(ln(d))^2 + b3*ln(h) + b4*(ln(h))^2 + b6*ln(a);
+  cf2 =  1.0183;         # correction factor 2 
+  # in r ln is the same as log: https://stackoverflow.com/questions/24304936/r-using-equation-with-natural-logarithm-in-nls
+  fB <- (exp(b0 + b1*log(d) + b2*(log(d))^2 + b3*log(h) + b4*(log(h))^2 + b6*log(a))*cf2);
   # as the inital LMER uses a natural logarithm on the outcome (Ln(W)) I´ll have to back transform it
   # https://www.geeksforgeeks.org/how-to-find-inverse-log-transformation-in-r/
   # y (foliage biomass) = ln (x --> whole formula of foliage)    ⇐⇒  e^y  = x
-  return(exp(fB))
+  return(fB)
 }
 
-## foliage of broadleaved trees according to Wutzler et al. 2008
-  # to aply this function I´ll need the Oberhöhe and the 
-fB_L <- function(d, h, alt, si){
+
+### foliage of broadleaved trees according to Wutzler et al. 2008
+  # to aply this function the Oberhöhe and the elevation above sea level are required
+fB_L <- function(d, h, alt, si){   # DHC 4c model
   b = 0;
   b0 = 0.0561;
   b1 = 2.07;
@@ -277,8 +283,8 @@ fB_L <- function(d, h, alt, si){
          # or this from Mark: 
          (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
 }
-  
-fB_L1 <- function(d, h){
+   
+fB_L1 <- function(d, h){  #DH3 4a Model 
   b0 = 0.0377;
   b1 = 2.43;
   b2 = (-0.913);
@@ -286,13 +292,39 @@ fB_L1 <- function(d, h){
 }
 
 
-# branches
+### BRANCHES
+
+### branches coniferous trees
+brB_N <- function(d, h, a){  # DHA
+  b0 = -0.64565; 
+  b1 = 2.85424;
+  b2 = -2.98493;
+  b3 = 0.41789;
+  fbrB_N <- (b0+b1*log(d)+b2*log(h)+b3*(log(h))^2); #fresh branches DHA best base
+  b4 = -1.21969;
+  b5 = 1.49138;
+  b6 = -1.286761;
+  b7 = 0.18222;
+  dbrB_N <- (b4+b5*log(d)+b6*log(h)+b7*(log(a)*log(d))); # dry brances DHA best base
+  return(exp(fbrB_N)+exp(dbrB_N))
+}
+
+### branches broadleafed trees
+brB_L1 <- function(d, h){  #DH3 4a Model 
+  b0 = 0.123;
+  b1 = 3.09;
+  b2 = (-1.17);
+  return(b0*d^b1*h^b2)
+}
 
 
-# DEADWOOD BIOMASS
+
+
+# DEADWOOD BIOMASS & CARBON
 # volume
 # here we have to consider, that in case of MoMok there were no different types pf diameter taken
 # e.g  min diameter, max diameter, middle diam
+# the volume calautation follows the procedure described in BWI Methodikband, 
 
 # volume for deadwood when 
     # Dm was taken (Mittendurchmesser) or 
@@ -802,13 +834,17 @@ trees_total_5 <- trees_total_5 %>%
                            DBH_cm < 10 & H_m >= 1.3 ~ aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
                            H_m >= 1.3 ~ aB_Hb1.3(LH_NH, DBH_cm)),
         # belowground biomass
-          bB_kg = bB(Bio_SP_group, DBH_cm)) #%>% 
-        # canopy biomass
-  # mutate(fB_kg = ifelse(LH_NH == "NH", fB_N(DBH_cm, H_m, age), fB_L1(DBH_cm, H_m)), 
-  #        # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
-  #        StB_kg = ifelse(LH_NH == "NH", aB_kg-fB_kg, aB_kg), 
-  #        # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
-  #        totaB_kg = ifelse(LH_NH == "NH", aB_kg, aB_kg+fB_kg))
+          bB_kg = bB(Bio_SP_group, DBH_cm)) %>% 
+         # foliage biomass
+   mutate(fB_kg = ifelse(LH_NH == "NB", fB_N(DBH_cm, H_m, age), fB_L1(DBH_cm, H_m)),
+          # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
+          brB_kg = ifelse(LH_NH == "NB", brB_N(DBH_cm, H_m, age), brB_L1(DBH_cm, H_m)), 
+          # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
+          StB_kg = ifelse(LH_NH == "NB", (aB_kg-(fB_kg+brB_kg)), (aB_kg-brB_kg)), 
+          # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
+          totaB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
+          totaB_t_ha = totaB_kg/1000*plot_A_ha, 
+          fB_t_ha = fB_kg/1000*plot_A_ha)
 
 
 
