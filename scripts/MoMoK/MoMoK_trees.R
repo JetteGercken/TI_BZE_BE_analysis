@@ -657,7 +657,7 @@ SP_names_com_ID_tapeS <- rbind(
                                     bot_name == '-2' ~ "missing", 
                                     # everything else belongs to other broadleafed trees
                                     TRUE ~ "Magnoliopsida trees")))
-# export x_bart with TapeS common ID
+# export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
  write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")        
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
