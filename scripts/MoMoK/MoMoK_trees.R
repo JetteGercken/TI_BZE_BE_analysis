@@ -318,8 +318,6 @@ brB_L1 <- function(d, h){  #DH3 4a Model
 }
 
 
-
-
 # DEADWOOD BIOMASS & CARBON
 # volume
 # here we have to consider, that in case of MoMok there were no different types pf diameter taken
@@ -609,6 +607,58 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
+        
+SP_names_com_ID_tapeS <- rbind(
+  # selecting those rows in SP_names (x_bart) that have a match in "scientific" of TapeS 
+  # and create column called com_ID That holds that scientific names that are common between TapeS and SP_names x_bart
+  inner_join(SP_names, SP_TapeS_test %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
+  mutate(tpS_SP_com_name = bot_name), 
+ # selecting those rows in SP_names (x_bart) that do not have a match in "scientific" of TapeS 
+  anti_join(SP_names, SP_TapeS_test  %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
+                                   # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
+  mutate(tpS_SP_com_name = case_when(bot_genus == "Abies" & !(bot_species %in% c("grandis", "alba")) | bot_genus == "abies …" & !(bot_species %in% c("grandis", "alba")) ~ "Abies alba",
+                                    # all Larix not kaemperi & decidua are assigned to Larix spp.
+                                    bot_genus == "Larix" & !(bot_species %in% c("decidua", "kaempferi")) ~ "Larix spp.",
+                                    # all picea are allocated to Picea abies cause TapeS doesn´t distinguish
+                                    bot_genus == "Picea"  ~ "Picea abies",
+                                    # all Pinus not "nigra", "strobus" are assigned to Pinus sylvestris
+                                    bot_genus == "Pinus" & !(bot_species %in% c("nigra", "strobus")) ~  "Pinus sylvestris",
+                                    # there is a spelling mistake in x-Bart spelling Pseudotsuga menziestii with a t wich hampers the join with TapeS_SP
+                                    bot_genus == "Pseudotsuga" ~ "Pseudotsuga menziesii", 
+                                    # all thuja species (whcih x_bart doesnt distinguish anyways) are treated as Thuja plicata
+                                    bot_genus == "Thuja" ~ "Thuja plicata",
+                                    # all tsuga are treated as tsuga heterophyllia cause TapeS only has that species of the genus
+                                    bot_genus == "Tsuga" ~ "Tsuga heterophylla",
+                                    # everything else NH belongs to other coniferous trees
+                                    LH_NH == "NB" & !(bot_genus %in% c("Abies","Larix", "Picea","Pinus", "Pseudotsuga", "Thuja", "Tsuga"))~ "Coniferales trees", 
+                                    bot_genus == "Acer" & !(bot_species %in% c("campestre", "platanoides",  "pseudoplatanus", "spp.")) ~ "Acer spp.",
+                                    bot_genus == "Alnus" ~ "Alnus spp.", 
+                                    bot_genus == "Betula" ~ "Betula spp.", 
+                                    # all Carpinus species are treated as Carpinus betulus
+                                    bot_genus == "Carpinus" ~ "Carpinus betulus",
+                                    # all fagus species are treated as Fagus sylvatica
+                                    bot_genus == "Fagus" ~ "Fagus sylvatica", 
+                                    # all Fraxinus species are treated as Fraxinus excelsior
+                                    bot_genus == "Fraxinus" ~ "Fraxinus excelsior",
+                                    #all Populus species except populus balsamifera are assigned to Populus spp. 
+                                    bot_genus == "Populus" & bot_species != "balsamifera"  ~ "Populus spp.", 
+                                    # all Prunus species are treated as Prunus avium
+                                    bot_genus == "Prunus"  ~ "Prunus avium",
+                                    #all Quercus species except rubra balsamifera are assigned to Quercus spp. 
+                                    bot_genus == "Quercus" & bot_species != "rubra"  ~ "Quercus spp.",
+                                    # all Salix species are allocated to Salix spp.
+                                    bot_genus == "Salix"  ~ "Salix spp.",
+                                    #all Sorbus species except torminalis are assigned to Sorbus aucuparia 
+                                    bot_genus == "Sorbus" & bot_species != "torminalis"  ~ "Sorbus aucuparia",
+                                    # all Tilia species are allocated to Tilia spp. cause TapeS doesnt distinguish between the species
+                                    bot_genus == "Tilia"  ~ "Tilia spp.",
+                                    # all Ulmus species are allocated to Ulmus spp. cause TapeS doesnt distinguish between the species
+                                    bot_genus == "Ulmus"  ~  "Ulmus spp.",
+                                    bot_name == '-2' ~ "missing", 
+                                    # everything else belongs to other broadleafed trees
+                                    TRUE ~ "Magnoliopsida trees")))
+# export x_bart with TapeS common ID
+ write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")        
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
 
