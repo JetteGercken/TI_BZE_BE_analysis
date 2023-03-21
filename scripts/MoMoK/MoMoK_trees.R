@@ -95,8 +95,9 @@ SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
 #DEADWOOD
-DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=TRUE)# %>% 
+DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)# %>% 
   #mutate(tpS_ID = NA) # this is just for the function, let´s see if it works
+
 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
@@ -115,7 +116,9 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
                         "BZE_al")
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
-
+DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
+DW_total$D_cm <- as.numeric(DW_total$D_cm)
+DW_total <- DW_total %>% filter(!is.na(D_cm))
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying
 # dec_type = decay type / Zersetzungsgrad
@@ -333,7 +336,7 @@ brB_L1 <- function(d, h){  #DH3 4a Model
 V_DW_T1463 <- function(d, l){
   d <- DW_total %>% mutate(D_m = D_cm/100) %>% dplyr::pull(D_m);
   l <- DW_total %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
-  return((((d)/2)^2*pi)*l)
+  return(((d/2)^2*pi)*l)
 }
 
 # Volume for deadwood when 
@@ -341,7 +344,7 @@ V_DW_T1463 <- function(d, l){
 V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
 spp = DW_total %>% dplyr::pull(tpS_ID); # for this Ill first have to create species groups that correspond with TapeS
 Dm = as.list(DW_total %>% dplyr::pull(D_cm));
-Hm = as.list(DW_total %>% mutate(D_h_m = 1.3) %>%  dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+Hm = as.list(DW_total %>% mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
 Ht = DW_total %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
 obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
 return (tprVolume(obj.dw))
@@ -367,7 +370,7 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 # ----- 1.4. dealing with missing info ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
-summary(DW_total)
+summary(DW_total) # there´s one D_cm that is NA because in the origianl dataset it´s called "s"--> I´ll exclude it
 
 # ----- 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
@@ -952,7 +955,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
 DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m))
+         V_dw = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m))
          )
 
 
