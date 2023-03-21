@@ -95,8 +95,8 @@ SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
 #DEADWOOD
-DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=TRUE) %>% 
-  mutate(tpS_ID = NA) # this is just for the function, let´s see if it works
+DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=TRUE)# %>% 
+  #mutate(tpS_ID = NA) # this is just for the function, let´s see if it works
 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
@@ -114,7 +114,7 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
-                        "SP_group", "DW_type", "L_dm", "D_cm", "dec_type", "tpS_ID")
+                        "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
 
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying
@@ -612,7 +612,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
         
-SP_names_com_ID_tapeS <- rbind(
+SP_names_com_ID_tapeS <- left_join(rbind(
   # selecting those rows in SP_names (x_bart) that have a match in "scientific" of TapeS 
   # and create column called com_ID That holds that scientific names that are common between TapeS and SP_names x_bart
   inner_join(SP_names, SP_TapeS_test %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
@@ -660,7 +660,9 @@ SP_names_com_ID_tapeS <- rbind(
                                     bot_genus == "Ulmus"  ~  "Ulmus spp.",
                                     bot_name == '-2' ~ "missing", 
                                     # everything else belongs to other broadleafed trees
-                                    TRUE ~ "Magnoliopsida trees")))
+                                    TRUE ~ "Magnoliopsida trees"))), 
+ SP_TapeS_test %>% select(scientific, ID) %>% rename(tpS_ID = ID), 
+ by = c("tpS_SP_com_name" = "scientific"))
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
  write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")        
 
@@ -935,22 +937,19 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
               distinct(),
             by = "plot_ID"), 
   # joining the common species codes of SP_names and SP_tapeS fromSP_names_com_ID_tapeS and attaching the tpS_ID from SP_tapeS to it
-  left_join(SP_names_com_ID_tapeS %>% 
+  SP_names_com_ID_tapeS %>% 
               mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
-              select(Chr_ger_cap, tpS_SP_com_name, LH_NH), 
-            SP_TapeS %>% 
-               select(scientific, ID) %>% 
-               rename(tpS_ID = ID), 
-            by = c("tpS_SP_com_name" = "scientific")),
-              by = c("dom_SP" = "Chr_ger_cap")) %>%
-  select(-tpS_ID.x)
+              select(Chr_ger_cap, tpS_SP_com_name, tpS_ID, LH_NH), 
+  by = c("dom_SP" = "Chr_ger_cap")) %>%
   mutate(L_m = L_dm/10,
          D_m = as.integer(D_cm)/100, 
          D_h_cm = 1.3,
          dec_type_BWI = case_when(dec_type == 1 | dec_type == 2 ~ 1, 
                                   dec_type == 3 ~ 2, 
                                   dec_type == 4 ~ 3, 
-                                  TRUE ~ 4)) %>% 
+                                  TRUE ~ 4))
+
+DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m))
