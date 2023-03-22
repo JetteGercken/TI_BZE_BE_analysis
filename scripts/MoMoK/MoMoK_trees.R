@@ -342,11 +342,11 @@ V_DW_T1463 <- function(d, l){
 # Volume for deadwood when 
    # !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
 V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
-spp = DW_total %>% dplyr::pull(tpS_ID); # for this Ill first have to create species groups that correspond with TapeS
-Dm = as.list(DW_total %>% dplyr::pull(D_cm));
-Hm = as.list(DW_total %>% mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
-Ht = DW_total %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
-obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  spp = DW_total %>% filter(L_dm > 13) %>% dplyr::pull(tpS_ID); # for this Ill first have to create species groups that correspond with TapeS
+  Dm = as.list(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(D_cm));
+  Hm = as.list(DW_total %>% filter(L_dm > 13) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = DW_total %>% filter(L_dm > 13) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
+  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
 return (tprVolume(obj.dw))
 }
 
@@ -856,7 +856,7 @@ Ht = trees_total_5 %>% dplyr::pull(H_m)
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 
-#plot(obj)
+plot(obj)
 
 # ----- 2.2.1.2. dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
@@ -946,7 +946,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
   by = c("dom_SP" = "Chr_ger_cap")) %>%
   mutate(L_m = L_dm/10,
          D_m = as.integer(D_cm)/100, 
-         D_h_cm = 1.3,
+         D_h_m = 1.3,
          dec_type_BWI = case_when(dec_type == 1 | dec_type == 2 ~ 1, 
                                   dec_type == 3 ~ 2, 
                                   dec_type == 4 ~ 3, 
@@ -996,6 +996,8 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
                              rename(., dom_SP = SP_code) %>% 
                              select(plot_ID, C_layer, dom_SP), 
                            by = c("plot_ID", "C_layer"))
+
+
 
 # ----- 2.4.2. grouped by Plot species ------------------------------------------------------------
 trees_P_SP <- left_join(
