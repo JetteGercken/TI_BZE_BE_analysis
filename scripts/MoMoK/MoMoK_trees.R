@@ -6,36 +6,38 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-# install.packages("usethis")
-# install.packages("here")
-# install.packages("readr")
-# install.packages("tidyverse")
-# install.packages("tibble")
-# install.packages("dplyr")
-# install.packages("data.table")
-# install.packages("broom")
-# install.packages("purrr")
-# ## laTex
-# install.packages("stargazer")  #for compatability with Latex
-# install.packages("tikzDevice") #for compatability with Latex
-# # visualisation
-# install.packages("ggthemes")
-# install.packages("ggplot2")
-# install.packages("reshape2") #for multiple y values
-# install.packages("ggforce") #for zooming in parts of the plot
-# options(tz="CA")
-# install.packages("reshape2")
-# # analysis
-# install.packages("corrplot")
-# install.packages("AICcmodavg")
-# # forest related
-# install.packages("forestmangr")
-# install.packages("rBDAT")
-# install.packages("TapeR")
-# install.packages("pkgbuild")
-# if (! require("remotes")) 
-#   install.packages("remotes")
-# remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+install.packages("usethis")
+ install.packages("here")
+ install.packages("readr")
+ install.packages("tidyverse")
+ install.packages("tibble")
+ install.packages("dplyr")
+ install.packages("data.table")
+ install.packages("broom")
+ install.packages("purrr")
+ install.packages("devtools")
+ ## laTex
+ install.packages("stargazer")  #for compatability with Latex
+ install.packages("tikzDevice") #for compatability with Latex#
+ # visualisation
+ install.packages("ggthemes")
+ install.packages("ggplot2")
+ install.packages("reshape2") #for multiple y values
+ install.packages("ggforce") #for zooming in parts of the plot
+ options(tz="CA")
+ install.packages("reshape2")
+ # analysis
+ install.packages("corrplot")
+ install.packages("AICcmodavg")
+ # forest related
+  install.packages("forestmangr")
+ install.packages("rBDAT")
+ install.packages("TapeR")
+ install.packages("pkgbuild")
+ library("devtools")
+ if (! require("remotes")) 
+   install.packages("remotes")
+ remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -50,6 +52,8 @@ library("data.table")
 require(data.table)
 library("broom")
 library("purrr")
+ library("remotes")
+ library("devtools")
 # laTex
 library("stargazer")  #for compatability with Latex
 library("tikzDevice") #for compatability with Latex
@@ -67,6 +71,11 @@ library("AICcmodavg")
 library("forestmangr")
 library("rBDAT")
 library("TapeR")
+if (! require("remotes")) 
+  install.packages("remotes")
+library("remotes")s
+devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 library("TapeS")
 require(TapeS)
 
