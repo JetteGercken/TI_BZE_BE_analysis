@@ -1253,5 +1253,16 @@ ggplot(data=height_RER, aes(x = DBH_class, y = H_m))+
 
 
 
-
-
+# total working days 2023 Brandenburg from February onwards: 
+tot_wd = 229
+ho_wd = tot_wd*0.5
+already_used_ho = 10
+ho_planned_04_spain = 5
+ho_planned_0809_FR_SP = 10
+ho_planned_12_warm = 10
+ho_planned_12_christmas = 5
+ho_planned_tot = ho_planned_04_spain + ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
+weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
+remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
+current_KW_week <- 12 # 20.03-26.03
+rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
