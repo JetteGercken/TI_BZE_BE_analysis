@@ -342,10 +342,10 @@ V_DW_T1463 <- function(d, l){
 # Volume for deadwood when 
    # !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
 V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
-  spp = DW_total %>% filter(L_dm > 13) %>% dplyr::pull(tpS_ID); # for this Ill first have to create species groups that correspond with TapeS
-  Dm = as.list(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(D_cm));
-  Hm = as.list(DW_total %>% filter(L_dm > 13) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m)); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
-  Ht = DW_total %>% filter(L_dm > 13) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
+  spp = na.omit(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
+  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(DW_total %>% filter(L_dm > 13) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
 return (tprVolume(obj.dw))
 }
