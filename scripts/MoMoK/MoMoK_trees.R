@@ -342,12 +342,12 @@ V_DW_T1463 <- function(d, l){
 # Volume for deadwood when 
    # !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
 V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
-  spp = na.omit(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
-  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
-  Ht = na.omit(DW_total %>% filter(L_dm > 13) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
+  spp = na.omit(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
+  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(DW_total %>% filter(L_dm > 30) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-return (tprVolume(obj.dw))
+return (tprVolume(obj.dw[obj.dw@monotone == TRUE]))
 }
 
 # Biomass deadwood occording to GHGI & BWI
@@ -856,7 +856,7 @@ Ht = trees_total_5 %>% dplyr::pull(H_m)
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 
-plot(obj)
+#plot(obj)
 
 # ----- 2.2.1.2. dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
@@ -952,12 +952,13 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                   dec_type == 4 ~ 3, 
                                   TRUE ~ 4))
 
-DW_total %>% 
+# ----- 2.3.2. Deadwood volume, biomass, carbon ---------------------------------------------
+DW_total <- DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m))
-         )
-
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
+         C_dw_kg = C_DW(V_dw_m3, SP_dec_type))
 
 
 
