@@ -119,6 +119,7 @@ colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID"
 DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
 DW_total <- DW_total %>% filter(!is.na(D_cm))
+DW_total %>% filter(is.na(D_cm))
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying
 # dec_type = decay type / Zersetzungsgrad
@@ -342,13 +343,14 @@ V_DW_T1463 <- function(d, l){
 # Volume for deadwood when 
 # !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
 V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
-  spp = na.omit(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
-  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>% dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 13) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
-  Ht = na.omit(DW_total %>% filter(L_dm > 13) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
+  spp = na.omit(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
+  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(DW_total %>% filter(L_dm > 30) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   return (tprVolume(obj.dw))
 }
+
 
 # Biomass deadwood occording to GHGI & BWI
 B_DW <- function(V, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
@@ -952,11 +954,26 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                   dec_type == 4 ~ 3, 
                                   TRUE ~ 4))
 
+write.csv(DW_total, "output/out_data/DW_total.csv")        
+
 DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m))
   )
+
+
+
+
+# trials and errors with TapeS volumen DW
+spp = 28
+Dm = 19.0
+Hm = 1.3
+Ht = 16.9
+obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+tprVolume(obj.dw)
+
+
 
 
 
@@ -1289,7 +1306,15 @@ SP_names %>%
           BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
           BZE_al = NA)
 
+
+
 # ----- N.1. Notes regarding linear regression of height for total dataset -----
+trees_total_5 %>% filter(is.na(age)) %>% group_by(plot_ID)
+trees_total_5 %>% select(plot_ID, age) %>% 
+  group_by(plot_ID) %>% 
+  filter(is.na(age)) %>% 
+  distinct()
+
 # ----- N.1.0. adding missing DBH classes  -------------------------------------
 # https://stackoverflow.com/questions/32683599/r-ifelse-to-replace-values-in-a-column
 trees_total$DBH_class <- ifelse(is.na(trees_total$DBH_class),  # if DBH_class is NA

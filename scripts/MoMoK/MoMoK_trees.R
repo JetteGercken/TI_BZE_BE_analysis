@@ -116,6 +116,8 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
                         "BZE_al")
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
+# changing DW variable D_cm from character itno numeric variable
+# https://stackoverflow.com/questions/11936339/replace-specific-characters-within-strings
 DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
 DW_total <- DW_total %>% filter(!is.na(D_cm))
@@ -126,13 +128,14 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 
 
 # ---- 1.3 functions ------------------------------------------------------
+# ---- 1.3.1. circle ------------------------------------------------------
 # area of a circle
 c_A = function(r){
   circle_area <- r^2*pi
   return(circle_area)}
 
-# HEIGHTS
-# height coefficient selection
+# ---- 1.3.2. HEIGHTS ------------------------------------------------------
+# ---- 1.3.2.1. height coefficient selection ------------------------------------------------------
 # this function is used to select the coefficients of the height models depending on the R2
 # for x, y,a, b (can be whatever)
 f = function(x,y,a,b){
@@ -140,8 +143,9 @@ f = function(x,y,a,b){
   answer <- ifelse(is.na(x)| x < y, a, b)
   return(answer)}
 
-# einheitshöhenkurve
-# sloboda 
+
+# ---- 1.3.2.2. einheitshöhenkurve------------------------------------------------------
+# ---- 1.3.2.2.1. Sloboda ------------------------------------------------------
 ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   k0 <- c(fi = 0.183, ta = 0.097, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
   k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
@@ -164,7 +168,7 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   return(h_pred)#*f_red)
 }
 
-# Einheitshöhenkurve according to CURTIS 
+# ---- 1.3.2.2.2. Curtis ------------------------------------------------------
 # --> this one is only applied when there is literally not information to calculate the height, 
 # except of the diameter
 h_curtis <- function(spec, d) {
@@ -175,6 +179,9 @@ h_curtis <- function(spec, d) {
   return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
+
+# ---- 1.3.2.3. self-fitted nls models ------------------------------------------------------
+# ---- 1.3.2.3.1. species- & plot-wise self-fitted nls models ------------------------------------------------------
 # self made nls models for heights per species across all plots
 h_nls_SP <- function(spec, d){
   # https://statisticsglobe.com/convert-data-frame-column-to-a-vector-in-r
@@ -183,7 +190,7 @@ h_nls_SP <- function(spec, d){
   b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
   return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
-
+# ---- 1.3.2.3.2. species-wise self-fitted nls models ------------------------------------------------------
 # self mase nls models for heights per species per plot
 h_nls_SP_P <- function(plot_spec, d) {
   # because I cannot combine 3 variabels in one vector, 
@@ -194,16 +201,19 @@ h_nls_SP_P <- function(plot_spec, d) {
 }
 
 
-# BIOMASS 
-## STEMMWOOD
+# ---- 1.3.3. LIVING BIOMASS ----------------------------------------------------------
+# ---- 1.3.3.1. total aboveground biomass --------------------------------------
+## Total ABOVEGROUND = Stemmwood+bark + finewood+bark + foliage
+
+# ---- 1.3.3.1.1.  GHG inventory (Dunger et al.) total above biomass --------------------------------------
 # https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
-## aboveground biomass in kg per tree, for trees DBH > 10cm
+## aboveground biomass in kg per tree, for trees DBH > 10cm GHGI
     # where B = above-ground phytomass in kg per individual tree,
     # b0,1,2,3 and k1,2 = coefficients of the эarklund function,
     # DBH = Diameter at breast height in cm,
     # D03 = Diameter in cm at 30% of tree height,
     # H = tree height in m
-aB_DBHa10 <- function(spec, d, d03, h){
+Dunger_aB_DBHa10 <- function(spec, d, d03, h){
   b0 <- c(fi = 0.75285, ki = 0.33778, bu = 0.16787, ei= 0.09428, shw =0.27278);
   b1 <- c(fi = 2.84985, ki = 2.84055 , bu = 6.25452, ei= 10.26998, shw =4.19240);
   b2 <- c(fi = 6.03036, ki = 6.34964, bu = 6.64752, ei= 8.13894, shw = 5.96298);
@@ -212,51 +222,105 @@ aB_DBHa10 <- function(spec, d, d03, h){
   k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
   return(b0[spec]*exp(b1[spec]*(d/(d+k1[spec])))*exp(b2[spec]*(d03/(d03+k2[spec])))*h^b3[spec])
 }
-
-## above ground biomass for trees >1.3m height and < 10cm DBH
+## above ground biomass for trees >1.3m height and < 10cm DBH GHGI
     # B_H1.3_DBHb10 = above-ground phytomass in kg per individual tree,
     # b0, bs, b3 = coefficients of the function,
     # DBH = Diameter at breast height in cm,
     # ds = Diameter-validity boundary for this function = 10 cm/
-aB_H1.3_DBHb10 <- function(spec, d){
+Dunger_aB_H1.3_DBHb10 <- function(spec, d){
   b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
   bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
   b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
   ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
   return(b0[spec]+(((bs[spec] - b0[spec])/ds[spec]^2)+b3[spec]*(d-ds[spec]))*d^2)
 }
-
-## above ground biomass for trees <1.3m
-aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+## above ground biomass for trees <1.3m GHGI
+Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
 }
 
-## belowground phytomass
-bB <- function(spec, d){
-  b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shw = 0.000010);#shwr =0.000010, shwrs = 0.000116);
-  b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw =2.529000); #shwr =2.529000, shwrs = 2.290300);
-  return(ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))) 
+
+# ---- 1.3.3.1.1. TapeS total above biomass - all -------------------------------------------
+# Kändler, G. and B. Bösch (2012). Methodenentwicklung für die 3. Bundeswaldinventur: Modul 3 
+# Überprüfung und Neukonzeption einer Biomassefunktion - Abschlussbericht. Im Auftrag des 
+# Bundesministeriums für Ernährung, Landwirtschaft und Verbraucherschutz in Zusammenarbeit 
+# mit dem Institut für Waldökologie und Waldinventur des Johann Heinrich von Thünen-Instituts, FVA-BW: 71.
+
+tapes_aB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprBiomass(obj.tbio, component="all"))
 }
 
 
-## BIOMASS CANOPY
+# ---- 1.3.3.2. coarsewood biomass without bark ----------------------------------------------
+# ---- 1.3.3.2.1. Wirth coarsewood biomass  without bark-----------------------------------------
+# ---- 1.3.3.2.2. Wutzler coarsewood biomass  without bark---------------------------------------
+# ---- 1.3.3.2.3. Vondernach coarsewood biomass  without bark - Dh ------------------------------------
+Vondr_DhB <- function(SP_group_Vdn, d, sth){
+  a <- c() # für alle auser buche 0 
+}
 
+
+# ---- 1.3.3.2.4. TapeS coarsewood biomass without bark - sw -----------------------------------------
+tapes_StB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprBiomass(obj.tbio, component="sw") + tprBiomass(obj.tbio, component="stw"))
+}
+
+# ---- 1.3.3.3. coarsewood bark -------------------------------------------------
+# ---- 1.3.3.3.1. Wirth coarsewood bark -----------------------------------------
+# ---- 1.3.3.3.2. Wutzler coarsewood bark ---------------------------------------
+# ---- 1.3.3.3.3. Vondernach coarsewood bark R ------------------------------------
+# ---- 1.3.3.3.4. TapeS coarsewood bark "sb" + "stb" -----------------------------------------
+tapes_StbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprBiomass(obj.tbio, component="sb")+ tprBiomass(obj.tbio, component="stb"))
+}
+
+# ---- 1.3.4.4. stemmwood biomass with bark ----------------------------------------------
+# ---- 1.3.4.4.1. Wirth stemmwood biomass with bark-----------------------------------------
+# ---- 1.3.4.4.2. Wutzler stemmwood biomass with bark---------------------------------------
+# ---- 1.3.4.4.3. Vondernach stemmwood biomass with bark - Dh + DhR ------------------------------------
+# ---- 1.3.4.4.4. TapeS stemmwood biomass with bark - sw+sb -----------------------------------------
+tapes_StbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return ((tprBiomass(obj.tbio, component="sw")) + (tprBiomass(obj.tbio, component="sb")))
+}
+
+# ---- 1.3.3.5. foliage biomass ------------------------------------------------
 ### FOLIAGE
-  # according to T. Riedels advice the foliage biomass for coniferous trees is calculated by 
-  # groups of conferous vs. broadleafed trees:
-    # Wirth et al. (2004) (https://www.researchgate.net/publication/8959167_Generic_biomass_functions_for_Norway_spruce_in_Central_Europe_-_A_meta-analysis_approach_toward_prediction_and_uncertainty_estimation) 
-    # for coniferous trees, whereby the models are actually fit for Picea abies, but in our case all coniferous trees are treated/ calculated as Picea abies
-    # Wutzler et al. (2008) (https://www.researchgate.net/profile/Christian-Wirth-4/publication/42089705_Generic_biomass_functions_for_Common_beech_Fagus_sylvatica_in_Central_Europe_Predictions_and_components_of_uncertainty/links/56195fe008aea80367203191/Generic-biomass-functions-for-Common-beech-Fagus-sylvatica-in-Central-Europe-Predictions-and-components-of-uncertainty.pdf?origin=publication_detail)
-    # for broadleaved trees, whereby the models are actually fit for Fagus silvatica, but in our case all broadleaved trees are treated/ calculated as Fagus sylvatica
+# according to T. Riedels advice the foliage biomass for coniferous trees is calculated by 
+# groups of conferous vs. broadleafed trees:
+# Wirth et al. (2004) (https://www.researchgate.net/publication/8959167_Generic_biomass_functions_for_Norway_spruce_in_Central_Europe_-_A_meta-analysis_approach_toward_prediction_and_uncertainty_estimation) 
+# for coniferous trees, whereby the models are actually fit for Picea abies, but in our case all coniferous trees are treated/ calculated as Picea abies
+# Wutzler et al. (2008) (https://www.researchgate.net/profile/Christian-Wirth-4/publication/42089705_Generic_biomass_functions_for_Common_beech_Fagus_sylvatica_in_Central_Europe_Predictions_and_components_of_uncertainty/links/56195fe008aea80367203191/Generic-biomass-functions-for-Common-beech-Fagus-sylvatica-in-Central-Europe-Predictions-and-components-of-uncertainty.pdf?origin=publication_detail)
+# for broadleaved trees, whereby the models are actually fit for Fagus silvatica, but in our case all broadleaved trees are treated/ calculated as Fagus sylvatica
 
+# ---- 1.3.3.5.1. Wirth foliage (coniferous)-------------------------------
 ### foliage coniferous trees
  # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b5*ln(A) + b6*HSL
  # lnW = b0 + b1*ln(D) + b2*(ln(D))^2 + b3*ln(H) + b4*(ln(H))^2 + b6*ln(A)
  # spec = species group, in this case CF/ BL (column: NH_LH), d = Diameter at breast height (cm), 
  # h = tree height (m), a = age (years), hsl = height above sea level (m)
-fB_N <- function(d, h, a){   # this is one of the lower ranked models, called DHA. the best would be DHAS which includes SI & HSL
+Wirth_fB_N <- function(d, h, a){   # this is one of the lower ranked models, called DHA. the best would be DHAS which includes SI & HSL
   b0 = (-0.58133);
   b1 = 3.653845;
   b2 = (-0.21336);
@@ -272,10 +336,12 @@ fB_N <- function(d, h, a){   # this is one of the lower ranked models, called DH
   return(fB)
 }
 
-
+# ---- 1.3.3.5.2. Wutzler foliage (broadleafed)-------------------------------
 ### foliage of broadleaved trees according to Wutzler et al. 2008
   # to aply this function the Oberhöhe and the elevation above sea level are required
-fB_L <- function(d, h, alt, si){   # DHC 4c model
+
+# DHC 4c model
+Wutzler_fB_L <- function(d, h, alt, si){   # DHC 4c model
   b = 0;
   b0 = 0.0561;
   b1 = 2.07;
@@ -289,8 +355,9 @@ fB_L <- function(d, h, alt, si){   # DHC 4c model
          # or this from Mark: 
          (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
 }
-   
-fB_L1 <- function(d, h){  #DH3 4a Model 
+
+#DH3 4a Model   
+Wutzler_fB_L1 <- function(d, h){  #DH3 4a Model 
   b0 = 0.0377;
   b1 = 2.43;
   b2 = (-0.913);
@@ -298,10 +365,28 @@ fB_L1 <- function(d, h){  #DH3 4a Model
 }
 
 
-### BRANCHES
+# ---- 1.3.3.5.3. Vondernach foliage - Nad ---------------------------------------
 
+
+
+
+
+# ---- 1.3.3.5.4. tapeS foliage - ndl-------------------------------------------
+# tapeS foliage
+tapes_fB <- function(spec_tpS, d, dh, h){          
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter 
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprBiomass(obj.tbio, component="ndl"))
+}
+
+
+# ---- 1.3.3.6. fine branches --------------------------------------------------
+# ---- 1.3.3.6.1. Wirth fine branches (coniferous) -------------------------------------------
 ### branches coniferous trees
-brB_N <- function(d, h, a){  # DHA
+Wirth_brB_N <- function(d, h, a){  # DHA
   b0 = -0.64565; 
   b1 = 2.85424;
   b2 = -2.98493;
@@ -315,17 +400,42 @@ brB_N <- function(d, h, a){  # DHA
   return(exp(fbrB_N)+exp(dbrB_N))
 }
 
+# ---- 1.3.3.6.2. Wutzler fine branches (broadleafed) -------------------------------------------
 ### branches broadleafed trees
-brB_L1 <- function(d, h){  #DH3 4a Model 
+Wutzler_brB_L1 <- function(d, h){  #DH3 4a Model 
   b0 = 0.123;
   b1 = 3.09;
   b2 = (-1.17);
   return(b0*d^b1*h^b2)
 }
 
+# ---- 1.3.3.6.3. TapeS fine branches - fwb -------------------------------------------
+### tapeS fine branches 
+tapes_brB <- function(spec_tpS, d, dh, h){          
+  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m because these are the deadwood pieces that do still have a DBH
+  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprBiomass(obj.tbio, component="fwb"))
+}
 
-# DEADWOOD BIOMASS & CARBON
-# volume
+# ---- 1.3.3.7. total bellowground biomass --------------------------------------
+# ---- 1.3.3.7.1. according to GHG inventory --------------------------------------
+## belowground phytomass GHGI
+Dunger_bB <- function(spec, d){
+  b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shw = 0.000010);#shwr =0.000010, shwrs = 0.000116);
+  b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw =2.529000); #shwr =2.529000, shwrs = 2.290300);
+  return(ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))) 
+}
+
+
+
+
+
+
+# ---- 1.3.4. DEADWOOD BIOMASS ----------------------------------------------------------
+# ---- 1.3.4.1. Volume Deadwood according to BWI ----------------------------------------------------------
 # here we have to consider, that in case of MoMok there were no different types pf diameter taken
 # e.g  min diameter, max diameter, middle diam
 # the volume calautation follows the procedure described in BWI Methodikband, 
@@ -350,21 +460,22 @@ V_DW_T253 <- function(spec_tpS, d, dh, l){          # I don´t know if this can 
 return (tprVolume(obj.dw[obj.dw@monotone == TRUE]))
 }
 
-# Biomass deadwood occording to GHGI & BWI
+# ---- 1.3.4.2. Biomass Deadwood according to BWI ----------------------------------------------------------
 B_DW <- function(V, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
-  BEF <- c("2_1" = 0.372, "2_2" = 0.308, "2_3" = 0.141, "2_4" = 0.123,   # conferous trees
-           "1_1" = 0.58, "1_2" = 0.37, "1_3" = 0.21, "1_4" = 0.26,       # broadleaved trees
+  BEF <- c("2_1" = 0.372, "2_2" = 0.308, "2_3" = 0.141, "2_4" = 0.123,   # conferous trees according to Faver
+           "1_1" = 0.58, "1_2" = 0.37, "1_3" = 0.21, "1_4" = 0.26,       # broadleaved trees according to Müller-Ursing
            "3_1" = 0.58, "3_2" = 0.37, "3_3" = 0.21, "3_4" = 0.26);      # oak
   return(V*BEF[dec_SP])
 }
 
-# Carbon deadwood according to IPCC default value from GHGI methodology 2006
+# ---- 1.3.4.3. Carbon deadwood according to IPCC default value from GHGI methodology 2006
 C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the species type has to be created (united)
-  BEF <- c("2_1" = 0.372, "2_2" = 0.308, "2_3" = 0.141, "2_4" = 0.123,   # conferous trees
-           "1_1" = 0.58, "1_2" = 0.37, "1_3" = 0.21, "1_4" = 0.26,       # broadleaved trees
-           "3_1" = 0.58, "3_2" = 0.37, "3_3" = 0.21, "3_4" = 0.26);      # oak
+  BEF <- c("2_1" = 0.372, "2_2" = 0.308, "2_3" = 0.141, "2_4" = 0.123,   # conferous trees according to Faver
+           "1_1" = 0.58, "1_2" = 0.37, "1_3" = 0.21, "1_4" = 0.26,       # broadleaved trees according to Müller-Ursing
+           "3_1" = 0.58, "3_2" = 0.37, "3_3" = 0.21, "3_4" = 0.26);      # oak according to Müller-Ursing
   return(V*BEF[dec_SP]*0.5)   # defaul value for carbon content in deadwood = 0.5 according to IPCC GHG methodology 2006
 }
+
 
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
@@ -379,7 +490,7 @@ labs <- c(seq(5, 55, by = 5))
 # ----- 1.4.2. adding species names -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
     # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
-    # it became evident that neither the abbreviations of the common species names, nor the species numbers correspond
+    # it became evident that neither the areviations of the common species names, nor the species numbers correspond
     # further the species numbers are wronlgy assigned in the trees dataset
     # the most coherent or common variables appears to be the species common names abbreviations in the SP_names and trees_total dataset
     # though the character codes in the SP_names dataset are assessed in a mix of capital and not capital letters, 
@@ -514,7 +625,7 @@ trees_total <- left_join(trees_total %>%
                          by = c("SP_code" = "Chr_ger_cap")) %>% 
   # 3. joing TapeS species codes via common SP_ID created above (tpS_com_ID)
   left_join(., SP_TapeS %>%                                          
-              mutate(Chr_ger_cap = toupper(SP_TapeS$kurz)) %>%       # changing German abbreviations (urz) into capital letters so it corresponds with BWI from SP_names
+              mutate(Chr_ger_cap = toupper(SP_TapeS$kurz)) %>%       # changing German abbreviations (kurz) into capital letters so it corresponds with BWI from SP_names
               rename(tpS_ID = ID) %>%                                # changing column name of species number codes in TapeS to avoid confusion with tree ID etc.
               select(Chr_ger_cap, tpS_ID), 
             by = c("tpS_com_ID" = "Chr_ger_cap")) %>% 
@@ -884,13 +995,13 @@ trees_total_5 <- trees_total_5 %>%
   mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
   # biomass
   # aboveground biomass 
-  mutate(aB_kg = case_when(DBH_cm >= 10 ~ aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
-                           DBH_cm < 10 & H_m >= 1.3 ~ aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
-                           H_m >= 1.3 ~ aB_Hb1.3(LH_NH, DBH_cm)),
+  mutate(aB_kg = case_when(DBH_cm >= 10 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+                           DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
+                           H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
         # belowground biomass
-          bB_kg = bB(Bio_SP_group, DBH_cm)) %>% 
+          Dunger_bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
          # foliage biomass
-   mutate(fB_kg = ifelse(LH_NH == "NB", fB_N(DBH_cm, H_m, age), fB_L1(DBH_cm, H_m)),
+   mutate(fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)),
           # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
           brB_kg = ifelse(LH_NH == "NB", brB_N(DBH_cm, H_m, age), brB_L1(DBH_cm, H_m)), 
           # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
