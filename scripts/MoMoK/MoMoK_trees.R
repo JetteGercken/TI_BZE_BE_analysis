@@ -262,8 +262,12 @@ tapes_aB <- function(spec_tpS, d, dh, h){
 # ---- 1.3.3.2.1. Wirth coarsewood biomass  without bark-----------------------------------------
 # ---- 1.3.3.2.2. Wutzler coarsewood biomass  without bark---------------------------------------
 # ---- 1.3.3.2.3. Vondernach coarsewood biomass  without bark - Dh ------------------------------------
-Vondr_DhB <- function(SP_group_Vdn, d, sth){
-  a <- c() # für alle auser buche 0 
+Vondr_DhB <- function(spec, d, h){
+  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
+  b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
+  b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
+  b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
 }
 
 
@@ -274,13 +278,21 @@ tapes_StB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return (tprBiomass(obj.tbio, component="sw") + tprBiomass(obj.tbio, component="stw"))
+  return (tprBiomass(obj.tbio, component="sw") + tprBiomass(obj.tbio, component="stw")) # stem + stumb
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
 # ---- 1.3.3.3.1. Wirth coarsewood bark -----------------------------------------
 # ---- 1.3.3.3.2. Wutzler coarsewood bark ---------------------------------------
 # ---- 1.3.3.3.3. Vondernach coarsewood bark R ------------------------------------
+Vondr_DhRB <- function(spec, d, h){
+  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = 0, ei =0, es=0, ah=0.5195); # für alle auser buche 0
+  b1 <- c(fi = 0.0042, ta = 0.0017, dgl = 0.0027, ki=0.0044, bu=0.0017, ei=0.006, es=0.001, ah=0.004 );
+  b2 <- c(fi = 1.6026, ta = 1.304, dgl = 1.8296, ki=1.9594, bu=2.0245, ei=2.0101, es=1, ah=2.068);
+  b3 <- c(fi = 1.0239, ta = 1.8956, dgl = 1.0032, ki=0.6641, bu=0.9396, ei=0.778, es=1.6592, ah=0.6965);
+  return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
+}
+
 # ---- 1.3.3.3.4. TapeS coarsewood bark "sb" + "stb" -----------------------------------------
 tapes_StbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
@@ -418,6 +430,15 @@ tapes_brB <- function(spec_tpS, d, dh, h){
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   return (tprBiomass(obj.tbio, component="fwb"))
+}
+
+# ---- 1.3.3.6.3. Vondernach fine branches - Ndh -------------------------------------------
+Vondr_DhB <- function(spec, d, h){
+  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
+  b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
+  b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
+  b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
 }
 
 # ---- 1.3.3.7. total bellowground biomass --------------------------------------
@@ -2281,4 +2302,16 @@ tree <- buildTree(tree)
          
          
          
-         
+# total working days 2023 Brandenburg from February onwards: 
+tot_wd = 229
+ho_wd = tot_wd*0.5
+already_used_ho = 12
+ho_planned_04_spain = 5
+ho_planned_0809_FR_SP = 10
+ho_planned_12_warm = 10
+ho_planned_12_christmas = 5
+ho_planned_tot = ho_planned_04_spain + ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
+weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
+remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
+current_KW_week <- 12 # 20.03-26.03
+rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
