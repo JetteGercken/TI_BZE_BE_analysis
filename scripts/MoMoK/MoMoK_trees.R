@@ -175,7 +175,6 @@ h_curtis <- function(spec, d) {
   b0 <- c(fi = 434.1235, bu = 382.0202, ta = 453.5538, ki = 359.7162, lae = 421.4473, dgl = 481.5531, ei = 348.3262);
   b1 <- c(fi = -65586.6915, bu = -51800.9382, ta = -81132.5221, ki = -42967.9947, lae = -60241.2948, dgl = -81754.2523, ei = -46547.3645);
   b2 <- c(fi = 3074967.1738, bu = 2374368.3254, ta = 4285801.5636, ki = 1763359.9972, lae = 2895409.6245, dgl = 4193121.2406, ei = 2119420.9444);
-  
   return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
@@ -242,12 +241,40 @@ Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll lin
 }
 
 
-# ---- 1.3.3.1.1. TapeS total above biomass - all -------------------------------------------
+# ---- 1.3.3.1.2. Vondernach - oiB ----------------------------------------------
+Vondr_oiB <- function(spec, d, h){  # I´ll use the secies groups assigned for the calculation of the heights
+  # coefficients for coarsewood
+  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); 
+  b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
+  b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
+  b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  # coefficients for coarsewood bark
+  b4 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = 0, ei =0, es=0, ah=0.5195); 
+  b5 <- c(fi = 0.0042, ta = 0.0017, dgl = 0.0027, ki=0.0044, bu=0.0017, ei=0.006, es=0.001, ah=0.004 );
+  b6 <- c(fi = 1.6026, ta = 1.304, dgl = 1.8296, ki=1.9594, bu=2.0245, ei=2.0101, es=1, ah=2.068);
+  b7 <- c(fi = 1.0239, ta = 1.8956, dgl = 1.0032, ki=0.6641, bu=0.9396, ei=0.778, es=1.6592, ah=0.6965);
+  # coefficients for folliage
+  b8 <- c(fi = -2.6807, ta = 0, dgl = -2.3439, ki = 0, bu = 0, ei = 0, es=0, ah=0); # 0 for all broadleafed trees
+  b9 <- c(fi = 0.4639, ta = 0.0961, dgl = 0.3042, ki=0.0967, bu=0, ei=0, es=0, ah=0 );
+  b10 <- c(fi = 2.0861, ta = 1.7136, dgl = 2.4415, ki=2.3781, bu=0, ei=0, es=0, ah=0);
+  b11 <- c(fi = -0.9393, ta = 0, dgl = -1.2707, ki=-1.1093, bu=0, ei=0, es=0, ah=0);
+  # coefficients for fine wood inkluding bark
+  b12 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
+  b13 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
+  b14 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
+  b15 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  return((b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec]) +            # coarsewood without bark
+           (b4[spec] + b5[spec]* d^b6[spec] * h^b7[spec]) +          # bark of coarsewood
+           (b8[spec] + b9[spec]* d^b10[spec] * h^b11[spec])+         # foliage (only for coniferous trees) 
+           (b12[spec] + b13[spec]* d^b14[spec] * h^b15[spec]))           # fine branches including bark
+}
+
+
+# ---- 1.3.3.1.3. TapeS total above biomass - all -------------------------------------------
 # Kändler, G. and B. Bösch (2012). Methodenentwicklung für die 3. Bundeswaldinventur: Modul 3 
 # Überprüfung und Neukonzeption einer Biomassefunktion - Abschlussbericht. Im Auftrag des 
 # Bundesministeriums für Ernährung, Landwirtschaft und Verbraucherschutz in Zusammenarbeit 
 # mit dem Institut für Waldökologie und Waldinventur des Johann Heinrich von Thünen-Instituts, FVA-BW: 71.
-
 tapes_aB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
   Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
@@ -256,7 +283,6 @@ tapes_aB <- function(spec_tpS, d, dh, h){
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   return (tprBiomass(obj.tbio, component="all"))
 }
-
 
 # ---- 1.3.3.2. coarsewood biomass without bark ----------------------------------------------
 # ---- 1.3.3.2.1. Wirth coarsewood biomass  without bark-----------------------------------------
@@ -269,7 +295,6 @@ Vondr_DhB <- function(spec, d, h){
   b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
   return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
 }
-
 
 # ---- 1.3.3.2.4. TapeS coarsewood biomass without bark - sw -----------------------------------------
 tapes_StB <- function(spec_tpS, d, dh, h){         
@@ -303,19 +328,33 @@ tapes_StbB <- function(spec_tpS, d, dh, h){
   return (tprBiomass(obj.tbio, component="sb")+ tprBiomass(obj.tbio, component="stb"))
 }
 
-# ---- 1.3.4.4. stemmwood biomass with bark ----------------------------------------------
-# ---- 1.3.4.4.1. Wirth stemmwood biomass with bark-----------------------------------------
-# ---- 1.3.4.4.2. Wutzler stemmwood biomass with bark---------------------------------------
-# ---- 1.3.4.4.3. Vondernach stemmwood biomass with bark - Dh + DhR ------------------------------------
-# ---- 1.3.4.4.4. TapeS stemmwood biomass with bark - sw+sb -----------------------------------------
-tapes_StbB <- function(spec_tpS, d, dh, h){         
+# ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
+# ---- 1.3.4.4.1. Wirth coarsewood biomass with bark-----------------------------------------
+# ---- 1.3.4.4.2. Wutzler coarsewood biomass with bark---------------------------------------
+# ---- 1.3.4.4.3. Vondernach coarsewood biomass with bark - Dh + DhR ------------------------------------
+Vondr_crWbB <- function(spec, d, h){  # I´ll use the secies groups assigned for the calculation of the heights
+  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); 
+  b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
+  b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
+  b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  b4 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = 0, ei =0, es=0, ah=0.5195); 
+  b5 <- c(fi = 0.0042, ta = 0.0017, dgl = 0.0027, ki=0.0044, bu=0.0017, ei=0.006, es=0.001, ah=0.004 );
+  b6 <- c(fi = 1.6026, ta = 1.304, dgl = 1.8296, ki=1.9594, bu=2.0245, ei=2.0101, es=1, ah=2.068);
+  b7 <- c(fi = 1.0239, ta = 1.8956, dgl = 1.0032, ki=0.6641, bu=0.9396, ei=0.778, es=1.6592, ah=0.6965);
+  return((b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec]) + (b4[spec] + b5[spec]* d^b6[spec] * h^b7[spec]))
+}
+
+# ---- 1.3.4.4.4. TapeS coarsewood biomass with bark - sw+sb+stw+stb -----------------------------------------
+tapes_crsWbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
   Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return ((tprBiomass(obj.tbio, component="sw")) + (tprBiomass(obj.tbio, component="sb")))
-}
+  return((tprBiomass(obj.tbio, component="sw")) + (tprBiomass(obj.tbio, component="sb")) + (tprBiomass(obj.tbio, component="stw")) + (tprBiomass(obj.tbio, component="stb ")))
+  # coarsewood + coarswood bark + stumbwood + stumbwoodbark 
+  # L> I am unsure if this is correct, because I am not sure if solid wood includes the stumbwood already --> ask Sebstian?
+  }
 
 # ---- 1.3.3.5. foliage biomass ------------------------------------------------
 ### FOLIAGE
@@ -376,12 +415,14 @@ Wutzler_fB_L1 <- function(d, h){  #DH3 4a Model
   return(b0*d^b1*h^b2)
 }
 
-
 # ---- 1.3.3.5.3. Vondernach foliage - Nad ---------------------------------------
-
-
-
-
+Vondr_fB <- function(spec, d, h){                                                  # H_SP_group
+  b0 <- c(fi = -2.6807, ta = 0, dgl = -2.3439, ki = 0, bu = 0, ei = 0, es=0, ah=0); # 0 for all broadleafed trees
+  b1 <- c(fi = 0.4639, ta = 0.0961, dgl = 0.3042, ki=0.0967, bu=0, ei=0, es=0, ah=0 );
+  b2 <- c(fi = 2.0861, ta = 1.7136, dgl = 2.4415, ki=2.3781, bu=0, ei=0, es=0, ah=0);
+  b3 <- c(fi = -0.9393, ta = 0, dgl = -1.2707, ki=-1.1093, bu=0, ei=0, es=0, ah=0);
+  return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
+}
 
 # ---- 1.3.3.5.4. tapeS foliage - ndl-------------------------------------------
 # tapeS foliage
@@ -393,7 +434,6 @@ tapes_fB <- function(spec_tpS, d, dh, h){
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   return (tprBiomass(obj.tbio, component="ndl"))
 }
-
 
 # ---- 1.3.3.6. fine branches --------------------------------------------------
 # ---- 1.3.3.6.1. Wirth fine branches (coniferous) -------------------------------------------
@@ -433,7 +473,7 @@ tapes_brB <- function(spec_tpS, d, dh, h){
 }
 
 # ---- 1.3.3.6.3. Vondernach fine branches - Ndh -------------------------------------------
-Vondr_DhB <- function(spec, d, h){
+Vondr_DhB <- function(spec, d, h){                                                  # H_SP_group
   b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
   b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
   b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
@@ -449,11 +489,6 @@ Dunger_bB <- function(spec, d){
   b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw =2.529000); #shwr =2.529000, shwrs = 2.290300);
   return(ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))) 
 }
-
-
-
-
-
 
 # ---- 1.3.4. DEADWOOD BIOMASS ----------------------------------------------------------
 # ---- 1.3.4.1. Volume Deadwood according to BWI ----------------------------------------------------------
@@ -496,8 +531,6 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
            "3_1" = 0.58, "3_2" = 0.37, "3_3" = 0.21, "3_4" = 0.26);      # oak according to Müller-Ursing
   return(V*BEF[dec_SP]*0.5)   # defaul value for carbon content in deadwood = 0.5 according to IPCC GHG methodology 2006
 }
-
-
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
 # check for variabels with NAs
@@ -967,18 +1000,6 @@ trees_total_5 <- trees_total %>%
 
 # ----- 2.2.1. TAPES: goal: estimating diameter at 0.3 of tree height with TapeS -----------------------------------------------------------
 #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
-help("tprBiomass")
-
-# checking if assigning the species works
-  # tprSpeciesCode(inSp = trees_total$tpS_ID, outSp = c("scientific"))
-
-# https://softwareengineering.stackexchange.com/questions/307639/what-does-mapping-mean-in-programming
-# The map function requires an array and another function. It returns a new array 
-# which is the result of applying that function to all elements of the original array.
-# All other uses of the term can, at least in my experience, be considered analogous 
-# to this specific one. In the most general sense, "mapping" in programming means 
-# taking several things and then somehow associating each of them with another thing
-    # BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 
 # ----- 2.2.1.1. create TapeS object -----------------------------------------------------------
 spp = trees_total_5 %>% dplyr::pull(tpS_ID)
@@ -988,9 +1009,7 @@ Ht = trees_total_5 %>% dplyr::pull(H_m)
 obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 
-#plot(obj)
-
-# ----- 2.2.1.2. dominant height -----------------------------------------------------------
+# ----- 2.2.2. dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
 # Arithmetisches Mittel der Höhe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhöhe h100 oder h200 bezeichnet; die WEISE�sche Oberhöhe [ho] entspricht der Höhe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
 # Wichtig: Die Art der Oberhöhe muss jeweils definiert werden.
@@ -1010,7 +1029,7 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 #   summarize
 
 
-# ----- 2.2.1.2. biomass trees -----------------------------------------------------------
+# ----- 2.2.3. biomass trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
   # adding diameter at 0.3 tree height to trees_total dataframe
   mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
@@ -1020,11 +1039,11 @@ trees_total_5 <- trees_total_5 %>%
                            DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
                            H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
         # belowground biomass
-          Dunger_bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
+         bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
          # foliage biomass
    mutate(fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)),
           # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
-          brB_kg = ifelse(LH_NH == "NB", brB_N(DBH_cm, H_m, age), brB_L1(DBH_cm, H_m)), 
+          brB_kg = ifelse(LH_NH == "NB", Wirth_brB_N(DBH_cm, H_m, age), Wutzler_brB_L1(DBH_cm, H_m)), 
           # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
           StB_kg = ifelse(LH_NH == "NB", (aB_kg-(fB_kg+brB_kg)), (aB_kg-brB_kg)), 
           # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
@@ -1033,6 +1052,39 @@ trees_total_5 <- trees_total_5 %>%
           fB_t_ha = fB_kg/1000*plot_A_ha)                                   # total foliage abiomass in tons per hectare per tree 
 
 
+# ----- 2.2.3. comparisson biomass trees -----------------------------------------------------------
+biotest <- trees_total_5 %>% 
+  # adding diameter at 0.3 tree height to trees_total dataframe
+  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
+  # biomass
+        # GHG Dunger aboveground biomass (all woody compartments inkluding bark without leafes for broadleafed trees)
+  mutate(GHG_aB_kg = case_when(DBH_cm >= 10 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), # total aboveground biomass
+                           DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
+                           H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
+         # TapeS comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
+         tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                     # total aboveground biomass
+         # vondernach comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
+         Vondr_oiB(H_SP_group, DBH_cm, H_m),                                        # total aboveground biomass
+         # GHG Dunger
+         GHG__bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>%                          # total belowground biomass
+         # WUtzler, Wirth
+  mutate(WuWi_fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)), # foliage
+         WuWi_fB_t_ha = WuWi_fB_kg/1000*plot_A_ha,                                              # total foliage abiomass in tons per hectare per tree 
+         # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
+         WuWi_brB_kg = ifelse(LH_NH == "NB", Wirth_brB_N(DBH_cm, H_m, age), Wutzler_brB_L1(DBH_cm, H_m)), 
+         # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
+         GHG_WuWi_StB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg-(WuWi_fB_kg+WuWi_brB_kg)), (GHG_aB_kg-WuWi_brB_kg)), 
+         # total  aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to woody compartments
+         GHG_WuWi_totaB_kg = ifelse(LH_NH == "NB", GHG_aB_kg, GHG_aB_kg+WuWi_fB_kg),   # total aboveground biomass in KG per tree per plot
+         GHG_WuWi_totaB_t_ha = GHG_WuWi_totaB_t_ha/1000*plot_A_ha,                     # total  aboveground biomass in tons per hectare per tree
+         # TapeS
+         tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                        # foliage
+         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # Nichtderbholz, finebranches
+         tapes_StB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_StbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m), 
+         # Vondernach 
+         )                                    
 
 
 
@@ -2300,8 +2352,21 @@ help("buildTree")
 
 tree <- buildTree(tree)         
          
-         
-         
+help("tprBiomass")
+
+# checking if assigning the species works
+# tprSpeciesCode(inSp = trees_total$tpS_ID, outSp = c("scientific"))
+
+# https://softwareengineering.stackexchange.com/questions/307639/what-does-mapping-mean-in-programming
+# The map function requires an array and another function. It returns a new array 
+# which is the result of applying that function to all elements of the original array.
+# All other uses of the term can, at least in my experience, be considered analogous 
+# to this specific one. In the most general sense, "mapping" in programming means 
+# taking several things and then somehow associating each of them with another thing
+# BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
+
+
+# ----- N.4 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
 tot_wd = 229
 ho_wd = tot_wd*0.5
