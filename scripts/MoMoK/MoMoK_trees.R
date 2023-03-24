@@ -474,10 +474,10 @@ tapes_brB <- function(spec_tpS, d, dh, h){
 
 # ---- 1.3.3.6.3. Vondernach fine branches - Ndh -------------------------------------------
 Vondr_NhdB <- function(spec, d, h){                                                  # H_SP_group
-  b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
-  b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
-  b2 <- c(fi = 1.735, ta = 1.6476, dgl = 1.9541, ki=1.9894, bu=2.0971, ei=2.0738, es=1.9623, ah=2.1304);
-  b3 <- c(fi = 1.2177, ta = 1.5543, dgl = 1.0539, ki=0.9378, bu=0.8957, ei=0.8508, es=1.1824, ah=0.7078);
+  b0 <- c(fi = 2.133, ta = 0, dgl = 0, ki = 0, bu = 0, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
+  b1 <- c(fi = 0.0241, ta = 0.0187, dgl = 0.1868, ki=0.2801, bu=0.3255, ei=0.0257, es=0.0128, ah=0.028 );
+  b2 <- c(fi = 2.9983, ta = 2.3598, dgl = 2.9652, ki=2.4138, bu=2.2399, ei=2.0738, es=1.9623, ah=2.1304);
+  b3 <- c(fi = -0.8549, ta = 0, dgl = -1.4856, ki=-1.1526, bu=-0.6099, ei=0.8508, es=1.1824, ah=0.7078);
   return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
 }
 
