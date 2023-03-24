@@ -178,7 +178,6 @@ h_curtis <- function(spec, d) {
   return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
-
 # ---- 1.3.2.3. self-fitted nls models ------------------------------------------------------
 # ---- 1.3.2.3.1. species- & plot-wise self-fitted nls models ------------------------------------------------------
 # self made nls models for heights per species across all plots
@@ -281,7 +280,8 @@ tapes_aB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return (tprBiomass(obj.tbio, component='all'))
+  tapesab <- tprBiomass(obj.tbio, component="agb");
+  return(tapesab)
 }
 
 # ---- 1.3.3.2. coarsewood biomass without bark ----------------------------------------------
@@ -303,7 +303,10 @@ tapes_StB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return (tprBiomass(obj.tbio, component='sw') + tprBiomass(obj.tbio, component='stw')) # stem + stumb
+  sw <- tprBiomass(obj.tbio, component="sw");
+  stw <- tprBiomass(obj.tbio, component="stw");
+  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw);
+  return(coarsebark.df$tapes_St) # stem + stumb without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -325,7 +328,10 @@ tapes_StbB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return(tprBiomass(obj.tbio, component='sb')+ tprBiomass(obj.tbio, component='stb'))
+  sb <- tprBiomass(obj.tbio, component="sb");
+  stb <- tprBiomass(obj.tbio, component="stb");
+  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
+  return(bark.df$bark_tapes)
 }
 
 # ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
@@ -351,7 +357,14 @@ tapes_crsWbB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return(tprBiomass(obj.tbio, component='sw') + tprBiomass(obj.tbio, component='sb') + tprBiomass(obj.tbio, component='stw') + tprBiomass(obj.tbio, component='stb'))
+  #component <- c("sw", "sb", "ndl")
+  # tprBiomass(obj, component=component)
+  sw <- tprBiomass(obj.tbio, component="sw");
+  sb <-  tprBiomass(obj.tbio, component="sb");
+  stw <- tprBiomass(obj.tbio, component="stw");
+  stb <- tprBiomass(obj.tbio, component="stb");
+  crsWbB.df <- cbind(sw, sb, stw, stb) %>% mutate(crsWbB_kg = sw+sb+stw+stb);
+  return(crsWbB.df$crsWbB_kg)
   # coarsewood + coarswood bark + stumbwood + stumbwoodbark 
   # L> I am unsure if this is correct, because I am not sure if solid wood includes the stumbwood already --> ask Sebstian?
   }
@@ -432,7 +445,8 @@ tapes_fB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter 
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return(tprBiomass(obj.tbio, component='ndl'))
+  needles <- as_tibble(tprBiomass(obj.tbio, component="ndl"));
+  return(needles$ndl)
 }
 
 # ---- 1.3.3.6. fine branches --------------------------------------------------
@@ -469,15 +483,16 @@ tapes_brB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m because these are the deadwood pieces that do still have a DBH
   Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  return (tprBiomass(obj.tbio, component='fwb'))
+  branches <- as_tibble(tprBiomass(obj.tbio, component="fwb")); # doesn´t accept it as a dataframe elsewise
+  return(branches$fwb)
 }
 
 # ---- 1.3.3.6.3. Vondernach fine branches - Ndh -------------------------------------------
 Vondr_NhdB <- function(spec, d, h){                                                  # H_SP_group
-  b0 <- c(fi = 2.133, ta = 0, dgl = 0, ki = 0, bu = 0, ei = -5.9489, es=0, ah=0); # für alle auser buche 0
-  b1 <- c(fi = 0.0241, ta = 0.0187, dgl = 0.1868, ki=0.2801, bu=0.3255, ei=0.0257, es=0.0128, ah=0.028 );
-  b2 <- c(fi = 2.9983, ta = 2.3598, dgl = 2.9652, ki=2.4138, bu=2.2399, ei=2.0738, es=1.9623, ah=2.1304);
-  b3 <- c(fi = -0.8549, ta = 0, dgl = -1.4856, ki=-1.1526, bu=-0.6099, ei=0.8508, es=1.1824, ah=0.7078);
+  b0 <- c(fi = 2.133, ta = 0, dgl = 0, ki = 0, bu = 0, ei = 0, es=0, ah=0); # für alle auser buche 0
+  b1 <- c(fi = 0.0241, ta = 0.0187, dgl = 0.1868, ki=0.2801, bu=0.3255, ei=0.376, es=0.2633, ah=0.0259);
+  b2 <- c(fi = 2.9983, ta = 2.3598, dgl = 2.9652, ki=2.4138, bu=2.2399, ei=2.0763, es=1.686, ah=2.2687);
+  b3 <- c(fi = -0.8549, ta = 0, dgl = -1.4856, ki=-1.1526, bu=-0.6099, ei=-0.6378, es=0, ah=0);
   return(b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec])
 }
 
@@ -550,7 +565,7 @@ labs <- c(seq(5, 55, by = 5))
     # though the character codes in the SP_names dataset are assessed in a mix of capital and not capital letters, 
     # while all abbreviations of common species names in the trees_total dataset are all in capital letters
     # thus, I´ll transform all the abbreviations of common species names in the SP_names dataset into capital letters, 
-    # to enable the join.
+    # to enable the join. Chr_ger_cap
 # Goal 2: assingin the correct species codes from the TapeS SP file to trees_total to use TapeS later
     # the most correspondent variable/ column between TapeS and SP_names, and by that trees_total, which can access & join all SP_names columns 
     # but no or few tapeS_SP columns is the "BWI" column of SP_names and the "kurz" column of TapeS_SP when transformed into capital letters. 
@@ -560,6 +575,63 @@ labs <- c(seq(5, 55, by = 5))
 # whereby the first is sometimes also called roterle cause of the woods colour, however, 
 # the distribution of alnus rubra extents mainly to north america so we can assume that those trees labbeled
 # RER are actually supposed to be labelled SER
+
+
+# creating a dataset with the species names from x-bart and the accordint TapeS codes 
+SP_names_com_ID_tapeS <- left_join(rbind(
+  # selecting those rows in SP_names (x_bart) that have a match in "scientific" of TapeS 
+  # and create column called com_ID That holds that scientific names that are common between TapeS and SP_names x_bart
+  inner_join(SP_names, SP_TapeS_test %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
+    mutate(tpS_SP_com_name = bot_name), 
+  # selecting those rows in SP_names (x_bart) that do not have a match in "scientific" of TapeS 
+  anti_join(SP_names, SP_TapeS_test  %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
+    # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
+    mutate(tpS_SP_com_name = case_when(bot_genus == "Abies" & !(bot_species %in% c("grandis", "alba")) | bot_genus == "abies …" & !(bot_species %in% c("grandis", "alba")) ~ "Abies alba",
+                                       # all Larix not kaemperi & decidua are assigned to Larix spp.
+                                       bot_genus == "Larix" & !(bot_species %in% c("decidua", "kaempferi")) ~ "Larix spp.",
+                                       # all picea are allocated to Picea abies cause TapeS doesn´t distinguish
+                                       bot_genus == "Picea"  ~ "Picea abies",
+                                       # all Pinus not "nigra", "strobus" are assigned to Pinus sylvestris
+                                       bot_genus == "Pinus" & !(bot_species %in% c("nigra", "strobus")) ~  "Pinus sylvestris",
+                                       # there is a spelling mistake in x-Bart spelling Pseudotsuga menziestii with a t wich hampers the join with TapeS_SP
+                                       bot_genus == "Pseudotsuga" ~ "Pseudotsuga menziesii", 
+                                       # all thuja species (whcih x_bart doesnt distinguish anyways) are treated as Thuja plicata
+                                       bot_genus == "Thuja" ~ "Thuja plicata",
+                                       # all tsuga are treated as tsuga heterophyllia cause TapeS only has that species of the genus
+                                       bot_genus == "Tsuga" ~ "Tsuga heterophylla",
+                                       # everything else NH belongs to other coniferous trees
+                                       LH_NH == "NB" & !(bot_genus %in% c("Abies","Larix", "Picea","Pinus", "Pseudotsuga", "Thuja", "Tsuga"))~ "Coniferales trees", 
+                                       bot_genus == "Acer" & !(bot_species %in% c("campestre", "platanoides",  "pseudoplatanus", "spp.")) ~ "Acer spp.",
+                                       bot_genus == "Alnus" ~ "Alnus spp.", 
+                                       bot_genus == "Betula" ~ "Betula spp.", 
+                                       # all Carpinus species are treated as Carpinus betulus
+                                       bot_genus == "Carpinus" ~ "Carpinus betulus",
+                                       # all fagus species are treated as Fagus sylvatica
+                                       bot_genus == "Fagus" ~ "Fagus sylvatica", 
+                                       # all Fraxinus species are treated as Fraxinus excelsior
+                                       bot_genus == "Fraxinus" ~ "Fraxinus excelsior",
+                                       #all Populus species except populus balsamifera are assigned to Populus spp. 
+                                       bot_genus == "Populus" & bot_species != "balsamifera"  ~ "Populus spp.", 
+                                       # all Prunus species are treated as Prunus avium
+                                       bot_genus == "Prunus"  ~ "Prunus avium",
+                                       #all Quercus species except rubra balsamifera are assigned to Quercus spp. 
+                                       bot_genus == "Quercus" & bot_species != "rubra"  ~ "Quercus spp.",
+                                       # all Salix species are allocated to Salix spp.
+                                       bot_genus == "Salix"  ~ "Salix spp.",
+                                       #all Sorbus species except torminalis are assigned to Sorbus aucuparia 
+                                       bot_genus == "Sorbus" & bot_species != "torminalis"  ~ "Sorbus aucuparia",
+                                       # all Tilia species are allocated to Tilia spp. cause TapeS doesnt distinguish between the species
+                                       bot_genus == "Tilia"  ~ "Tilia spp.",
+                                       # all Ulmus species are allocated to Ulmus spp. cause TapeS doesnt distinguish between the species
+                                       bot_genus == "Ulmus"  ~  "Ulmus spp.",
+                                       bot_name == '-2' ~ "missing", 
+                                       # everything else belongs to other broadleafed trees
+                                       TRUE ~ "Magnoliopsida trees"))), 
+  SP_TapeS_test %>% select(scientific, ID) %>% rename(tpS_ID = ID), 
+  by = c("tpS_SP_com_name" = "scientific"))
+# export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
+write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
+
 
 
 trees_total <- left_join(trees_total %>% 
@@ -578,24 +650,16 @@ trees_total <- left_join(trees_total %>%
                                   DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm)) %>%   # dealing with missing DBH measurement heights by assuming if the height was not registered the DBH was taken at 1.3m stem height         
                            unite(ID_pt, plot_ID, t_ID, sep = "", remove = FALSE), # create unique tree ID from combination of plot and tree number for later work with TapeR & TapeS
    # 2. join the botanic names & German abbreviation into the tree data set 
-                         SP_names %>% 
-                           # because the number codes for the species in the trees_total dataset don´t correspond at 
-                           # all with the SP_names codes, the German abbreviations are used for the join, as they are among all 
-                           # avaiable codes the most coherent between the two datasets. 
-                           # But because those are in capital and non-capital letters in the SP_names data set 
-                           # I have to create a column where all of them are in capital letters, which then corresponds with how the species abbreviations were 
-                           # documented for the MoMoK Bestandesaufnahme
-                           # it seems, however that there´s also a column in the new, most recent species names dataframe of BZE, 
-                           # which will probably allow to join the datasets just via the codes listed there as they are already in
-                           # in capital letters
+                          SP_names_com_ID_tapeS %>% 
+                          # creating capital lettered column with german abbreviations to join species names from SP_names into trees_total
                            # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
                            mutate(Chr_ger_cap = toupper(Chr_code_ger), 
                                   # create column in SP_names that corresponds with TapeS species
                                   # --> the changes are carried out according to the anti join between trees_total & TapeS species, not
                                   # the join between SP_codes from BZE and TapeSP, this has to be done later
-                                  tpS_com_ID = case_when(BWI == "KI" ~ 'KIE',
-                                                         BWI == "ERL" ~ 'ER',
-                                                        TRUE ~ BWI), 
+                                  #tpS_com_ID = case_when(BWI == "KI" ~ 'KIE',
+                                   #                      BWI == "ERL" ~ 'ER',
+                                    #                    TRUE ~ BWI), 
                                   # create species groups, BWI uses for their volume calculations to use curtis & sloboda functions
                                   # BWI Methodikband: 
                                   # für die Höhenmessung wurde nach folgenden Baumartengruppen differenziert:
@@ -675,15 +739,9 @@ trees_total <- left_join(trees_total %>%
                                                            LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                                            LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                                            TRUE ~ 'other'))%>% 
-                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, tpS_com_ID, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group), 
-                         by = c("SP_code" = "Chr_ger_cap")) %>% 
-  # 3. joing TapeS species codes via common SP_ID created above (tpS_com_ID)
-  left_join(., SP_TapeS %>%                                          
-              mutate(Chr_ger_cap = toupper(SP_TapeS$kurz)) %>%       # changing German abbreviations (kurz) into capital letters so it corresponds with BWI from SP_names
-              rename(tpS_ID = ID) %>%                                # changing column name of species number codes in TapeS to avoid confusion with tree ID etc.
-              select(Chr_ger_cap, tpS_ID), 
-            by = c("tpS_com_ID" = "Chr_ger_cap")) %>% 
-  select(-c(tpS_com_ID))                                         # kicking out variables only used for joining correct tree codes from TapeS
+    # 3. joing TapeS species codes via common SP_ID created above (SP_names_com_ID_tapeS)
+                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group, tpS_SP_com_name, tpS_ID), 
+                         by = c("SP_code" = "Chr_ger_cap"))
   
 
 
@@ -732,7 +790,8 @@ anti_join(SP_TapeS_test %>% mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)),
           by = c("Chr_ger_cap"= "BWI"))
 
 # THis displays the BWI abbreviations in trees_total that don´t find a match in SP_tapes when the brreviations are in capital letters
-anti_join(trees_total %>% left_join(., SP_names %>% 
+anti_join(trees_total %>% left_join(., 
+                                    SP_names %>% 
                                       add_row(Nr_code = NA, 
                                               Chr_code_ger = "REr",
                                               name = "Rot-Erle",
@@ -746,7 +805,7 @@ anti_join(trees_total %>% left_join(., SP_names %>%
                                               BWI = "ER", # as there were no codes in d info for Alnus rubra available, I assign this species to Alnus spp. 
                                               BZE_al = NA)  %>%
                                       mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
-                                      select(BWI, Chr_ger_cap, bot_name), 
+                                      select(Chr_ger_cap), 
                                     by = c("SP_code" = "Chr_ger_cap")), 
           SP_TapeS_test %>% 
             mutate(Chr_ger_cap = toupper(SP_TapeS_test$kurz)), 
@@ -780,59 +839,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
         
-SP_names_com_ID_tapeS <- left_join(rbind(
-  # selecting those rows in SP_names (x_bart) that have a match in "scientific" of TapeS 
-  # and create column called com_ID That holds that scientific names that are common between TapeS and SP_names x_bart
-  inner_join(SP_names, SP_TapeS_test %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
-  mutate(tpS_SP_com_name = bot_name), 
- # selecting those rows in SP_names (x_bart) that do not have a match in "scientific" of TapeS 
-  anti_join(SP_names, SP_TapeS_test  %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
-                                   # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
-  mutate(tpS_SP_com_name = case_when(bot_genus == "Abies" & !(bot_species %in% c("grandis", "alba")) | bot_genus == "abies …" & !(bot_species %in% c("grandis", "alba")) ~ "Abies alba",
-                                    # all Larix not kaemperi & decidua are assigned to Larix spp.
-                                    bot_genus == "Larix" & !(bot_species %in% c("decidua", "kaempferi")) ~ "Larix spp.",
-                                    # all picea are allocated to Picea abies cause TapeS doesn´t distinguish
-                                    bot_genus == "Picea"  ~ "Picea abies",
-                                    # all Pinus not "nigra", "strobus" are assigned to Pinus sylvestris
-                                    bot_genus == "Pinus" & !(bot_species %in% c("nigra", "strobus")) ~  "Pinus sylvestris",
-                                    # there is a spelling mistake in x-Bart spelling Pseudotsuga menziestii with a t wich hampers the join with TapeS_SP
-                                    bot_genus == "Pseudotsuga" ~ "Pseudotsuga menziesii", 
-                                    # all thuja species (whcih x_bart doesnt distinguish anyways) are treated as Thuja plicata
-                                    bot_genus == "Thuja" ~ "Thuja plicata",
-                                    # all tsuga are treated as tsuga heterophyllia cause TapeS only has that species of the genus
-                                    bot_genus == "Tsuga" ~ "Tsuga heterophylla",
-                                    # everything else NH belongs to other coniferous trees
-                                    LH_NH == "NB" & !(bot_genus %in% c("Abies","Larix", "Picea","Pinus", "Pseudotsuga", "Thuja", "Tsuga"))~ "Coniferales trees", 
-                                    bot_genus == "Acer" & !(bot_species %in% c("campestre", "platanoides",  "pseudoplatanus", "spp.")) ~ "Acer spp.",
-                                    bot_genus == "Alnus" ~ "Alnus spp.", 
-                                    bot_genus == "Betula" ~ "Betula spp.", 
-                                    # all Carpinus species are treated as Carpinus betulus
-                                    bot_genus == "Carpinus" ~ "Carpinus betulus",
-                                    # all fagus species are treated as Fagus sylvatica
-                                    bot_genus == "Fagus" ~ "Fagus sylvatica", 
-                                    # all Fraxinus species are treated as Fraxinus excelsior
-                                    bot_genus == "Fraxinus" ~ "Fraxinus excelsior",
-                                    #all Populus species except populus balsamifera are assigned to Populus spp. 
-                                    bot_genus == "Populus" & bot_species != "balsamifera"  ~ "Populus spp.", 
-                                    # all Prunus species are treated as Prunus avium
-                                    bot_genus == "Prunus"  ~ "Prunus avium",
-                                    #all Quercus species except rubra balsamifera are assigned to Quercus spp. 
-                                    bot_genus == "Quercus" & bot_species != "rubra"  ~ "Quercus spp.",
-                                    # all Salix species are allocated to Salix spp.
-                                    bot_genus == "Salix"  ~ "Salix spp.",
-                                    #all Sorbus species except torminalis are assigned to Sorbus aucuparia 
-                                    bot_genus == "Sorbus" & bot_species != "torminalis"  ~ "Sorbus aucuparia",
-                                    # all Tilia species are allocated to Tilia spp. cause TapeS doesnt distinguish between the species
-                                    bot_genus == "Tilia"  ~ "Tilia spp.",
-                                    # all Ulmus species are allocated to Ulmus spp. cause TapeS doesnt distinguish between the species
-                                    bot_genus == "Ulmus"  ~  "Ulmus spp.",
-                                    bot_name == '-2' ~ "missing", 
-                                    # everything else belongs to other broadleafed trees
-                                    TRUE ~ "Magnoliopsida trees"))), 
- SP_TapeS_test %>% select(scientific, ID) %>% rename(tpS_ID = ID), 
- by = c("tpS_SP_com_name" = "scientific"))
-# export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
- write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")        
+        
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
 
@@ -1081,23 +1088,23 @@ biotest <- trees_total_5 %>%
          # TapeS
          tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                        # foliage
          tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # Nichtderbholz, finebranches
-         tapes_StB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
-         tapes_StbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_DhB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_DhbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                # coarsewood with bark
          # Vondernach 
          Vondr_fB_kg = Vondr_fB(H_SP_group, DBH_cm, H_m),                              # foliage
-         Vondr_NhdB_kg = Vondr_NhdB(H_SP_group, DBH_cm, H_m),                          # Nichtderbholz
+         Vondr_brB_kg = Vondr_NhdB(H_SP_group, DBH_cm, H_m),                          # Nichtderbholz
          Vondr_DhB_kg = Vondr_DhB(H_SP_group, DBH_cm, H_m),                            # coarsewood without bark, Derbholz ohne Rinde
          Vondr_DhRB_kg = Vondr_DhRB(H_SP_group, DBH_cm, H_m),                          # bark of coarsewood, Derbholzrinde
-         Vondr_crWbB_kg = Vondr_crWbB(H_SP_group, DBH_cm, H_m)) %>%                    # coarsewood innkludng bark, Derbholz + Rinde
+         Vondr_crsWbB_kg = Vondr_crWbB(H_SP_group, DBH_cm, H_m)) %>%                    # coarsewood innkludng bark, Derbholz + Rinde
          # TapeS & GHG
   mutate(tps_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - tapes_fB_kg, GHG_aB_kg),      # woody aboveground biomass Derbholz + nichtderbholz + Rinde
-         tps_GHG_crWbB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_brB_kg),                  # coarsewood including bark
+         tps_GHG_crsWbB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_brB_kg),                  # coarsewood including bark
          tps_GHG_brB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_crsWbB_kg),                 # fine branches 
          # Vondernach & GHG
          Vondr_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - Vondr_fB_kg, GHG_aB_kg),    # woody aboveground biomass Derbholz + nichtderbholz + Rinde
-         Vondr_GHG_crWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_NhdB_kg),               # coarsewood including bark
-         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crWbB_kg))                # fine branches 
+         Vondr_GHG_crsWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_brB_kg),               # coarsewood including bark by removing foliage and branches
+         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg))                # fine branches by withdrawing coarsewood and foliage 
                                          
 
 
@@ -1394,8 +1401,6 @@ ggplot(data = (left_join(trees_total %>%
 
 
 # ---- 3.1.5.2. visulisation height vs. DBH by different models/ methods ----------------------------------------------------------------
-
-
 # plot estimated and samples heights vs. diameter by species, plot ad height method 
 # (nls-SP-P, nls-SP, sloboda, curtis, sampled)
 ggplot(data = trees_total_5, 
@@ -1411,6 +1416,31 @@ ggplot(data = trees_total_5,
  theme(legend.position = "bottom")
 
 # (nls-SP-P, nls-SP, sloboda, curtis, sampled)
+# creating dataset: joining coefficients & curtis function
+trees_total_7 <- trees_total %>%
+  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% select(SP_code, R2), 
+            by = "SP_code") %>%       # joing R2 from coeff_SP data set -> R2.y
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+  # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na use the curtis function
+                         is.na(H_m) & is.na(R2_comb) | is.na(H_m) & R2_comb < 0.70 ~ h_curtis(BWI_SP_group, DBH_mm), 
+                         TRUE ~ H_m)) 
+# visulaization:(nls-SP-P, nls-SP, sloboda, curtis, sampled)
 ggplot(data = trees_total_7, 
        aes(x = DBH_cm, y = H_m, color = H_method))+
   geom_point()+
@@ -1423,8 +1453,36 @@ ggplot(data = trees_total_7,
   theme_light()+
   theme(legend.position = "bottom")
 
-# plot estimated and samples heights vs. diameter by species, plot ad height method
+
+
 # (nls-SP-P, nls-SP, sampled)
+# craeting adatset estimated and samples heights vs. diameter by species, plot ad height method
+# joining respective coefficients with function (1.3.) 
+# --> this code cannot apply the curtis function yet, but it would be possible to include that too 
+trees_total_6 <- trees_total %>%
+  left_join(.,coeff_H_SP_P %>% 
+              select(plot_ID, SP_code, R2, b0, b1, b2), 
+            by = c("plot_ID", "SP_code")) %>% 
+  # if R2 or the coefficients are NA use the respective columns of the more general model
+  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+  # this reffers to the function and meas: if R2 from coeff_H_SP_P is NA or if 
+  # R2 from coeff_H_SP_P is smaller then R2 from coeff_H_SP then use the coeff_H_SP values
+  # if not, keep the coeff_H_SP_P values
+  mutate(H_method = case_when(is.na(H_m) & is.na(R2.x)| is.na(H_m) & R2.x < R2.y ~ "coeff_SP", 
+                              is.na(H_m) & R2.x > R2.y ~ "coeff_SP_P",
+                              !is.na(H_m) ~ "sampled", 
+                              TRUE ~ "other")) %>% 
+  mutate(R2 = f(R2.x, R2.y, R2.y, R2.x), 
+         b0 = f(R2.x, R2.y, b0.y, b0.x), 
+         b1 = f(R2.x, R2.y, b1.y, b1.x),
+         b2 = f(R2.x, R2.y, b2.y, b2.x)) %>% 
+  mutate(#H_method = ifelse(is.na(H_m), 'est', 'samp'), 
+    # estimate missing heights
+    H_m = ifelse(is.na(H_m), b0 * (1 - exp( -b1 * DBH_cm))^b2, H_m)) %>% 
+  select(-c(ends_with(".x"), ends_with(".y")))
+
+# visualization (nls-SP-P, nls-SP, sampled)
 ggplot(data = trees_total_6, 
        aes(x = DBH_cm, y = H_m, color = H_method))+
   geom_point()+
@@ -1437,9 +1495,120 @@ ggplot(data = trees_total_6,
   theme_light()+
   theme(legend.position = "bottom")
 
-# if we compare he heights estimated by the curtis function with those estimated by the self-
-# made models, a descriptive/ visual analysis shows that the self-fitted functions appear to be 
-# more accurate, thus I´ll have a look at the 
+
+# ---- 3.2. Biomass visualization ----------------------------------------
+# ---- 3.2.1. foliage Biomass visualization ----------------------------------------
+biotest %>% 
+  select( plot_ID, SP_code,DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+biotest %>% 
+  select( plot_ID, SP_code,DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+# Missing values for Boradleafed trees result from the fact that there is only one funciton to calacute them
+# missing values for coniferous trees result from the missing ages, wich Wirths formula for foliage biomass requires
+summary(biotest)
+biotest %>% filter(is.na(WuWi_fB_kg))
+biotest %>% filter(is.na(tapes_fB_kg))
+
+# ---- 3.2.1. branch Biomass visualization ----------------------------------------
+# points
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:8) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:8) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# ---- 3.2.2. coarsewood with bark  Biomass visualization ----------------------------------------
+# points
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_WuWi_StB_kg, tapes_crsWbB_kg, Vondr_crsWbB_kg, tps_GHG_crsWbB_kg, Vondr_GHG_crsWbB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:8) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_WuWi_StB_kg, tapes_crsWbB_kg, Vondr_crsWbB_kg, tps_GHG_crsWbB_kg, Vondr_GHG_crsWbB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:8) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# ---- 3.2.1. coarsewood with bark  Biomass visualization ----------------------------------------
+# points
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+
+
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tps_GHG_brB_kg) %>% 
+        # tapes_ab_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg, tapes_fB_kg, tapes_brB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
 
 
 
