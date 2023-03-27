@@ -120,6 +120,7 @@ colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID"
 # https://stackoverflow.com/questions/11936339/replace-specific-characters-within-strings
 DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
+DW_total %>% filter(is.na(D_cm))
 DW_total <- DW_total %>% filter(!is.na(D_cm))
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying
@@ -414,7 +415,7 @@ Wutzler_fB_L <- function(d, h, alt, si){   # DHC 4c model
   bsalt = (-0.00000329);
   # from marks file: ((b0 + bsalt*alt) * DBH^(b1+bsi*SI) * H^b2
   # from Wutzler 2008, Annex 3: 
-          #biomass = (b0+0+bsage*age+bssi*si+bsalt*atitude)*(DBH^b1)*(H^b2)
+          #         biomass = (b0 + 0+ bssi*si+ bsalt*atitude)*(DBH^b1)*(H^b2)
   return(# so its either this: (b0 + 0 + bssi*SI + bsalt*alt)*d^b1*h^b2) 
          # or this from Mark: 
          (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
@@ -961,7 +962,7 @@ coeff_heights %>% filter(Rsqr <= 0.3)
 #view(trees_total %>% filter(plot_ID == 32080))
 
 summary(coeff_H_SP_P)
-coeff_nls_h_combined %>% filter(diff_h >= 0.75)
+coeff_H_comb %>% filter(diff_h >= 0.75)
 #view(coeff_H_SP_P %>% filter(rsqrd<=0.5))
 
 
@@ -1030,10 +1031,82 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 # https://rdrr.io/cran/dplyr/man/top_n.html
 #df %>% top_n(2)  # highest values
+# https://statisticsglobe.com/select-top-n-highest-values-by-group-in-r
+# https://stackoverflow.com/questions/1563961/how-to-find-top-n-of-records-in-a-column-of-a-dataframe-using-r filter ..% of observations that represent top 100 trees
 
-# trees_total_5 %>% 
-#   group_by(plot_ID) %>% 
-#   summarize
+N_t_ha.df <- trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  summarize(N_trees_plot = n(), 
+            plot_A_ha = mean(plot_A_ha)) %>% 
+  mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+         percent_t100 = as.numeric((100/N_t_ha.df$N_trees_ha))) %>% 
+  mutate(percent_t100_corrected = as.numeric(ifelse(N_t_ha.df$percent_t100 < 1, N_t_ha.df$percent_t100, 0.9))) %>% 
+  mutate(nrwos_t100 = N_trees_plot*percent_t100_corrected);
+
+t100 <- function(pl_ID){
+  top100_per <- dplyr::pull(N_t_ha.df, percent_t100_corrected, plot_ID);
+  return(1*top100_per[trees_total_5$plot_ID])
+  }
+
+
+
+
+i <- trees_total_5$plot_ID
+n <- trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  summarize(N_plot = n()) %>% 
+  dplyr::pull(., N_plot, plot_ID)
+
+for (i in N_t_ha.df$plot_ID) {
+    
+}
+
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  slice_max(H_m)
+
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>%
+  top_frac(., t100(trees_total_5$plot_ID), H_m)
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>%
+  top_n(., t100(plot_ID))
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>%
+  top_frac(., 0.1, H_m)
+
+
+  top_frac(., t100(plot_ID, plot_A_ha), H_m)
+   #filter(row_number() < obs * t100(plot_ID, plot_A_ha))
+  
+trees_total %>%  
+  group_by(plot_ID) %>% 
+  slice_max(H_m, prop = t100(plot_ID, plot_A_ha))
+  
+trees_total_5 %>% 
+  left_join(., trees_total_5 %>% 
+             group_by(plot_ID) %>% 
+             summarize(N_trees_plot = n(), 
+                       plot_A_ha = mean(plot_A_ha)) %>% 
+             mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+                    top_100 = (100/N_trees_ha)) %>% 
+            # mutate(top_100_func = t100(plot_ID, plot_A_ha)) %>% 
+             select(plot_ID, N_trees_ha, top_100), 
+   by = "plot_ID") %>% 
+  group_by(plot_ID) %>% 
+  slice_max(H_m, prop = top_100)
+  #top_frac(.,  t100(plot_ID, plot_A_ha), H_m)
+  
+ 
+trees_total_5 %>%                                      # Top N highest values by group
+  arrange(desc(H_m)) %>% 
+  group_by(plot_ID) %>%
+   filter(nrow(trees_total_5) * t100(plot_ID, plot_A_ha))
+  #äslice( t100(plot_ID, plot_A_ha))
 
 
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
@@ -1525,7 +1598,7 @@ summary(biotest)
 biotest %>% filter(is.na(WuWi_fB_kg))
 biotest %>% filter(is.na(tapes_fB_kg))
 
-# ---- 3.2.1. branch Biomass visualization ----------------------------------------
+# ---- 3.2.2. branch Biomass visualization ----------------------------------------
 # points
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg)%>% 
@@ -1547,7 +1620,7 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
-# ---- 3.2.2. coarsewood with bark  Biomass visualization ----------------------------------------
+# ---- 3.2.3. coarsewood with bark  Biomass visualization ----------------------------------------
 # points
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, GHG_WuWi_StB_kg, tapes_crsWbB_kg, Vondr_crsWbB_kg, tps_GHG_crsWbB_kg, Vondr_GHG_crsWbB_kg)%>% 
@@ -1569,7 +1642,7 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
-# ---- 3.2.1. coarsewood with bark  Biomass visualization ----------------------------------------
+# ---- 3.2.4. coarsewood with bark  Biomass visualization ----------------------------------------
 # points
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg)%>% 
@@ -1593,26 +1666,59 @@ biotest %>%
 
 
 
-
+# ---- 3.2.5. GHG & GHG_tapeS compartiments ----------------------------------------
 # bar
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tps_GHG_brB_kg) %>% 
-        # tapes_ab_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg, tapes_fB_kg, tapes_brB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:7) %>% 
+         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, tps_GHG_brB_kg, tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:10) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
+  scale_fill_discrete(labels = c("total aboveground biomass GHGI", "woody aboveground biomass", 
+                               "coarsewood with bark", "coarsewood without bark", "bark", 
+                               "non coarse wood incl. bark", "foliage tapes" ))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# ---- 3.2.5. GHG & GHG_vondernach compartiments ----------------------------------------
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, Vondr_GHG_waB, Vondr_GHG_crsWbB_kg,  Vondr_DhB_kg, Vondr_DhRB_kg, Vondr_GHG_brB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:10) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c("total aboveground biomass GHGI", "woody aboveground biomass", 
+                                 "coarsewood with bark", "coarsewood without bark", "bark", 
+                                 "non coarse wood incl. bark", "foliage vondernach" ))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# ---- 3.2.7. tapeS compartiments  ----------------------------------------
+# tapes_ab_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg, tapes_fB_kg, tapes_brB_kg)%>% 
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         tapes_ab_kg, tapes_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_brB_kg,  tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:9) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c("woody aboveground biomass", 
+                                 "coarsewood with bark", "coarsewood without bark", "bark", 
+                                 "non coarse wood incl. bark", "foliage" ))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
 
-
-
-
-
+# ---- 3.2.8. Vondernach compartiments  ----------------------------------------
 
 
 # ----- NOTES ------------------------------------------------------------------
