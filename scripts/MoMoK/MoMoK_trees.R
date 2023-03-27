@@ -1039,22 +1039,33 @@ N_t_ha.df <- trees_total_5 %>%
   summarize(N_trees_plot = n(), 
             plot_A_ha = mean(plot_A_ha)) %>% 
   mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
-         percent_t100 = as.numeric((100/N_t_ha.df$N_trees_ha))) %>% 
-  mutate(percent_t100_corrected = as.numeric(ifelse(N_t_ha.df$percent_t100 < 1, N_t_ha.df$percent_t100, 0.9))) %>% 
+         percent_t100 = as.numeric((100/N_trees_ha))) %>% 
+  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1, percent_t100, 0.9))) %>% 
   mutate(nrwos_t100 = N_trees_plot*percent_t100_corrected);
 
-t100 <- function(pl_ID){
-  top100_per <- dplyr::pull(N_t_ha.df, percent_t100_corrected, plot_ID);
-  return(1*top100_per[trees_total_5$plot_ID])
-  }
+top100 <- function(df, plot_ID, plot_A){
+  n_plot <- df %>% group_by(plot_ID) %>%  count() %>% dplyr::pull(n, plot_ID);
+  n_ha  <- n_plot[plot_ID]/mean(plot_A[plot_ID]);
+  p <- 100/n_ha;
+  return(1*p[plot_ID])
+}
 
 
+top100(trees_total_5, plot_ID, plot_A_ha)
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  count() %>% 
+  dplyr::pull(n)
+
+trees_total_5 %>% 
+  top_n(., t100(plot_ID), H_m)
 
 
 i <- trees_total_5$plot_ID
 n <- trees_total_5 %>% 
   group_by(plot_ID) %>% 
-  summarize(N_plot = n()) %>% 
+  
   dplyr::pull(., N_plot, plot_ID)
 
 for (i in N_t_ha.df$plot_ID) {
