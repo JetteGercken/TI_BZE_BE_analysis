@@ -1051,12 +1051,12 @@ top100 <- function(df, p_ID, plot_A){
   plot_A <- df %>% dplyr::pull(plot_A_ha);  # plot area in hectare
   n_ha  <- n_plot/mean(plot_A);             # number of trees per hectare by dividing number of trees per plot by pplot area in hectare
   p <- 100/n_ha;                            # percentage  representing 100 trees of the total number of trees per hectare for each plot
-  return(floor(n_plot[p_ID]*p[p_ID]))              # number of rows to select from each 
+  return(as.integer(floor(n_plot[p_ID]*p[p_ID])))              # number of rows to select from each 
 }
 
 trees_total_5 %>% 
   group_by(plot_ID) %>% 
-  top_n(., top100(trees_total_5, plot_ID, plot_A_ha), DBH_cm) %>% 
+  slice_max(., DBH_cm, n = top100(trees_total_5, plot_ID, plot_A_ha):n()) %>% 
   mutate(H_o = mean(H_m))
 
 
