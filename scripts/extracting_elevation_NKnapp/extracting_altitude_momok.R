@@ -30,8 +30,6 @@ require(dplyr)
 options(stringsAsFactors = FALSE)
 
 
-
-
 # CSR of the DEM we´re working with
   # CRS: EPSG:25832
 # CSR of the coordinates we´re working with
@@ -43,10 +41,7 @@ here::here()
 # Provide download url --> should I provide the HPC directory here? 
 #download.url <- "https://data.geobasis-bb.de/geobasis/daten/dgm/xyz/"
 HPC.path <- "/home/data/raster/BKG_DGM5/tifs"
-
-# Get the tile grid via WFS in QGIS and export to gpkg
-# https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductInformation&PRODUCTID=d9895ec2-7039-4c0d-914c-a68f227a7069
-# https://isk.geobasis-bb.de/ows/blattschnitte_wfs
+project.CSR <- "EPSG:25832"
 
 # Read the tiles
  # --> here I have to insert the tiles from the HPC no? 
@@ -55,30 +50,20 @@ HPC.path <- "/home/data/raster/BKG_DGM5/tifs"
  # so the tiles are only donwloaded or importetn when they are needed it seems, 
  # like when there is an inteersection of the grid and the point i´ll import the
  # tiff to extract the slop/ height/ aspect info from the HPC path
-tiles.sf <- st_read("BB_1x1km_tiles.gpkg")
-tiles.sf <- st_read("/home/data/raster/BKG_DGM5/tifs")
+ # Nikos code: tiles.sf <- st_read("BB_1x1km_tiles.gpkg")
+  tiles.sf <- read_sf("/home/data/raster/BKG_DGM5/dgm5_20km_tiles_grid.shp")
+  
+# Get the tile grid via WFS in QGIS and export to gpkg
+  # https://geobroker.geobasis-bb.de/gbss.php?MODE=GetProductInformation&PRODUCTID=d9895ec2-7039-4c0d-914c-a68f227a7069
+  # https://isk.geobasis-bb.de/ows/blattschnitte_wfs
+  st_crs(tiles.sf)
+  tiles.sf %>% sf::st_write("tiles.gpkg")
 
-tiles.sf <- read_sf("/home/data/raster/BKG_DGM5/dgm5_20km_tiles_grid.shp") %>% 
-st_crs(tiles.sf)
-tiles.sf %>% sf::st_write("tiles.gpkg")
-
+#import list of tiffs
 # https://stackoverflow.com/questions/52746936/how-to-efficiently-import-multiple-raster-tif-files-into-r
 # rastlist <- list.files(path = "/home/data/raster/BKG_DGM5/tifs", pattern='.TIF$', 
 #                       all.files=TRUE, full.names=FALSE)
 
-
-# # this I wont need because the country doesnt matter to me 
-# # Read GADM country borders
-# countries.sf <- st_read("C:/Users/knapp/Rawdata/GADM/gadm36_levels_shp/gadm36_1.shp")
-# head(countries.sf)
-# # Subset Brandenburg
-# BB.sf <- subset(countries.sf, NAME_1 == "Brandenburg")
-# plot(BB.sf$geom)
-project.CSR <- "EPSG:25832"
-
-
-tiles_DGM5.list <- list.files(datapath("/home/data/raster/BKG_DGM5/tifs/"), full.names = TRUE)
-# temp_rasters <- rast(tiflist_DGM5)
 
 
 # coordinates
@@ -118,17 +103,6 @@ tiles_DGM5.list <- list.files(datapath("/home/data/raster/BKG_DGM5/tifs/"), full
   # https://www.ecologi.st/spatial-r/raster-gis-operations-in-r-with-terra.html
   momok.sf.vec.reproj <- terra::vect(momok.sf.reproj)
   #plot(momok.sf$geometry)
-  
-# this is how Niko created the area of interest
- # Create 300-m circles around each point
-  # moorwald.sf <- st_as_sf(moorwald.dt, coords=c("X_GK3", "Y_GK3"), remove=F, crs=31467)
-  # some steps in between to create circles that I don´t need
-  # Make the MoorWald circles the AOI
-  # aoi.sf <- moorwald.circles.sf
-  # Make the MoMoK BB squares the AOI
-  # aoi.sf <- momok.BB.squares.sf
-  # Reproject AOI to same CRS as BB DTM data
-  # aoi.sf <- st_transform(aoi.sf, crs=25833)
 
 # Maiking th repeojected coordinates the area/ points of interest 
   #aoi.sf <- momok.spvec.reproj
@@ -136,7 +110,6 @@ tiles_DGM5.list <- list.files(datapath("/home/data/raster/BKG_DGM5/tifs/"), full
   
   
 # processing loop from Nikolai
-
 for(i in 1:nrow(aoi.sf)){   # area of interest will be the list of points i think
   # i=1
   
