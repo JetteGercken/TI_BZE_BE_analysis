@@ -1043,81 +1043,21 @@ N_t_ha.df <- trees_total_5 %>%
   mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1, percent_t100, 0.9))) %>% 
   mutate(nrwos_t100 = N_trees_plot*percent_t100_corrected);
 
-top100 <- function(df, plot_ID, plot_A){
-  n_plot <- df %>% group_by(plot_ID) %>%  count() %>% dplyr::pull(n, plot_ID);
-  n_ha  <- n_plot[plot_ID]/mean(plot_A[plot_ID]);
-  p <- 100/n_ha;
-  return(1*p[plot_ID])
+
+top100 <- function(df, p_ID, plot_A){
+  df <- trees_total_5;                      # the dataframe I´m working with 
+  p_ID <- df %>% dplyr::pull(plot_ID)       # the plot ID 
+  n_plot <- df %>% group_by(plot_ID) %>%  count() %>% dplyr::pull(n, plot_ID);  # number of trees per plot
+  plot_A <- df %>% dplyr::pull(plot_A_ha);  # plot area in hectare
+  n_ha  <- n_plot/mean(plot_A);             # number of trees per hectare by dividing number of trees per plot by pplot area in hectare
+  p <- 100/n_ha;                            # percentage  representing 100 trees of the total number of trees per hectare for each plot
+  return(n_plot[p_ID]*p[p_ID])              # number of rows to select from each 
 }
 
-
-top100(trees_total_5, plot_ID, plot_A_ha)
-
 trees_total_5 %>% 
   group_by(plot_ID) %>% 
-  count() %>% 
-  dplyr::pull(n)
-
-trees_total_5 %>% 
-  top_n(., t100(plot_ID), H_m)
-
-
-i <- trees_total_5$plot_ID
-n <- trees_total_5 %>% 
-  group_by(plot_ID) %>% 
-  
-  dplyr::pull(., N_plot, plot_ID)
-
-for (i in N_t_ha.df$plot_ID) {
-    
-}
-
-
-trees_total_5 %>% 
-  group_by(plot_ID) %>% 
-  slice_max(H_m)
-
-
-trees_total_5 %>% 
-  group_by(plot_ID) %>%
-  top_frac(., t100(trees_total_5$plot_ID), H_m)
-
-trees_total_5 %>% 
-  group_by(plot_ID) %>%
-  top_n(., t100(plot_ID))
-
-trees_total_5 %>% 
-  group_by(plot_ID) %>%
-  top_frac(., 0.1, H_m)
-
-
-  top_frac(., t100(plot_ID, plot_A_ha), H_m)
-   #filter(row_number() < obs * t100(plot_ID, plot_A_ha))
-  
-trees_total %>%  
-  group_by(plot_ID) %>% 
-  slice_max(H_m, prop = t100(plot_ID, plot_A_ha))
-  
-trees_total_5 %>% 
-  left_join(., trees_total_5 %>% 
-             group_by(plot_ID) %>% 
-             summarize(N_trees_plot = n(), 
-                       plot_A_ha = mean(plot_A_ha)) %>% 
-             mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
-                    top_100 = (100/N_trees_ha)) %>% 
-            # mutate(top_100_func = t100(plot_ID, plot_A_ha)) %>% 
-             select(plot_ID, N_trees_ha, top_100), 
-   by = "plot_ID") %>% 
-  group_by(plot_ID) %>% 
-  slice_max(H_m, prop = top_100)
-  #top_frac(.,  t100(plot_ID, plot_A_ha), H_m)
-  
- 
-trees_total_5 %>%                                      # Top N highest values by group
-  arrange(desc(H_m)) %>% 
-  group_by(plot_ID) %>%
-   filter(nrow(trees_total_5) * t100(plot_ID, plot_A_ha))
-  #äslice( t100(plot_ID, plot_A_ha))
+  top_n(., top100(trees_total_5, plot_ID, plot_A_ha), DBH_cm) %>% 
+  mutate(H_o = mean(H_m))
 
 
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
