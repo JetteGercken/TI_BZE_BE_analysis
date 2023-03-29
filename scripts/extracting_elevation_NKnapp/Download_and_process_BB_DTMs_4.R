@@ -9,6 +9,7 @@ require(sf)
 require(data.table)
 require(readxl)
 
+
 # Specify working directory
 wd <- "C:/Users/knapp/Documents/Kleinprojekte/BB_DGMs/"
 setwd(wd)
