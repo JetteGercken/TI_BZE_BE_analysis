@@ -75,8 +75,8 @@ library("TapeR")
 if (! require("remotes")) 
   install.packages("remotes")
 library("remotes")s
-devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 library("TapeS")
 require(TapeS)
 vignette("tapes", package = "TapeS")
@@ -1070,6 +1070,30 @@ trees_total_5 %>%
   slice_max(., DBH_cm, n = top100(trees_total_5, plot_ID, plot_A_ha):n()) %>% 
   mutate(H_o = mean(H_m))
 
+##########
+# BY ALEX
+##########
+trees <- data.frame(plot_ID = rep(1:3,c(30,40,50)), H_m = sample(1:100, 120, replace = T))
+
+#calculate the proportions of each plot to be selected and write them in vector
+#it is important to make sure the length of this is the same as the number of plots
+#I chose some random values to test
+proportions_plots <- c(0.4,0.5,0.3)
+
+#create a vector to store final result(mean hight)
+#set its length to number of unique plots
+mean100top <- numeric(length(unique(trees$plot_ID)))
+
+#make a for loop to do slice_max for each plot with it's corresponding proportion
+# and write results in mean100top vector
+for(id in unique(trees$plot_ID)){
+  sliced_plot <- trees %>%
+    filter(., plot_ID == id) %>%
+    slice_max(.,H_m,prop = proportions_plots[id])
+  mean100top[id] = mean(sliced_plot$H_m)
+}
+
+
 
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
@@ -1604,7 +1628,7 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
-# ---- 3.2.4. coarsewood with bark  Biomass visualization ----------------------------------------
+# ---- 3.2.4. aboveground Biomasse visualization ----------------------------------------
 # points
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg)%>% 
@@ -1698,6 +1722,7 @@ biotest %>%
 
 
 
+# ---- 3.2.9. differences biomass GHGI, TapeS, Vondernach compartiments  ----------------------------------------
 
 
 
