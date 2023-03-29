@@ -1681,6 +1681,26 @@ biotest %>%
 
 
 # ---- 3.2.8. Vondernach compartiments  ----------------------------------------
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         Vondr_oiB_kg, Vondr_crsWbB_kg, Vondr_DhB_kg, Vondr_DhRB_kg, Vondr_brB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:9) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c("woody aboveground biomass", 
+                                 "coarsewood with bark", "coarsewood without bark", "bark", 
+                                 "non coarse wood incl. bark", "foliage" ))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+
+
+
+
 
 
 # ----- NOTES ------------------------------------------------------------------
