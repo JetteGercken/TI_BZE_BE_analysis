@@ -38,3 +38,4 @@ for (plot in c(unique(gebiet$plot_id)))  #loope durch plots
 98*40/98 #=40 , trivial, plot_id 4
 
 gebiet
+

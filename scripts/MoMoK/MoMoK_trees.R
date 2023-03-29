@@ -6,38 +6,39 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-install.packages("usethis")
- install.packages("here")
- install.packages("readr")
- install.packages("tidyverse")
- install.packages("tibble")
- install.packages("dplyr")
- install.packages("data.table")
- install.packages("broom")
- install.packages("purrr")
- install.packages("devtools")
- ## laTex
- install.packages("stargazer")  #for compatability with Latex
- install.packages("tikzDevice") #for compatability with Latex#
- # visualisation
- install.packages("ggthemes")
- install.packages("ggplot2")
- install.packages("reshape2") #for multiple y values
- install.packages("ggforce") #for zooming in parts of the plot
- options(tz="CA")
- install.packages("reshape2")
- # analysis
- install.packages("corrplot")
- install.packages("AICcmodavg")
- # forest related
-  install.packages("forestmangr")
- install.packages("rBDAT")
- install.packages("TapeR")
- install.packages("pkgbuild")
- library("devtools")
- if (! require("remotes")) 
-   install.packages("remotes")
- remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+# install.packages("usethis")
+#  install.packages("here")
+#  install.packages("readr")
+#  install.packages("tidyverse")
+#  install.packages("tibble")
+#  install.packages("dplyr")
+#  install.packages("data.table")
+#  install.packages("broom")
+#  install.packages("purrr")
+#  install.packages("devtools")
+#  ## laTex
+#  install.packages("stargazer")  #for compatability with Latex
+#  install.packages("tikzDevice") #for compatability with Latex#
+#  # visualisation
+#  install.packages("ggthemes")
+#  install.packages("ggplot2")
+#  install.packages("reshape2") #for multiple y values
+#  install.packages("ggforce") #for zooming in parts of the plot
+#  options(tz="CA")
+#  install.packages("reshape2")
+#  # analysis
+#  install.packages("corrplot")
+#  install.packages("AICcmodavg")
+#  # forest related
+#   install.packages("forestmangr")
+#  install.packages("rBDAT")
+#  install.packages("TapeR")
+#  install.packages("pkgbuild")
+#  library("devtools")
+#  if (! require("remotes")) 
+#    install.packages("remotes")
+#  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#  install.packages("magrittr")
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -79,6 +80,7 @@ remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 library("TapeS")
 require(TapeS)
 vignette("tapes", package = "TapeS")
+library(magrittr)
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -1043,14 +1045,14 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 # https://statisticsglobe.com/select-top-n-highest-values-by-group-in-r
 # https://stackoverflow.com/questions/1563961/how-to-find-top-n-of-records-in-a-column-of-a-dataframe-using-r filter ..% of observations that represent top 100 trees
 
-N_t_ha.df <- trees_total_5 %>% 
+prop100 <- trees_total_5 %>% 
   group_by(plot_ID) %>% 
   summarize(N_trees_plot = n(), 
             plot_A_ha = mean(plot_A_ha)) %>% 
   mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
          percent_t100 = as.numeric((100/N_trees_ha))) %>% 
-  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1, percent_t100, 0.9))) %>% 
-  mutate(nrwos_t100 = N_trees_plot*percent_t100_corrected);
+  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1, percent_t100, 1))) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+  dplyr::pull(percent_t100_corrected)
 
 
 top100 <- function(df, p_ID, plot_A){
