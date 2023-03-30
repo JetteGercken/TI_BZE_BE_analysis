@@ -1045,51 +1045,49 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 # https://statisticsglobe.com/select-top-n-highest-values-by-group-in-r
 # https://stackoverflow.com/questions/1563961/how-to-find-top-n-of-records-in-a-column-of-a-dataframe-using-r filter ..% of observations that represent top 100 trees
 
-prop100 <- trees_total_5 %>% 
+
+
+
+# top100 <- function(df, p_ID, plot_A){
+#   df <- trees_total_5;                      # the dataframe I´m working with 
+#   p_ID <- df %>% dplyr::pull(plot_ID)       # the plot ID 
+#   n_plot <- df %>% group_by(plot_ID) %>%  count() %>% dplyr::pull(n, plot_ID);  # number of trees per plot
+#   plot_A <- df %>% dplyr::pull(plot_A_ha);  # plot area in hectare
+#   n_ha  <- n_plot/mean(plot_A);             # number of trees per hectare by dividing number of trees per plot by pplot area in hectare
+#   p <- 100/n_ha;                            # percentage  representing 100 trees of the total number of trees per hectare for each plot
+#   return(as.integer(floor(n_plot[p_ID]*p[p_ID])))              # number of rows to select from each 
+# }
+# 
+# trees_total_5 %>% 
+#   group_by(plot_ID) %>% 
+#   slice_max(., DBH_cm, n = top100(trees_total_5, plot_ID, plot_A_ha):n()) %>% 
+#   mutate(H_o = mean(H_m))
+
+##########
+# BY ALEX
+##########
+
+#calculate the proportions of each plot to be selected and write them in vector
+  n_t100 <- trees_total_5 %>% 
   group_by(plot_ID) %>% 
   summarize(N_trees_plot = n(), 
             plot_A_ha = mean(plot_A_ha)) %>% 
   mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
          percent_t100 = as.numeric((100/N_trees_ha))) %>% 
-  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1, percent_t100, 1))) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
-  dplyr::pull(percent_t100_corrected)
-
-
-top100 <- function(df, p_ID, plot_A){
-  df <- trees_total_5;                      # the dataframe I´m working with 
-  p_ID <- df %>% dplyr::pull(plot_ID)       # the plot ID 
-  n_plot <- df %>% group_by(plot_ID) %>%  count() %>% dplyr::pull(n, plot_ID);  # number of trees per plot
-  plot_A <- df %>% dplyr::pull(plot_A_ha);  # plot area in hectare
-  n_ha  <- n_plot/mean(plot_A);             # number of trees per hectare by dividing number of trees per plot by pplot area in hectare
-  p <- 100/n_ha;                            # percentage  representing 100 trees of the total number of trees per hectare for each plot
-  return(as.integer(floor(n_plot[p_ID]*p[p_ID])))              # number of rows to select from each 
-}
-
-trees_total_5 %>% 
-  group_by(plot_ID) %>% 
-  slice_max(., DBH_cm, n = top100(trees_total_5, plot_ID, plot_A_ha):n()) %>% 
-  mutate(H_o = mean(H_m))
-
-##########
-# BY ALEX
-##########
-trees <- data.frame(plot_ID = rep(1:3,c(30,40,50)), H_m = sample(1:100, 120, replace = T))
-
-#calculate the proportions of each plot to be selected and write them in vector
-#it is important to make sure the length of this is the same as the number of plots
-#I chose some random values to test
-proportions_plots <- c(0.4,0.5,0.3)
+  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
+         n_rows_t100 = N_trees_plot*percent_t100_corrected) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+  dplyr::pull(as.numeric(n_rows_t100), plot_ID)
 
 #create a vector to store final result(mean hight)
 #set its length to number of unique plots
-mean100top <- numeric(length(unique(trees$plot_ID)))
+mean100top <- numeric(length(unique(trees_total_5$plot_ID)))
 
 #make a for loop to do slice_max for each plot with it's corresponding proportion
 # and write results in mean100top vector
-for(id in unique(trees$plot_ID)){
-  sliced_plot <- trees %>%
+for(id in unique(trees_total_5$plot_ID)){
+  sliced_plot <- trees_total_5 %>%
     filter(., plot_ID == id) %>%
-    slice_max(.,H_m,prop = proportions_plots[id])
+    slice_max(.,DBH_cm, n = n_t100[id])
   mean100top[id] = mean(sliced_plot$H_m)
 }
 
