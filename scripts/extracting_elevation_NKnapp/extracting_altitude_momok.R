@@ -5,6 +5,7 @@ install.packages("terra")
 install.packages("sf")
 install.packages("elevatr")
 install.packages("inborutils")
+install.packages("stars")
 install.packages("data.table")
 install.packages("readxl")
 install.packages("usethis")
@@ -13,6 +14,8 @@ install.packages("readr")
 install.packages("tidyverse")
 install.packages("tibble")
 install.packages("dplyr")
+
+
 
 # Load packages
 require(terra)
@@ -29,6 +32,7 @@ library(tidyr)
 require(tibble)
 require(dplyr)
 options(stringsAsFactors = FALSE)
+require(stars)
 
 
 # CSR of the DEM we´re working with
@@ -125,6 +129,7 @@ plot(tiles.sf.gpkg$geometry)
 inter <- sf::st_intersection(x=tiles.sf.gpkg, y=aoi.sf)
 plot(inter$geometry)
 
+
 # processing loop from Nikolai
 for(i in 1:nrow(aoi.sf)){   # area of interest will be the list of points i think
   # i=1
@@ -196,13 +201,19 @@ for(i in 1:nrow(aoi.sf)){   # area of interest will be the list of points i thin
   
   # turn the mosaic into a star object to the run the extract
  # https://r-spatial.github.io/stars/reference/st_extract.html
-  tif = system.file("tif/L7_ETMs.tif", package = "stars")
-  r = read_stars(tif)
+  # tif = system.file("tif/L7_ETMs.tif", package = "stars")
+  #r = read_stars(tif)
+  # help("system.file") 
   
+ 
   
   # Ithibnk the following I wont need because I am not creating a raster file but I am extracting point data
   # instead Iĺl have to add a code that extracts the elevation
   
+  # for st_extract I need the raster or the raster Mosaic to be a star object 
+  # https://r-spatial.github.io/stars/reference/st_as_stars.html
+  st_as_stars(dtm.mosaic.rast, att = 1, ignore_file = FALSE)
+  elevation.df <- st_extract(dtm.mosaic.rast, aoi.sf)
   
   
   # Crop and mask with the AOI
@@ -223,5 +234,5 @@ for(i in 1:nrow(aoi.sf)){   # area of interest will be the list of points i thin
   # writeRaster(hillshade.rast, paste0(out.path, "hillshade/hillshade_", my.aoi.name, ".tif"), overwrite=T)
   
   # Progress feedback
-  print(i)
+  print(elevation.df)
 }
