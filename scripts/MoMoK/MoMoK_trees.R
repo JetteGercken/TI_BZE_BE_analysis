@@ -317,8 +317,8 @@ tapes_StB <- function(spec_tpS, d, dh, h){
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sw <- tprBiomass(obj.tbio, component="sw");
   stw <- tprBiomass(obj.tbio, component="stw");
-  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw);
-  return(coarsebark.df$tapes_St) # stem + stumb without bark
+  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(coarsebark.df$sw) # stem + stumb without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -343,7 +343,7 @@ tapes_StbB <- function(spec_tpS, d, dh, h){
   sb <- tprBiomass(obj.tbio, component="sb");
   stb <- tprBiomass(obj.tbio, component="stb");
   bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
-  return(bark.df$bark_tapes)
+  return(bark.df$sb)
 }
 
 # ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
@@ -1068,15 +1068,27 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 ##########
 
 #calculate the number of each plot to be selected and write them in vector
-  p_t100 <- trees_total_5 %>% 
+  n_t100 <- trees_total_5 %>% 
   group_by(plot_ID) %>% 
   summarize(N_trees_plot = n(), 
             plot_A_ha = mean(plot_A_ha)) %>% 
   mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
          percent_t100 = as.numeric((100/N_trees_ha))) %>% 
   mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
-         n_rows_t100 = floor(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
-  dplyr::pull(as.numeric(percent_t100_corrected), plot_ID)
+         n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+  select(n_rows_t100, plot_ID)
+
+
+#calculate the number of each plot to be selected and write them in vector
+p_t100 <- trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  summarize(N_trees_plot = n(), 
+            plot_A_ha = mean(plot_A_ha)) %>% 
+  mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+         percent_t100 = as.numeric((100/N_trees_ha))) %>% 
+  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, as.numeric(1.0))), 
+         n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+  dplyr::pull(as.numeric(percent_t100_corrected))
 
 #create a vector to store final result(mean hight)
 #set its length to number of unique plots
@@ -1087,12 +1099,16 @@ mean100top <- numeric(length(unique(trees_total_5$plot_ID)))
 # and write results in mean100top vector
 for(id in unique(trees_total_5$plot_ID)){
   sliced_plot <- trees_total_5 %>%
-    filter(., plot_ID == id) %>%
-    slice_max(DBH_cm, prop = p_t100[id], with_ties = FALSE)
+    filter(plot_ID == id) %>%
+    slice_max(DBH_cm, n = n_t100[id], with_ties = FALSE)
   mean100top[id] = mean(sliced_plot$H_m)
 }
 
-
+for(id in unique(trees_total_5$plot_ID)){
+  sliced_plot <- head(trees_total_5, n_t100[id])
+  mean100top[id] = mean(sliced_plot$H_m)
+}
+p_t100$plot_ID
 
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
@@ -1162,10 +1178,16 @@ biotest <- trees_total_5 %>%
          # Vondernach & GHG
          Vondr_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - Vondr_fB_kg, GHG_aB_kg),    # woody aboveground biomass Derbholz + nichtderbholz + Rinde
          Vondr_GHG_crsWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_brB_kg),               # coarsewood including bark by removing foliage and branches
-         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg))                # fine branches by withdrawing coarsewood and foliage 
+         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%                 # fine branches by withdrawing coarsewood and foliage 
+  mutate(GHG_tps_DhB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (tapes_fB_kg+tapes_brB_kg+tapes_DhbB_kg), GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg)), 
+         GHG_tps_DhRB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+tapes_fB_kg+tapes_brB_kg),
+         GHG_tps_brB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+tapes_fB_kg),
+         GHG_tps_fB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+GHG_tps_brB_kg), 
+         tot_GHG_tps = GHG_tps_DhB_kg+ GHG_tps_DhRB_kg+ GHG_tps_brB_kg+ GHG_tps_fB_kg, 
+         diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps)
                                          
 
-
+summary(biotest)
 
 # ----- 2.3  Biomass dead trees -------------------------------------------
 
@@ -1702,6 +1724,50 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
+
+# ---- 3.2.7. GHG & tapeS compartiments  ----------------------------------------
+# bar
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, tapes_ab_kg,
+         GHG_tps_DhB_kg, tapes_DhB_kg, 
+         GHG_tps_DhRB_kg, tapes_DhbB_kg,  
+         GHG_tps_brB_kg, tapes_brB_kg, 
+         GHG_tps_fB_kg, tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:13) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c("total aboveground biomass GHGI","total aboveground biomass TapeS", 
+                                 "coarsewood without bark GHGI", "coarsewood without bark TapeS", 
+                                 "bark GHGI", "bark TapeS", 
+                                 "non coarse wood incl. bark GHG", "non coarse wood incl. bark TapeS", 
+                                 "foliage GHG", "foliage tapes"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# points
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, tapes_ab_kg,
+         GHG_tps_DhB_kg, tapes_DhB_kg, 
+         GHG_tps_DhRB_kg, tapes_DhbB_kg,  
+         GHG_tps_brB_kg, tapes_brB_kg, 
+         GHG_tps_fB_kg, tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:13) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  geom_line(aes(colour = method))+
+  scale_colour_discrete(labels = c("total aboveground biomass GHGI","total aboveground biomass TapeS", 
+                                 "coarsewood without bark GHGI", "coarsewood without bark TapeS", 
+                                 "bark GHGI", "bark TapeS", 
+                                 "non coarse wood incl. bark GHG", "non coarse wood incl. bark TapeS", 
+                                 "foliage GHG", "foliage tapes"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
 
 # ---- 3.2.8. Vondernach compartiments  ----------------------------------------
 biotest %>% 
