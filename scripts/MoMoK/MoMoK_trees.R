@@ -1178,13 +1178,17 @@ biotest <- trees_total_5 %>%
          # Vondernach & GHG
          Vondr_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - Vondr_fB_kg, GHG_aB_kg),    # woody aboveground biomass Derbholz + nichtderbholz + Rinde
          Vondr_GHG_crsWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_brB_kg),               # coarsewood including bark by removing foliage and branches
-         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%                 # fine branches by withdrawing coarsewood and foliage 
+         Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%           # fine branches by withdrawing coarsewood and foliage 
+         # stepwise
   mutate(GHG_tps_DhB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (tapes_fB_kg+tapes_brB_kg+tapes_DhbB_kg), GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg)), 
          GHG_tps_DhRB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+tapes_fB_kg+tapes_brB_kg),
          GHG_tps_brB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+tapes_fB_kg),
          GHG_tps_fB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+GHG_tps_brB_kg), 
          tot_GHG_tps = GHG_tps_DhB_kg+ GHG_tps_DhRB_kg+ GHG_tps_brB_kg+ GHG_tps_fB_kg, 
-         diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps)
+         diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps, 
+         diff_GHG_tps = GHG_aB_kg - tapes_ab_kg, 
+         diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
+         diff_Vondr_tps = tapes_ab_kg - Vondr_oiB_kg)
                                          
 
 summary(biotest)
@@ -1579,17 +1583,55 @@ ggplot(data = trees_total_6,
 # ---- 3.2. Biomass visualization ----------------------------------------
 # ---- 3.2.1. foliage Biomass visualization ----------------------------------------
 biotest %>% 
-  select( plot_ID, SP_code,DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:6) %>% 
+  select(plot_ID, SP_code,DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg, GHG_tps_fB_kg)%>% # 
+  tidyr::gather("method", "biomass", 4:7) %>% 
   ggplot(., aes(DBH_cm, biomass))+
   geom_point(aes(colour = method))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
+# biomass accumulated
 biotest %>% 
-  select( plot_ID, SP_code,DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:6) %>% 
+  select( plot_ID, SP_code, DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg, GHG_tps_fB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# mean biomas, sp, plot
+biotest %>% 
+  select( plot_ID, SP_code, DBH_cm, WuWi_fB_kg, tapes_fB_kg, Vondr_fB_kg, GHG_tps_fB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
+  group_by(method, plot_ID, SP_code) %>% 
+  summarize(mean_bio = mean(biomass)) %>% 
+  ggplot(., aes(method, mean_bio))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+# tapeS GHG comparissson
+##point
+biotest %>% 
+  select(plot_ID, SP_code,DBH_cm, tapes_fB_kg, GHG_tps_fB_kg)%>% # 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+##bar
+biotest %>% 
+  select(plot_ID, SP_code,DBH_cm, tapes_fB_kg, GHG_tps_fB_kg)%>% # 
+  tidyr::gather("method", "biomass", 4:5) %>%  
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
            stat="identity", 
@@ -1608,8 +1650,8 @@ biotest %>% filter(is.na(tapes_fB_kg))
 # ---- 3.2.2. branch Biomass visualization ----------------------------------------
 # points
 biotest %>% 
-  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:8) %>% 
+  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg, GHG_tps_brB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:9) %>% 
   ggplot(., aes(DBH_cm, biomass))+
   geom_point(aes(colour = method))+
   #geom_line(aes(colour = method))+
@@ -1627,7 +1669,30 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
-# ---- 3.2.3. coarsewood with bark  Biomass visualization ----------------------------------------
+
+# tapeS GHG comparissson
+##point
+biotest %>% 
+  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_brB_kg, tps_GHG_brB_kg )%>%    #branches calculated in tapeS and GHG stepwise
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(DBH_cm, biomass))+
+  geom_point(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+##bar
+biotest %>% 
+  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_brB_kg, tps_GHG_brB_kg)%>% # 
+  tidyr::gather("method", "biomass", 4:6) %>%  
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+# ---- 3.2.3. coarsewood with bark Biomass visualization ----------------------------------------
 # points
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, GHG_WuWi_StB_kg, tapes_crsWbB_kg, Vondr_crsWbB_kg, tps_GHG_crsWbB_kg, Vondr_GHG_crsWbB_kg)%>% 
@@ -1661,8 +1726,8 @@ biotest %>%
   facet_wrap(plot_ID~SP_code)
 # bar
 biotest %>% 
-  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:6) %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tot_GHG_tps, tapes_ab_kg, Vondr_oiB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
            stat="identity", 
@@ -1671,6 +1736,19 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
+
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tot_GHG_tps, tapes_ab_kg, Vondr_oiB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
+  group_by(method, plot_ID, SP_code) %>% 
+  summarize(mean_bio = mean(biomass)) %>% 
+  ggplot(., aes(method, mean_bio))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
 
 
 # ---- 3.2.5. GHG & GHG_tapeS compartiments ----------------------------------------
@@ -1689,6 +1767,8 @@ biotest %>%
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
+
+
 
 # ---- 3.2.5. GHG & GHG_vondernach compartiments ----------------------------------------
 # bar
@@ -1725,28 +1805,159 @@ biotest %>%
   facet_wrap(plot_ID~SP_code)
 
 
-# ---- 3.2.7. GHG & tapeS compartiments  ----------------------------------------
+# ---- 3.2.7. GHG & tapeS compartiments with stepwise GHG & TapeS calcualtion  ----------------------------------------
+install.packages("viridis")
+library(viridis)
+
 # bar
+ # all compartiments
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         GHG_aB_kg, tapes_ab_kg,
-         GHG_tps_DhB_kg, tapes_DhB_kg, 
-         GHG_tps_DhRB_kg, tapes_DhbB_kg,  
-         GHG_tps_brB_kg, tapes_brB_kg, 
+         #GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg,
+         GHG_tps_DhB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         GHG_tps_DhRB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         GHG_tps_brB_kg, tapes_brB_kg, Vondr_brB_kg,
+         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:15) %>% 
+  mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
+                                startsWith(method, 'G')~ "GHGI", 
+                                TRUE~"Vondernach"), 
+         compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
+                                  method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "DhB",
+                                  method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "DhRB",
+                                  method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "branches", 
+                                  TRUE~"foliage")) %>% 
+  group_by(method, gen_method, compartiment, plot_ID, SP_code) %>% 
+  summarize(mean_bio = mean(biomass)) %>%
+  ggplot(., aes(gen_method, mean_bio))+
+  #ggplot(., aes(gen_method, biomass))+
+  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
+  geom_bar(aes(fill = reorder(compartiment, +mean_bio)), color= "white", 
+            stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+            position="stack")+
+  scale_fill_viridis_d()+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)+
+  theme_bw()
+
+# bar
+# all compartiments
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg,
+         GHG_tps_DhB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         GHG_tps_DhRB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         GHG_tps_brB_kg, tapes_brB_kg, Vondr_brB_kg,
+         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:18) %>% 
+  mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
+                                startsWith(method, 'G')~ "GHGI", 
+                                TRUE~"Vondernach"), 
+         compartiment = case_when(method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
+           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "DhB",
+           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "DhRB",
+           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "branches", 
+           TRUE~"foliage")) %>% 
+  group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
+  summarize(mean_bio = mean(biomass)) %>%
+  ggplot(., aes(gen_method, mean_bio))+
+  #ggplot(., aes(gen_method, biomass))+
+  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
+  geom_bar(aes(fill = reorder(compartiment, +mean_bio)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  scale_fill_viridis_d()+
+  #scale_x_discrete(breaks=c("total aB","DhB","DhRB","branches", "foliage"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)+
+  theme_bw()
+
+# bar
+# foliage
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm,  
          GHG_tps_fB_kg, tapes_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:13) %>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
-  scale_fill_discrete(labels = c("total aboveground biomass GHGI","total aboveground biomass TapeS", 
-                                 "coarsewood without bark GHGI", "coarsewood without bark TapeS", 
-                                 "bark GHGI", "bark TapeS", 
-                                 "non coarse wood incl. bark GHG", "non coarse wood incl. bark TapeS", 
-                                 "foliage GHG", "foliage tapes"))+
+  scale_fill_viridis_discrete(labels = c("foliage GHG", "foliage tapes"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)+
+  theme_bw()
+
+# bar
+# branches
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm,  
+         GHG_tps_brB_kg, tapes_brB_kg, tps_GHG_brB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c("non coarse wood including brak GHG stepwise", "non coarse wood including bark tapes", "non coarse wood including bark GHG_tapes" ))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
+
+
+
+# bar
+# coarse wood
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm,  
+         GHG_tps_DhB_kg, tapes_DhB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c(" coarse wood without bark GHG stepwise", "coarse wood without bark tapes" ))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+# bar
+# coarse wood bark
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm,  
+         GHG_tps_DhRB_kg, tapes_DhbB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c(" coarse woodbark GHG stepwise", "coarse wood bark tapes" ))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+# bar
+# total aboveground biomass
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm,  
+         GHG_aB_kg, tot_GHG_tps, tapes_ab_kg) %>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_bar(aes(fill = method), 
+           stat="identity", 
+           position=position_dodge())+
+  scale_fill_discrete(labels = c(" total aboveground biomass GHG", " total aboveground biomass  tapes" , " total aboveground biomass GHG_tapeS stepwise"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
+
 
 # points
 biotest %>% 
@@ -1769,6 +1980,29 @@ biotest %>%
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
 
+
+# boxplot
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         GHG_aB_kg, tapes_ab_kg,
+         GHG_tps_DhB_kg, tapes_DhB_kg, 
+         GHG_tps_DhRB_kg, tapes_DhbB_kg,  
+         GHG_tps_brB_kg, tapes_brB_kg, 
+         GHG_tps_fB_kg, tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:13) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_boxplot(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  scale_colour_discrete(labels = c("total aboveground biomass GHGI","total aboveground biomass TapeS", 
+                                   "coarsewood without bark GHGI", "coarsewood without bark TapeS", 
+                                   "bark GHGI", "bark TapeS", 
+                                   "non coarse wood incl. bark GHG", "non coarse wood incl. bark TapeS", 
+                                   "foliage GHG", "foliage tapes"))+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)
+
+
 # ---- 3.2.8. Vondernach compartiments  ----------------------------------------
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
@@ -1788,7 +2022,25 @@ biotest %>%
 
 
 # ---- 3.2.9. differences biomass GHGI, TapeS, Vondernach compartiments  ----------------------------------------
-
+# boxplot
+biotest %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         diff_GHG_bef_af_tps, diff_GHG_tps, diff_Vondr_GHG, diff_Vondr_tps) %>% 
+  tidyr::gather("method", "biomass", 4:7) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_boxplot(aes(colour = method))+
+  #geom_line(aes(colour = method))+
+  xlab(" ")+
+  scale_colour_discrete(labels = c("difference abovegrond biomass GHG stepwise - GHG", 
+                                   "difference abovegrond biomass GHG - TapeS", 
+                                   "difference abovegrond biomass GHG - Vondernach", 
+                                   "difference abovegrond biomass TapeS - Vondernach"))+
+  #ggtitle("Boxplots of the differences in total aboveground biomass [kg] by calculation method")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(plot_ID~SP_code)+ 
+  theme(legend.position="right", axis.text.x=element_blank(), axis.ticks.x=element_blank())+
+  theme_bw()
 
 
 
