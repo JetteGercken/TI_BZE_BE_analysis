@@ -2026,7 +2026,10 @@ biotest %>%
 # boxplot
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         diff_GHG_bef_af_tps, diff_GHG_tps, diff_Vondr_GHG, diff_Vondr_tps) %>% 
+        # diff_GHG_bef_af_tps, 
+         diff_GHG_tps, 
+         diff_Vondr_GHG, 
+         diff_Vondr_tps) %>% 
   tidyr::gather("method", "biomass", 4:7) %>% 
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
@@ -2039,7 +2042,7 @@ biotest %>%
   #ggtitle("Boxplots of the differences in total aboveground biomass [kg] by calculation method")+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(plot_ID~SP_code)+ 
+  facet_wrap(~SP_code)+ 
   theme(legend.position="right", axis.text.x=element_blank(), axis.ticks.x=element_blank())+
   theme_bw()
 
