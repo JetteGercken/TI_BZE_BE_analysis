@@ -1613,6 +1613,7 @@ biotest %>%
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
+  
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
