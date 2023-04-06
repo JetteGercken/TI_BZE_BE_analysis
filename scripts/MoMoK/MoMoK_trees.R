@@ -217,7 +217,7 @@ h_nls_SP_P <- function(plot_spec, d) {
 
 # ---- 1.3.3.1.1.  GHG inventory (Dunger et al.) total above biomass --------------------------------------
 # https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
-## aboveground biomass in kg per tree, for trees DBH > 10cm GHGI
+## aboveground biomass in kg per tree, for trees DBH > 10cm & DHB < species speficic threshold GHGI
     # where B = above-ground phytomass in kg per individual tree,
     # b0,1,2,3 and k1,2 = coefficients of the эarklund function,
     # DBH = Diameter at breast height in cm,
@@ -249,6 +249,38 @@ Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll lin
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
+}
+
+##aboveground biomass for trees <10cm DBH and < species specific threshold
+# BAB= BS∗[1+ b1k1/(DBHs+ k1)^2]∗(DBH − DBHs)+b2k2/(D03s+ k2)2∗(D03− D03s)+b3/Hs∗(H − Hs)
+# Bs = the biomass at the tree species-specific DBH threshold DBHs --> does that mean the "normal biomass according to Dunger_aB_DBHa10?
+# species specific thresholds: 
+    # Spruce = 	69.0
+    # Pine = 59.0
+    # beech = 86.0
+    # oak = 94.0
+    # soft hardwoods = 113.0
+# DBH1.3s = DHB threshold
+# D03s = D03+ c0*DBHs^c1−c0*DBHs^c1
+# Hs = H +(a + b / DBHs)^−3−(a + b / DBH)^−3
+Dunger_aB_DBHath <- function(spec, d, d03, h){
+  b0 <- c(fi = 0.75285, ki = 0.33778, bu = 0.16787, ei= 0.09428, shw =0.27278);
+  b1 <- c(fi = 2.84985, ki = 2.84055 , bu = 6.25452, ei= 10.26998, shw =4.19240);
+  b2 <- c(fi = 6.03036, ki = 6.34964, bu = 6.64752, ei= 8.13894, shw = 5.96298);
+  b3 <- c(fi = 0.62188, ki = 0.62755, bu = 0.80745, ei= 0.55845, shw = 0.81031);
+  k1 <- c(fi = 42.0, ki = 18.0, bu = 11.0, ei= 400.0, shw =13.7);
+  k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
+  Bs <- b0[spec]*exp(b1[spec]*(d/(d+k1[spec])))*exp(b2[spec]*(d03/(d03+k2[spec])))*h^b3[spec];
+  DBHs <- c(fi = 69.0, ki = 59.0, bu = 86.0, ei = 94.0, shw = 113.0);
+  c0 <- c(fi = 1.07843, ki = 0.89009, bu = 0.84014, ei = 0.87633, shw = 0.86720);
+  c1 <- c(fi = 0.91204, ki = 0.95747, bu = 0.98970, ei = 0.98279, shw = 0.96154);
+  d03s <- d03 + c0[spec]*DBHs[spec]^c1[spec] - c0[spec]*DBHs[spec]^c1[spec];
+  a <- c(fi = 0.27407, ki = 0.29722, bu = 0.29397, ei = 0.31567, shw = 0.28064);
+  b <- c(fi = 2.22031, ki = 1.98688, bu = 1.76894, ei = 1.63335, shw = 2.40288);
+  Hs <-  h + ((a[spec] + b[spec] / DBHs[spec])^(-3)) - ((a[spec] + b[spec] / d)^(-3));
+  return(Bs*(1 + (b1[spec]*k1[spec]/((DBHs[spec]+ k1[spec])^2))*(d-DBHs[spec]) + 
+               (b2[spec]*k2[spec]/(d03s+ k2[spec])^2)*(d03-d03s) + 
+               (b3[spec]/Hs)*(h-Hs)))
 }
 
 
@@ -1115,13 +1147,24 @@ trees_total_5 <- trees_total_5 %>%
   # adding diameter at 0.3 tree height to trees_total dataframe
   mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
   # biomass
-  # aboveground biomass 
-  mutate(aB_kg = case_when(DBH_cm >= 10 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+  # aboveground biomass   # for trees above species specific diameter threshold
+  mutate(aB_kg = case_when(Bio_SP_group == "fi" & DBH_cm <= 69.0 |
+                             Bio_SP_group == "ki" & DBH_cm <= 59.0 |
+                             Bio_SP_group == "bu" & DBH_cm <= 86.0 |
+                             Bio_SP_group == "ei" & DBH_cm <= 94.0 |
+                             Bio_SP_group == "shw" & DBH_cm <= 113.0 ~ Dunger_aB_DBHath(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+                           # trees >10cm DHB below species specific DBH threshold
+                           Bio_SP_group == "fi" & DBH_cm >= 10 & DBH_cm < 69.0 |
+                             Bio_SP_group == "ki" & DBH_cm >= 10 & DBH_cm < 59.0 |
+                             Bio_SP_group == "bu" & DBH_cm >= 10 & DBH_cm < 86.0 |
+                             Bio_SP_group == "ei" & DBH_cm >= 10 & DBH_cm < 94.0 |
+                             Bio_SP_group == "shw" & DBH_cm >= 10 & DBH_cm < 113.0 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+                           # trees < 10cm DBH & H < 1.3m 
                            DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
-                           H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
-        # belowground biomass
+                           H_m <= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
+    # belowground biomass
          bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
-         # foliage biomass
+    # foliage biomass
    mutate(fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)),
           # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
           brB_kg = ifelse(LH_NH == "NB", Wirth_brB_N(DBH_cm, H_m, age), Wutzler_brB_L1(DBH_cm, H_m)), 
