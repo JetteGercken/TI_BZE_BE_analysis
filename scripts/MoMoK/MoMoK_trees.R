@@ -630,6 +630,7 @@ Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll lin
 
 # ----- 1.3.5.3. compartiment biomass regeneration -----------------------------
 # the compartitioning according to Poorter requires knowledge of the root mas of the trees. Which we do not have at this point (11.04.2023)
+# https://nph.onlinelibrary.wiley.com/doi/10.1111/j.1469-8137.2011.03952.x
 # ----- 1.3.5.3.1. stem vs. root -----------------------------------------------
   # angiosperm = broad leafed
   # gymnosperm = coniferous
