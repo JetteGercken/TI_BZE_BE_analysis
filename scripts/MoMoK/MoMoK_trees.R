@@ -591,6 +591,71 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
   return(V*BEF[dec_SP]*0.5)   # defaul value for carbon content in deadwood = 0.5 according to IPCC GHG methodology 2006
 }
 
+
+
+
+
+# ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
+# ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
+# Annighöfer:  https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
+annighöfer_RCD <- function(d, NH_LH, d_h_measured){
+  t_LH <- c("5" = 1.08, "10" = 1.16, "50" = 1.33, "130" = 1.45); # transformation factor broadleafed trees, the number describes the height at which the diameter was measured
+  t_NH <- c("5" = 1.06, "10" = 1.13, "50" = 1.29, "130" = 1.45); # transformation factor coniferous trees
+  return(ifelse(NH_LH == "NH", t_NH[d_h_measured]*d, t_LH[d_h_measured]*d))
+}
+
+# ----- 1.3.5.2. total aboveground biomass regeneration ------------------------
+# this will require a new grouping of the species groups
+# Annighöfer: # https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
+annighöfer_rg_aB <- function(RCD, h, spec){
+  b1 <- c(TA = 1.87856, BAH = 0.21103, BI = 0.37119, HBU = 0.35633, BU = 0.62342, ES =0.07555, FI = 2.24952, KI = 0.75897,  
+          # KI = 0.38946, # this is for Pinus unicata
+          KIR =  0.34321, STK = 0.41845, DGL = 0.42058, TEI = 0.5274, SEI = 0.67311, REI = 0.10626, ROB = 0.98644, 
+          SBL = 0.04368, # SBL represents Salix spec.
+          VB = 0.52384, LI = 0.10615);
+  b2 <- c(TA = 0.79034, BAH = 0.95964, BI = 0.87982, HBU = 0.92508, BU = 0.87409, ES = 1.07047, FI = 0.76318, KI = 0.85012,  
+          # KI = 0.87595, # this is for Pinus unicata
+          KIR =  0.91827, STK = 0.93306,  DGL = 0.92076, TEI = 0.81213, SEI = 0.85202, REI = 1.09349, ROB = 0.77535, 
+          SBL = 1.12303, # SBL represents Salix spec.
+          VB = 0.76575, LI = 1.02416);
+  return(b1[spec]*((RCD^2)*h)^b2[spec])
+}
+
+# Röhling/ Dunger/ GHGI/ BWI
+Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+  b0 <- c(NB = 0.23059, LB = 0.04940);
+  b1 <- c(NB = 2.20101, LB = 2.54946);
+  return(b0[spec]*h^b1[spec])
+}
+
+# ----- 1.3.5.3. compartiment biomass regeneration -----------------------------
+# the compartitioning according to Poorter requires knowledge of the root mas of the trees. Which we do not have at this point (11.04.2023)
+# ----- 1.3.5.3.1. stem vs. root -----------------------------------------------
+  # angiosperm = broad leafed
+  # gymnosperm = coniferous
+  #  y=a+b1*x+b2*x^2
+ # The top part of the table gives data for a stepwise regression with quadratic polynomials 
+ # of the form y=a+b1*x+b2*x^2, where y is the log10-transformed leaf or stem mass and 
+ # x is the log10-transformed root mass. The bottom part shows the results of a reduced 
+ # major axis (linear) regression with slope αRMA and intercept logβRMA
+# RSR means root to shoot (root biomass ration to stem biomass)
+Poorter_rg_RSR <- function(bB, spec){ # instead of the species I have to put NH_LH here
+a <- c(NH = -0.070, LH = -0.097);
+b1 <- c(NH = 1.236, LH = 1.071);
+b2 <- c(NH = -0.0186, LH = 0.01794);
+return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
+  }
+
+# ----- 1.3.5.3.2. leaf vs. root -----------------------------------------------
+# RLR means roots leafes ratio
+Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_LH here
+  a <- c(NH = 0.243, LH = 0.090);
+  b1 <- c(NH = 0.924, LH = 0.889);
+  b2 <- c(NH = -0.0282, LH = -0.0254);
+  return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
+}
+
+
 # ----- 1.4. dealing with missing info ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
@@ -1308,10 +1373,10 @@ DW_total <- DW_total %>%
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type))
 
 
+# ----- 2.4  Biomass regeneration -------------------------------------------
 
-
-# ----- 2.4. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
-# ----- 2.4.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
+# ----- 2.5. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
+# ----- 2.5.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
 trees_P_CP_SP <- left_join(
   # dataset with BA per species
   trees_total_5 %>%
@@ -1347,7 +1412,7 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
 
 
 
-# ----- 2.4.2. grouped by Plot species ------------------------------------------------------------
+# ----- 2.5.2. grouped by Plot species ------------------------------------------------------------
 trees_P_SP <- left_join(
   # data set with BA per species
   trees_total %>%
@@ -1378,7 +1443,7 @@ trees_P_SP <- left_join(trees_P_SP,
                         by = "plot_ID")
 
 
-# ----- 2.4.2. grouped by Plot ------------------------------------------------------------
+# ----- 2.5.2. grouped by Plot ------------------------------------------------------------
 
 trees_P <- left_join(
   # data set with BA per species
