@@ -1100,47 +1100,62 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 ##########
 
 #calculate the number of each plot to be selected and write them in vector
-  n_t100 <- trees_total_5 %>% 
-  group_by(plot_ID) %>% 
-  summarize(N_trees_plot = n(), 
-            plot_A_ha = mean(plot_A_ha)) %>% 
-  mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
-         percent_t100 = as.numeric((100/N_trees_ha))) %>% 
-  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
-         n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
-  select(n_rows_t100, plot_ID)
+  # n_t100 <- trees_total_5 %>% 
+  # group_by(plot_ID) %>% 
+  # summarize(N_trees_plot = n(), 
+  #           plot_A_ha = mean(plot_A_ha)) %>% 
+  # mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+  #        percent_t100 = as.numeric((100/N_trees_ha))) %>% 
+  # mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
+  #        n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+  # select(n_rows_t100, plot_ID)
 
 
-#calculate the number of each plot to be selected and write them in vector
-p_t100 <- trees_total_5 %>% 
-  group_by(plot_ID) %>% 
-  summarize(N_trees_plot = n(), 
-            plot_A_ha = mean(plot_A_ha)) %>% 
-  mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
-         percent_t100 = as.numeric((100/N_trees_ha))) %>% 
-  mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, as.numeric(1.0))), 
-         n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
-  dplyr::pull(as.numeric(percent_t100_corrected))
+#calculate the fraction of each plot to be selected and write them in vector
+# p_t100 <- trees_total_5 %>% 
+#   group_by(plot_ID) %>% 
+#   summarize(N_trees_plot = n(), 
+#             plot_A_ha = mean(plot_A_ha)) %>% 
+#   mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+#          percent_t100 = as.numeric((100/N_trees_ha))) %>% 
+#   mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, as.numeric(1.0))), 
+#          n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion woul dbe higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+#   dplyr::pull(as.numeric(percent_t100_corrected))
 
 #create a vector to store final result(mean hight)
 #set its length to number of unique plots
-mean100top <- numeric(length(unique(trees_total_5$plot_ID)))
+mean100top <- numeric(nrow(trees_total_5 %>% 
+                             dplyr::select(plot_ID) %>% 
+                             distinct()))
 
 
 #make a for loop to do slice_max for each plot with it's corresponding proportion
 # and write results in mean100top vector
 for(id in unique(trees_total_5$plot_ID)){
+  # calcuate number of rows to extract per plot
+  n_t100 = trees_total_5 %>% 
+    filter(plot_ID == id) %>% 
+    summarize(plot_ID = mean(plot_ID), 
+              N_trees_plot = n(), 
+              plot_A_ha = mean(plot_A_ha)) %>% 
+    mutate(N_trees_ha = N_trees_plot/plot_A_ha, 
+           percent_t100 = as.numeric((100/N_trees_ha))) %>% 
+    mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
+           n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion would be higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
+    dplyr::pull(n_rows_t100) 
+ 
+   # dataframe with mean height of top n rows 
   sliced_plot <- trees_total_5 %>%
+    #group_by(plot_ID) %>% 
     filter(plot_ID == id) %>%
-    slice_max(DBH_cm, n = n_t100[id], with_ties = FALSE)
-  mean100top[id] = mean(sliced_plot$H_m)
+    slice_max(DBH_cm, n = n_t100, with_ties = FALSE) %>% # select top 100 representing rows
+    summarise(plot_ID = mean(plot_ID),
+              H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Höhe des Grundflächemittelstammes, calculation according to S. Schnell
+              top_H = mean(H_m))                         # calculate mean height
+  
+  mean100top[id] <- sliced_plot[1,2]
 }
 
-for(id in unique(trees_total_5$plot_ID)){
-  sliced_plot <- head(trees_total_5, n_t100[id])
-  mean100top[id] = mean(sliced_plot$H_m)
-}
-p_t100$plot_ID
 
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
