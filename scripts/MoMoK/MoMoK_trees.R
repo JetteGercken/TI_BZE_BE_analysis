@@ -1229,11 +1229,11 @@ trees_total_5 <- trees_total_5 %>%
   mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
   # biomass
   # aboveground biomass   # for trees above species specific diameter threshold
-  mutate(aB_kg = case_when(Bio_SP_group == "fi" & DBH_cm <= 69.0 |
-                             Bio_SP_group == "ki" & DBH_cm <= 59.0 |
-                             Bio_SP_group == "bu" & DBH_cm <= 86.0 |
-                             Bio_SP_group == "ei" & DBH_cm <= 94.0 |
-                             Bio_SP_group == "shw" & DBH_cm <= 113.0 ~ Dunger_aB_DBHath(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+  mutate(aB_kg = case_when(Bio_SP_group == "fi" & DBH_cm >= 69.0 |
+                             Bio_SP_group == "ki" & DBH_cm >= 59.0 |
+                             Bio_SP_group == "bu" & DBH_cm >= 86.0 |
+                             Bio_SP_group == "ei" & DBH_cm >= 94.0 |
+                             Bio_SP_group == "shw" & DBH_cm >= 113.0 ~ Dunger_aB_DBHath(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
                            # trees >10cm DHB below species specific DBH threshold
                            Bio_SP_group == "fi" & DBH_cm >= 10 & DBH_cm < 69.0 |
                              Bio_SP_group == "ki" & DBH_cm >= 10 & DBH_cm < 59.0 |
@@ -1252,23 +1252,15 @@ trees_total_5 <- trees_total_5 %>%
          tapes_DhB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
          tapes_DhbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m)) %>%         # coarsewood with bark, 
-  mutate(swB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
-          swbB_kg = GHG_aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
-          fwB_kg = GHG_aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
-          fB_kg = GHG_aB_kg - (swB_kg+swbB_kg+fwB_kg),  # foliage biomass
+  # GHG-TapeS-stepwise
+  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
+         swbB_kg = aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
+         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
+         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg+swbB_kg+fwB_kg),  Wutzler_brB_L1(DBH_cm, H_m)),  # foliage biomass
          tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
-         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg))   
+         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>% 
+  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg))
   
-    # foliage biomass
-   mutate(fB_kg = ifelse(LH_NH == "NB",tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m), Wutzler_fB_L1(DBH_cm, H_m)),
-          # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
-          brB_kg = ifelse(LH_NH == "NB", Wirth_brB_N(DBH_cm, H_m, age), Wutzler_brB_L1(DBH_cm, H_m)), 
-          # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
-          StB_kg = ifelse(LH_NH == "NB", (aB_kg-(fB_kg+brB_kg)), (aB_kg-brB_kg)), 
-          # total aboveground = biomass if coniferous: keep aB_kg, if not coniferous: add foliage to stem
-          totwaB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),            # total woody aboveground biomass in KG per tree per plot
-          totwaB_t_ha = totwaB_kg/1000*plot_A_ha,                            # total woody aboveground biomass in tons per hectare per tree
-          fB_t_ha = fB_kg/1000*plot_A_ha)                                   # total foliage abiomass in tons per hectare per tree 
 
 
 # ----- 2.2.3. comparisson biomass trees -----------------------------------------------------------
@@ -1329,7 +1321,7 @@ biotest <- trees_total_5 %>%
          diff_Vondr_tps = tapes_ab_kg - Vondr_oiB_kg)
                                          
 
-summary(biotest)
+
 
 # ----- 2.3  Biomass dead trees -------------------------------------------
 
