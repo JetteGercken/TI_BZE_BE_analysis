@@ -662,6 +662,7 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 summary(trees_total)
 summary(DW_total) # there´s one D_cm that is NA because in the origianl dataset it´s called "s"--> I´ll exclude it
 
+
 # ----- 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
 labs <- c(seq(5, 55, by = 5)) 
@@ -948,7 +949,51 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
-        
+
+# ----- 1.4.3. Nitrogen content dataset ----------------------------------------
+# Reference: 
+  # Rumpf, Sabine & Schönfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
+  # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
+
+ 
+N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", 
+                            "EI", "EI", "EI", 
+                            "ES", "ES", "ES", 
+                            "AH", "AH", "AH", 
+                            "BI", "BI", "BI", 
+                            "ERL", "ERL", "ERL",
+                            "FI", "FI", "FI", "FI", 
+                            "KI",  "KI",  "KI",  "KI", 
+                            "DGL", "DGL", "DGL", "DGL"),
+                    compartiment <- c("sw", "swb", "fw", 
+                                      "sw", "swb", "fw", 
+                                      "sw", "swb", "fw", 
+                                      "sw", "swb", "fw", 
+                                      "sw", "swb", "fw", 
+                                      "sw", "swb", "fw",
+                                      "sw", "swb", "fw", "f", 
+                                      "sw", "swb", "fw", "f", 
+                                      "sw", "swb", "fw", "f"),
+                    N_mean_gkg <- as.numeric(c(1.335, 7.227, 4.601,
+                                    1.752, 6.507, 6.209, 
+                                    1.438, 5.348, 3.721, 
+                                    1.465, 7.729, 4.278, 
+                                    1.828, 6.131, 6.057, 
+                                    2.475, 11.028, 7.214, 
+                                    0.812, 4.84, 4.343, 12.978, 
+                                    0.794, 4.339, 4.058, 15.201, 
+                                    0.701, 3.910, 4.203, 15.166)), 
+                    data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018",
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
+colnames(N_con_comp) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
+N_con_comp <- N_con_comp %>% mutate(N_con_per = as.numeric(N_mean_gkg)/1000)
         
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
@@ -1954,10 +1999,10 @@ biotest %>%
                                 startsWith(method, 'G')~ "GHGI", 
                                 TRUE~"Vondernach"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-                                  method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "DhB",
-                                  method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "DhRB",
-                                  method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "branches", 
-                                  TRUE~"foliage")) %>% 
+           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           TRUE~"foliage")) %>%
   group_by(method, gen_method, compartiment, plot_ID, SP_code) %>% 
   summarize(mean_bio = mean(biomass)) %>%
   ggplot(., aes(gen_method, mean_bio))+
@@ -1967,7 +2012,7 @@ biotest %>%
             stat="identity", 
            # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
             position="stack")+
-  scale_fill_viridis_d()+
+  scale_fill_viridis_d(name = "compartiments")+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)+
@@ -1986,26 +2031,28 @@ biotest %>%
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'G')~ "GHGI", 
                                 TRUE~"Vondernach"), 
-         compartiment = case_when(method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "DhB",
-           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "DhRB",
-           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "branches", 
+         compartiment = case_when(method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "total aboveground biomass",
+           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>% 
   group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
   summarize(mean_bio = mean(biomass)) %>%
   ggplot(., aes(gen_method, mean_bio))+
   #ggplot(., aes(gen_method, biomass))+
   #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
-  geom_bar(aes(fill = reorder(compartiment, +mean_bio)),
+  #scale_x_discrete(name = "compartiment")+
+  geom_bar(aes(fill = reorder(compartiment, + mean_bio)),
            stat="identity", 
            # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
            position="dodge")+
-  scale_fill_viridis_d()+
-  #scale_x_discrete(breaks=c("total aB","DhB","DhRB","branches", "foliage"))+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "Compartiment")+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)+
   theme_bw()
+
 
 # bar
 # foliage
@@ -2160,19 +2207,19 @@ biotest %>%
          diff_GHG_tps, 
          diff_Vondr_GHG, 
          diff_Vondr_tps) %>% 
-  tidyr::gather("method", "biomass", 4:7) %>% 
+  tidyr::gather("method", "biomass", 4:6) %>% 
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
   #geom_line(aes(colour = method))+
   xlab(" ")+
-  scale_colour_discrete(labels = c("difference abovegrond biomass GHG stepwise - GHG", 
+  scale_colour_discrete(labels = c(#"difference abovegrond biomass GHG stepwise - GHG", 
                                    "difference abovegrond biomass GHG - TapeS", 
                                    "difference abovegrond biomass GHG - Vondernach", 
                                    "difference abovegrond biomass TapeS - Vondernach"))+
   #ggtitle("Boxplots of the differences in total aboveground biomass [kg] by calculation method")+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(~SP_code)+ 
+  facet_wrap(plot_ID~SP_code)+ 
   theme(legend.position="right", axis.text.x=element_blank(), axis.ticks.x=element_blank())+
   theme_bw()
 
