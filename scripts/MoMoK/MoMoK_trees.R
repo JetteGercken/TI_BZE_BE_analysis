@@ -1245,8 +1245,22 @@ trees_total_5 <- trees_total_5 %>%
                            H_m <= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
     # belowground biomass
          bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
+    # compartiments:
+  # TapeS
+  mutate(tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                        # foliage
+         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # Nichtderbholz, finebranches
+         tapes_DhB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_DhbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m)) %>%         # coarsewood with bark, 
+  mutate(swB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
+          swbB_kg = GHG_aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
+          fwB_kg = GHG_aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
+          fB_kg = GHG_aB_kg - (swB_kg+swbB_kg+fwB_kg),  # foliage biomass
+         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
+         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg))   
+  
     # foliage biomass
-   mutate(fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)),
+   mutate(fB_kg = ifelse(LH_NH == "NB",tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m), Wutzler_fB_L1(DBH_cm, H_m)),
           # branch biomass: this formula leads to branch biomass higher then the stem biomass which cannot be 
           brB_kg = ifelse(LH_NH == "NB", Wirth_brB_N(DBH_cm, H_m, age), Wutzler_brB_L1(DBH_cm, H_m)), 
           # stem biomass = if coniferous: tot_bio NH - foliage, if not coniferous: keep aB_kg
@@ -2972,7 +2986,16 @@ h.RER.nls <- nls(H_m~a-b*exp(-c*DBH_cm),
 summary(h.RER.nls) # model summary
 plot(h.RER.nls)
 
-
+nls(H_m~a-b*exp(-c*DBH_cm),
+    start=list(a=110,b=120,c=0.1),
+    data = trees_total %>% filter(!is.na(H_m)))
+H_m.test.1 <- 35.31713-35.51816*exp(-0.03048*trees_total$DBH_cm)
+nls(H_m~ a*(1 - exp( -b * DBH_cm))^c ,
+    start=list(a=110,b=120,c=0.1),
+    data = trees_total %>% filter(!is.na(H_m)))
+H_m.test.2 <- 35.31713 * (1 - exp( -35.51816 * trees_total$DBH_cm))^0.03048     
+  
+  
 # ----- N.2.3.2.4. validate model based on diameter with test data----------------
 h.RER.val.nls <- nls(H_m~a-b*exp(-c*DBH_cm),
                     start=list(a=21.73725,b=32.54252,c=0.09471),
