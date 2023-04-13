@@ -1045,36 +1045,38 @@ RG_total <- RG_total %>%
                                                         LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                                         LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
                                                         TRUE ~ 'other')) %>% 
-                        select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, tpS_ID), 
-                      by = ("SP_code" = "Chr_ger_cap")) %>% 
-  mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  "WTA", 
-                                    bot_genus == "Acer"  ~  "BAH", 
-                                    bot_genus == "Betula" ~ "SBI", 
-                                    bot_genus == "Carpinus" ~ "HBU", 
-                                    bot_genus == "Fagus" ~ "RBU", 
-                                    bot_genus == "Fraxinus" ~ "ES", 
-                                    bot_genus == "Picea" ~  "GFI", 
-                                    bot_genus == "Pinus" & bot_species == "unicata" ~ "SPI", 
-                                    bot_genus == "Pinus" & bot_species != "unicata" ~ "GKI", 
-                                    bot_genus == "Prunus" & bot_species == "serotina"  ~  "STK", 
-                                    bot_genus == "Prunus" & bot_species  != "serotina"  ~  "KIR", 
+                        dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, tpS_ID), 
+            by = c("SP_code" = "Chr_ger_cap"))  %>%
+  mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  'WTA', 
+                                    bot_genus == "Acer"  ~  'BAH', 
+                                    bot_genus == "Betula" ~ 'SBI', 
+                                    bot_genus == "Carpinus" ~ 'HBU', 
+                                    bot_genus == "Fagus" ~ 'RBU', 
+                                    bot_genus == "Fraxinus" ~ 'ES', 
+                                    bot_genus == "Picea" ~  'GFI', 
+                                    bot_genus == "Pinus" & bot_species == "unicata" ~ 'SPI', 
+                                    bot_genus == "Pinus" & bot_species != "unicata" ~ 'GKI', 
+                                    bot_genus == "Prunus" & bot_species == "serotina"  ~  'STK', 
+                                    bot_genus == "Prunus" & bot_species  != "serotina"  ~  'KIR', 
                                     bot_genus == "Pseudotsuga"“ ~ "DGL",
-                                    bot_genus == "Quercus" & !(bot_species %in% c("robur", "rubra"))  ~  "TEI", 
-                                    bot_genus == "Quercus" & bot_species == "robur" ~ "SEI", 
-                                    bot_genus == "Quercus" & bot_species == "rubra" ~ "REI",
-                                    bot_genus == "Robinia" ~ "ROB", 
-                                    bot_genus == "Salix" | NH_LH == "LB"  & !(bot_genus %in% c(Acer, Betula, 
-                                                                                               Carpinus, Fagus, Fraxinus,
-                                                                                               Prunus, Quercus, Robinia, 
-                                                                                               Sorbus, Tilia)) & BWI_SP_group == "aLn" ~ "WEI",  # all species allocated to soft hardwods / other broadleafed trees of short life span are treated as willow
+                                    bot_genus == "Quercus" & !(bot_species %in% c("robur", "rubra"))  ~  'TEI', 
+                                    bot_genus == "Quercus" & bot_species == "robur" ~ 'SEI', 
+                                    bot_genus == "Quercus" & bot_species == "rubra" ~ 'REI',
+                                    bot_genus == "Robinia" ~ 'ROB', 
+                                    bot_genus == "Salix" | 
+                                      LH_NH == "LB"  & !(bot_genus %in% c("Acer", "Betula",
+                                                                          "Carpinus", "Fagus", 
+                                                                          "Fraxinus", "Prunus", 
+                                                                          "Quercus", "Robinia", 
+                                                                          "Sorbus", "Tilia")) & BWI_SP_group == "aLn" ~ 'WEI',  # all species allocated to soft hardwods / other broadleafed trees of short life span are treated as willow
                                     bot_genus == "Sorbus" ~ "VBE", 
                                     bot_genus == "Tilia" ~ "WLI", 
-                                    NH_LH == "LB"  & !(bot_genus %in% c(Acer, Betula, 
-                                                                        Carpinus, Fagus, Fraxinus,
-                                                                        Prunus, Quercus, Robinia, 
-                                                                        Salix, Sorbus, Tilia)) & BWI_SP_group != "SLB" ~ "RBU",  # all not allocated broadleafed species that are not soft hardwoods are treatet as beech
-                                    NH_LH == "NB" & !(bot_genus %in% c(Abies, Picea, Pinus, Pseudotzuga) ) ~ "FI",  # all no allocated coniferous species are treated as spruce, 
-                                    TRUE ~ "NA"))
+                                    LH_NH == "LB"  & !(bot_genus %in% c("Acer", "Betula", 
+                                                                        "Carpinus", "Fagus", "Fraxinus",
+                                                                        "Prunus", "Quercus", "Robinia", 
+                                                                        "Salix", "Sorbus", "Tilia")) & BWI_SP_group != "SLB" ~ 'RBU',  # all not allocated broadleafed species that are not soft hardwoods are treatet as beech
+                                    LH_NH == "NB" & !(bot_genus %in% c("Abies", "Picea", "Pinus", "Pseudotzuga")) ~ 'FI' ,  # all no allocated coniferous species are treated as spruce, 
+                                    TRUE ~ 'NA'))
 
 
 
