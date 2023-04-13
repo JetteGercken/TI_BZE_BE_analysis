@@ -109,7 +109,8 @@ SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if sp
 DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)# %>% 
   #mutate(tpS_ID = NA) # this is just for the function, let´s see if it works
 
-
+# REGENERATION
+RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep = ";", dec = ",")
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
@@ -127,7 +128,7 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
                         "BZE_al")
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
-# changing DW variable D_cm from character itno numeric variable
+# changing DW variable D_cm from character into numeric variable
 # https://stackoverflow.com/questions/11936339/replace-specific-characters-within-strings
 DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
@@ -137,7 +138,8 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 # DW_type = standing, lying
 # dec_type = decay type / Zersetzungsgrad
 
-
+colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
+                        "dist_MB", "CCS_max_dist", "t_ID", "SP_code", "H_cm", "D_class_cm")
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -606,8 +608,14 @@ annighöfer_RCD <- function(d, NH_LH, d_h_measured){
 
 # ----- 1.3.5.2. total aboveground biomass regeneration ------------------------
 # this will require a new grouping of the species groups
+# the species groups created in this code are taken from the BWI column of xbart
+# this however, leads to the exclusion of salix as species specific factor which is now
+# treated as sonstiges laubholz and Pinus unicata which is entirely excluded. 
+# The advantage would be that I can use BWI_SP_group for the "spec" input group
+# Because if I list them by their latin names, not all species in our dataset will find a coefficient that matches them
+# while through a rougher/ more generalized grouping we ensure all species are covered. 
 # Annighöfer: # https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
-annighöfer_rg_aB <- function(RCD, h, spec){
+annighöfer_rg_aB_H1.3_DBHb10 <- function(RCD, h, spec){
   b1 <- c(TA = 1.87856, BAH = 0.21103, BI = 0.37119, HBU = 0.35633, BU = 0.62342, ES =0.07555, FI = 2.24952, KI = 0.75897,  
           # KI = 0.38946, # this is for Pinus unicata
           KIR =  0.34321, STK = 0.41845, DGL = 0.42058, TEI = 0.5274, SEI = 0.67311, REI = 0.10626, ROB = 0.98644, 
@@ -618,19 +626,63 @@ annighöfer_rg_aB <- function(RCD, h, spec){
           KIR =  0.91827, STK = 0.93306,  DGL = 0.92076, TEI = 0.81213, SEI = 0.85202, REI = 1.09349, ROB = 0.77535, 
           SBL = 1.12303, # SBL represents Salix spec.
           VB = 0.76575, LI = 1.02416);
-  return(b1[spec]*((RCD^2)*h)^b2[spec])
+  return(if (spec %in% c("TA", "BAH", "BI", "HBU", "BU", "ES", "FI", "KI", "KIR", "STK", "DGL", "TEI", "SEI", "REI", "ROB", "SBL", "VB", "LI")){
+    b1[spec]*((RCD^2)*h)^b2[spec]
+    } else if (NH_LH == "NB"){
+      b1[FI]*((RCD^2)*h)^b2[FI]
+      } else (NH_LH == "LB"){
+        b1[BU]*((RCD^2)*h)^b2[BU]
+      })
+  }
+
+# anighöfer below 1.3 --> no diameter available
+ # AGB = b1*H^b2
+annighöfer_rg_aB_H1.3_DBHb10 <- function(RCD, h, spec){
+  b1 <- c(TA = 0.03118, BAH = 0.00165, BI = 0, HBU = 0.02147, BU = 0.00135, ES =0.00158, 
+          FI = 0.08422, KI = 0.02022,  
+          # KI = 0.00073, # this is for Pinus unicata
+          KIR =  0, STK = 0.00039, DGL = 0.00457, TEI = 0.00684, SEI = 0.00936, 
+          REI = 0.00099, ROB = 0.00122, 
+          SBL = 0.00001, # SBL represents Salix spec.
+          VB = 0.00044, LI = 0.00061);
+  b2 <- c(TA = 1.961, BAH = 2.26095, BI = 5.34214, HBU = 1.70301, BU = 2.31682, 
+          ES = 2.28364, FI = 1.78966, KI = 1.9891,  
+          # KI = 2.43282, # this is for Pinus unicata
+          KIR =  3.88355, STK = 2.57002,  DGL = 2.11328, TEI = 2.03158, 
+          SEI = 2.05293, REI = 2.20817, ROB = 2.33479, 
+          SBL = 3.1988, # SBL represents Salix spec.
+          VB = 2.33729, LI = 2.62245);
+  return(if (spec %in% c("TA", "BAH", "BI", "HBU", "BU", "ES", "FI", "KI", "KIR", "STK", "DGL", "TEI", "SEI", "REI", "ROB", "SBL", "VB", "LI")){
+    b1[spec]*h^b2[spec]
+  } else if (NH_LH == "NB"){
+    b1[FI]*h^b2[FI]
+  } else (NH_LH == "LB"){
+    b1[BU]*h^b2[BU]
+  })
 }
 
+
 # Röhling/ Dunger/ GHGI/ BWI
+# below 1.3 --> no diameter
 Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
 }
 
+# above 1.3m, but below 10cm DBH --> DBH availlable 
+Dunger_aB_H1.3_DBHb10 <- function(spec, d){
+  b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
+  bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
+  b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
+  ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
+  return(b0[spec]+(((bs[spec] - b0[spec])/ds[spec]^2)+b3[spec]*(d-ds[spec]))*d^2)
+}
+
 # ----- 1.3.5.3. compartiment biomass regeneration -----------------------------
 # the compartitioning according to Poorter requires knowledge of the root mas of the trees. Which we do not have at this point (11.04.2023)
 # https://nph.onlinelibrary.wiley.com/doi/10.1111/j.1469-8137.2011.03952.x
+
 # ----- 1.3.5.3.1. stem vs. root -----------------------------------------------
   # angiosperm = broad leafed
   # gymnosperm = coniferous
@@ -645,7 +697,11 @@ a <- c(NH = -0.070, LH = -0.097);
 b1 <- c(NH = 1.236, LH = 1.071);
 b2 <- c(NH = -0.0186, LH = 0.01794);
 return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
-  }
+}
+
+# RSR = Shoot to root ratio  = (leaf + stem dry mass) ⁄ root dry mass
+#  LAR = Leaf area ratio = Leaf area ⁄ total plant dry mass
+#  LMF = Leaf mass fraction =  Leaf dry mass⁄ total plant dry mass
 
 # ----- 1.3.5.3.2. leaf vs. root -----------------------------------------------
 # RLR means roots leafes ratio
