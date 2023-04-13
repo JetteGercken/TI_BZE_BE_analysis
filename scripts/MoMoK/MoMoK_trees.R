@@ -139,7 +139,7 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 # dec_type = decay type / Zersetzungsgrad
 
 colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
-                        "dist_MB", "CCS_max_dist", "t_ID", "SP_code", "H_cm", "D_class_cm")
+                        "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -717,7 +717,7 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 # check for variabels with NAs
 summary(trees_total)
 summary(DW_total) # there´s one D_cm that is NA because in the origianl dataset it´s called "s"--> I´ll exclude it
-
+summary(RG_total)
 
 # ----- 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
@@ -1002,6 +1002,80 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 # 3     GFI     Picea abies 
 # 4     MBI Betula pubescens
 # 5     BKI       Pinus mugo
+
+
+
+
+
+
+# ----- 1.4.2.1. species names & groups regeneration ----------------------
+RG_total <- RG_total %>% 
+  left_join(., SP_names_com_ID_tapeS %>% 
+                        mutate(Chr_ger_cap = toupper(Chr_code_ger), 
+                               BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
+                                                        LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
+                                                        LH_NH == "LB" & bot_genus %in% c("Acer", 
+                                                                                         "Platanus", 
+                                                                                         "Fraxinus",
+                                                                                         "Tilia", 
+                                                                                         "Juglans", 
+                                                                                         "Corylus", 
+                                                                                         "Robinia", 
+                                                                                         "Castanea", 
+                                                                                         "Carpinus", 
+                                                                                         "Aesculus", 
+                                                                                         "Sorbus",
+                                                                                         "Ulmus", 
+                                                                                         "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
+                                                        LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
+                                                                                           "Fagus",
+                                                                                           "Acer", 
+                                                                                           "Platanus", 
+                                                                                           "Fraxinus",
+                                                                                           "Tilia", 
+                                                                                           "Juglans", 
+                                                                                           "Corylus", 
+                                                                                           "Robinia", 
+                                                                                           "Castanea", 
+                                                                                           "Carpinus", 
+                                                                                           "Aesculus", 
+                                                                                           "Sorbus",
+                                                                                           "Ulmus", 
+                                                                                           "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
+                                                        LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
+                                                        LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
+                                                        TRUE ~ 'other')) %>% 
+                        select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, tpS_ID), 
+                      by = ("SP_code" = "Chr_ger_cap")) %>% 
+  mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  "WTA", 
+                                    bot_genus == "Acer"  ~  "BAH", 
+                                    bot_genus == "Betula" ~ "SBI", 
+                                    bot_genus == "Carpinus" ~ "HBU", 
+                                    bot_genus == "Fagus" ~ "RBU", 
+                                    bot_genus == "Fraxinus" ~ "ES", 
+                                    bot_genus == "Picea" ~  "GFI", 
+                                    bot_genus == "Pinus" & bot_species == "unicata" ~ "SPI", 
+                                    bot_genus == "Pinus" & bot_species != "unicata" ~ "GKI", 
+                                    bot_genus == "Prunus" & bot_species == "serotina"  ~  "STK", 
+                                    bot_genus == "Prunus" & bot_species  != "serotina"  ~  "KIR", 
+                                    bot_genus == "Pseudotsuga"“ ~ "DGL",
+                                    bot_genus == "Quercus" & !(bot_species %in% c("robur", "rubra"))  ~  "TEI", 
+                                    bot_genus == "Quercus" & bot_species == "robur" ~ "SEI", 
+                                    bot_genus == "Quercus" & bot_species == "rubra" ~ "REI",
+                                    bot_genus == "Robinia" ~ "ROB", 
+                                    bot_genus == "Salix" | NH_LH == "LB"  & !(bot_genus %in% c(Acer, Betula, 
+                                                                                               Carpinus, Fagus, Fraxinus,
+                                                                                               Prunus, Quercus, Robinia, 
+                                                                                               Sorbus, Tilia)) & BWI_SP_group == "aLn" ~ "WEI",  # all species allocated to soft hardwods / other broadleafed trees of short life span are treated as willow
+                                    bot_genus == "Sorbus" ~ "VBE", 
+                                    bot_genus == "Tilia" ~ "WLI", 
+                                    NH_LH == "LB"  & !(bot_genus %in% c(Acer, Betula, 
+                                                                        Carpinus, Fagus, Fraxinus,
+                                                                        Prunus, Quercus, Robinia, 
+                                                                        Salix, Sorbus, Tilia)) & BWI_SP_group != "SLB" ~ "RBU",  # all not allocated broadleafed species that are not soft hardwoods are treatet as beech
+                                    NH_LH == "NB" & !(bot_genus %in% c(Abies, Picea, Pinus, Pseudotzuga) ) ~ "FI",  # all no allocated coniferous species are treated as spruce, 
+                                    TRUE ~ "NA"))
+
 
 
 
