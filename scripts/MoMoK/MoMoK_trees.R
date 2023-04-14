@@ -1095,7 +1095,7 @@ RG_total <- RG_total %>%
                                                                        "Pseudotzuga")) ~ 'FI', 
                                     TRUE ~ 'NA'))
 
-RG_total %>% filter(is.na(tpS_ID))
+RG_total %>% filter(is.na(tpS_ID)) %>% select(SP_code) %>% distinct()
 summary(SP_names_com_ID_tapeS)
 summary(RG_total)
 
