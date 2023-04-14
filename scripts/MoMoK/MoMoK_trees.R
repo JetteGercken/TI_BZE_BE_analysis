@@ -140,6 +140,7 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 
 colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
                         "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
+RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -1010,6 +1011,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 # ----- 1.4.2.1. species names & groups regeneration ----------------------
 RG_total <- RG_total %>% 
+  mutate(SP_code = toupper(SP_code)) %>% 
   left_join(., SP_names_com_ID_tapeS %>% 
                         mutate(Chr_ger_cap = toupper(Chr_code_ger), 
                                BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
@@ -1058,29 +1060,44 @@ RG_total <- RG_total %>%
                                     bot_genus == "Pinus" & bot_species != "unicata" ~ 'GKI', 
                                     bot_genus == "Prunus" & bot_species == "serotina"  ~  'STK', 
                                     bot_genus == "Prunus" & bot_species  != "serotina"  ~  'KIR', 
-                                    bot_genus == "Pseudotsuga"“ ~ "DGL",
+                                    bot_genus == "Pseudotsuga" ~ "DGL",
                                     bot_genus == "Quercus" & !(bot_species %in% c("robur", "rubra"))  ~  'TEI', 
                                     bot_genus == "Quercus" & bot_species == "robur" ~ 'SEI', 
                                     bot_genus == "Quercus" & bot_species == "rubra" ~ 'REI',
                                     bot_genus == "Robinia" ~ 'ROB', 
                                     bot_genus == "Salix" | 
-                                      LH_NH == "LB"  & !(bot_genus %in% c("Acer", "Betula",
-                                                                          "Carpinus", "Fagus", 
-                                                                          "Fraxinus", "Prunus", 
-                                                                          "Quercus", "Robinia", 
-                                                                          "Sorbus", "Tilia")) & BWI_SP_group == "aLn" ~ 'WEI',  # all species allocated to soft hardwods / other broadleafed trees of short life span are treated as willow
+                                      LH_NH == "LB" & BWI_SP_group == "aLn" & !(bot_genus %in% c("Acer",
+                                                                                                 "Betula", 
+                                                                                                 "Carpinus", 
+                                                                                                 "Fagus", 
+                                                                                                 "Fraxinus", 
+                                                                                                 "Prunus", 
+                                                                                                 "Quercus", 
+                                                                                                 "Robinia", 
+                                                                                                 "Sorbus", 
+                                                                                                 "Tilia")) ~ 'WEI',  # all species allocated to soft hardwods / other broadleafed trees of short life span are treated as willow
                                     bot_genus == "Sorbus" ~ "VBE", 
                                     bot_genus == "Tilia" ~ "WLI", 
-                                    LH_NH == "LB"  & !(bot_genus %in% c("Acer", "Betula", 
-                                                                        "Carpinus", "Fagus", "Fraxinus",
-                                                                        "Prunus", "Quercus", "Robinia", 
-                                                                        "Salix", "Sorbus", "Tilia")) & BWI_SP_group != "SLB" ~ 'RBU',  # all not allocated broadleafed species that are not soft hardwoods are treatet as beech
-                                    LH_NH == "NB" & !(bot_genus %in% c("Abies", "Picea", "Pinus", "Pseudotzuga")) ~ 'FI' ,  # all no allocated coniferous species are treated as spruce, 
+                                    LH_NH == "LB" & BWI_SP_group != "SLB" & !(bot_genus %in% c("Acer", 
+                                                                                               "Betula",
+                                                                                               "Carpinus", 
+                                                                                               "Fagus", 
+                                                                                               "Fraxinus",
+                                                                                               "Prunus", 
+                                                                                               "Quercus", 
+                                                                                               "Robinia", 
+                                                                                               "Salix", 
+                                                                                               "Sorbus", 
+                                                                                               "Tilia")) ~ 'RBU',  # all not allocated broadleafed species that are not soft hardwoods are treatet as beech
+                                    LH_NH == "NB" & !(bot_genus %in% c("Abies", 
+                                                                       "Picea", 
+                                                                       "Pinus", 
+                                                                       "Pseudotzuga")) ~ 'FI', 
                                     TRUE ~ 'NA'))
 
-
-
-
+RG_total %>% filter(is.na(tpS_ID))
+summary(SP_names_com_ID_tapeS)
+summary(RG_total)
 
 # ----- 1.4.3. Nitrogen content dataset ----------------------------------------
 # Reference: 
