@@ -159,7 +159,7 @@ f = function(x,y,a,b){
   return(answer)}
 
 
-# ---- 1.3.2.2. einheitshöhenkurve------------------------------------------------------
+# ---- 1.3.2.2. einheitshoehenkurve------------------------------------------------------
 # ---- 1.3.2.2.1. Sloboda ------------------------------------------------------
 ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   k0 <- c(fi = 0.183, ta = 0.097, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
@@ -167,7 +167,7 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
   h_mean <- (h_g - 1.3)/(exp(k0[tolower(spec)]*(1 - d_mean/d_g))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_g))) + 1.3;
   h_pred <- ((1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)))/10); # divide by 10 to get height in m
-  # this part is silenced, because there is no Höhenkennzahl documented for MoMoK 
+  # this part is silenced, because there is no Hoehenkennzahl documented for MoMoK 
   # and BZE because they dont do a Winkelzähprobe
   # Reduction factor depending on whether crown or stem is broken or not 
   # if (length(id_broken) == length(d_i)) {
@@ -245,7 +245,7 @@ Dunger_aB_H1.3_DBHb10 <- function(spec, d){
   bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
   b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
   ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
-  return(b0[spec]+(((bs[spec] - b0[spec])/ds[spec]^2)+b3[spec]*(d-ds[spec]))*d^2)
+  return(b0[spec]+((bs[spec] - b0[spec])/ds[spec]^2 + b3[spec]*(d-ds[spec]))*d^2)
 }
 ## above ground biomass for trees <1.3m GHGI
 Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
@@ -317,10 +317,10 @@ Vondr_oiB <- function(spec, d, h){  # I´ll use the secies groups assigned for t
 
 
 # ---- 1.3.3.1.3. TapeS total above biomass - all -------------------------------------------
-# Kändler, G. and B. Bösch (2012). Methodenentwicklung für die 3. Bundeswaldinventur: Modul 3 
+# Kändler, G. and B. Boesch (2012). Methodenentwicklung für die 3. Bundeswaldinventur: Modul 3 
 # Überprüfung und Neukonzeption einer Biomassefunktion - Abschlussbericht. Im Auftrag des 
 # Bundesministeriums für Ernährung, Landwirtschaft und Verbraucherschutz in Zusammenarbeit 
-# mit dem Institut für Waldökologie und Waldinventur des Johann Heinrich von Thünen-Instituts, FVA-BW: 71.
+# mit dem Institut für Waldoekologie und Waldinventur des Johann Heinrich von Thünen-Instituts, FVA-BW: 71.
 tapes_aB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
   Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
@@ -449,7 +449,7 @@ Wirth_fB_N <- function(d, h, a){   # this is one of the lower ranked models, cal
 
 # ---- 1.3.3.5.2. Wutzler foliage (broadleafed)-------------------------------
 ### foliage of broadleaved trees according to Wutzler et al. 2008
-  # to aply this function the Oberhöhe and the elevation above sea level are required
+  # to aply this function the Oberhoehe and the elevation above sea level are required
 
 # DHC 4c model
 Wutzler_fB_L <- function(d, h, alt, si){   # DHC 4c model
@@ -600,8 +600,8 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 # ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
 # ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
-# Annighöfer:  https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
-annighöfer_RCD <- function(d, NH_LH, d_h_measured){
+# Annighoefer:  https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
+annighoefer_RCD <- function(d, NH_LH, d_h_measured){
   t_LH <- c("5" = 1.08, "10" = 1.16, "50" = 1.33, "130" = 1.45); # transformation factor broadleafed trees, the number describes the height at which the diameter was measured
   t_NH <- c("5" = 1.06, "10" = 1.13, "50" = 1.29, "130" = 1.45); # transformation factor coniferous trees
   return(ifelse(NH_LH == "NH", t_NH[d_h_measured]*d, t_LH[d_h_measured]*d))
@@ -615,55 +615,43 @@ annighöfer_RCD <- function(d, NH_LH, d_h_measured){
 # The advantage would be that I can use BWI_SP_group for the "spec" input group
 # Because if I list them by their latin names, not all species in our dataset will find a coefficient that matches them
 # while through a rougher/ more generalized grouping we ensure all species are covered. 
-# Annighöfer: # https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
-annighöfer_rg_aB_H1.3_DBHb10 <- function(RCD, h, spec){
-  b1 <- c(TA = 1.87856, BAH = 0.21103, BI = 0.37119, HBU = 0.35633, BU = 0.62342, ES =0.07555, FI = 2.24952, KI = 0.75897,  
-          # KI = 0.38946, # this is for Pinus unicata
+# Annighoefer: # https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
+annighoefer_rg_aB_H1.3_DBHb10 <- function(RCD, h, spec){
+  b1 <- c(WTA = 1.87856, BAH = 0.21103, SBI = 0.37119, HBU = 0.35633, RBU = 0.62342, ES =0.07555, GFI = 2.24952, GKI = 0.75897,  
+          SPI = 0.38946, # this is for Pinus unicata
           KIR =  0.34321, STK = 0.41845, DGL = 0.42058, TEI = 0.5274, SEI = 0.67311, REI = 0.10626, ROB = 0.98644, 
-          SBL = 0.04368, # SBL represents Salix spec.
-          VB = 0.52384, LI = 0.10615);
-  b2 <- c(TA = 0.79034, BAH = 0.95964, BI = 0.87982, HBU = 0.92508, BU = 0.87409, ES = 1.07047, FI = 0.76318, KI = 0.85012,  
+          WEI = 0.04368, # SBL represents Salix spec.
+          VB = 0.52384, WLI = 0.10615);
+  b2 <- c(WTA = 0.79034, BAH = 0.95964, SBI = 0.87982, HBU = 0.92508, RBU = 0.87409, ES = 1.07047, GFI = 0.76318, GKI = 0.85012,  
           # KI = 0.87595, # this is for Pinus unicata
           KIR =  0.91827, STK = 0.93306,  DGL = 0.92076, TEI = 0.81213, SEI = 0.85202, REI = 1.09349, ROB = 0.77535, 
-          SBL = 1.12303, # SBL represents Salix spec.
-          VB = 0.76575, LI = 1.02416);
-  return(if (spec %in% c("TA", "BAH", "BI", "HBU", "BU", "ES", "FI", "KI", "KIR", "STK", "DGL", "TEI", "SEI", "REI", "ROB", "SBL", "VB", "LI")){
-    b1[spec]*((RCD^2)*h)^b2[spec]
-    } else if (NH_LH == "NB"){
-      b1[FI]*((RCD^2)*h)^b2[FI]
-      } else (NH_LH == "LB"){
-        b1[BU]*((RCD^2)*h)^b2[BU]
-      })
+          WEI = 1.12303, # SBL represents Salix spec.
+          VB = 0.76575, WLI = 1.02416);
+  return((b1[spec]*((RCD^2)*h)^b2[spec])/1000) # dicided by 100o as aB is in g AGB = aboveground biomass (g)
   }
 
-# anighöfer below 1.3 --> no diameter available
+# anighoefer below 1.3 --> no diameter available
  # AGB = b1*H^b2
-annighöfer_rg_aB_H1.3_DBHb10 <- function(RCD, h, spec){
-  b1 <- c(TA = 0.03118, BAH = 0.00165, BI = 0, HBU = 0.02147, BU = 0.00135, ES =0.00158, 
-          FI = 0.08422, KI = 0.02022,  
-          # KI = 0.00073, # this is for Pinus unicata
+annighoefer_rg_aB_bH1.3 <- function(h, spec){ # spec = Annig_SP_group
+  b1 <- c(WTA = 0.03118, BAH = 0.00165, SBI = 0, HBU = 0.02147, RBU = 0.00135, ES =0.00158, 
+          GFI = 0.08422, GKI = 0.02022,  
+           SPI = 0.00073, # this is for Pinus unicata
           KIR =  0, STK = 0.00039, DGL = 0.00457, TEI = 0.00684, SEI = 0.00936, 
           REI = 0.00099, ROB = 0.00122, 
-          SBL = 0.00001, # SBL represents Salix spec.
-          VB = 0.00044, LI = 0.00061);
-  b2 <- c(TA = 1.961, BAH = 2.26095, BI = 5.34214, HBU = 1.70301, BU = 2.31682, 
-          ES = 2.28364, FI = 1.78966, KI = 1.9891,  
-          # KI = 2.43282, # this is for Pinus unicata
+          WEI = 0.00001, # SBL represents Salix spec.
+          VB = 0.00044, WLI = 0.00061);
+  b2 <- c(WTA = 1.961, BAH = 2.26095, SBI = 5.34214, HBU = 1.70301, RBU = 2.31682, 
+          ES = 2.28364, GFI = 1.78966, GKI = 1.9891,  
+          SPI = 2.43282, # this is for Pinus unicata
           KIR =  3.88355, STK = 2.57002,  DGL = 2.11328, TEI = 2.03158, 
           SEI = 2.05293, REI = 2.20817, ROB = 2.33479, 
-          SBL = 3.1988, # SBL represents Salix spec.
-          VB = 2.33729, LI = 2.62245);
-  return(if (spec %in% c("TA", "BAH", "BI", "HBU", "BU", "ES", "FI", "KI", "KIR", "STK", "DGL", "TEI", "SEI", "REI", "ROB", "SBL", "VB", "LI")){
-    b1[spec]*h^b2[spec]
-  } else if (NH_LH == "NB"){
-    b1[FI]*h^b2[FI]
-  } else (NH_LH == "LB"){
-    b1[BU]*h^b2[BU]
-  })
+          WEI = 3.1988, # SBL represents Salix spec.
+          VB = 2.33729, WLI = 2.62245);
+  return((b1[spec]*h^b2[spec])/1000)
 }
 
 
-# Röhling/ Dunger/ GHGI/ BWI
+# Roehling/ Dunger/ GHGI/ BWI
 # below 1.3 --> no diameter
 Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
@@ -672,7 +660,7 @@ Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll lin
 }
 
 # above 1.3m, but below 10cm DBH --> DBH availlable 
-Dunger_aB_H1.3_DBHb10 <- function(spec, d){
+Dunger_aB_H1.3_DBHb10 <- function(spec, d){         # spec = Bio_SP_group
   b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
   bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
   b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
@@ -712,6 +700,35 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
   b2 <- c(NH = -0.0282, LH = -0.0254);
   return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
 }
+
+
+
+
+# ----- 1.3.6. Nitrogen stock  --------------------------------------------
+# ----- 1.3.6.1. NItrogen foliage -----------------------------------------
+N_f <- function(B_compartiment, spec){
+  n_con_f <- N_con_comp %>% filter(compartiment== "f") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_f[spec])
+}
+# ----- 1.3.6.2. Nitrogen fine wood ---------------------------------------
+N_fw <- function(B_compartiment, spec){
+  n_con_fw <- N_con_comp %>% filter(compartiment== "fw") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_fw[spec])
+}
+# ----- 1.3.6.3. Nitrogen solid wood without bark -------------------------
+N_sw <- function(B_compartiment, spec){
+  n_con_sw <- N_con_comp %>% filter(compartiment== "sw") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_sw[spec])
+}
+# ----- 1.3.6.4. Nitrogen solid wood bark ---------------------------------
+N_swb <- function(B_compartiment, spec){
+  n_con_swb <- N_con_comp %>% filter(compartiment== "swb") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_swb[spec])
+}
+
+
+
+
 
 
 # ----- 1.4. dealing with missing info ---------------------------------------------------
@@ -796,7 +813,120 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                        # everything else belongs to other broadleafed trees
                                        TRUE ~ "Magnoliopsida trees"))), 
   SP_TapeS_test %>% select(scientific, ID) %>% rename(tpS_ID = ID), 
-  by = c("tpS_SP_com_name" = "scientific"))
+  by = c("tpS_SP_com_name" = "scientific")) %>% 
+  # available groups/ species : BU, EI, ES, AH, BI, ERL, FI, KI, DGL
+  mutate( H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
+                                 LH_NH == "LB" & bot_genus != "Quercus" ~ 'bu', 
+                                 bot_genus == "Abies" ~ 'ta', 
+                                 bot_genus == "Pinus" ~ 'ki', 
+                                 bot_genus == "Pseudotsuga" ~ 'dgl',
+                                 LH_NH == "NB" & bot_genus == "Larix" ~ 'lae', 
+                                 TRUE ~ 'fi'),
+          BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
+                                   LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
+                                   LH_NH == "LB" & bot_genus %in% c("Acer", 
+                                                                    "Platanus", 
+                                                                    "Fraxinus",
+                                                                    "Tilia", 
+                                                                    "Juglans", 
+                                                                    "Corylus", 
+                                                                    "Robinia", 
+                                                                    "Castanea", 
+                                                                    "Carpinus", 
+                                                                    "Aesculus", 
+                                                                    "Sorbus",
+                                                                    "Ulmus", 
+                                                                    "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
+                                   LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
+                                                                      "Fagus",
+                                                                      "Acer", 
+                                                                      "Platanus", 
+                                                                      "Fraxinus",
+                                                                      "Tilia", 
+                                                                      "Juglans", 
+                                                                      "Corylus", 
+                                                                      "Robinia", 
+                                                                      "Castanea", 
+                                                                      "Carpinus", 
+                                                                      "Aesculus", 
+                                                                      "Sorbus",
+                                                                      "Ulmus", 
+                                                                      "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
+                                   LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
+                                   LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
+                                   TRUE ~ 'other'), 
+          Bio_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei',
+                                   # https://www.statology.org/not-in-r/
+                                   LH_NH == "LB" & bot_genus %in% c("Fagus",     # all species that are labelled "aLh" in the BWI are treated as  beech 
+                                                                    "Acer", 
+                                                                    "Platanus", 
+                                                                    "Fraxinus",
+                                                                    "Tilia", 
+                                                                    "Juglans", 
+                                                                    "Corylus", 
+                                                                    "Robinia", 
+                                                                    "Castanea", 
+                                                                    "Carpinus", 
+                                                                    "Aesculus", 
+                                                                    "Sorbus",
+                                                                    "Ulmus", 
+                                                                    "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'bu',
+                                   LH_NH == "LB" & !(bot_genus %in% c("Quercus",  # all species that would be labelled "aLn" in the BWI species groups are allocated to soft hardwoods
+                                                                      "Fagus",
+                                                                      "Acer", 
+                                                                      "Platanus", 
+                                                                      "Fraxinus",
+                                                                      "Tilia", 
+                                                                      "Juglans", 
+                                                                      "Corylus", 
+                                                                      "Robinia", 
+                                                                      "Castanea", 
+                                                                      "Carpinus", 
+                                                                      "Aesculus", 
+                                                                      "Sorbus",
+                                                                      "Ulmus", 
+                                                                      "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'shw',
+                                   LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
+                                   LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
+                                   TRUE ~ 'other'), 
+          N_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'EI', 
+                           LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
+                           LH_NH == "LB" & bot_genus == "Acer"~ 'AH',
+                           LH_NH == "LB" & bot_genus == "Fraxinus"~ 'ES',
+                           LH_NH == "LB" & bot_genus == "Betula"~ 'BI',
+                           LH_NH == "LB" & bot_genus == "Alnus"~ 'ERL',
+                           LH_NH == "LB" & bot_genus %in% c("Platanus", 
+                                                            "Tilia", 
+                                                            "Juglans", 
+                                                            "Corylus", 
+                                                            "Robinia", 
+                                                            "Castanea", 
+                                                            "Carpinus", 
+                                                            "Aesculus", 
+                                                            "Sorbus",
+                                                            "Ulmus", 
+                                                            "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'BU', # species that are ususally "anderes Laubholz Hoher lebenserwartung are allocated to BU
+                           LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
+                                                              "Fagus",
+                                                              "Acer", 
+                                                              "Platanus", 
+                                                              "Fraxinus",
+                                                              "Tilia", 
+                                                              "Juglans", 
+                                                              "Corylus", 
+                                                              "Robinia", 
+                                                              "Castanea", 
+                                                              "Carpinus", 
+                                                              "Aesculus", 
+                                                              "Sorbus",
+                                                              "Ulmus", 
+                                                              "Rhamnus", 
+                                                               "Betula", 
+                                                               "Alnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'BI',  # species that are usually "anderes laubholz niedriger Lebenserwartung are allovated to BI
+                           LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'KI', 
+                           LH_NH == "NB" & bot_genus %in% c("Pseudotzuga") ~ 'DGL',
+                           LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix", "Pseudotzuga"))  ~ 'FI', # all species not Pinus, Larix or DOuglas fir are treated as Spruce 
+                           TRUE ~ 'other'))
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
@@ -830,7 +960,7 @@ trees_total <- left_join(trees_total %>%
                                     #                    TRUE ~ BWI), 
                                   # create species groups, BWI uses for their volume calculations to use curtis & sloboda functions
                                   # BWI Methodikband: 
-                                  # für die Höhenmessung wurde nach folgenden Baumartengruppen differenziert:
+                                  # für die Hoehenmessung wurde nach folgenden Baumartengruppen differenziert:
                                   # Fichte, Tanne, Douglasie, Kiefer, Lärche, Buche, Eiche. 
                                   # Alle anderen Nadelbäume werden der Fichte und alle anderen Laubbäume der Buche zugeordnet.
                                   H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
@@ -1008,46 +1138,79 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
-
 # ----- 1.4.2.1. species names & groups regeneration ----------------------
 RG_total <- RG_total %>% 
   mutate(SP_code = toupper(SP_code)) %>% 
   left_join(., SP_names_com_ID_tapeS %>% 
-                        mutate(Chr_ger_cap = toupper(Chr_code_ger), 
-                               BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
-                                                        LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
-                                                        LH_NH == "LB" & bot_genus %in% c("Acer", 
-                                                                                         "Platanus", 
-                                                                                         "Fraxinus",
-                                                                                         "Tilia", 
-                                                                                         "Juglans", 
-                                                                                         "Corylus", 
-                                                                                         "Robinia", 
-                                                                                         "Castanea", 
-                                                                                         "Carpinus", 
-                                                                                         "Aesculus", 
-                                                                                         "Sorbus",
-                                                                                         "Ulmus", 
-                                                                                         "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
-                                                        LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
-                                                                                           "Fagus",
-                                                                                           "Acer", 
-                                                                                           "Platanus", 
-                                                                                           "Fraxinus",
-                                                                                           "Tilia", 
-                                                                                           "Juglans", 
-                                                                                           "Corylus", 
-                                                                                           "Robinia", 
-                                                                                           "Castanea", 
-                                                                                           "Carpinus", 
-                                                                                           "Aesculus", 
-                                                                                           "Sorbus",
-                                                                                           "Ulmus", 
-                                                                                           "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
-                                                        LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
-                                                        LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
-                                                        TRUE ~ 'other')) %>% 
-                        dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, tpS_ID), 
+              mutate(Chr_ger_cap = toupper(Chr_code_ger), 
+                     BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
+                                              LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
+                                              LH_NH == "LB" & bot_genus %in% c("Acer", 
+                                                                               "Platanus", 
+                                                                               "Fraxinus",
+                                                                               "Tilia", 
+                                                                               "Juglans", 
+                                                                               "Corylus", 
+                                                                               "Robinia", 
+                                                                               "Castanea", 
+                                                                               "Carpinus", 
+                                                                               "Aesculus", 
+                                                                               "Sorbus",
+                                                                               "Ulmus", 
+                                                                               "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
+                                              LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
+                                                                                 "Fagus",
+                                                                                 "Acer", 
+                                                                                 "Platanus", 
+                                                                                 "Fraxinus",
+                                                                                 "Tilia", 
+                                                                                 "Juglans", 
+                                                                                 "Corylus", 
+                                                                                 "Robinia", 
+                                                                                 "Castanea", 
+                                                                                 "Carpinus", 
+                                                                                 "Aesculus", 
+                                                                                 "Sorbus",
+                                                                                 "Ulmus", 
+                                                                                 "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
+                                              LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
+                                              LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
+                                              TRUE ~ 'other'), 
+                     Bio_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei',
+                                              # https://www.statology.org/not-in-r/
+                                              LH_NH == "LB" & bot_genus %in% c("Fagus",     # all species that are labelled "aLh" in the BWI are treated as  beech 
+                                                                               "Acer", 
+                                                                               "Platanus", 
+                                                                               "Fraxinus",
+                                                                               "Tilia", 
+                                                                               "Juglans", 
+                                                                               "Corylus", 
+                                                                               "Robinia", 
+                                                                               "Castanea", 
+                                                                               "Carpinus", 
+                                                                               "Aesculus", 
+                                                                               "Sorbus",
+                                                                               "Ulmus", 
+                                                                               "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'bu',
+                                              LH_NH == "LB" & !(bot_genus %in% c("Quercus",  # all species that would be labelled "aLn" in the BWI species groups are allocated to soft hardwoods
+                                                                                 "Fagus",
+                                                                                 "Acer", 
+                                                                                 "Platanus", 
+                                                                                 "Fraxinus",
+                                                                                 "Tilia", 
+                                                                                 "Juglans", 
+                                                                                 "Corylus", 
+                                                                                 "Robinia", 
+                                                                                 "Castanea", 
+                                                                                 "Carpinus", 
+                                                                                 "Aesculus", 
+                                                                                 "Sorbus",
+                                                                                 "Ulmus", 
+                                                                                 "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'shw',
+                                              LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
+                                              LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
+                                              TRUE ~ 'other')) %>% 
+              dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, tpS_ID), 
             by = c("SP_code" = "Chr_ger_cap"))  %>%
   mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  'WTA', 
                                     bot_genus == "Acer"  ~  'BAH', 
@@ -1099,11 +1262,14 @@ RG_total %>% filter(is.na(tpS_ID)) %>% select(SP_code) %>% distinct()
 summary(SP_names_com_ID_tapeS)
 summary(RG_total)
 
+
+
+
+
 # ----- 1.4.3. Nitrogen content dataset ----------------------------------------
 # Reference: 
-  # Rumpf, Sabine & Schönfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
+  # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
-
  
 N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", 
                             "EI", "EI", "EI", 
@@ -1281,7 +1447,7 @@ trees_total_5 <- trees_total %>%
             by = "SP_code") %>%       
   left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
               group_by(plot_ID, C_layer, SP_code) %>%             # group by plot and species and canopy layer to calcualte dg, hg 
-              summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Höhe des Grundflächemittelstammes, calculation according to S. Schnell
+              summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
                         mean_DBH_mm = mean(DBH_mm),               # mean diameter per species per canopy layer per plot
                         D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
             by = c("plot_ID", "SP_code", "C_layer")) %>% 
@@ -1322,8 +1488,8 @@ obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 # ----- 2.2.2. dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
-# Arithmetisches Mittel der Höhe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhöhe h100 oder h200 bezeichnet; die WEISE�sche Oberhöhe [ho] entspricht der Höhe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
-# Wichtig: Die Art der Oberhöhe muss jeweils definiert werden.
+# Arithmetisches Mittel der Hoehe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhoehe h100 oder h200 bezeichnet; die WEISE�sche Oberhoehe [ho] entspricht der Hoehe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
+# Wichtig: Die Art der Oberhoehe muss jeweils definiert werden.
 # my problem: there are no 100 trees per plot and I don´t know how to estimate the height of the top 100
 
 # https://statisticsglobe.com/select-top-n-highest-values-by-group-in-r#example-2-extract-top-n-highest-values-by-group-using-dplyr-package
@@ -1410,7 +1576,7 @@ for(id in unique(trees_total_5$plot_ID)){
     filter(plot_ID == id) %>%
     slice_max(DBH_cm, n = n_t100, with_ties = FALSE) %>% # select top 100 representing rows
     summarise(plot_ID = mean(plot_ID),
-              H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Höhe des Grundflächemittelstammes, calculation according to S. Schnell
+              H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
               top_H = mean(H_m))                         # calculate mean height
   
   mean100top[id] <- sliced_plot[1,2]
@@ -1450,7 +1616,7 @@ trees_total_5 <- trees_total_5 %>%
   mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
          swbB_kg = aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
          fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
-         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg+swbB_kg+fwB_kg),  Wutzler_brB_L1(DBH_cm, H_m)),  # foliage biomass
+         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg+swbB_kg+fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
          tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
          tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>% 
   select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg))
@@ -1555,7 +1721,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
   # joining the common species codes of SP_names and SP_tapeS fromSP_names_com_ID_tapeS and attaching the tpS_ID from SP_tapeS to it
   SP_names_com_ID_tapeS %>% 
               mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
-              select(Chr_ger_cap, tpS_SP_com_name, tpS_ID, LH_NH), 
+              select(Chr_ger_cap, tpS_SP_com_name, tpS_ID, LH_NH, N_SP_group), 
   by = c("dom_SP" = "Chr_ger_cap")) %>%
   mutate(L_m = L_dm/10,
          D_m = as.integer(D_cm)/100, 
@@ -1563,20 +1729,64 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
          dec_type_BWI = case_when(dec_type == 1 | dec_type == 2 ~ 1, 
                                   dec_type == 3 ~ 2, 
                                   dec_type == 4 ~ 3, 
-                                  TRUE ~ 4))
+                                  TRUE ~ 4)) 
+# 1	Laubholz (außer Eiche)
+# 2	Nadelholz
+# 3	Eiche
+# 4	Unbekannt
+
+summary(SP_names_com_ID_tapeS)
 
 # ----- 2.3.2. Deadwood volume, biomass, carbon ---------------------------------------------
 DW_total <- DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
-         C_dw_kg = C_DW(V_dw_m3, SP_dec_type))
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  # biomass compartiments for trees of decy stage 1& 2
+  mutate(dw_tapes_brB_kg = tapes_brB(tpS_ID, D_cm, D_h_cm, L_m),                      # Nichtderbholz, finebranches
+        dw_tapes_DhB_kg = tapes_StB(tpS_ID, D_cm, D_h_cm, L_m),                      #coarsewood without bark, Derbholz                    
+        dw_tapes_DhbB_kg = tapes_StbB(tpS_ID, D_cm, D_h_cm, L_m))%>%                    # bark of coarsewood,  Derbholzrinde 
+   # GHG-TapeS-stepwise
+   mutate(dw_swB_kg = ifelse(dec_type %in% c(1, 2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
+          dw_swbB_kg = ifelse(dec_type %in% c(1, 2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
+          dw_fwB_kg = ifelse(dec_type %in% c(1, 2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
+   select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
+   mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+          N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+          N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+         N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
+   mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+
+
+
 
 
 # ----- 2.4  Biomass regeneration -------------------------------------------
+RG_total <- RG_total %>% 
+  # assigning numeric diameters to size classes through mean per class 
+  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
+                          D_class_cm == 1 ~ (4.9+0)/2, 
+                          D_class_cm == 2 ~ (5.9+5)/2,
+                          TRUE ~ (6.9+6)/2)) %>% 
+  # biomass
+         # Biomass according to Annighoefer
+         # estimating Root collar diameter via Annighoefer
+  mutate(Annig_RCD_mm = annighoefer_RCD(D_cm*10, LH_NH, 130), # 130 = height at which the diameter was measured [cm]
+         # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
+         Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)), 
+        
+          GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)))
 
-# ----- 2.5. Plot level data: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
+
+
+
+summary(RG_total)
+
+
+
+
+# ----- 2.5. PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
 # ----- 2.5.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
 trees_P_CP_SP <- left_join(
   # dataset with BA per species
@@ -2979,7 +3189,7 @@ plot(h.tot.3)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # 
 # Residual standard error: 2.565 on 160 degrees of freedom
-# (46 Beobachtungen als fehlend gelöscht)
+# (46 Beobachtungen als fehlend geloescht)
 # Multiple R-squared:  0.8063,	Adjusted R-squared:  0.799 
 # F-statistic:   111 on 6 and 160 DF,  p-value: < 2.2e-16
 
@@ -3005,7 +3215,7 @@ plot(h.3.val)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # 
 # Residual standard error: 3.326 on 51 degrees of freedom
-# (14 Beobachtungen als fehlend gelöscht)
+# (14 Beobachtungen als fehlend geloescht)
 # Multiple R-squared:  0.7349,	Adjusted R-squared:  0.7089 
 # F-statistic: 28.28 on 5 and 51 DF,  p-value: 1.324e-13
 
@@ -3120,7 +3330,7 @@ plot(h.RER)
 #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 # 
 # Residual standard error: 409 on 22 degrees of freedom
-# (45 Beobachtungen als fehlend gelöscht)
+# (45 Beobachtungen als fehlend geloescht)
 # Multiple R-squared:  0.4214,	Adjusted R-squared:  0.3951 
 # F-statistic: 16.02 on 1 and 22 DF,  p-value: 0.0005993
 
@@ -3139,7 +3349,7 @@ plot(h.RER.val)
  #   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
  # 
  # Residual standard error: 331 on 8 degrees of freedom
- # (14 Beobachtungen als fehlend gelöscht)
+ # (14 Beobachtungen als fehlend geloescht)
  # Multiple R-squared:  0.7459,	Adjusted R-squared:  0.7141 
  # F-statistic: 23.48 on 1 and 8 DF,  p-value: 0.001278
  
