@@ -525,10 +525,14 @@ Wutzler_brB_L1 <- function(d, h){  #DH3 4a Model
 # ---- 1.3.3.6.3. TapeS fine branches - fwb -------------------------------------------
 ### tapeS fine branches 
 tapes_brB <- function(spec_tpS, d, dh, h){          
-  spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
-  Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
-  Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m because these are the deadwood pieces that do still have a DBH
-  Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  # spp = na.omit(trees_total_5 %>% dplyr::pull(tpS_ID)); 
+  # Dm = na.omit(as.list(trees_total_5 %>% dplyr::pull(DBH_cm)));
+  # Hm = na.omit(as.list(trees_total_5 %>% mutate(D_h_m = (ifelse(is.na(DBH_h_cm), 130, DBH_h_cm))/100) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m because these are the deadwood pieces that do still have a DBH
+  # Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(ifelse(is.na(dh), 130, dh)/100));
+  Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   branches <- as_tibble(tprBiomass(obj.tbio, component="fwb")); # doesn´t accept it as a dataframe elsewise
   return(branches$fwb)
@@ -1744,7 +1748,7 @@ DW_total <- DW_total %>%
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
   # biomass compartiments for trees of decy stage 1& 2
-  mutate(dw_tapes_brB_kg = tapes_brB(tpS_ID, D_cm, D_h_cm, L_m),                      # Nichtderbholz, finebranches
+  mutate(dw_tapes_brB_kg = tapes_brB(tpS_ID, D_cm, D_h_m, L_m)),                      # Nichtderbholz, finebranches
         dw_tapes_DhB_kg = tapes_StB(tpS_ID, D_cm, D_h_cm, L_m),                      #coarsewood without bark, Derbholz                    
         dw_tapes_DhbB_kg = tapes_StbB(tpS_ID, D_cm, D_h_cm, L_m))%>%                    # bark of coarsewood,  Derbholzrinde 
    # GHG-TapeS-stepwise
