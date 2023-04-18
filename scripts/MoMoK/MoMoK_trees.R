@@ -381,10 +381,41 @@ tapes_swbB <- function(spec_tpS, d, dh, h){
   return(bark.df$sb)
 }
 
-# ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
-# ---- 1.3.4.4.1. Wirth coarsewood biomass with bark-----------------------------------------
-# ---- 1.3.4.4.2. Wutzler coarsewood biomass with bark---------------------------------------
-# ---- 1.3.4.4.3. Vondernach coarsewood biomass with bark - Dh + DhR ------------------------------------
+
+
+# ----- 1.3.4.4. stumpwood bark  ------------------------------------
+# ----- 1.3.4.4.1. Tapes stumpwood "stb" ------------------------------------
+tapes_stwbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  sb <- tprBiomass(obj.tbio, component="sb");
+  stb <- tprBiomass(obj.tbio, component="stb");
+  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
+  return(bark.df$stb)
+}
+
+# ----- 1.3.4.4. stumwood   ------------------------------------
+# ----- 1.3.4.4.1. Tapes stumpwood "st" ------------------------------------
+tapes_stwB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  sw <- tprBiomass(obj.tbio, component="sw");
+  stw <- tprBiomass(obj.tbio, component="stw");
+  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(coarsebark.df$stw) # solid wwood without bark
+}
+
+
+# ---- 1.3.4.6. coarsewood biomass with bark ----------------------------------------------
+# ---- 1.3.4.6.1. Wirth coarsewood biomass with bark-----------------------------------------
+# ---- 1.3.4.6.2. Wutzler coarsewood biomass with bark---------------------------------------
+# ---- 1.3.4.6.3. Vondernach coarsewood biomass with bark - Dh + DhR ------------------------------------
 Vondr_crWbB <- function(spec, d, h){  # I´ll use the secies groups assigned for the calculation of the heights
   b0 <- c(fi = 0, ta = 0, dgl = 0, ki = 0, bu = -5.6602, ei = -5.9489, es=0, ah=0); 
   b1 <- c(fi = 0.0157, ta = 0.0074, dgl = 0.0128, ki=0.0169, bu=0.022, ei=0.0257, es=0.0128, ah=0.028 );
@@ -397,7 +428,7 @@ Vondr_crWbB <- function(spec, d, h){  # I´ll use the secies groups assigned for
   return((b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec]) + (b4[spec] + b5[spec]* d^b6[spec] * h^b7[spec]))
 }
 
-# ---- 1.3.4.4.4. TapeS coarsewood biomass with bark - sw+sb+stw+stb -----------------------------------------
+# ---- 1.3.4.6.4. TapeS coarsewood biomass with bark - sw+sb+stw+stb -----------------------------------------
 tapes_crsWbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
@@ -605,10 +636,10 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 # ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
 # ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
 # Annighoefer:  https://link.springer.com/article/10.1007/s10342-016-0937-z#Sec2
-annighoefer_RCD <- function(d, NH_LH, d_h_measured){
+annighoefer_RCD <- function(d, LH_NH, d_h_measured){
   t_LH <- c("5" = 1.08, "10" = 1.16, "50" = 1.33, "130" = 1.45); # transformation factor broadleafed trees, the number describes the height at which the diameter was measured
   t_NH <- c("5" = 1.06, "10" = 1.13, "50" = 1.29, "130" = 1.45); # transformation factor coniferous trees
-  return(ifelse(NH_LH == "NH", t_NH[d_h_measured]*d, t_LH[d_h_measured]*d))
+  return(ifelse(LH_NH == "NB", t_NH[d_h_measured]*d, t_LH[d_h_measured]*d))
 }
 
 # ----- 1.3.5.2. total aboveground biomass regeneration ------------------------
@@ -1616,15 +1647,23 @@ trees_total_5 <- trees_total_5 %>%
          tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
          tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
          tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%         # coarsewood with bark, 
+         tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m), 
+         tapes_stwbB_kg = tapes_stbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%         # coarsewood with bark, 
   # GHG-TapeS-stepwise
-  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
-         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg), # solid wood bark 
-         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
-         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg+swbB_kg+fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
+  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg), # stump wood biomass
+         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg), # stum wood bark biomass
+         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg), # fine wood bionmass
+         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
          tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
          tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>% 
-  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg))
+  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_stwbB_kg, tapes_stwB_kg))# %>%
+  # mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+  #        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+  #        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+  #       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
+  # mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
   
 
 
@@ -1750,7 +1789,6 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
 # 3	Eiche
 # 4	Unbekannt
 
-summary(SP_names_com_ID_tapeS)
 
 # ----- 2.3.2. Deadwood volume, biomass, carbon ---------------------------------------------
 DW_total <- DW_total %>% 
@@ -1763,7 +1801,7 @@ DW_total <- DW_total %>%
          # no fine wood compartment for deadwood types that don´t include whole trees
   mutate(dw_tapes_brB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI %in% c(1,2), tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 0), # Nichtderbholz, finebranches
          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_DhB_kg = ifelse(DW_type %in% c(1, 2, 3, 4, 5) & dec_type_BWI %in% c(1,2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0), #coarsewood without bark, Derbholz
+        dw_tapes_DhB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI %in% c(1,2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0), #coarsewood without bark, Derbholz
         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
         dw_tapes_DhbB_kg = ifelse(DW_type %in% c(1, 2, 3, 4, 5) & dec_type_BWI %in% c(1,2), tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)) %>%  #coarsewood without bark, Derbholz  
 # GHG-TapeS-stepwise
@@ -1799,9 +1837,9 @@ RG_total <- RG_total %>%
   # biomass
          # Biomass according to Annighoefer
          # estimating Root collar diameter via Annighoefer
-  mutate(Annig_RCD_mm = annighoefer_RCD(D_cm*10, LH_NH, 130), # 130 = height at which the diameter was measured [cm]
-         # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
-         Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm^3, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
+  mutate(Annig_RCD_mm = ifelse(H_cm >= 130, annighoefer_RCD(D_cm, LH_NH, "130"), NA)) %>% # 130 = height at which the diameter was measured [cm]
+  # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
+   mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
           GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)))
 
 
@@ -1809,8 +1847,22 @@ RG_total <- RG_total %>%
 
 summary(RG_total)
 
+RG_total %>% 
+  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, GHG_aB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(D_cm, biomass))+
+  geom_point(aes(colour = method))+
+  geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color= method)#+
+  facet_wrap(~LH_NH)
 
 
+RG_total %>% 
+  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, GHG_aB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_boxplot(aes(colour = method))+
+  facet_wrap(~LH_NH)
 
 
 # ----- 2.5. PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
