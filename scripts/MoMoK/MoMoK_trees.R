@@ -324,7 +324,7 @@ Vondr_oiB <- function(spec, d, h){  # I´ll use the secies groups assigned for t
 tapes_aB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh),  1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   tapesab <- tprBiomass(obj.tbio, component="agb");
@@ -344,16 +344,16 @@ Vondr_DhB <- function(spec, d, h){
 }
 
 # ---- 1.3.3.2.4. TapeS coarsewood biomass without bark - sw -----------------------------------------
-tapes_StB <- function(spec_tpS, d, dh, h){         
+tapes_swB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh),  1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sw <- tprBiomass(obj.tbio, component="sw");
-  stw <- tprBiomass(obj.tbio, component="stw");
-  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(coarsebark.df$sw) # stem + stumb without bark
+ # stw <- tprBiomass(obj.tbio, component="stw");
+ # coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(sw) # solid wwood without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -369,16 +369,16 @@ Vondr_DhRB <- function(spec, d, h){
 }
 
 # ---- 1.3.3.3.4. TapeS coarsewood bark "sb" + "stb" -----------------------------------------
-tapes_StbB <- function(spec_tpS, d, dh, h){         
+tapes_swbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh),  1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sb <- tprBiomass(obj.tbio, component="sb");
-  stb <- tprBiomass(obj.tbio, component="stb");
-  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
-  return(bark.df$sb)
+  #stb <- tprBiomass(obj.tbio, component="stb");
+  #bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
+  return(sb)
 }
 
 # ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
@@ -401,16 +401,16 @@ Vondr_crWbB <- function(spec, d, h){  # I´ll use the secies groups assigned for
 tapes_crsWbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh),  1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   #component <- c("sw", "sb", "ndl")
   # tprBiomass(obj, component=component)
   sw <- tprBiomass(obj.tbio, component="sw");
   sb <-  tprBiomass(obj.tbio, component="sb");
-  stw <- tprBiomass(obj.tbio, component="stw");
-  stb <- tprBiomass(obj.tbio, component="stb");
-  crsWbB.df <- cbind(sw, sb, stw, stb) %>% mutate(crsWbB_kg = sw+sb+stw+stb);
+  #stw <- tprBiomass(obj.tbio, component="stw");
+  #stb <- tprBiomass(obj.tbio, component="stb");
+  crsWbB.df <- cbind(sw, sb) %>% mutate(crsWbB_kg = sw+sb);
   return(crsWbB.df$crsWbB_kg)
   # coarsewood + coarswood bark + stumbwood + stumbwoodbark 
   # L> I am unsure if this is correct, because I am not sure if solid wood includes the stumbwood already --> ask Sebstian?
@@ -489,7 +489,7 @@ Vondr_fB <- function(spec, d, h){                                               
 tapes_fB <- function(spec_tpS, d, dh, h){          
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh),  1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   needles <- as_tibble(tprBiomass(obj.tbio, component="ndl"));
@@ -531,7 +531,7 @@ tapes_brB <- function(spec_tpS, d, dh, h){
   # Ht = na.omit(trees_total_5 %>% dplyr::pull(H_m));
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(ifelse(is.na(dh), 1.3, dh/100)));
+  Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   branches <- as_tibble(tprBiomass(obj.tbio, component="fwb")); # doesn´t accept it as a dataframe elsewise
@@ -1479,7 +1479,7 @@ trees_total_5 <- trees_total %>%
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
 # DBH, diameter at 1/3 of the tree height, species, tree height
 
-# ----- 2.2.1. TAPES: goal: estimating diameter at 0.3 of tree height with TapeS -----------------------------------------------------------
+# ----- 2.2.1. TAPES: estimating diameter at 0.3 of tree height with TapeS -----------------------------------------------------------
 #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
 
 # ----- 2.2.1.1. create TapeS object -----------------------------------------------------------
@@ -1590,7 +1590,8 @@ for(id in unique(trees_total_5$plot_ID)){
 # ----- 2.2.3. biomass trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
   # adding diameter at 0.3 tree height to trees_total dataframe
-  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
+  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE), 
+         DBH_h_m = ifelse(is.na(DBH_h_cm), 1.3, DBH_h_cm/100)) %>% 
   # biomass
   # aboveground biomass   # for trees above species specific diameter threshold
   mutate(aB_kg = case_when(Bio_SP_group == "fi" & DBH_cm >= 69.0 |
@@ -1611,11 +1612,11 @@ trees_total_5 <- trees_total_5 %>%
          bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
     # compartiments:
   # TapeS
-  mutate(tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                        # foliage
-         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # Nichtderbholz, finebranches
-         tapes_DhB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
-         tapes_DhbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m)) %>%         # coarsewood with bark, 
+  mutate(tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # foliage
+         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
+         tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%         # coarsewood with bark, 
   # GHG-TapeS-stepwise
   mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
          swbB_kg = aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
@@ -1631,14 +1632,15 @@ trees_total_5 <- trees_total_5 %>%
 biotest <- trees_total_5 %>% 
   select(plot_ID, SP_code, tpS_ID, Bio_SP_group, H_SP_group, LH_NH, DBH_cm, DBH_h_cm, D_03_cm, H_m, age, plot_A_ha) %>% 
   # adding diameter at 0.3 tree height to trees_total dataframe
-  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE)) %>% 
+  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE), 
+         DBH_h_m = DBH_h_cm/100) %>% 
   # biomass
         # GHG Dunger aboveground biomass (all woody compartments inkluding bark without leafes for broadleafed trees)
   mutate(GHG_aB_kg = case_when(DBH_cm >= 10 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), # total aboveground biomass
                            DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
                            H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
          # TapeS comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
-         tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # total aboveground biomass
+         tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # total aboveground biomass
          # vondernach comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
          Vondr_oiB_kg = Vondr_oiB(H_SP_group, DBH_cm, H_m),                          # total aboveground biomass
          # GHG Dunger
@@ -1654,11 +1656,11 @@ biotest <- trees_total_5 %>%
          GHG_WuWi_totaB_kg = ifelse(LH_NH == "NB", GHG_aB_kg, GHG_aB_kg+WuWi_fB_kg),   # total aboveground biomass in KG per tree per plot
          GHG_WuWi_totaB_t_ha = GHG_WuWi_totaB_kg/1000*plot_A_ha,                       # total  aboveground biomass in tons per hectare per tree
          # TapeS
-         tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                        # foliage
-         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      # Nichtderbholz, finebranches
-         tapes_DhB_kg = tapes_StB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                      #coarsewood without bark, Derbholz                    
-         tapes_DhbB_kg = tapes_StbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_cm, H_m),                # coarsewood with bark
+         tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # foliage
+         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
+         tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                # coarsewood with bark
          # Vondernach 
          Vondr_fB_kg = Vondr_fB(H_SP_group, DBH_cm, H_m),                              # foliage
          Vondr_brB_kg = Vondr_NhdB(H_SP_group, DBH_cm, H_m),                          # Nichtderbholz
@@ -1729,8 +1731,15 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
   by = c("dom_SP" = "Chr_ger_cap")) %>%
   mutate(L_m = L_dm/10,
          D_m = as.integer(D_cm)/100, 
-         D_h_cm = ifelse (DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 1.3, 130, 0),
-         D_h_m = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 1.3, 1.3, 0), 
+         # if deeadwood type 2, 5 or 3 and L > 1.3m the DBH was taken and in this case compartiments can be calculated by tapeS
+         D_h_cm = case_when(DW_type %in% c(1, 6) ~  (L_m/2)*100, 
+                            DW_type %in% c(2, 3, 5) & L_m  > 1.3  ~ 130,
+                            DW_type == 4 ~ L_m*100,                                 # Stump diameter measuring height will be at the lengts of the stump
+                            TRUE ~ (L_m/2)*100),
+         D_h_m = case_when(DW_type %in% c(1, 6) ~  L_m/2,
+                           DW_type %in% c(2, 3, 5) & L_m  > 1.3  ~ 1.3,
+                           DW_type == 4 ~ L_m, 
+                            TRUE ~ L_m/2), 
          dec_type_BWI = case_when(dec_type == 1 | dec_type == 2 ~ 1, 
                                   dec_type == 3 ~ 2, 
                                   dec_type == 4 ~ 3, 
@@ -1748,24 +1757,39 @@ DW_total <- DW_total %>%
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  # biomass compartiments for trees of decy stage 1& 2
-  mutate(dw_tapes_brB_kg = ifelse (DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, tapes_brB(tpS_ID, D_cm, D_h_cm, L_m), 0),                      # Nichtderbholz, finebranches
-        dw_tapes_DhB_kg = ifelse(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, tapes_StB(tpS_ID, D_cm, D_h_cm, L_m), B_dw_kg),                      #coarsewood without bark, Derbholz                    
-        dw_tapes_DhbB_kg = ifelse(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, tapes_StbB(tpS_ID, D_cm, D_h_cm, L_m), 0))%>%                    # bark of coarsewood,  Derbholzrinde 
-   # GHG-TapeS-stepwise
-   mutate(dw_swB_kg = ifelse(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
-          dw_swbB_kg = ifelse(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
-          dw_fwB_kg = ifelse(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3, (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
-   select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
-   mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
-          N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-          N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-         N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
-   mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+  # biomass compartiments for trees of deadwood type 1& 2 or 5 (whole tree lying / standing) or other deadwood types in a low state of decay
+  # whereby we have to consider that tepeS is not precise for trees below 3m length, so that those are excluded from the Compartimentition as well
+         # no fine wood compartment for deadwood types that don´t include whole trees
+  mutate(dw_tapes_brB_kg = case_when(DW_type %in% c(1, 2, 5) & dec_type %in% c(1,2) ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), # Nichtderbholz, finebranches
+                                     !(DW_type %in% c(1,2,5)) & dec_type %in% c(1,2) ~ 0,
+                                       TRUE ~ 0), 
+         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
+        dw_tapes_DhB_kg = case_when(DW_type != 6 & dec_type %in% c(1,2) ~  tapes_swB(tpS_ID, D_cm, D_h_m, L_m), #coarsewood without bark, Derbholz  
+                                    TRUE ~ B_dw_kg),                                        
+        # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+        dw_tapes_DhbB_kg = case_when(DW_type != 6 & dec_type %in% c(1,2) ~  tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), #coarsewood without bark, Derbholz  
+                                    TRUE ~ 0)) # %>%                    # bark of coarsewood,  Derbholzrinde 
+# GHG-TapeS-stepwise
+   # mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
+   #        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
+   #        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
+   # select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
+   # mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+   #        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+   #        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+   #       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
+   # mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
 
 DW_total %>% 
-  filter(DW_type %in% c(2, 5) & Hm > L_m | DW_type == 3 & L_m > 1.3 & Hm > L_m) %>% 
-  mutate(tapes_br = tapes_brB(tpS_ID, D_cm, D_h_cm, L_m))
+  filter(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3 & D_h_m  < L_m) %>% 
+  mutate(tapes_sw = tapes_swB(tpS_ID, D_cm, D_h_cm, L_m))
+
+
+
+
+
+
+
 
 
 # ----- 2.4  Biomass regeneration -------------------------------------------
@@ -1788,6 +1812,7 @@ RG_total <- RG_total %>%
 
 
 summary(RG_total)
+
 
 
 
