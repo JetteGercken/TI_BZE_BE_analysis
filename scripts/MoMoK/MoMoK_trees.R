@@ -351,9 +351,9 @@ tapes_swB <- function(spec_tpS, d, dh, h){
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sw <- tprBiomass(obj.tbio, component="sw");
- # stw <- tprBiomass(obj.tbio, component="stw");
- # coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(sw) # solid wwood without bark
+  stw <- tprBiomass(obj.tbio, component="stw");
+  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(coarsebark.df$sw) # solid wwood without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -376,9 +376,9 @@ tapes_swbB <- function(spec_tpS, d, dh, h){
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sb <- tprBiomass(obj.tbio, component="sb");
-  #stb <- tprBiomass(obj.tbio, component="stb");
-  #bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
-  return(sb)
+  stb <- tprBiomass(obj.tbio, component="stb");
+  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
+  return(bark.df$sb)
 }
 
 # ---- 1.3.4.4. coarsewood biomass with bark ----------------------------------------------
@@ -1619,7 +1619,7 @@ trees_total_5 <- trees_total_5 %>%
          tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%         # coarsewood with bark, 
   # GHG-TapeS-stepwise
   mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg))), 
-         swbB_kg = aB_kg - (swB_kg+tapes_fB_kg + tapes_brB_kg), # solid wood bark 
+         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg), # solid wood bark 
          fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg), # fine wood bionmass
          fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg+swbB_kg+fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
          tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
@@ -1735,11 +1735,11 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
          D_h_cm = case_when(DW_type %in% c(1, 6) ~  (L_m/2)*100, 
                             DW_type %in% c(2, 3, 5) & L_m  > 1.3  ~ 130,
                             DW_type == 4 ~ L_m*100,                                 # Stump diameter measuring height will be at the lengts of the stump
-                            TRUE ~ (L_m/2)*100),
+                            TRUE ~ 0),
          D_h_m = case_when(DW_type %in% c(1, 6) ~  L_m/2,
                            DW_type %in% c(2, 3, 5) & L_m  > 1.3  ~ 1.3,
                            DW_type == 4 ~ L_m, 
-                            TRUE ~ L_m/2), 
+                            TRUE ~ 0), 
          dec_type_BWI = case_when(dec_type == 1 | dec_type == 2 ~ 1, 
                                   dec_type == 3 ~ 2, 
                                   dec_type == 4 ~ 3, 
