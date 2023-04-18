@@ -1761,9 +1761,9 @@ DW_total <- DW_total %>%
   # biomass compartiments for trees of deadwood type 1& 2 or 5 (whole tree lying / standing) or other deadwood types in a low state of decay
   # whereby we have to consider that tepeS is not precise for trees below 3m length, so that those are excluded from the Compartimentition as well
          # no fine wood compartment for deadwood types that don´t include whole trees
-  mutate(dw_tapes_brB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI %in% c(1,2), tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 0)), # Nichtderbholz, finebranches
+  mutate(dw_tapes_brB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI %in% c(1,2), tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 0), # Nichtderbholz, finebranches
          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_DhB_kg = ifelse(DW_type %in% c(1, 2, 3, 4, 5) & dec_type_BWI %in% c(1,2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), B_DW(V_dw_m3, SP_dec_type)), #coarsewood without bark, Derbholz
+        dw_tapes_DhB_kg = ifelse(DW_type %in% c(1, 2, 3, 4, 5) & dec_type_BWI %in% c(1,2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0), #coarsewood without bark, Derbholz
         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
         dw_tapes_DhbB_kg = ifelse(DW_type %in% c(1, 2, 3, 4, 5) & dec_type_BWI %in% c(1,2), tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)) %>%  #coarsewood without bark, Derbholz  
 # GHG-TapeS-stepwise
@@ -1801,8 +1801,7 @@ RG_total <- RG_total %>%
          # estimating Root collar diameter via Annighoefer
   mutate(Annig_RCD_mm = annighoefer_RCD(D_cm*10, LH_NH, 130), # 130 = height at which the diameter was measured [cm]
          # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
-         Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)), 
-        
+         Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm^3, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
           GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)))
 
 
