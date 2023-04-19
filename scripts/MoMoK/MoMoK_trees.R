@@ -1846,24 +1846,79 @@ DW_total <- DW_total %>%
 # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
 # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
 
-dw_tapes_swB <- function(spec_tpS, d, dh, h, b){         
+dw_tapes_swB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
-  bio = b;
-  obj.tbio <- ifelse(length(spp) == 0, "F", tprTrees(spp, Dm, Hm, Ht, inv = 4));
+  obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(ifelse(obj.tbio == "F", bio, tprBiomass(obj.tbio, component="sw")))
+  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="sw", mono = TRUE, Rfn = NULL)))
 }
 
+
+dw_tapes_fwB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="fwb", mono = TRUE, Rfn = NULL)))
+}
+
+help(tprBiomass)
+
+  spp = na.omit(DW_total %>% 
+                  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+                  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+                         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+                         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+                  filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+                  dplyr::pull(tpS_ID))
+  Dm = na.omit(as.list(DW_total %>% 
+                         unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+                         mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+                                V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+                                B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+                         filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+                         dplyr::pull(D_cm)))
+  Hm = na.omit(as.list(DW_total %>% 
+                         unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+                         mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+                                V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+                                B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+                         filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+                         dplyr::pull(D_h_m)))
+  Ht = na.omit(DW_total %>% 
+                 unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+                 mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+                        V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+                        B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+                 filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+                 dplyr::pull(L_m))
+  obj.tbio.test <- if(length(spp) == 0){0} else {tprTrees(spp, Dm, Hm, Ht, inv = 4)}
+  
+
+
+# sw_dw_kg whole tree in decay < 3
 DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  #filter(DW_type %in% c(2, 5) & dec_type_BWI  ) %>% 
-  mutate(tapes_sw_dw_kg = dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg))
+  filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+  mutate(tapes_sw_dw_kg = dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m))
+# sw_dw_kg whole tree in decay > 3
+# for all deadwood categories with a decay state below 3 and for all elements of deadwood type 6 use the total biomass as stemm biomass
+DW_total %>% 
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  filter((DW_type != 6 & dec_type_BWI >= 3) | DW_type == 6 ) %>% 
+  mutate(tapes_sw_dw_kg = B_dw_kg)
+
 
 
 
