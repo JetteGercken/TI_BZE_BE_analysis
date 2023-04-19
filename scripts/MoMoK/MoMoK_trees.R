@@ -1862,8 +1862,8 @@ DW_total %>%
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  filter(DW_type %in% c(2, 5) & dec_type_BWI ) %>% 
-  mutate(tapes_sw_dw_kg = ifelse(DW_type != 6 & dec_type_BWI >3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg), dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg)) )
+  #filter(DW_type %in% c(2, 5) & dec_type_BWI  ) %>% 
+  mutate(tapes_sw_dw_kg = dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg))
 
 
 
