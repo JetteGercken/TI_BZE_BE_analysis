@@ -352,8 +352,8 @@ tapes_swB <- function(spec_tpS, d, dh, h){
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   sw <- tprBiomass(obj.tbio, component="sw");
   stw <- tprBiomass(obj.tbio, component="stw");
-  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(coarsebark.df$sw) # solid wwood without bark
+  coarse.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(coarse.df$sw) # solid wwood without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -631,7 +631,17 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 
 
+# ----- 1.3.4.4. Deadwood compartiments -----------------------------------
 
+dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  obj.tbio <- ifelse(length(spp)==0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
+# most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="sw"))) # solid wwood without bark
+}
 
 # ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
 # ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
@@ -1807,7 +1817,7 @@ DW_total <- DW_total %>%
          # no fine wood compartment for deadwood types that don´t include whole trees
   mutate(# dw_tapes_fwB_kg =  , # Nichtderbholz, finebranches
          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_DhB_kg = ifelse((DW_type %in% c(1, 2, 5) & dec_type_BWI == 1) | (DW_type %in% c(1, 2, 5) & dec_type_BWI == 2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), B_dw_kg))#, #coarsewood without bark, Derbholz
+        dw_tapes_DhB_kg = ifelse((DW_type %in% c(1, 2, 5) & dec_type_BWI == 1) | (DW_type %in% c(1, 2, 5) & dec_type_BWI == 2), "tapes_swB", "B_dw_kg")) #, #coarsewood without bark, Derbholz
         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
         #dw_tapes_DhbB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI == 1 | DW_type %in% c(1, 2, 5) & dec_type_BWI == 2, tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0))# %>%  #coarsewood without bark, Derbholz  
 # GHG-TapeS-stepwise
@@ -1821,20 +1831,76 @@ DW_total <- DW_total %>%
    #       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
    # mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
 
-DW_total %>% 
-  filter(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3 & D_h_m  < L_m) %>% 
-  mutate(tapes_sw = tapes_swB(tpS_ID, D_cm, D_h_cm, L_m))
+# DW_total %>% 
+#   filter(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3 & D_h_m  < L_m) %>% 
+#   mutate(tapes_sw = tapes_swB(tpS_ID, D_cm, D_h_cm, L_m))
 
 # o	ganze Bäume (Totholztypen 2, 5) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Nichtderbholz, Derbholz o.R., Derbholzrinde, Stock o.R., Stock
 # o	ganze Stämme/ starkes Totolz & Bruchstücke (Totholztypen 3, 1) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Derbholz o.R., Derbholzrinde, Stock o.R., Stock
-# o	Wurzelstock (Totholztyp 4) in Zersetzungstadien 1& 2 --> Komartimentierung mit TapeS in Stock o.R, Stockrinde
+# o	Wurzelstock (Totholztyp 4) in Zersetzungstadien 1& 2 --> Komartimentierung mit TapeS in Stock o.R, Stockrinde 
+# L--> this won´t work becaus it will only calcaulte a small percentage of the total mass so I have to treat it like a log
 # o	im Haufen vorkommendes Totholz (Totholztyp 6) in allen Zersetzungstadien & alle anderen Totholztypen in Zersetzungsstadien >= 3 --> keine Kompartimentierung
 
+# nihtderbholz: Totholztyp 2, 5, & Zersetzung 1, 2 , tapes_fwB(), 0
+# derbholz o.R.: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
+# derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
+# stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
+
+dw_tapes_swB <- function(spec_tpS, d, dh, h, b){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  bio = b;
+  obj.tbio <- ifelse(length(spp) == 0, "F", tprTrees(spp, Dm, Hm, Ht, inv = 4));
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(ifelse(obj.tbio == "F", bio, tprBiomass(obj.tbio, component="sw")))
+}
+
+DW_total %>% 
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  filter(DW_type %in% c(2, 5) & dec_type_BWI ) %>% 
+  mutate(tapes_sw_dw_kg = ifelse(DW_type != 6 & dec_type_BWI >3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg), dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m, B_dw_kg)) )
 
 
 
-
-
+DW_total %>% 
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  mutate(tapes_fw_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
+                     DW_type == 2 & dec_type_BWI == 2~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m),
+                     DW_type == 5 & dec_type_BWI == 1 ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
+                     DW_type == 5 & dec_type_BWI == 2~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m),
+                     TRUE ~ 0), 
+         tapes_sw_dw_kg = case_when(DW_type != 6 & dec_type_BWI == 1 ~ tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+                     DW_type != 6 & dec_type_BWI == 2~ tapes_swB(tpS_ID, D_cm, D_h_cm, L_m),
+                     TRUE ~ B_dw_kg), 
+         tapes_swb_dw_kg = case_when(DW_type != 6 & dec_type_BWI == 1 ~ tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type != 6 & dec_type_BWI == 2~ tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
+                            TRUE ~ 0), 
+         tapes_stw_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 2 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 5 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 5 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 3 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 3 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 1 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 1 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
+                            TRUE ~ 0), 
+         tapes_stwb_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 2 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 5 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 5 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 3 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 3 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+                            DW_type == 1 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
+                            DW_type == 1 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+                            TRUE ~ 0))
 
 
 # ----- 2.4  Biomass regeneration -------------------------------------------
