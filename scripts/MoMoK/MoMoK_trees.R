@@ -925,12 +925,13 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                    TRUE ~ 'other'), 
           N_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'EI', 
-                           LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
+                          # LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
                            LH_NH == "LB" & bot_genus == "Acer"~ 'AH',
                            LH_NH == "LB" & bot_genus == "Fraxinus"~ 'ES',
                            LH_NH == "LB" & bot_genus == "Betula"~ 'BI',
                            LH_NH == "LB" & bot_genus == "Alnus"~ 'ERL',
-                           LH_NH == "LB" & bot_genus %in% c("Platanus", 
+                           LH_NH == "LB" & bot_genus %in% c("Fagus",
+                                                            "Platanus", 
                                                             "Tilia", 
                                                             "Juglans", 
                                                             "Corylus", 
@@ -1073,7 +1074,7 @@ trees_total <- left_join(trees_total %>%
                                                            LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                                            TRUE ~ 'other'))%>% 
     # 3. joing TapeS species codes via common SP_ID created above (SP_names_com_ID_tapeS)
-                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group, tpS_SP_com_name, tpS_ID), 
+                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group, N_SP_group, tpS_SP_com_name, tpS_ID), 
                          by = c("SP_code" = "Chr_ger_cap"))
   
 
@@ -1647,23 +1648,28 @@ trees_total_5 <- trees_total_5 %>%
          tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
          tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
          tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m), 
-         tapes_stwbB_kg = tapes_stbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%         # coarsewood with bark, 
+         tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
+         tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%               # stumbwood bark 
   # GHG-TapeS-stepwise
   mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
          swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg), # stump wood biomass
-         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg), # stum wood bark biomass
-         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg), # fine wood bionmass
+         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
+         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
+         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
          fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
-         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg), 
-         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>% 
-  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_stwbB_kg, tapes_stwB_kg))# %>%
-  # mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
-  #        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-  #        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-  #       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
-  # mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),                                # total aboveground biomass
+         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
+  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
+  mutate(C_aB_t = (aB_kg/1000)*0.5,
+         C_bB_t = (bB_kg/1000)*0.5,
+         N_f_kg = ifelse(LH_NH == "NB", N_f(fB_kg, N_SP_group), 0),
+         N_fw_kg = N_fw(fwB_kg, N_SP_group), 
+         N_sw_kg = N_sw(swB_kg, N_SP_group), 
+         N_swb_kg = N_swb(swbB_kg, N_SP_group), 
+         N_stw_kg = N_sw(stwB_kg, N_SP_group),
+         N_stwb_kg =  N_swb(stwbB_kg, N_SP_group)) %>% 
+  mutate(tot_N__t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
+         tot_C_t = C_aB_t + C_bB_t)
   
 
 
@@ -1799,11 +1805,11 @@ DW_total <- DW_total %>%
   # biomass compartiments for trees of deadwood type 1& 2 or 5 (whole tree lying / standing) or other deadwood types in a low state of decay
   # whereby we have to consider that tepeS is not precise for trees below 3m length, so that those are excluded from the Compartimentition as well
          # no fine wood compartment for deadwood types that don´t include whole trees
-  mutate(dw_tapes_brB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI == 1 | DW_type %in% c(1, 2, 5) & dec_type_BWI == 2, tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 0), # Nichtderbholz, finebranches
+  mutate(# dw_tapes_fwB_kg =  , # Nichtderbholz, finebranches
          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_DhB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI == 1 | DW_type %in% c(1, 2, 5) & dec_type_BWI == 2, tapes_swB(tpS_ID, D_cm, D_h_m, L_m), B_dw_kg), #coarsewood without bark, Derbholz
+        dw_tapes_DhB_kg = ifelse((DW_type %in% c(1, 2, 5) & dec_type_BWI == 1) | (DW_type %in% c(1, 2, 5) & dec_type_BWI == 2), tapes_swB(tpS_ID, D_cm, D_h_m, L_m), B_dw_kg))#, #coarsewood without bark, Derbholz
         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_DhbB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI == 1 | DW_type %in% c(1, 2, 5) & dec_type_BWI == 2, tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0))# %>%  #coarsewood without bark, Derbholz  
+        #dw_tapes_DhbB_kg = ifelse(DW_type %in% c(1, 2, 5) & dec_type_BWI == 1 | DW_type %in% c(1, 2, 5) & dec_type_BWI == 2, tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0))# %>%  #coarsewood without bark, Derbholz  
 # GHG-TapeS-stepwise
    # mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
    #        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
@@ -1819,6 +1825,10 @@ DW_total %>%
   filter(DW_type %in% c(2, 5) | DW_type == 3 & L_m > 1.3 & D_h_m  < L_m) %>% 
   mutate(tapes_sw = tapes_swB(tpS_ID, D_cm, D_h_cm, L_m))
 
+# o	ganze Bäume (Totholztypen 2, 5) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Nichtderbholz, Derbholz o.R., Derbholzrinde, Stock o.R., Stock
+# o	ganze Stämme/ starkes Totolz & Bruchstücke (Totholztypen 3, 1) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Derbholz o.R., Derbholzrinde, Stock o.R., Stock
+# o	Wurzelstock (Totholztyp 4) in Zersetzungstadien 1& 2 --> Komartimentierung mit TapeS in Stock o.R, Stockrinde
+# o	im Haufen vorkommendes Totholz (Totholztyp 6) in allen Zersetzungstadien & alle anderen Totholztypen in Zersetzungsstadien >= 3 --> keine Kompartimentierung
 
 
 
