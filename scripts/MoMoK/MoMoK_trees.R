@@ -34,11 +34,11 @@
 #  install.packages("rBDAT")
 #  install.packages("TapeR")
 # install.packages("pkgbuild")
-  library("devtools")
-  if (! require("remotes")) 
-    install.packages("remotes")
-  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
- install.packages("magrittr")
+ #  library("devtools")
+ #  if (! require("remotes")) 
+ #    install.packages("remotes")
+ #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+ # install.packages("magrittr")
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -1846,14 +1846,14 @@ DW_total <- DW_total %>%
 # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
 # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
 
-dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+dw_tapes_obj  <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
-  obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
+  #obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="sw", mono = TRUE, Rfn = NULL)))
+  return(tprTrees(spp, Dm, Hm, Ht, inv = 4))
 }
 
 
@@ -1899,7 +1899,7 @@ help(tprBiomass)
                  dplyr::pull(L_m))
   obj.tbio.test <- if(length(spp) == 0){0} else {tprTrees(spp, Dm, Hm, Ht, inv = 4)}
   
-
+  dw_tapes_obj(spp, Dm, Hm, Ht)
 
 # sw_dw_kg whole tree in decay < 3
 DW_total %>% 
@@ -1908,7 +1908,7 @@ DW_total %>%
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
   filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-  mutate(tapes_sw_dw_kg = dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m))
+  mutate(tapes_sw_dw_kg = tprBiomass(dw_tapes_obj(tpS_ID, D_cm, D_h_m, L_m),  component="sw", mono = TRUE, Rfn = NULL))
 # sw_dw_kg whole tree in decay > 3
 # for all deadwood categories with a decay state below 3 and for all elements of deadwood type 6 use the total biomass as stemm biomass
 DW_total %>% 
