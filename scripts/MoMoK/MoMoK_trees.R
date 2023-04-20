@@ -74,7 +74,7 @@ library("rBDAT")
 library("TapeR")
 if (! require("remotes")) 
   install.packages("remotes")
-library("remotes")s
+library("remotes")
 #devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 #remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 library("TapeS")
@@ -1746,7 +1746,7 @@ biotest <- trees_total_5 %>%
 
 # ----- 2.3  Biomass dead trees -------------------------------------------
 
-# ----- 2.3.1. species groups ---------------------------------------------
+# ----- 2.3.1. species groups, diameter mesuring height, units ---------------------------------------------
 # to assing the right species group, i wnat to use the dominant species of the plot: 
 
 # assigning dominant species of living trees to DW_total dataset by plot_ID
@@ -1843,7 +1843,7 @@ DW_total <- DW_total %>%
                                     TRUE ~ "not existing"),
         # stump wood bark for whole dead trees and logs in early stages of decay
         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-                                    TRUE ~ "not existing"))# %>% 
+                                    TRUE ~ "not existing")) # %>% 
   # metod biomass compartiments for trees of deadwood type 1& 2 
   # mutate(dw_tapes_fwB_kg =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
   #                                       TRUE ~ as.double(0)),
@@ -1878,7 +1878,7 @@ Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dp
 Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(D_h_m)))
 Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(L_m))
 dw.sw.obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-dw.sw.bio <- tprBiomass(dw.sw.obj[dw.sw.obj@monotone == TRUE], component = "sw")
+dw.sw.bio <- tprBiomass(dw.sw.obj, component = "sw")
 
 
 
