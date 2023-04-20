@@ -1968,10 +1968,10 @@ summary(RG_total)
 RG_total %>% 
   select(plot_ID, LH_NH, D_cm, Annig_aB_kg, GHG_aB_kg)%>% 
   tidyr::gather("method", "biomass", 4:5) %>% 
-  ggplot(., aes(D_cm, biomass))+
+  ggplot(., aes(D_cm, biomass, colour = method))+
   geom_point(aes(colour = method))+
-  geom_line(aes(colour = method))+
-  #geom_smooth(method = "lm", se=FALSE, color= method)#+
+ # geom_line(aes(colour = method))+
+  geom_smooth(method = "loess", se=TRUE)+
   facet_wrap(~LH_NH)
 
 
@@ -1981,6 +1981,11 @@ RG_total %>%
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
   facet_wrap(~LH_NH)
+
+
+
+
+
 
 
 # ----- 2.5. PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
