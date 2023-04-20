@@ -1872,6 +1872,15 @@ DW_total <- DW_total %>%
 
 
 
+# dw_sw_tapes
+spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(tpS_ID))
+Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(D_cm)))
+Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(D_h_m)))
+Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(L_m))
+dw.sw.obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+dw.sw.bio <- tprBiomass(dw.sw.obj[dw.sw.obj@monotone == TRUE], component = "sw")
+
+
 
 dw_tapes_obj  <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
@@ -1933,71 +1942,7 @@ help(tprBiomass)
   tprBiomass(obj.dwbio.sw[obj.dwbio.sw@monotone == TRUE], component = "sw")
   
  
-  DW_total %>% 
-    unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-    mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-           V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-           B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-    filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-    mutate(dw_sw = tprBiomass(dw_tapes_obj(tpS_ID, D_cm, D_h_m, L_m), component="sw", mono = TRUE, Rfn = NULL))
-    
-   #dw_tapes_obj(spp, Dm, Hm, Ht)
 
-# sw_dw_kg whole tree in decay < 3
-DW_total %>% 
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-  mutate(tapes_sw_dw_kg = tprBiomass(dw_tapes_obj(tpS_ID, D_cm, D_h_m, L_m),  component="sw", mono = TRUE, Rfn = NULL))
-# sw_dw_kg whole tree in decay > 3
-# for all deadwood categories with a decay state below 3 and for all elements of deadwood type 6 use the total biomass as stemm biomass
-DW_total %>% 
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  filter((DW_type != 6 & dec_type_BWI >= 3) | DW_type == 6 ) %>% 
-  mutate(tapes_sw_dw_kg = B_dw_kg)
-
-
-
-
-DW_total %>% 
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  mutate(tapes_fw_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
-                     DW_type == 2 & dec_type_BWI == 2~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m),
-                     DW_type == 5 & dec_type_BWI == 1 ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
-                     DW_type == 5 & dec_type_BWI == 2~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m),
-                     TRUE ~ 0), 
-         tapes_sw_dw_kg = case_when(DW_type != 6 & dec_type_BWI == 1 ~ tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
-                     DW_type != 6 & dec_type_BWI == 2~ tapes_swB(tpS_ID, D_cm, D_h_cm, L_m),
-                     TRUE ~ B_dw_kg), 
-         tapes_swb_dw_kg = case_when(DW_type != 6 & dec_type_BWI == 1 ~ tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type != 6 & dec_type_BWI == 2~ tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
-                            TRUE ~ 0), 
-         tapes_stw_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 2 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 5 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 5 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 3 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 3 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 1 & dec_type_BWI == 1 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 1 & dec_type_BWI == 2~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m),
-                            TRUE ~ 0), 
-         tapes_stwb_dw_kg = case_when(DW_type == 2 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 2 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 5 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 5 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 3 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 3 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-                            DW_type == 1 & dec_type_BWI == 1 ~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 
-                            DW_type == 1 & dec_type_BWI == 2~ tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-                            TRUE ~ 0))
 
 
 # ----- 2.4  Biomass regeneration -------------------------------------------
