@@ -1806,7 +1806,23 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
 # 4	Unbekannt
 
 
-# ----- 2.3.2. Deadwood volume, biomass, carbon ---------------------------------------------
+# ----- 2.3.2. Deadwood volume, biomass, carbon, nitrogen ---------------------------------------------
+#Notes Nitrogen compartiments
+     # to calcualte the nitrogen stock per compartiment the total biomass has to be divided into 
+     # compartimetns according to the deadwood type & the state of decay to assign the correct nitrogen content
+        # o	ganze Bäume (Totholztypen 2, 5) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Nichtderbholz, Derbholz o.R., Derbholzrinde, Stock o.R., Stock
+        # o	ganze Stämme/ starkes Totolz & Bruchstücke (Totholztypen 3, 1) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Derbholz o.R., Derbholzrinde, Stock o.R., Stock
+        # o	Wurzelstock (Totholztyp 4) in Zersetzungstadien 1& 2 --> Komartimentierung mit TapeS in Stock o.R, Stockrinde 
+        # L--> this won´t work becaus it will only calcaulte a small percentage of the total mass so I have to treat it like a log
+        # o	im Haufen vorkommendes Totholz (Totholztyp 6) in allen Zersetzungstadien & alle anderen Totholztypen in Zersetzungsstadien >= 3 --> keine Kompartimentierung
+
+        # nihtderbholz: Totholztyp 2, 5, & Zersetzung 1, 2 , tapes_fwB(), 0
+        # derbholz o.R.: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
+        # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
+        # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
+
+
+
 DW_total <- DW_total %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
@@ -1827,24 +1843,22 @@ DW_total <- DW_total %>%
                                     TRUE ~ "not existing"),
         # stump wood bark for whole dead trees and logs in early stages of decay
         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-                                    TRUE ~ "not existing")) %>% 
+                                    TRUE ~ "not existing"))# %>% 
   # metod biomass compartiments for trees of deadwood type 1& 2 
-  mutate(dw_tapes_fwB_kg =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
-                                        TRUE ~ "not_existing"),
-         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-         dw_tapes_sw_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
-                                      TRUE ~ "B_dw_kg"),
-         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-         dw_tapes_swb_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
-                                       TRUE ~ "not existing"), 
-         # stump wood biomass for whole dead trees and logs in ealry stages of decay
-         dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
-                                       TRUE ~ "not existing"),
-         # stump wood bark for whole dead trees and logs in early stages of decay
-         dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-                                       TRUE ~ "not existing"))
-  
-        
+  # mutate(dw_tapes_fwB_kg =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
+  #                                       TRUE ~ as.double(0)),
+  #        # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
+  #        dw_tapes_sw_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
+  #                                     TRUE ~ "B_dw_kg"),
+  #        # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+  #        dw_tapes_swb_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
+  #                                      TRUE ~ "not existing"), 
+  #        # stump wood biomass for whole dead trees and logs in ealry stages of decay
+  #        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
+  #                                      TRUE ~ "not existing"),
+  #        # stump wood bark for whole dead trees and logs in early stages of decay
+  #        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
+   #                                    TRUE ~ "not existing")) #%>% 
 # GHG-TapeS-stepwise
    # mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
    #        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
@@ -1858,16 +1872,6 @@ DW_total <- DW_total %>%
 
 
 
-# o	ganze Bäume (Totholztypen 2, 5) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Nichtderbholz, Derbholz o.R., Derbholzrinde, Stock o.R., Stock
-# o	ganze Stämme/ starkes Totolz & Bruchstücke (Totholztypen 3, 1) in Zersetzungstadien 1 & 2 --> Kompartimentierung mit TapeS in Derbholz o.R., Derbholzrinde, Stock o.R., Stock
-# o	Wurzelstock (Totholztyp 4) in Zersetzungstadien 1& 2 --> Komartimentierung mit TapeS in Stock o.R, Stockrinde 
-# L--> this won´t work becaus it will only calcaulte a small percentage of the total mass so I have to treat it like a log
-# o	im Haufen vorkommendes Totholz (Totholztyp 6) in allen Zersetzungstadien & alle anderen Totholztypen in Zersetzungsstadien >= 3 --> keine Kompartimentierung
-
-# nihtderbholz: Totholztyp 2, 5, & Zersetzung 1, 2 , tapes_fwB(), 0
-# derbholz o.R.: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
-# derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
-# stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
 
 dw_tapes_obj  <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
