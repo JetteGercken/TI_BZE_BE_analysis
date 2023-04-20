@@ -1897,9 +1897,19 @@ help(tprBiomass)
                         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
                  filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
                  dplyr::pull(L_m))
-  obj.tbio.test <- if(length(spp) == 0){0} else {tprTrees(spp, Dm, Hm, Ht, inv = 4)}
-  
+  #obj.tbio.test <- if(length(spp) == 0){0} else {tprTrees(spp, Dm, Hm, Ht, inv = 4)}
   dw_tapes_obj(spp, Dm, Hm, Ht)
+  
+ 
+  DW_total %>% 
+    unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+    mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+           V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+           B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+    filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
+    mutate(dw_sw = tprBiomass(dw_tapes_obj(tpS_ID, D_cm, D_h_m, L_m), component="sw", mono = TRUE, Rfn = NULL))
+    
+   #dw_tapes_obj(spp, Dm, Hm, Ht)
 
 # sw_dw_kg whole tree in decay < 3
 DW_total %>% 
