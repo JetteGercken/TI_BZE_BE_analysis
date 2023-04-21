@@ -1873,12 +1873,12 @@ DW_total <- DW_total %>%
 
 
 # dw_sw_tapes
-spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(tpS_ID))
-Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(D_cm)))
-Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(D_h_m)))
-Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB") %>% dplyr::pull(L_m))
+spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(tpS_ID))
+Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_cm)))
+Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_h_m)))
+Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(L_m))
 dw.sw.obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-dw.sw.bio <- tprBiomass(dw.sw.obj, component = "sw")
+dw.sw.bio <- tprBiomass(dw.sw.obj[dw.sw.obj@monotone == TRUE], component = "sw")
 
 
 
