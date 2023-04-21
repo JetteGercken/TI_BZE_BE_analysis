@@ -1859,7 +1859,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
 # 4	Unbekannt
 
 
-# ----- 2.3.2. Deadwood volume, biomass, carbon, nitrogen ---------------------------------------------
+# ----- 2.3.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
 #Notes Nitrogen compartiments
      # to calcualte the nitrogen stock per compartiment the total biomass has to be divided into 
      # compartimetns according to the deadwood type & the state of decay to assign the correct nitrogen content
@@ -1873,7 +1873,6 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
         # derbholz o.R.: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
         # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
         # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB()  
-
 
 
 DW_total <- DW_total %>% 
@@ -1898,17 +1897,16 @@ DW_total <- DW_total %>%
          dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
                                         TRUE ~ "not existing"))
 
+# ----- 2.3.3. Deadwood compartiment  -------------------------------------------------
 
 DW_total <- DW_total %>% 
     mutate(dw_tapes_swB_kg = as.vector(ifelse(dw_tapes_sw_meth == "tapes_swB" & L_m > 3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
-         dw_tapes_swbB_kg = as.vector(ifelse(DW_total$dw_tapes_swb_meth == "tapes_swbB" & DW_total$L_m > 3, dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
-         dw_tapes_stwB_kg = as.vector(ifelse(DW_total$dw_tapes_stw_meth == "tapes_stwB" & DW_total$L_m > 3, dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)),
-         dw_tapes_stwbB_kg = as.vector(ifelse(DW_total$dw_tapes_stwb_meth == "tapes_stwbB" & DW_total$L_m > 3, dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
-         dw_tapes_fwB_kg = as.vector(ifelse(DW_total$dw_tapes_fwB_meth == "tapes_dw_fw" & DW_total$L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0)))
-
-
+         dw_tapes_swbB_kg = as.vector(ifelse(dw_tapes_swb_meth == "tapes_swbB" & L_m > 3, dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         dw_tapes_stwB_kg = as.vector(ifelse(dw_tapes_stw_meth == "tapes_stwB" & L_m > 3, dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         dw_tapes_stwbB_kg = as.vector(ifelse(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3, dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+         dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0))) %>% 
 # GHG-TapeS-stepwise
-# mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
+  mutate(dw_swB_kg = ifelse(dw_tapes_sw_meth == "tapes_swB" & L_m > 3, (B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg)), B_dw_kg)) # if the decay state is higher then 1,2 use the total biomass for stem biomass 
 #        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
 #        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
 # select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
