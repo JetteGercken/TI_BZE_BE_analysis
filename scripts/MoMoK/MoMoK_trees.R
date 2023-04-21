@@ -632,16 +632,69 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 
 # ----- 1.3.4.4. Deadwood compartiments -----------------------------------
-
+# ----- 1.3.4.4.1. solid wood tapeS --------------------------------------------
+# dw_sw_tapes
 dw_tapes_swB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(spec_tpS);
-  Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(dh));
-  Ht = na.omit(h);
-  obj.tbio <- ifelse(length(spp)==0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
-# most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="sw"))) # solid wwood without bark
+  spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_h_m)));
+  Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(L_m));
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(if (length(obj.tbio) != 0) {sw.df$sw})
 }
+
+# ----- 1.3.4.4.2. solid wood bark tapeS ---------------------------------------
+dw_tapes_swbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(DW_total %>% filter(dw_tapes_swb_meth == "tapes_swbB" & L_m > 3) %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_swb_meth == "tapes_swbB" & L_m > 3) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_swb_meth == "tapes_swbB" & L_m > 3) %>% dplyr::pull(D_h_m)));
+  Ht = na.omit(DW_total %>% filter(dw_tapes_swb_meth == "tapes_swbB" & L_m > 3) %>% dplyr::pull(L_m));
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  swb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sb"))}
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(if (length(obj.tbio) != 0) {swb.df$sb})
+}
+
+# ----- 1.3.4.4.3. stump wood tapeS --------------------------------------------
+dw_tapes_stwB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(DW_total %>% filter(dw_tapes_stw_meth == "tapes_stwB" & L_m > 3) %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_stw_meth == "tapes_stwB" & L_m > 3) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_stw_meth == "tapes_stwB" & L_m > 3) %>% dplyr::pull(D_h_m)));
+  Ht = na.omit(DW_total %>% filter(dw_tapes_stw_meth == "tapes_stwB" & L_m > 3) %>% dplyr::pull(L_m));
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  stw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stw"))}
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(if (length(obj.tbio) != 0) {stw.df$stw})
+}
+
+# ----- 1.3.4.4.4. stump wood bark tapeS ---------------------------------------
+dw_tapes_stwbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(DW_total %>% filter(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3) %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3) %>% dplyr::pull(D_h_m)));
+  Ht = na.omit(DW_total %>% filter(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3) %>% dplyr::pull(L_m));
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  stwb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stb"))}
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(if (length(obj.tbio) != 0) {stwb.df$stb})
+}
+
+# ----- 1.3.4.4.4. fine wood incl. bark tapeS ----------------------------------
+# dw_fwb_tapes
+dw_tapes_fwB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(DW_total %>% filter(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3) %>% dplyr::pull(tpS_ID));
+  Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3) %>% dplyr::pull(D_h_m)));
+  Ht =  na.omit(DW_total %>% filter(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3) %>% dplyr::pull(L_m));
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  fw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "fwb"))}
+  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+  return(if (length(obj.tbio) != 0) {fw.df$fwb})
+}
+help("tprBiomass")
+
 
 # ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
 # ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
@@ -1829,119 +1882,42 @@ DW_total <- DW_total %>%
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
   # calulation method biomass compartiments for trees of deadwood type 1& 2 
-         # no fine wood compartment for deadwood types that don´t include whole trees
-  mutate(dw_tapes_fwB_meth =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
-                                      TRUE ~ "not_existing"),
+  # no fine wood compartment for deadwood types that don´t include whole trees
+  mutate(dw_tapes_fwB_meth =  case_when((DW_type == 2 & dec_type_BWI < 3)| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
+                                        TRUE ~ "not_existing"),
          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_sw_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
-                                   TRUE ~ "B_dw_kg"),
-        # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-        dw_tapes_swb_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
-                                   TRUE ~ "not existing"), 
-        # stump wood biomass for whole dead trees and logs in ealry stages of decay
-        dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
-                                    TRUE ~ "not existing"),
-        # stump wood bark for whole dead trees and logs in early stages of decay
-        dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-                                    TRUE ~ "not existing")) # %>% 
-  # metod biomass compartiments for trees of deadwood type 1& 2 
-  # mutate(dw_tapes_fwB_kg =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ tapes_brB(tpS_ID, D_cm, D_h_m, L_m), 
-  #                                       TRUE ~ as.double(0)),
-  #        # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-  #        dw_tapes_sw_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
-  #                                     TRUE ~ "B_dw_kg"),
-  #        # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-  #        dw_tapes_swb_kg = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
-  #                                      TRUE ~ "not existing"), 
-  #        # stump wood biomass for whole dead trees and logs in ealry stages of decay
-  #        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
-  #                                      TRUE ~ "not existing"),
-  #        # stump wood bark for whole dead trees and logs in early stages of decay
-  #        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-   #                                    TRUE ~ "not existing")) #%>% 
+         dw_tapes_sw_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
+                                      TRUE ~ "B_dw_kg"),
+         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+         dw_tapes_swb_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
+                                       TRUE ~ "not existing"), 
+         # stump wood biomass for whole dead trees and logs in ealry stages of decay
+         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
+                                       TRUE ~ "not existing"),
+         # stump wood bark for whole dead trees and logs in early stages of decay
+         dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
+                                        TRUE ~ "not existing"))
+
+
+DW_total <- DW_total %>% 
+    mutate(dw_tapes_swB_kg = as.vector(ifelse(dw_tapes_sw_meth == "tapes_swB" & L_m > 3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+         dw_tapes_swbB_kg = as.vector(ifelse(DW_total$dw_tapes_swb_meth == "tapes_swbB" & DW_total$L_m > 3, dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         dw_tapes_stwB_kg = as.vector(ifelse(DW_total$dw_tapes_stw_meth == "tapes_stwB" & DW_total$L_m > 3, dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         dw_tapes_stwbB_kg = as.vector(ifelse(DW_total$dw_tapes_stwb_meth == "tapes_stwbB" & DW_total$L_m > 3, dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+         dw_tapes_fwB_kg = as.vector(ifelse(DW_total$dw_tapes_fwB_meth == "tapes_dw_fw" & DW_total$L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0)))
+
+
 # GHG-TapeS-stepwise
-   # mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
-   #        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
-   #        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
-   # select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
-   # mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
-   #        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-   #        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-   #       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
-   # mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+# mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
+#        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
+#        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
+# select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
+# mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+#        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+#        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+#       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
+# mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
 
-
-
-# dw_sw_tapes
-spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(tpS_ID))
-Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_cm)))
-Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(D_h_m)))
-Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & L_m > 3) %>% dplyr::pull(L_m))
-dw.sw.obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-dw.sw.bio <- tprBiomass(dw.sw.obj[dw.sw.obj@monotone == TRUE], component = "sw")
-
-
-
-dw_tapes_obj  <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(spec_tpS);
-  Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(dh));
-  Ht = na.omit(h);
-  #obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(tprTrees(spp, Dm, Hm, Ht, inv = 4))
-}
-
-
-dw_tapes_fwB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(spec_tpS);
-  Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(dh));
-  Ht = na.omit(h);
-  obj.tbio <- ifelse(length(spp) == 0, 0, tprTrees(spp, Dm, Hm, Ht, inv = 4));
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(ifelse(obj.tbio == 0, 0, tprBiomass(obj.tbio, component="fwb", mono = TRUE, Rfn = NULL)))
-}
-
-help(tprBiomass)
-
-
-
-
-
-# dw sw whole trees or stems with low degree of decay 
-  spp = na.omit(DW_total %>% 
-                  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-                  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-                         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-                         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-                  filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-                  dplyr::pull(tpS_ID))
-  Dm = na.omit(as.list(DW_total %>% 
-                         unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-                         mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-                                V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-                                B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-                         filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-                         dplyr::pull(D_cm)))
-  Hm = na.omit(as.list(DW_total %>% 
-                         unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-                         mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-                                V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-                                B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-                         filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-                         dplyr::pull(D_h_m)))
-  Ht = na.omit(DW_total %>% 
-                 unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-                 mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-                        V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-                        B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-                 filter(DW_type != 6 & dec_type_BWI < 3 ) %>% 
-                 dplyr::pull(L_m))
-  obj.dwbio.sw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-  tprBiomass(obj.dwbio.sw[obj.dwbio.sw@monotone == TRUE], component = "sw")
-  
- 
 
 
 
@@ -3730,7 +3706,95 @@ help("tprBiomass")
 # BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 
 
-# ----- N.4 workdays ------------------------------------------------------
+
+
+# N.4. Deadwood -----------------------------------------------------------
+
+DW_total <- DW_total %>% 
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  # calulation method biomass compartiments for trees of deadwood type 1& 2 
+  # no fine wood compartment for deadwood types that don´t include whole trees
+  mutate(dw_tapes_fwB_meth =  case_when((DW_type == 2 & dec_type_BWI < 3 )| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
+                                        TRUE ~ "not_existing"),
+         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
+         dw_tapes_sw_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
+                                      TRUE ~ "B_dw_kg"),
+         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+         dw_tapes_swb_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
+                                       TRUE ~ "not existing"), 
+         # stump wood biomass for whole dead trees and logs in ealry stages of decay
+         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
+                                       TRUE ~ "not existing"),
+         # stump wood bark for whole dead trees and logs in early stages of decay
+         dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
+                                        TRUE ~ "not existing")) #%>% 
+# metod biomass compartiments for trees of deadwood type 1& 2 
+# mutate(dw_tapes_fwB_kg =  case_when(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3 ~ dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                     TRUE ~ 0),
+#      # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
+#      dw_tapes_sw_kg = case_when(DW_type != 6 & dec_type_BWI < 3 & L_m > 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                   TRUE ~ B_dw_kg)),
+#      # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+#      dw_tapes_swb_kg = case_when(DW_type != 6 & dec_type_BWI < 3 & L_m > 3 ~ tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                      TRUE ~ as.double(0)), 
+#        # stump wood biomass for whole dead trees and logs in ealry stages of decay
+#        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3  & L_m > 3 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                      TRUE ~ as.double(0)),
+#        # stump wood bark for whole dead trees and logs in early stages of decay
+#        dw_tapes_stw_kg = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3  & L_m > 3 ~ tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                    TRUE ~ as.double(0))) #%>% 
+# GHG-TapeS-stepwise
+# mutate(dw_swB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_tapes_brB_kg+ dw_tapes_DhbB_kg)), B_dw_kg), # if the decay state is higher then 1,2 use the total biomass for stem biomass 
+#        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
+#        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
+# select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
+# mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+#        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+#        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+#       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
+# mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+
+
+# addding compartiments
+# DW_total <- cbind(
+#   # this is the dataset calculating the volume and biomass of deadwood and assigns compartimenition method according to decay state and deadwood type
+#   (DW_total <- DW_total %>% 
+#                     unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+#                     mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+#                            V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+#                            B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+#                 # calulation method biomass compartiments for trees of deadwood type 1& 2 
+#                     # no fine wood compartment for deadwood types that don´t include whole trees
+#                     mutate(dw_tapes_fwB_meth =  case_when((DW_type == 2 & dec_type_BWI < 3)| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
+#                                                           TRUE ~ "not_existing"),
+#                            # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
+#                            dw_tapes_sw_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
+#                                                         TRUE ~ "B_dw_kg"),
+#                            # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+#                            dw_tapes_swb_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
+#                                                          TRUE ~ "not existing"), 
+#                            # stump wood biomass for whole dead trees and logs in ealry stages of decay
+#                            dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
+#                                                          TRUE ~ "not existing"),
+#                            # stump wood bark for whole dead trees and logs in early stages of decay
+#                            dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
+#                                                           TRUE ~ "not existing"))),
+#                   as_tibble(ifelse(DW_total$dw_tapes_sw_meth == "tapes_swB" & DW_total$L_m > 3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+#                   as_tibble(ifelse(DW_total$dw_tapes_swb_meth == "tapes_swbB" & DW_total$L_m > 3, dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+#                   as_tibble(ifelse(DW_total$dw_tapes_stw_meth == "tapes_stwB" & DW_total$L_m > 3, dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+#                   as_tibble(ifelse(DW_total$dw_tapes_stwb_meth == "tapes_stwbB" & DW_total$L_m > 3, dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+#                   as_tibble(ifelse(DW_total$dw_tapes_fwB_meth == "tapes_dw_fw" & DW_total$L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0))) 
+# 
+# colnames(DW_total) <- c("plot_ID","loc_name", "state", "date", "CCS_nr", "t_ID", "SP_dec_type", "SP_group", "DW_type", "L_dm", "D_cm", "dec_type", "dom_SP",
+#                         "tpS_SP_com_name", "tpS_ID", "LH_NH", "N_SP_group", "L_m", "D_m", "D_h_cm", "D_h_m", "dec_type_BWI",  "V_dw_meth", "V_dw_m3", "B_dw_kg", "dw_tapes_fwB_meth", "dw_tapes_sw_meth", 
+#                         "dw_tapes_swb_meth", "dw_tapes_stw_meth", "dw_tapes_stwb_meth", "dw_tapes_swB_kg", "dw_tapes_swbB_kg", "dw_tapes_stwB_kg", "dw_tapes_stwbB_kg", "dw_tapes_fwB_kg")  
+
+
+
+# ----- N.5 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
 tot_wd = 229
 ho_wd = tot_wd*0.5
