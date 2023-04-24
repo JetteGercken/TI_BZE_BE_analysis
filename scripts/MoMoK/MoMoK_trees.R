@@ -1906,15 +1906,35 @@ DW_total <- DW_total %>%
          dw_tapes_stwbB_kg = as.vector(ifelse(dw_tapes_stwb_meth == "tapes_stwbB" & L_m > 3, dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
          dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0))) %>% 
 # GHG-TapeS-stepwise
-  mutate(dw_swB_kg = ifelse(dw_tapes_sw_meth == "tapes_swB" & L_m > 3, (B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg)), B_dw_kg)) # if the decay state is higher then 1,2 use the total biomass for stem biomass 
-#        dw_swbB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_tapes_brB_kg)), 0), # solid wood bark 
-#        dw_fwB_kg = ifelse(DW_type %in% c(1, 2, 5) & L_m > 1.3 & dec_type %in% c(1,2), (B_dw_kg - (dw_swB_kg + dw_swbB_kg)),0)) %>% # fine wood bionmass
-# select(-c(dw_tapes_brB_kg, dw_tapes_DhB_kg, dw_tapes_DhbB_kg)) %>%
-# mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
-#        N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-#        N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-#       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group)) %>% 
-# mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg)
+  # solid wood bark  for dead trees of all types except 6
+  mutate(dw_swB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                               (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
+                               DW_type == 3 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_tapes_swbB_kg, 
+                               TRUE ~ B_dw_kg), 
+         # solid wood bark  for dead trees of all types except 6
+         dw_swbB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                               (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
+                               DW_type == 3 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_swB_kg, 
+                               TRUE ~ 0), 
+         # stump wood only for dead trees of types 1, 2, 3, 5
+         dw_stwB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                                (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg), 
+                                 TRUE ~ 0), 
+         # stump wood bark only for dead trees of types 1, 2, 3, 5
+          dw_stwbB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_tapes_fwB_kg),
+                                (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg), 
+                                TRUE ~ 0), 
+         # fiene wood only for deadwood types 2 & 5 
+         dw_fwB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_stwbB_kg),
+                               TRUE ~ 0) ) %>% 
+  select(-c(dw_tapes_swB_kg, dw_tapes_swbB_kg, dw_tapes_stwB_kg, dw_tapes_stwbB_kg, dw_tapes_fwB_kg)) %>%
+ mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+       N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+       N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
+       N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
+       N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
+ mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
 
 
 
