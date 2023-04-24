@@ -1935,21 +1935,21 @@ DW_total <- DW_total %>%
          dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0))) %>% 
 # GHG-TapeS-stepwise
   # solid wood bark  for dead trees of all types except 6
-  mutate(dw_swB_kg = case_when((DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m > 3) | (DW_type %in% c(2, 5) & dec_type_BWI == 2 & L_m > 3) ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+  mutate(dw_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI <3 & L_m > 3  ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
                                DW_type == 1  & dec_type_BWI < 3 ~ 0, 
                                TRUE ~ B_dw_kg), 
          # solid wood bark  for dead trees of all types except 6
-         dw_swbB_kg = case_when((DW_type %in% c(2, 5) & dec_type == 1 & L_m > 3) | (DW_type %in% c(2, 5) & dec_type_BWI == 2 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+         dw_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                 DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
                                 TRUE ~ 0), 
          # stump wood only for dead trees of types 1, 2, 3, 5
-         dw_stwB_kg = case_when((DW_type %in% c(2, 5) & dec_type == 1 & L_m > 3) | (DW_type %in% c(2, 5) & dec_type_BWI == 2 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+         dw_stwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                 DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg), 
                                 DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_tapes_stwbB_kg,
                                 TRUE ~ 0), 
          # stump wood bark only for dead trees of types 1, 2, 3, 5
-          dw_stwbB_kg = case_when((DW_type %in% c(2, 5) & dec_type == 1  & L_m > 3) | (DW_type %in% c(2, 5) & dec_type_BWI == 2 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_tapes_fwB_kg),
+          dw_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_tapes_fwB_kg),
                                   DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg), 
                                   DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_stwB_kg, 
                                   TRUE ~ 0), 
