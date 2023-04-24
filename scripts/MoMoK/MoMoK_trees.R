@@ -839,7 +839,7 @@ summary(RG_total)
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
 labs <- c(seq(5, 55, by = 5)) 
 
-# ----- 1.4.2. adding species names -----------------------------------------
+# ----- 1.4.2. creating universal species dataset -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
     # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
     # it became evident that neither the areviations of the common species names, nor the species numbers correspond
@@ -853,11 +853,7 @@ labs <- c(seq(5, 55, by = 5))
     # the most correspondent variable/ column between TapeS and SP_names, and by that trees_total, which can access & join all SP_names columns 
     # but no or few tapeS_SP columns is the "BWI" column of SP_names and the "kurz" column of TapeS_SP when transformed into capital letters. 
 
-# there was a mistake in the species codes as there was a confusion between the 
-# german trivial names of schwarzerle (alnus glutinosa) and roterle (alnus rubra) which 
-# whereby the first is sometimes also called roterle cause of the woods colour, however, 
-# the distribution of alnus rubra extents mainly to north america so we can assume that those trees labbeled
-# RER are actually supposed to be labelled SER
+
 
 
 # creating a dataset with the species names from x-bart and the accordint TapeS codes 
@@ -920,6 +916,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                  bot_genus == "Pseudotsuga" ~ 'dgl',
                                  LH_NH == "NB" & bot_genus == "Larix" ~ 'lae', 
                                  TRUE ~ 'fi'),
+  # BWI species groups according to Methodikband zur 3. Waldinventur 2012
           BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
                                    LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
                                    LH_NH == "LB" & bot_genus %in% c("Acer", 
@@ -953,6 +950,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                    LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
                                    TRUE ~ 'other'), 
+          # Biomass species groups to assgn the correct coefficients for the biomass functions of GHGI
           Bio_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei',
                                    # https://www.statology.org/not-in-r/
                                    LH_NH == "LB" & bot_genus %in% c("Fagus",     # all species that are labelled "aLh" in the BWI are treated as  beech 
@@ -1030,6 +1028,12 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
 
+# ----- 1.4.3. LIVING TREES: adding speices info -----------------------------------------
+# there was a mistake in the species codes as there was a confusion between the 
+# german trivial names of schwarzerle (alnus glutinosa) and roterle (alnus rubra) which 
+# whereby the first is sometimes also called roterle cause of the woods colour, however, 
+# the distribution of alnus rubra extents mainly to north america so we can assume that those trees labbeled
+# RER are actually supposed to be labelled SER
 
 trees_total <- left_join(trees_total %>% 
                            #mutate(SP_code = ifelse(SP_code == "RER", "SER", SP_code)) %>% 
@@ -1237,9 +1241,29 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
-# ----- 1.4.2.1. species names & groups regeneration ----------------------
-RG_total <- RG_total %>% 
+# ----- 1.4.2.1. REGENERATION: species names & groups, missing data ----------------------
+# some species were wrongly assigned or assessed and have to be renamed: 
+  # EB, EBS, SHO, SHA, FLB, KD, MKI
+  # EB & EBS == Eberesche == Vogelbeere == Vbe
+  # SHO == Schwarzer Holunder == Sonstiges Laubholz == sLb
+  # SHA == Strauch Hasel == Haselnuss Strauch HaN
+  # FLB == Faulbaum == Rhamnus frangere is alocated to Rahmnus alaternus SWD
+  # KD == 
+  # MKI == BKI 
+
+RG_total <- RG_total %>%
+  # transforming german species codes into capital characters to harmonise them with SP_names datase
   mutate(SP_code = toupper(SP_code)) %>% 
+  # adding & chaging missing/ wrongly assessed species names
+  mutate(SP_code = case_when(SP_code == "EB" | SP_code == "EBS" ~ "VBE", 
+                              SP_code == "SHO" ~ "SLB", 
+                              SP_code == "SHA" ~ "HAN", 
+                              SP_code == "FLB" ~ "SWD", 
+                              SP_code == "KD" ~ "SLB", 
+                              SP_code == "RER" ~ "SER", 
+                              SP_code == "MKI" ~ "BKI", 
+                              TRUE ~ SP_code)) %>% 
+  # 1. joining in general species dataset with botanical names, TapeS species groups, etc. 
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(Chr_ger_cap = toupper(Chr_code_ger), 
                      BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
@@ -1311,6 +1335,7 @@ RG_total <- RG_total %>%
                                               TRUE ~ 'other')) %>% 
               dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, tpS_ID), 
             by = c("SP_code" = "Chr_ger_cap"))  %>%
+  # creating Species groups to assign the corect coefficients of the Annighöfer biomass functions based on BWI species groups
   mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  'WTA', 
                                     bot_genus == "Acer"  ~  'BAH', 
                                     bot_genus == "Betula" ~ 'SBI', 
@@ -1897,7 +1922,7 @@ DW_total <- DW_total %>%
          dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
                                         TRUE ~ "not existing"))
 
-# ----- 2.3.3. Deadwood compartiment  -------------------------------------------------
+# ----- 2.3.3. Deadwood compartiments, Nitrogen  -------------------------------------------------
 
 DW_total <- DW_total %>% 
     mutate(dw_tapes_swB_kg = as.vector(ifelse(dw_tapes_sw_meth == "tapes_swB" & L_m > 3, dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
@@ -1909,12 +1934,12 @@ DW_total <- DW_total %>%
   # solid wood bark  for dead trees of all types except 6
   mutate(dw_swB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
-                               DW_type == 3 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_tapes_swbB_kg, 
+                               DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_tapes_swbB_kg, 
                                TRUE ~ B_dw_kg), 
          # solid wood bark  for dead trees of all types except 6
          dw_swbB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                (DW_type == 3 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 1 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
-                               DW_type == 3 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_swB_kg, 
+                               DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - dw_swB_kg, 
                                TRUE ~ 0), 
          # stump wood only for dead trees of types 1, 2, 3, 5
          dw_stwB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
@@ -1936,8 +1961,8 @@ DW_total <- DW_total %>%
        N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
  mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
 
-
-
+summary(DW_total)
+DW_total %>% filter(dw_swB_kg < 0)
 
 # ----- 2.4  Biomass regeneration -------------------------------------------
 RG_total <- RG_total %>% 
@@ -1952,7 +1977,15 @@ RG_total <- RG_total %>%
   mutate(Annig_RCD_mm = ifelse(H_cm >= 130, annighoefer_RCD(D_cm, LH_NH, "130"), NA)) %>% # 130 = height at which the diameter was measured [cm]
   # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
    mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
-          GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)))
+  # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
+          RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)), 
+          RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0)) %>% 
+  # belated compartitioning via Poorter
+  mutate(Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
+         Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)) %>%       # root to shoot ratio
+  # Nitrogen content
+ mutate(N_fw)
+
 
 
 
