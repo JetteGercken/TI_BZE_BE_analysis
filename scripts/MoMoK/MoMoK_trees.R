@@ -1907,20 +1907,23 @@ DW_total <- DW_total %>%
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
   # calulation method biomass compartiments for trees of deadwood type 1& 2 
   # no fine wood compartment for deadwood types that don´t include whole trees
-  mutate(dw_tapes_fwB_meth =  case_when((DW_type == 2 & dec_type_BWI < 3)| (DW_type == 5 & dec_type_BWI < 3) ~ "tapes_dw_fw", 
-                                        TRUE ~ "not_existing"),
-         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles
-         dw_tapes_sw_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swB", 
+  mutate(dw_tapes_fwB_meth =  case_when((DW_type %in% c(2, 5) & dec_type == 1) | (DW_type %in% c(2, 5) & dec_type == 2) ~ "tapes_dw_fw", 
+                                        DW_type == 1 ~ "B_dw_kg", 
+                                        TRUE ~ "not excisting" ),
+         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles, stumps and "starkes Totholz" Bruchstücke ohne Wurzel
+         dw_tapes_sw_meth = case_when((DW_type %in% c(2, 5, 3) & dec_type == 1) | (DW_type %in% c(2, 5, 3) & dec_type == 2) ~ "tapes_swB", 
+                                      DW_type == 1 ~ "not excisting", 
                                       TRUE ~ "B_dw_kg"),
          # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-         dw_tapes_swb_meth = case_when(DW_type != 6 & dec_type_BWI < 3 ~ "tapes_swbB", 
-                                       TRUE ~ "not existing"), 
+         dw_tapes_swb_meth = case_when((DW_type %in% c(2, 5, 3) & dec_type == 1) | (DW_type %in% c(2, 5, 3) & dec_type == 2) ~ "tapes_swB", 
+                                       DW_type == 1 ~ "not excisting", 
+                                       TRUE ~ "B_dw_kg"), 
          # stump wood biomass for whole dead trees and logs in ealry stages of decay
-         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwB", 
-                                       TRUE ~ "not existing"),
+         dw_tapes_stw_meth = case_when((!(DW_type %in% c(1, 6) & dec_type == 1)) | (!(DW_type %in% c(1, 6) & dec_type == 2)) ~ "tapes_stwB",
+                                       TRUE ~ "not excisting"),
          # stump wood bark for whole dead trees and logs in early stages of decay
-         dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 3, 1) & dec_type_BWI < 3 ~ "tapes_stwbB", 
-                                        TRUE ~ "not existing"))
+         dw_tapes_stwb_meth = case_when((!(DW_type %in% c(1, 6) & dec_type == 1)) | (!(DW_type %in% c(1, 6) & dec_type == 2)) ~ "tapes_stwB",
+                                        TRUE ~ "not excisting"))
 
 # ----- 2.3.3. Deadwood compartiments, Nitrogen  -------------------------------------------------
 
