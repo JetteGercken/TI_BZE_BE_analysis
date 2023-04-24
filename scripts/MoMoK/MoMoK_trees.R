@@ -1935,6 +1935,7 @@ DW_total <- DW_total %>%
          dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw" & L_m > 3, dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0))) %>% 
 # GHG-TapeS-stepwise
   # solid wood bark  for dead trees of all types except 6
+  # fine wood has to be added instead of deducted because it´s not part of the calculation of the total biomass
   mutate(dw_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI <3 & L_m > 3  ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
                                DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
                                DW_type == 1  & dec_type_BWI < 3 ~ 0, 
