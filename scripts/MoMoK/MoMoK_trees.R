@@ -635,16 +635,16 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 # ----- 1.3.4.4.1. solid wood tapeS --------------------------------------------
 # dw_sw_tapes
-# dw_tapes_swB <- function(spec_tpS, d, dh, h){         
-#   spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(tpS_ID));
-#   Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_cm)));
-#   Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_h_m)));
-#   Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(L_m));
-#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-#   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
-#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-#   return(if (length(obj.tbio) != 0) {sw.df$sw})
-# }
+ dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+   spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(tpS_ID));
+   Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_cm)));
+   Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_h_m)));
+   Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(L_m));
+   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+   return(if (length(obj.tbio) != 0) {sw.df$sw})
+ }
 
 dw_tapes_swB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spp);
@@ -1605,22 +1605,11 @@ trees_total_5 <- trees_total %>%
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm), 
                          TRUE ~ H_m))
 
-# ----- 2.2. Biomass living trees--------------------------------------------------------------
+# ----- 2.2. LIVING TREE biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
 # DBH, diameter at 1/3 of the tree height, species, tree height
 
-# ----- 2.2.1. TAPES: estimating diameter at 0.3 of tree height with TapeS -----------------------------------------------------------
-#https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
-
-# ----- 2.2.1.1. create TapeS object -----------------------------------------------------------
-spp = trees_total_5 %>% dplyr::pull(tpS_ID)
-Dm = as.list(trees_total_5 %>% dplyr::pull(DBH_cm))
-Hm = as.list(trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% dplyr::pull(DBH_h_m))
-Ht = trees_total_5 %>% dplyr::pull(H_m)
-obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-
-
-# ----- 2.2.2. dominant height -----------------------------------------------------------
+# ----- 2.2.1 dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
 # Arithmetisches Mittel der Hoehe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhoehe h100 oder h200 bezeichnet; die WEISE�sche Oberhoehe [ho] entspricht der Hoehe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
 # Wichtig: Die Art der Oberhoehe muss jeweils definiert werden.
@@ -1717,10 +1706,11 @@ for(id in unique(trees_total_5$plot_ID)){
 }
 
 
-# ----- 2.2.3. biomass trees -----------------------------------------------------------
+# ----- 2.2.3. biomass living trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
-  # adding diameter at 0.3 tree height to trees_total dataframe
-  mutate(D_03_cm = tprDiameter(obj, Hx = 1/3*Ht(obj), cp=FALSE), 
+  # TapeS : aing diameter at 0.3 tree height to trees_total dataframe
+    #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
+  mutate(D_03_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(DBH_cm), Hm = as.list(DBH_h_cm/100), Ht = H_m, inv = 4), Hx = 1/3*Ht(obj), cp=FALSE),
          DBH_h_m = ifelse(is.na(DBH_h_cm), 1.3, DBH_h_cm/100)) %>% 
   # biomass
   # aboveground biomass   # for trees above species specific diameter threshold
@@ -1832,7 +1822,7 @@ biotest <- trees_total_5 %>%
 
 
 
-# ----- 2.3  Biomass dead trees -------------------------------------------
+# ----- 2.3  DEAD TREES biomass ------------------------------------------------
 # Artencodes
 # 1	Laubholz (außer Eiche)
 # 2	Nadelholz
@@ -1900,9 +1890,6 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                   TRUE ~ 4)) 
 
 
-
-
-
 # ----- 2.3.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
 #Notes Nitrogen compartiments
      # to calcualte the nitrogen stock per compartiment the total biomass has to be divided into 
@@ -1951,14 +1938,14 @@ DW_total <- DW_total %>%
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
 # For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
-DW_total_1 <- left_join(DW_total, 
+DW_total <- left_join(DW_total, 
  # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
-            DW_total_ratio <- rbind(
+            rbind(
     # 1. dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
               (DW_total %>% 
                 # filter for DW 3 in low staes of decay
               filter(DW_type == 3 & dec_type_BWI < 3 & !is.na(D_h_m)) %>% 
-                # height estimation like for living trees 
+                # height estimation like for living trees  --> unneccesarry cause we have estimated heights via tapeS
               mutate(SP_code = dom_SP, 
                      H_m = NA, 
                      D_mm = D_cm*10) %>% 
@@ -1996,20 +1983,22 @@ DW_total_1 <- left_join(DW_total,
                                      # and hm is na but there is a h_g and d_G
                                      is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, D_mm, mean_D_mm, D_g, H_g),
                                      # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                                     # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                                     # and hm is na and the Sloboda function cannot eb applied because there is no h_g calculatable use the curtis function
                                      is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, D_mm), 
-                                     TRUE ~ L_m)) %>%
+                                     TRUE ~ L_m), 
+                       H_m_tapeS = estHeight(d13 = D_cm, sp = tpS_ID)) %>%
                   # in case the estimated height is lower then the mean lenght or lenght of the respective tree, set height to lenght instead
                 mutate(H_m = case_when(D_h_m > H_m & L_m > D_h_m & L_m > mean_L ~ L_m,
                                      D_h_m > H_m & mean_L > D_h_m & L_m < mean_L ~ mean_L,
-                                     TRUE ~ H_m)) %>% 
+                                     TRUE ~ H_m), 
+                       H_diff = H_m - H_m_tapeS) %>% 
                 # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
                 filter(D_h_m < H_m) %>% 
                  # calculating biomass in compartiments via TapeS
-                mutate(dw_tapes_swB_kg = tapes_swB(tpS_ID, D_cm, D_h_m, H_m),   # solid wood
-                     dw_tapes_swbB = tapes_swbB(tpS_ID, D_cm, D_h_m, H_m),      # solid wood bark 
+                mutate(dw_tapes_swB_kg = tapes_swB(tpS_ID, D_cm, D_h_m,  estHeight(d13 = D_cm, sp = tpS_ID)),   # solid wood
+                     dw_tapes_swbB = tapes_swbB(tpS_ID, D_cm, D_h_m,  estHeight(d13 = D_cm, sp = tpS_ID)),      # solid wood bark 
                      dw_tapes_b_ratio = dw_tapes_swbB/dw_tapes_swB_kg) %>%      # ratio between solid wood bark vs. solid wood
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, SP_dec_type, dw_tapes_b_ratio)), 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_b_ratio)), 
       # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
               (DW_total %>% 
                  # filter for the respective deadwood type and decay state
@@ -2020,7 +2009,7 @@ DW_total_1 <- left_join(DW_total,
                   # estimating diameter in 1.3m height, as the diameters were measured at the top of the stum which is < 1.3m 
                        # estimating diameter via TapeS doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
                              # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
-                       DBH_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = L_m, inv = 4), Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)))), cp=FALSE), 
+                       #DBH_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = , inv = 4), Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)))), cp=FALSE), 
                        # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)         
                        DBH_cm_BWI = (D_mm-2*((D_h_cm-130)/tan(40)))/10, 
                        # as the BWI taper formula returns negative values we´ll use a formula to estimate the DBH direktly by KUBLIN (BWI methodikband chap.5.2.2 ): dz = d ∗ (1.0 + (0.0011 ∗ (hd − 130)))
@@ -2031,10 +2020,12 @@ DW_total_1 <- left_join(DW_total,
                 left_join(., DW_total %>%
                             filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
                             mutate(SP_code = dom_SP, 
+                    # estimating diameter
                                    D_mm = D_cm*10, 
                                    DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
                                    DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10, 
                                    BA_m2 = ((DBH_cm_Kublin/100)/2)^2*pi) %>% 
+                    # estimating height based on DBH_Kublin --> unneccesarry cause we have estimated heights via tapeS
                             group_by(plot_ID, SP_code) %>%                               # group by plot and species and canopy layer to calcualte dg, hg 
                             summarise(H_g = sum(mean(na.omit(L_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
                                       mean_DBH_mm_Kublin = mean(DBH_mm_Kublin),                            # mean diameter per species per canopy layer per plot
@@ -2047,7 +2038,7 @@ DW_total_1 <- left_join(DW_total,
                           by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
                 left_join(., coeff_H_SP %>% 
                             select(SP_code, R2),                                         # joing R2 from coeff_SP data set -> R2.y
-                          by = "SP_code") %>% 
+                          by = "SP_code") %>%
                 mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x), 
                        H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
                                             is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
@@ -2065,34 +2056,28 @@ DW_total_1 <- left_join(DW_total,
                                        # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                                        # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                                        is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm_Kublin), 
-                                       TRUE ~ L_m)) %>%
+                                       TRUE ~ L_m), 
+                       H_m_tapeS = estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)) %>%
                  mutate(H_m = case_when(D_h_m > H_m & L_m > D_h_m & L_m > mean_L & L_m > H_m ~ L_m,
                                         D_h_m > H_m & mean_L > D_h_m & L_m < mean_L & mean_L > H_m ~ mean_L,
-                                        TRUE ~ H_m)) %>%
+                                        TRUE ~ H_m), 
+                        H_diff =  H_m - H_m_tapeS) %>%
                  # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
                  filter(DBH_h_m < H_m) %>% 
-                 mutate(dw_tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm_Kublin, DBH_h_m, H_m), 
-                       dw_tapes_stwbB = tapes_stwbB(tpS_ID, DBH_cm_Kublin, DBH_h_m, H_m), 
+                 mutate(dw_tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm_Kublin, DBH_h_m, estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)), 
+                       dw_tapes_stwbB = tapes_stwbB(tpS_ID, DBH_cm_Kublin, DBH_h_m, estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)), 
                        dw_tapes_b_ratio = dw_tapes_stwbB/dw_tapes_stwB_kg) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, SP_dec_type, dw_tapes_b_ratio))), 
-            by = c("plot_ID", "t_ID",  "DW_type", "SP_dec_type", "dec_type_BWI")) 
-
-#%>% 
-  # mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
-  #                                     DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-  #                                     TRUE ~ 0))
-
-
-
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_b_ratio))), 
+            by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
+   
+  DW_total %>% 
+  mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+                                       TRUE ~ 0))
 
 
  
 
-# spp = trees_total_5 %>% dplyr::pull(tpS_ID)
-# Dm = as.list(trees_total_5 %>% dplyr::pull(DBH_cm))
-# Hm = as.list(trees_total_5 %>% mutate(DBH_h_m = DBH_h_cm/100) %>% dplyr::pull(DBH_h_m))
-# Ht = trees_total_5 %>% dplyr::pull(H_m)
-# obj <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
 
 # ----- 2.3.3.2. deadwood compartiments methodology   -------------------------------------------------
 DW_total <- DW_total %>% 
@@ -4097,13 +4082,16 @@ mutate(dw_tapes_stwB_kg = tapes_stwB(tpS_ID, D_cm, D_h_m, H_m),
 # total working days 2023 Brandenburg from February onwards: 
 tot_wd = 229
 ho_wd = tot_wd*0.5
-already_used_ho = 12
-ho_planned_04_spain = 5
+already_used_ho_02 = 6
+already_used_ho_03 = 7
+already_used_ho_04 = 9
+already_used_ho = already_used_ho_02 + already_used_ho_03 + already_used_ho_04
+#ho_planned_04_spain = 5 --> in used for april
 ho_planned_0809_FR_SP = 10
 ho_planned_12_warm = 10
 ho_planned_12_christmas = 5
-ho_planned_tot = ho_planned_04_spain + ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
+ho_planned_tot = ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
 weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
 remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
-current_KW_week <- 12 # 20.03-26.03
+current_KW_week <- 17 # 24.04-31.04.
 rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
