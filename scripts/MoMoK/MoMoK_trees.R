@@ -635,16 +635,16 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 # ----- 1.3.4.4.1. solid wood tapeS --------------------------------------------
 # dw_sw_tapes
- dw_tapes_swB <- function(spec_tpS, d, dh, h){         
-   spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(tpS_ID));
-   Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_cm)));
-   Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_h_m)));
-   Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(L_m));
-   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
-   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-   return(if (length(obj.tbio) != 0) {sw.df$sw})
- }
+ # dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+ #   spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(tpS_ID));
+ #   Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_cm)));
+ #   Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_h_m)));
+ #   Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(L_m));
+ #   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+ #   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+ #   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+ #   return(if (length(obj.tbio) != 0) {sw.df$sw})
+ # }
 
 dw_tapes_swB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spp);
@@ -849,7 +849,7 @@ summary(RG_total)
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
 labs <- c(seq(5, 55, by = 5)) 
 
-# ----- 1.4.2. creating universal species dataset -----------------------------------------
+# ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
     # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
     # it became evident that neither the areviations of the common species names, nor the species numbers correspond
@@ -1038,7 +1038,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
 
-# ----- 1.4.3. LIVING TREES: adding speices info -----------------------------------------
+# ----- 1.4.2.1. LIVING TREES: adding speices info -----------------------------------------
 # there was a mistake in the species codes as there was a confusion between the 
 # german trivial names of schwarzerle (alnus glutinosa) and roterle (alnus rubra) which 
 # whereby the first is sometimes also called roterle cause of the woods colour, however, 
@@ -1251,7 +1251,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
 
 
 
-# ----- 1.4.2.1. REGENERATION: species names & groups, missing data ----------------------
+# ----- 1.4.2.2 REGENERATION: species names & groups, missing data ----------------------
 # some species were wrongly assigned or assessed and have to be renamed: 
   # EB, EBS, SHO, SHA, FLB, KD, MKI
   # EB & EBS == Eberesche == Vogelbeere == Vbe
@@ -1447,7 +1447,9 @@ N_con_comp <- N_con_comp %>% mutate(N_con_per = as.numeric(N_mean_gkg)/1000)
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
 
-# ----- 2.1. Regression models for missing tree heights ---------------------------------
+
+# ----- 2.1. LIVING TREES -----------------------------------------------------------------
+# ----- 2.1.1. heights: regression models for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
 # there are less then 3 measurements per plot
 # ---> think about way to deal with them !!!!
@@ -1460,7 +1462,7 @@ trees_total %>%
   #lm_table(H_m ~ DBH_cm) %>% 
   arrange(plot_ID, SP_code)
 
-# ----- 2.1.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
+# ----- 2.1.1.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
 # where the height has not been sampled I will create a linear regression for the heights
 # in the following i will create a dataframe with regression coefficients per 
@@ -1507,7 +1509,7 @@ coeff_H_SP_P <- left_join(trees_total %>%
              pseu_R2 = 1-(SSres/SStot), 
              diff_h = mean(H_m - H_est))
 
-# ----- 2.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
+# ----- 2.1.1.2. coefficents dataframe per SP over all plots when >= 3 heights measured --------
 # coefficents of non-linear height model per species but over all plots: 
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
 #  building separate dataframe for speicies soecific models adding adding bias, rmse and rsqrd 
@@ -1550,11 +1552,11 @@ coeff_H_SP <- left_join(trees_total %>%
   mutate(plot_ID = as.factor('all')) %>% 
   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, N, SSres, SStot, pseu_R2, diff_h)
 
-# ----- 2.1.3. combined coefficients of height models ---------------------
+# ----- 2.1.1.3. combined coefficients of height models ---------------------
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
 
 
-# ----- 2.1.4. have a look at the quality of the models  ------------------------------
+# ----- 2.1.1.4. have a look at the quality of the models  ------------------------------
 # from my previous attempts to fit and validate species specific but also total 
 # dataset including regression models for the height, I know that actually the 
 # DBH class is the better predictor 
@@ -1569,7 +1571,7 @@ coeff_H_comb %>% filter(diff_h >= 0.75)
 #view(coeff_H_SP_P %>% filter(rsqrd<=0.5))
 
 
-# ----- 2.1.5. join coefficients to the tree data set & calculate missing heights  ----------------------------
+# ----- 2.1.1.5. join coefficients to the tree data set & calculate missing heights  ----------------------------
 # estimating height by using different functions, depending on the models R2
 trees_total_5 <- trees_total %>%
   unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
@@ -1605,11 +1607,11 @@ trees_total_5 <- trees_total %>%
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm), 
                          TRUE ~ H_m))
 
-# ----- 2.2. LIVING TREE biomass --------------------------------------------------------------
+# ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
 # DBH, diameter at 1/3 of the tree height, species, tree height
 
-# ----- 2.2.1 dominant height -----------------------------------------------------------
+# ----- 2.1.2.1 dominant height -----------------------------------------------------------
 # necesaryy as side index for the better broadleved models
 # Arithmetisches Mittel der Hoehe der 100 stärksten Bäume je ha. (In Deutschland auch als Spitzenhoehe h100 oder h200 bezeichnet; die WEISE�sche Oberhoehe [ho] entspricht der Hoehe des Grundflächen- Mittelstammes der 20 % stärksten Bäume eines Bestandes).
 # Wichtig: Die Art der Oberhoehe muss jeweils definiert werden.
@@ -1627,8 +1629,6 @@ trees_total_5 <- trees_total %>%
 # https://stackoverflow.com/questions/1563961/how-to-find-top-n-of-records-in-a-column-of-a-dataframe-using-r filter ..% of observations that represent top 100 trees
 
 
-
-
 # top100 <- function(df, p_ID, plot_A){
 #   df <- trees_total_5;                      # the dataframe I´m working with 
 #   p_ID <- df %>% dplyr::pull(plot_ID)       # the plot ID 
@@ -1644,10 +1644,8 @@ trees_total_5 <- trees_total %>%
 #   slice_max(., DBH_cm, n = top100(trees_total_5, plot_ID, plot_A_ha):n()) %>% 
 #   mutate(H_o = mean(H_m))
 
-##########
-# BY ALEX
-##########
 
+# ----- dominant height for loop by Alex Cheypowski -----------------------
 #calculate the number of each plot to be selected and write them in vector
   # n_t100 <- trees_total_5 %>% 
   # group_by(plot_ID) %>% 
@@ -1706,7 +1704,7 @@ for(id in unique(trees_total_5$plot_ID)){
 }
 
 
-# ----- 2.2.3. biomass living trees -----------------------------------------------------------
+# ----- 2.1.2.2. estimated biomass living trees -----------------------------------------------------------
 trees_total_5 <- trees_total_5 %>% 
   # TapeS : aing diameter at 0.3 tree height to trees_total dataframe
     #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
@@ -1761,7 +1759,7 @@ trees_total_5 <- trees_total_5 %>%
   
 
 
-# ----- 2.2.3. comparisson biomass trees -----------------------------------------------------------
+# ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
   select(plot_ID, SP_code, tpS_ID, Bio_SP_group, H_SP_group, LH_NH, DBH_cm, DBH_h_cm, D_03_cm, H_m, age, plot_A_ha) %>% 
   # adding diameter at 0.3 tree height to trees_total dataframe
@@ -1822,7 +1820,8 @@ biotest <- trees_total_5 %>%
 
 
 
-# ----- 2.3  DEAD TREES biomass ------------------------------------------------
+# 2.2. DEAD WOOD ---------------------------------------------------------------
+
 # Artencodes
 # 1	Laubholz (außer Eiche)
 # 2	Nadelholz
@@ -1837,7 +1836,7 @@ biotest <- trees_total_5 %>%
 # 5 = liegend; ganzer Baum                                                       --> DBH
 # 6 = im Haufen vorkommendes Totholz                                             --> Mittendurchmesser
 
-# ----- 2.3.1. species groups, diameter mesuring height, units ---------------------------------------------
+# ----- 2.2.1. species groups, diameter mesuring height, units ---------------------------------------------
 # to assing the right species group, i wnat to use the dominant species of the plot: 
 
 # assigning dominant species of living trees to DW_total dataset by plot_ID
@@ -1890,7 +1889,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                   TRUE ~ 4)) 
 
 
-# ----- 2.3.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
+# ----- 2.2.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
 #Notes Nitrogen compartiments
      # to calcualte the nitrogen stock per compartiment the total biomass has to be divided into 
      # compartimetns according to the deadwood type & the state of decay to assign the correct nitrogen content
@@ -1905,53 +1904,49 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
         # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
         # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB() 
 
+# DW_total <- DW_total %>% 
+#   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+#   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+#          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+#          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+#   # calulation method biomass compartiments for trees of deadwood type 1& 2 
+#   # no fine wood compartment for deadwood types that don´t include whole trees, while Bruchstücke (1) are nirogen-wise treated as fine wood
+#   mutate(dw_tapes_fwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 ~ "tapes_dw_fw", 
+#                                         TRUE ~ "not excisting" ),
+#          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles, stumps and "starkes Totholz" Bruchstücke ohne Wurzel
+#          dw_tapes_sw_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swB", 
+#                                      TRUE ~ "B_dw_kg"),
+#          # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+#          dw_tapes_swb_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swbB", 
+#                                        TRUE ~ "not excisting"), 
+#          # stump wood biomass for whole dead trees, fragments of deadwood and logs in early stages of decay
+#          dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwB",
+#                                        TRUE ~ "not excisting"),
+#          # stump wood bark for whole dead trees and logs in early stages of decay
+#          dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwbB",
+#                                         TRUE ~ "not excisting"))
 
-
-DW_total <- DW_total %>% 
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-  # calulation method biomass compartiments for trees of deadwood type 1& 2 
-  # no fine wood compartment for deadwood types that don´t include whole trees, while Bruchstücke (1) are nirogen-wise treated as fine wood
-  mutate(dw_tapes_fwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 ~ "tapes_dw_fw", 
-                                        TRUE ~ "not excisting" ),
-         # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles, stumps and "starkes Totholz" Bruchstücke ohne Wurzel
-         dw_tapes_sw_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swB", 
-                                     TRUE ~ "B_dw_kg"),
-         # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-         dw_tapes_swb_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swbB", 
-                                       TRUE ~ "not excisting"), 
-         # stump wood biomass for whole dead trees, fragments of deadwood and logs in early stages of decay
-         dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwB",
-                                       TRUE ~ "not excisting"),
-         # stump wood bark for whole dead trees and logs in early stages of decay
-         dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwbB",
-                                        TRUE ~ "not excisting"))
-
-# ----- 2.3.3. Deadwood compartiments, Nitrogen  -------------------------------------------------
-
-# ----- 2.3.3.1. Pseudo trees for DW_tpyes 3, 4   -------------------------------------------------
+# ----- 2.2.3.3. Deadwood compartiments, Nitrogen stock -------------------------------------------------
 # As tapeS can only return total trees Biomasses. Thus we´ll create "pseudo" trees for deadwood items that are 
 # not whole trees but are still supposed to be compartitioned 
     # this are: deadwood fragments (Bruchstücke) --> DW_type == 3 
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
-# For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
 DW_total <- left_join(DW_total, 
  # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
             rbind(
-    # 1. dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
+    # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
+    #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
               (DW_total %>% 
                 # filter for DW 3 in low staes of decay
-              filter(DW_type == 3 & dec_type_BWI < 3 & !is.na(D_h_m)) %>% 
+              filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>% 
                 # height estimation like for living trees  --> unneccesarry cause we have estimated heights via tapeS
               mutate(SP_code = dom_SP, 
                      H_m = NA, 
                      D_mm = D_cm*10) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
               left_join(., DW_total %>%
-                          filter(DW_type == 3 & dec_type_BWI < 3 & !is.na(D_h_m)) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
+                          filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
                           mutate(SP_code = dom_SP, 
                                  BA_m2 = (D_m/2)^2*pi, 
                                  D_mm = D_cm*10) %>% 
@@ -2002,7 +1997,7 @@ DW_total <- left_join(DW_total,
       # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
               (DW_total %>% 
                  # filter for the respective deadwood type and decay state
-                filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)) %>% 
+                filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>% 
                 mutate(SP_code = dom_SP, 
                        H_m = NA, 
                        D_mm = D_cm*10,
@@ -2018,7 +2013,7 @@ DW_total <- left_join(DW_total,
                        DBH_h_m = 1.3) %>% 
                 unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
                 left_join(., DW_total %>%
-                            filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
+                            filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
                             mutate(SP_code = dom_SP, 
                     # estimating diameter
                                    D_mm = D_cm*10, 
@@ -2069,15 +2064,27 @@ DW_total <- left_join(DW_total,
                        dw_tapes_b_ratio = dw_tapes_stwbB/dw_tapes_stwB_kg) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_b_ratio))), 
             by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
-   
-  DW_total %>% 
-  mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+  #  volume, biomass, carbon
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+  # TapeS compartiments
+  mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-                                       TRUE ~ 0))
+                                       TRUE ~ 0), 
+         dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
+                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
+                                      TRUE ~ 0)))
+ # GHG - TapeS compartiments
+ # nitrogen stock
 
-
+spp = DW_total %>%filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3) %>% dplyr::pull(tpS_ID)
+Dm = as.list(DW_total %>%filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3) %>% dplyr::pull(D_cm))
+Hm = as.list(DW_total %>%filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3) %>% dplyr::pull(D_h_m))
+Ht = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3) %>% dplyr::pull(L_m)
  
-
+dw_tapes_swB(spp, Dm, Hm, Ht)
 
 # ----- 2.3.3.2. deadwood compartiments methodology   -------------------------------------------------
 DW_total <- DW_total %>% 
