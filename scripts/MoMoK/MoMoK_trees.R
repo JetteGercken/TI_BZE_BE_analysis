@@ -1794,8 +1794,7 @@ biotest <- trees_total_5 %>%
          tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
          tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
-         tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                # coarsewood with bark
+         tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                # stumbwood bark 
          # Vondernach 
          Vondr_fB_kg = Vondr_fB(H_SP_group, DBH_cm, H_m),                              # foliage
          Vondr_brB_kg = Vondr_NhdB(H_SP_group, DBH_cm, H_m),                          # Nichtderbholz
@@ -1805,27 +1804,30 @@ biotest <- trees_total_5 %>%
          # TapeS & GHG
   mutate(tps_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - tapes_fB_kg, GHG_aB_kg),      # woody aboveground biomass Derbholz + nichtderbholz + Rinde
          tps_GHG_crsWbB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_brB_kg),                  # coarsewood including bark
-         tps_GHG_brB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_crsWbB_kg),                 # fine branches 
+         tps_GHG_brB_kg = GHG_aB_kg - (tapes_fB_kg + tapes_DhB_kg + tapes_DhbB_kg + tapes_stwB_kg + tapes_stwbB_kg),                 # fine branches 
          # Vondernach & GHG
          Vondr_GHG_waB = ifelse(LH_NH == "NB", GHG_aB_kg - Vondr_fB_kg, GHG_aB_kg),    # woody aboveground biomass Derbholz + nichtderbholz + Rinde
          Vondr_GHG_crsWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_brB_kg),               # coarsewood including bark by removing foliage and branches
          Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%           # fine branches by withdrawing coarsewood and foliage 
          # stepwise
-  mutate(GHG_tps_DhB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
-         GHG_tps_DhRB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-         GHG_tps_stwB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_DhRB_kg + tapes_stwbB_kg),     # stump wood biomass
-         GHG_tps_stwbB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_DhB_kg + GHG_tps_stwB_kg),          # stum wood bark biomass
-         GHG_tps_brB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + GHG_tps_DhRB_kg + tapes_fB_kg + GHG_tps_stwbB_kg + GHG_tps_stwB_kg),               # fine wood bionmass
-         GHG_tps_fB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (GHG_tps_DhB_kg + GHG_tps_DhRB_kg +  GHG_tps_stwbB_kg + GHG_tps_stwB_kg+ GHG_tps_brB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
-         tot_GHG_tps = GHG_tps_stwB_kg + GHG_tps_stwbB_kg+ GHG_tps_DhB_kg+ GHG_tps_DhRB_kg+ GHG_tps_brB_kg+ GHG_tps_brB_kg, 
-         diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps, 
+  mutate(# GHG-TapeS-stepwise
+          swB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+          swbB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+          stwB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
+          stwbB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
+          fwB_kg = GHG_aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
+          fB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
+          tot_aB_kg = ifelse(LH_NH == "NB", GHG_aB_kg, GHG_aB_kg+fB_kg),                                # total aboveground biomass
+          tot_waB_kg = ifelse(LH_NH == "NB", GHG_aB_kg-fB_kg, GHG_aB_kg), 
+          tot_GHG_tps = swB_kg+ swbB_kg + stwB_kg+ stwbB_kg + fwB_kg + fB_kg) %>% 
+  mutate(diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps, 
          diff_GHG_tps = GHG_aB_kg - tapes_ab_kg, 
          diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
          diff_Vondr_tps = tapes_ab_kg - Vondr_oiB_kg)
                                          
-
-
-
+biotest %>% filter(swB_kg < 0)
+summary(trees_total_5)
+ summary(biotest)
 # 2.2. DEAD WOOD ---------------------------------------------------------------
 
 # Artencodes
@@ -2077,20 +2079,22 @@ DW_total <- left_join(DW_total,
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type)) #%>% 
   # TapeS compartiments
-  mutate(dw_tapes_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
-                                     DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-                                     TRUE ~ 0), 
-         dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
-                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
-                                      TRUE ~ 0), 
-         dw_tapes_stwB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-                                      DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-                                      TRUE ~ 0),
-         dw_tapes_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-                                      DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
-                                      TRUE ~ 0),
-         dw_tapes_fwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m),
-                                      TRUE ~ 0))
+
+# DW_total %>% 
+#  mutate(dw_tapes_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+#                                      TRUE ~ 0), 
+#          dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
+#                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
+#                                       TRUE ~ 0), 
+#          dw_tapes_stwB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+#                                       TRUE ~ 0),
+#          dw_tapes_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
+#                                       TRUE ~ 0),
+#          dw_tapes_fwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m),
+#                                      TRUE ~ 0))
  # GHG - TapeS compartiments
  # nitrogen stock
 
@@ -2173,8 +2177,10 @@ RG_total <- RG_total %>%
           RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)), 
           RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0)) %>% 
   # belated compartitioning via Poorter
-  mutate(Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
-         Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)) #%>%       # root to shoot ratio
+  mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
+         Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH))%>%       # root to shoot ratio
+  mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NH", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
+         Annig_Poorter_stem_kg = ifelse(LH_NH == "NH", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg))
   # Nitrogen content
  #mutate(N_fw)
 
@@ -2183,6 +2189,7 @@ RG_total <- RG_total %>%
 
 
 summary(RG_total)
+
 
 RG_total %>% 
   select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
@@ -2721,7 +2728,7 @@ biotest %>%
 # bar
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, tps_GHG_brB_kg, tapes_fB_kg) %>% 
+         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, fwB_kg, tapes_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:10) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
@@ -2757,14 +2764,15 @@ biotest %>%
 # tapes_ab_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_crsWbB_kg, tapes_fB_kg, tapes_brB_kg)%>% 
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         tapes_ab_kg, tapes_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_brB_kg,  tapes_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:9) %>% 
+         tapes_ab_kg, tapes_stwB_kg, tapes_stwbB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_brB_kg,  tapes_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:10) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
-  scale_fill_discrete(labels = c("woody aboveground biomass", 
-                                 "coarsewood with bark", "coarsewood without bark", "bark", 
+  scale_fill_discrete(labels = c("total aboveground biomass", 
+                                 "stumpwood with out bark", "stumpwood bark", 
+                                 "coarsewood without bark", "bark", 
                                  "non coarse wood incl. bark", "foliage" ))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
@@ -2772,7 +2780,7 @@ biotest %>%
 
 
 # ---- 3.2.7. GHG & tapeS compartiments with stepwise GHG & TapeS calcualtion  ----------------------------------------
-install.packages("viridis")
+#install.packages("viridis")
 library(viridis)
 
 # bar
@@ -2780,18 +2788,22 @@ library(viridis)
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
          #GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg,
-         GHG_tps_DhB_kg, tapes_DhB_kg, Vondr_DhB_kg,
-         GHG_tps_DhRB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
-         GHG_tps_brB_kg, tapes_brB_kg, Vondr_brB_kg,
-         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:15) %>% 
+         swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         stwB_kg,tapes_stwB_kg, 
+         stwbB_kg, tapes_stwbB_kg,
+         swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         fwB_kg, tapes_brB_kg, Vondr_brB_kg,
+         fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'G')~ "GHGI", 
                                 TRUE~"Vondernach"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
-           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
+           method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
+           method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("fw_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>%
   group_by(method, gen_method, compartiment, plot_ID, SP_code) %>% 
   summarize(mean_bio = mean(biomass)) %>%
@@ -2812,20 +2824,23 @@ biotest %>%
 # all compartiments
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg,
-         GHG_tps_DhB_kg, tapes_DhB_kg, Vondr_DhB_kg,
-         GHG_tps_DhRB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
-         GHG_tps_brB_kg, tapes_brB_kg, Vondr_brB_kg,
-         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:18) %>% 
+         swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         stwB_kg,tapes_stwB_kg, 
+         stwbB_kg, tapes_stwbB_kg,
+         swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         fwB_kg, tapes_brB_kg, Vondr_brB_kg,
+         fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+  tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'G')~ "GHGI", 
                                 TRUE~"Vondernach"), 
-         compartiment = case_when(method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "total aboveground biomass",
-           method %in% c("GHG_tps_DhB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
-           method %in% c( "GHG_tps_DhRB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("GHG_tps_brB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
-           TRUE~"foliage")) %>% 
+         compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
+           method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
+           method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
+           method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("fw_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           TRUE~"foliage")) %>%
   group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
   summarize(mean_bio = mean(biomass)) %>%
   ggplot(., aes(gen_method, mean_bio))+
@@ -2953,15 +2968,19 @@ biotest %>%
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
          GHG_aB_kg, tapes_ab_kg,
+         GHG_tps_stwB_kg, tapes_stwB_kg, 
+         GHG_tps_stwbB_kg, tapes_stwbB_kg,
          GHG_tps_DhB_kg, tapes_DhB_kg, 
          GHG_tps_DhRB_kg, tapes_DhbB_kg,  
          GHG_tps_brB_kg, tapes_brB_kg, 
          GHG_tps_fB_kg, tapes_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:13) %>% 
+  tidyr::gather("method", "biomass", 4:17) %>% 
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
   #geom_line(aes(colour = method))+
   scale_colour_discrete(labels = c("total aboveground biomass GHGI","total aboveground biomass TapeS", 
+                                   "stump wood without bark GHGI", "stump wood  without bark TapeS", 
+                                   "stump wood bark GHGI", "stump wood bark TapeS", 
                                    "coarsewood without bark GHGI", "coarsewood without bark TapeS", 
                                    "bark GHGI", "bark TapeS", 
                                    "non coarse wood incl. bark GHG", "non coarse wood incl. bark TapeS", 
@@ -3014,6 +3033,66 @@ biotest %>%
   theme_bw()
 
 
+
+# -----3.3.1. Visualization REGENERATION Biomass comparisson --------------
+
+RG_total.test <- RG_total %>% 
+  # assigning numeric diameters to size classes through mean per class 
+  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
+                          D_class_cm == 1 ~ (4.9+0)/2, 
+                          D_class_cm == 2 ~ (5.9+5)/2,
+                          TRUE ~ (6.9+6)/2)) %>% 
+  # biomass
+  # Biomass according to Annighoefer
+  # estimating Root collar diameter via Annighoefer
+  mutate(Annig_RCD_mm = ifelse(H_cm >= 130, annighoefer_RCD(D_cm, LH_NH, "130"), NA)) %>% # 130 = height at which the diameter was measured [cm]
+  # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
+  mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
+         # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
+         RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)), 
+         RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0)) %>% 
+  # belated compartitioning via Poorter
+  mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
+    Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH))%>%       # root to shoot ratio
+  mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NH", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
+         Annig_Poorter_stem_kg = ifelse(LH_NH == "NH", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg)) %>% 
+  mutate(diff_GHG_Annig = RG_GHG_aB_kg - Annig_aB_kg)
+# Nitrogen content
+#mutate(N_fw)
+
+
+
+
+
+summary(RG_total)
+
+
+RG_total %>% 
+  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(D_cm, biomass, colour = method))+
+  geom_point(aes(colour = method))+
+  # geom_line(aes(colour = method))+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~LH_NH)
+
+
+
+RG_total %>% 
+  select(plot_ID, LH_NH, H_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(H_cm, biomass, colour = method))+
+  geom_point(aes(colour = method))+
+  # geom_line(aes(colour = method))+
+  geom_smooth(method = "loess", se=TRUE)+
+  facet_wrap(~LH_NH)
+
+RG_total %>% 
+  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
+  ggplot(., aes(method, biomass))+
+  geom_boxplot(aes(colour = method))+
+  facet_wrap(~LH_NH)
 
 
 # ----- NOTES ------------------------------------------------------------------
