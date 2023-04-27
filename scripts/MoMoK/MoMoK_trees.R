@@ -1793,6 +1793,8 @@ biotest <- trees_total_5 %>%
          tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
          tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
          tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
+         tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_crsWbB_kg = tapes_crsWbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                # coarsewood with bark
          # Vondernach 
          Vondr_fB_kg = Vondr_fB(H_SP_group, DBH_cm, H_m),                              # foliage
@@ -1809,11 +1811,13 @@ biotest <- trees_total_5 %>%
          Vondr_GHG_crsWbB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_brB_kg),               # coarsewood including bark by removing foliage and branches
          Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%           # fine branches by withdrawing coarsewood and foliage 
          # stepwise
-  mutate(GHG_tps_DhB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (tapes_fB_kg+tapes_brB_kg+tapes_DhbB_kg), GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg)), 
-         GHG_tps_DhRB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+tapes_fB_kg+tapes_brB_kg),
-         GHG_tps_brB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+tapes_fB_kg),
-         GHG_tps_fB_kg = GHG_aB_kg - (GHG_tps_DhB_kg+GHG_tps_DhRB_kg+GHG_tps_brB_kg), 
-         tot_GHG_tps = GHG_tps_DhB_kg+ GHG_tps_DhRB_kg+ GHG_tps_brB_kg+ GHG_tps_fB_kg, 
+  mutate(GHG_tps_DhB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+         GHG_tps_DhRB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+         GHG_tps_stwB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_DhRB_kg + tapes_stwbB_kg),     # stump wood biomass
+         GHG_tps_stwbB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_DhB_kg + GHG_tps_stwB_kg),          # stum wood bark biomass
+         GHG_tps_brB_kg = GHG_aB_kg - (GHG_tps_DhB_kg + GHG_tps_DhRB_kg + tapes_fB_kg + GHG_tps_stwbB_kg + GHG_tps_stwB_kg),               # fine wood bionmass
+         GHG_tps_fB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (GHG_tps_DhB_kg + GHG_tps_DhRB_kg +  GHG_tps_stwbB_kg + GHG_tps_stwB_kg+ GHG_tps_brB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
+         tot_GHG_tps = GHG_tps_stwB_kg + GHG_tps_stwbB_kg+ GHG_tps_DhB_kg+ GHG_tps_DhRB_kg+ GHG_tps_brB_kg+ GHG_tps_brB_kg, 
          diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps, 
          diff_GHG_tps = GHG_aB_kg - tapes_ab_kg, 
          diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
