@@ -1824,9 +1824,12 @@ biotest <- trees_total_5 %>%
          diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
          diff_Vondr_tps = tapes_ab_kg - Vondr_oiB_kg)
                                          
-biotest %>% filter(swB_kg < 0)
-summary(trees_total_5)
- summary(biotest)
+
+
+
+
+
+
 # 2.2. DEAD WOOD ---------------------------------------------------------------
 
 # Artencodes
@@ -1911,36 +1914,12 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
         # derbholzrinde: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2 |(Totholztyp 4) in Zersetzungstadien 1& 2   tapes_swB(), B_dw_kg
         # stockholz: Totholztyp 2, 5, & Zersetzung 1, 2  |  (Totholztypen 3, 1) & Zersetzungstadien 1 & 2, tapes_stwB() 
 
-# DW_total <- DW_total %>% 
-#   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-#   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-#          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-#          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
-#   # calulation method biomass compartiments for trees of deadwood type 1& 2 
-#   # no fine wood compartment for deadwood types that don´t include whole trees, while Bruchstücke (1) are nirogen-wise treated as fine wood
-#   mutate(dw_tapes_fwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 ~ "tapes_dw_fw", 
-#                                         TRUE ~ "not excisting" ),
-#          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles, stumps and "starkes Totholz" Bruchstücke ohne Wurzel
-#          dw_tapes_sw_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swB", 
-#                                      TRUE ~ "B_dw_kg"),
-#          # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
-#          dw_tapes_swb_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swbB", 
-#                                        TRUE ~ "not excisting"), 
-#          # stump wood biomass for whole dead trees, fragments of deadwood and logs in early stages of decay
-#          dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwB",
-#                                        TRUE ~ "not excisting"),
-#          # stump wood bark for whole dead trees and logs in early stages of decay
-#          dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwbB",
-#                                         TRUE ~ "not excisting"))
-
-# ----- 2.2.3. Deadwood volume, biomass, carbon, compartiments, Nitrogen stock -------------------------------------------------
 # As tapeS can only return total trees Biomasses. Thus we´ll create "pseudo" trees for deadwood items that are 
 # not whole trees but are still supposed to be compartitioned 
     # this are: deadwood fragments (Bruchstücke) --> DW_type == 3 
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
-DW_total <- 
-   DW_total.com <- left_join(DW_total, 
+DW_total <- left_join(DW_total, 
  # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
             rbind(
     # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
@@ -2080,35 +2059,40 @@ DW_total <-
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
   # TapeS compartiments methods to be able to subset dataset and aplly functions separately 
    mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
-                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
-                                      TRUE ~ "no"),
+                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+                                        TRUE ~ "no"),
           dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
-                                        TRUE ~ "no"), 
-           dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes", 
-                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
-                                        TRUE ~ "no"),
-           dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
-                                        TRUE ~ "no"),
-           dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ "yes",
-                                       TRUE ~ "no")) %>% 
-# addding compartiments via filtered datasets
+                                         DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
+                                         TRUE ~ "no"),
+          dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                          DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
+                                          TRUE ~ "no"),
+          dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                          DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
+                                          TRUE ~ "no"),
+          dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
+                                         # I have to add fine wood for BWI_dec_type 2 too,
+                                         # but to be able to calculate the whole biomass stepwise, 
+                                         # but I will not add it to the final dw_kg column
+                                        TRUE ~ "no"))
+ 
+# addding compartiments biomasses to DW_total via filtered datasets
+ DW_total <- DW_total %>%    
    # 1. solid wood 
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_swB_meth == "yes") %>% 
                 mutate(dw_tps_sw_kg = tapes_swB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg), 
               # dataset broken trees with sw comapartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_swB_meth == "sw_tapeS_wood") %>% 
                 mutate(dw_tps_sw_kg = tapeS_wood) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg),
              # dataset without sw compartiment
-             DW_total.com %>% 
+             DW_total %>% 
                 filter(dw_tapes_swB_meth == "no") %>% 
                 mutate(dw_tps_sw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg)),
@@ -2117,17 +2101,17 @@ DW_total <-
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_swbB_meth == "yes") %>% 
                 mutate(dw_tps_swb_kg = tapes_swbB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg), 
               # dataset broken trees with sw comapartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_swbB_meth == "sw_tapeS_bark") %>% 
                 mutate(dw_tps_swb_kg = tapeS_bark) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg),
               # dataset without swb compartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_swbB_meth == "no") %>% 
                 mutate(dw_tps_swb_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg)),
@@ -2136,17 +2120,17 @@ DW_total <-
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwB_meth == "yes") %>% 
                 mutate(dw_tps_stw_kg = tapes_stwB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg), 
               # dataset broken trees with sw comapartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwB_meth == "st_tapeS_wood") %>% 
                 mutate(dw_tps_stw_kg = tapeS_wood) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg),
               # dataset without swb compartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwB_meth == "no") %>% 
                 mutate(dw_tps_stw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg)), 
@@ -2155,17 +2139,17 @@ DW_total <-
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwbB_meth == "yes") %>% 
                 mutate(dw_tps_stwb_kg = tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg), 
               # dataset stumps with stb comapartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwbB_meth == "st_tapeS_bark") %>% 
                 mutate(dw_tps_stwb_kg = tapeS_bark) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg),
               # dataset without swb compartiment
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_stwbB_meth == "no") %>% 
                 mutate(dw_tps_stwb_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg)), 
@@ -2174,99 +2158,60 @@ DW_total <-
   left_join(., 
             rbind(
               # dataset with whole trees in low satates of decay
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_fwB_meth == "yes") %>% 
                 mutate(dw_tps_fw_kg = tapes_brB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg), 
               # dataset without fine wood compartimenz
-              DW_total.com %>% 
+              DW_total %>% 
                 filter(dw_tapes_fwB_meth == "no") %>% 
                 mutate(dw_tps_fw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg)), 
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth"))
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
+   
+# stepwise cacluation of compartiemnt biomass vie bio - tapeS 
+          # solid wood
+   mutate(dw_swB_kg = case_when(dw_tapes_swB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) - (dw_tps_swb_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+                               dw_tapes_swB_meth == "sw_tapeS_wood" ~ B_dw_kg-(B_dw_kg*(dw_tps_swb_kg/dw_tps_sw_kg)),
+                               TRUE ~ B_dw_kg), 
+          # solid wood bark
+          dw_swbB_kg = case_when(dw_tapes_swbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+                                dw_tapes_swbB_meth == "sw_tapeS_bark" ~ B_dw_kg- dw_swB_kg,
+                                TRUE ~ 0),
+          # stump wood
+          dw_stwB_kg = case_when(dw_tapes_stwB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_swbB_kg + dw_tps_stwb_kg),
+                               dw_tapes_stwB_meth == "st_tapeS_wood" ~ B_dw_kg- (B_dw_kg*(dw_tps_stwb_kg/dw_tps_stw_kg)),
+                               TRUE ~ 0), 
+          # stump wood bark
+          dw_stwbB_kg = case_when(dw_tapes_stwbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
+                                dw_tapes_stwbB_meth == "st_tapeS_bark" ~ B_dw_kg- dw_stwB_kg,
+                                TRUE ~ 0),
+          # fine wood
+          dw_fwB_kg = case_when(dw_tapes_fwB_meth == "yes"  ~  dw_tps_fw_kg,
+                               dw_tapes_fwB_meth == "yes" & dec_type_BWI == 2 ~ 0,
+                               TRUE ~ 0)) %>%
+   mutate(N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+          N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+          N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
+          N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
+          N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
+   mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
+   
  
  
  
  
- DW_total %>% 
-   mutate(sw_dw_tapes_kg = ifelse(dw_tapes_swB_meth == "yes", 
-                                  tprBiomass(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = L_m, inv = 4), component = "sw"), 
-                                  0))
- 
- 
- dw_sw_tapes.1(DW_total$DW_type[!is.na(DW_total$D_h_m)], 
-             DW_total$dec_type_BWI[!is.na(DW_total$D_h_m)], 
-             DW_total$tpS_ID[!is.na(DW_total$D_h_m)], 
-             DW_total$D_cm[!is.na(DW_total$D_h_m)], 
-             DW_total$D_h_m[!is.na(DW_total$D_h_m)], 
-             DW_total$L_m[!is.na(DW_total$D_h_m)])
+ summary(DW_total)
  
  
  
  
- dw_sw_tapes.1 <- function(dw_t, dec_t, tps_sp, d, dh, l){
-   dw_sw <- as.vector(ifelse((dw_t == 2 & dec_t < 3 & !is.na(dh) & !is.na(l) & l > 1.3) |( dw_t == 5 & dec_t < 3 & !is.na(dh) & !is.na(l)  & l > 1.3), 
-                             tprBiomass(tprTrees(spp = tps_sp, Dm = as.list(d), Hm = as.list(dh), Ht = l, inv = 4), component = "sw"), 
-                             0));
-   return(dw_sw)
- }
  
  
- dw_sw_tapes.2 <- function(dw_data, dw_t, dec_t, tps_sp, d, dh, l){
-   spp = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{tps_sp}});
-   Dm = as.list(filter(dw_data,{{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{d}}));
-   Hm = as.list(filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{dh}}));
-   Ht = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{l}});
-   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
-   return(if (length(obj.tbio) != 0) {sw.df$sw})
- }
- 
- dw_sw_tapes.2(DW_total, DW_total$DW_type, DW_total$dec_type_BWI, DW_total$tpS_ID,  DW_total$D_cm, DW_total$D_h_m, DW_total$L_m)
  
  
- DW_total %>% 
-  mutate(dw_tapes_swB_kg = case_when((DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m))  ~ tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
-                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-                                      TRUE ~ 0))
- 
-
-#          dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
-#                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
-#                                       TRUE ~ 0), 
-#          dw_tapes_stwB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
-#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-#                                       TRUE ~ 0),
-#          dw_tapes_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
-#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
-#                                       TRUE ~ 0),
-#          dw_tapes_fwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m),
-#                                      TRUE ~ 0))
- # GHG - TapeS compartiments
- # nitrogen stock
-
-DW_total %>% 
-  filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & !is.na(D_h_m)) %>% 
-  mutate(dw_tapes_swB_kg =  dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m))
-
-DW_total %>% 
-  mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m),
-                                      TRUE ~ 0))
-spec_tpS = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(tpS_ID)
-d = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(D_cm)
-dh = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(D_h_m)
-h = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(L_m)
- as.vector(dw_tapes_swB(spec_tpS, d, dh, h))  
  
  
-# ----- 2.2.3.2. deadwood compartiments & nitrogen   -------------------------------------------------
-DW_total <- DW_total %>% 
-    mutate(dw_tapes_swB_kg = as.vector(ifelse(dw_tapes_sw_meth == "tapes_swB" , dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
-         dw_tapes_swbB_kg = as.vector(ifelse(dw_tapes_swb_meth == "tapes_swbB" , dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
-         dw_tapes_stwB_kg = as.vector(ifelse(dw_tapes_stw_meth == "tapes_stwB", dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)),
-        # dw_tapes_stwbB_kg = as.vector(ifelse(dw_tapes_stwb_meth == "tapes_stwbB", dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
-         dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw", dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0)))# %>% 
-# GHG-TapeS-stepwise
   # solid wood bark  for dead trees of all types except 6
   # fine wood has to be added instead of deducted because it´s not part of the calculation of the total biomass
   mutate(dw_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI <3 & L_m > 3  ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
@@ -4336,6 +4281,116 @@ mutate(dw_tapes_stwB_kg = tapes_stwB(tpS_ID, D_cm, D_h_m, H_m),
        dw_tapes_stwbB = tapes_stwbB(tpS_ID, D_cm, D_h_m, H_m), 
        dw_tapes_b_ratio = dw_tapes_stwbB/dw_tapes_stwB_kg) %>% 
   dplyr::select(plot_ID, t_ID, dw_tapes_b_ratio)
+
+
+
+DW_total %>% 
+  mutate(sw_dw_tapes_kg = ifelse(dw_tapes_swB_meth == "yes", 
+                                 tprBiomass(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = L_m, inv = 4), component = "sw"), 
+                                 0))
+
+
+dw_sw_tapes.1(DW_total$DW_type[!is.na(DW_total$D_h_m)], 
+              DW_total$dec_type_BWI[!is.na(DW_total$D_h_m)], 
+              DW_total$tpS_ID[!is.na(DW_total$D_h_m)], 
+              DW_total$D_cm[!is.na(DW_total$D_h_m)], 
+              DW_total$D_h_m[!is.na(DW_total$D_h_m)], 
+              DW_total$L_m[!is.na(DW_total$D_h_m)])
+
+
+
+
+dw_sw_tapes.1 <- function(dw_t, dec_t, tps_sp, d, dh, l){
+  dw_sw <- as.vector(ifelse((dw_t == 2 & dec_t < 3 & !is.na(dh) & !is.na(l) & l > 1.3) |( dw_t == 5 & dec_t < 3 & !is.na(dh) & !is.na(l)  & l > 1.3), 
+                            tprBiomass(tprTrees(spp = tps_sp, Dm = as.list(d), Hm = as.list(dh), Ht = l, inv = 4), component = "sw"), 
+                            0));
+  return(dw_sw)
+}
+
+
+dw_sw_tapes.2 <- function(dw_data, dw_t, dec_t, tps_sp, d, dh, l){
+  spp = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{tps_sp}});
+  Dm = as.list(filter(dw_data,{{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{d}}));
+  Hm = as.list(filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{dh}}));
+  Ht = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{l}});
+  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+  sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+  return(if (length(obj.tbio) != 0) {sw.df$sw})
+}
+
+dw_sw_tapes.2(DW_total, DW_total$DW_type, DW_total$dec_type_BWI, DW_total$tpS_ID,  DW_total$D_cm, DW_total$D_h_m, DW_total$L_m)
+
+
+DW_total %>% 
+  mutate(dw_tapes_swB_kg = case_when((DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m))  ~ tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+                                     DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+                                     TRUE ~ 0))
+
+
+#          dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
+#                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
+#                                       TRUE ~ 0), 
+#          dw_tapes_stwB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 
+#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+#                                       TRUE ~ 0),
+#          dw_tapes_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m),
+#                                       DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
+#                                       TRUE ~ 0),
+#          dw_tapes_fwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m),
+#                                      TRUE ~ 0))
+# GHG - TapeS compartiments
+# nitrogen stock
+
+DW_total %>% 
+  filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & !is.na(D_h_m)) %>% 
+  mutate(dw_tapes_swB_kg =  dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m))
+
+DW_total %>% 
+  mutate(dw_tapes_swB_kg =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m),
+                                      TRUE ~ 0))
+spec_tpS = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(tpS_ID)
+d = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(D_cm)
+dh = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(D_h_m)
+h = DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 1.3) %>%  dplyr::pull(L_m)
+as.vector(dw_tapes_swB(spec_tpS, d, dh, h))  
+
+
+# ----- 2.2.3.2. deadwood compartiments & nitrogen   -------------------------------------------------
+
+
+
+
+# DW_total <- DW_total %>% 
+#   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
+#   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+#          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+#          B_dw_kg = B_DW(V_dw_m3, SP_dec_type)) %>% 
+#   # calulation method biomass compartiments for trees of deadwood type 1& 2 
+#   # no fine wood compartment for deadwood types that don´t include whole trees, while Bruchstücke (1) are nirogen-wise treated as fine wood
+#   mutate(dw_tapes_fwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 ~ "tapes_dw_fw", 
+#                                         TRUE ~ "not excisting" ),
+#          # solid wood biomass for all dead trees that are in a early state of decay except of deadwood piles, stumps and "starkes Totholz" Bruchstücke ohne Wurzel
+#          dw_tapes_sw_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swB", 
+#                                      TRUE ~ "B_dw_kg"),
+#          # solid wood bark biomass for all dead trees that are in a early state of decay except of deadwood piles
+#          dw_tapes_swb_meth = case_when(DW_type %in% c(2, 5, 3) & dec_type_BWI < 3 ~ "tapes_swbB", 
+#                                        TRUE ~ "not excisting"), 
+#          # stump wood biomass for whole dead trees, fragments of deadwood and logs in early stages of decay
+#          dw_tapes_stw_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwB",
+#                                        TRUE ~ "not excisting"),
+#          # stump wood bark for whole dead trees and logs in early stages of decay
+#          dw_tapes_stwb_meth = case_when(DW_type %in% c(2, 5, 4) & dec_type_BWI < 3 ~ "tapes_stwbB",
+#                                         TRUE ~ "not excisting")) 
+
+DW_total <- DW_total %>% 
+  mutate(dw_tapes_swB_kg = as.vector(ifelse(dw_tapes_sw_meth == "tapes_swB" , dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+         dw_tapes_swbB_kg = as.vector(ifelse(dw_tapes_swb_meth == "tapes_swbB" , dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         dw_tapes_stwB_kg = as.vector(ifelse(dw_tapes_stw_meth == "tapes_stwB", dw_tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), 0)),
+         # dw_tapes_stwbB_kg = as.vector(ifelse(dw_tapes_stwb_meth == "tapes_stwbB", dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
+         dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw", dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0)))# %>% 
+# GHG-TapeS-stepwise
+
+
 
 # ----- N.5 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
