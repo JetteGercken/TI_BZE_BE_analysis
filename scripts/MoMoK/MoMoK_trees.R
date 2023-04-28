@@ -648,65 +648,65 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 
 
 
-dw_tapes_swB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
-  Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
-  Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
-  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-  sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))};
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(if (length(obj.tbio) != 0) {sw.df$sw})
-}
-
-# ----- 1.3.4.4.2. solid wood bark tapeS ---------------------------------------
-dw_tapes_swbB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
-  Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
-  Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
-  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-  swb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sb"))};
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(if (length(obj.tbio) != 0) {swb.df$sb})
-}
-
-# ----- 1.3.4.4.3. stump wood tapeS --------------------------------------------
-dw_tapes_stwB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
-  Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
-  Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
-  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-  stw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stw"))};
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(if (length(obj.tbio) != 0) {stw.df$stw})
-}
-
-# ----- 1.3.4.4.4. stump wood bark tapeS ---------------------------------------
-dw_tapes_stwbB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
-  Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
-  Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
-  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-  stwb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stb"))};
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(if(length(obj.tbio) != 0) {stwb.df$stb})
-}
-
-# ----- 1.3.4.4.4. fine wood incl. bark tapeS ----------------------------------
-# dw_fwb_tapes
-dw_tapes_fwB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
-  Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
-  Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
-  Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
-  obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
-  fw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "fwb"))};
-  # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(if (length(obj.tbio) != 0) {fw.df$fwb})
-}
+# dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+#   spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
+#   Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
+#   Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
+#   Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
+#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+#   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))};
+#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+#   return(if (length(obj.tbio) != 0) {sw.df$sw})
+# }
+# 
+# # ----- 1.3.4.4.2. solid wood bark tapeS ---------------------------------------
+# dw_tapes_swbB <- function(spec_tpS, d, dh, h){         
+#   spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
+#   Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
+#   Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
+#   Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
+#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+#   swb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sb"))};
+#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+#   return(if (length(obj.tbio) != 0) {swb.df$sb})
+# }
+# 
+# # ----- 1.3.4.4.3. stump wood tapeS --------------------------------------------
+# dw_tapes_stwB <- function(spec_tpS, d, dh, h){         
+#   spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
+#   Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
+#   Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
+#   Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
+#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+#   stw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stw"))};
+#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+#   return(if (length(obj.tbio) != 0) {stw.df$stw})
+# }
+# 
+# # ----- 1.3.4.4.4. stump wood bark tapeS ---------------------------------------
+# dw_tapes_stwbB <- function(spec_tpS, d, dh, h){         
+#   spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
+#   Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
+#   Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
+#   Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
+#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+#   stwb.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "stb"))};
+#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+#   return(if(length(obj.tbio) != 0) {stwb.df$stb})
+# }
+# 
+# # ----- 1.3.4.4.4. fine wood incl. bark tapeS ----------------------------------
+# # dw_fwb_tapes
+# dw_tapes_fwB <- function(spec_tpS, d, dh, h){         
+#   spp = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(tpS_ID));
+#   Dm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_cm)));
+#   Hm = na.omit(as.list(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(D_h_m)));
+#   Ht = na.omit(DW_total %>% filter(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 1.3) %>%  dplyr::pull(L_m));
+#   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+#   fw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "fwb"))};
+#   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+#   return(if (length(obj.tbio) != 0) {fw.df$fwb})
+# }
 
 # ----- 1.3.5. REGENERATION BIOMASS --------------------------------------------
 # ----- 1.3.5.1. root collar diameter in mm ---------------------------------------
@@ -2080,10 +2080,50 @@ DW_total <- left_join(DW_total,
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type)) #%>% 
   # TapeS compartiments
 
-# DW_total %>% 
-#  mutate(dw_tapes_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
-#                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
-#                                      TRUE ~ 0), 
+ 
+ DW_total %>% 
+   mutate(sw_dw_tapes_kg = ifelse((dw_t == 2 & dec_t < 3 & !is.na(dh) & !is.na(l) & l > 1.3) |( dw_t == 5 & dec_t < 3 & !is.na(dh) & !is.na(l)  & l > 1.3), 
+                                  tprBiomass(tprTrees(spp = tps_sp, Dm = as.list(d), Hm = as.list(dh), Ht = l, inv = 4), component = "sw"), 
+                                  0))
+ 
+ 
+ dw_sw_tapes.1(DW_total$DW_type[!is.na(DW_total$D_h_m)], 
+             DW_total$dec_type_BWI[!is.na(DW_total$D_h_m)], 
+             DW_total$tpS_ID[!is.na(DW_total$D_h_m)], 
+             DW_total$D_cm[!is.na(DW_total$D_h_m)], 
+             DW_total$D_h_m[!is.na(DW_total$D_h_m)], 
+             DW_total$L_m[!is.na(DW_total$D_h_m)])
+ 
+ 
+ 
+ 
+ dw_sw_tapes.1 <- function(dw_t, dec_t, tps_sp, d, dh, l){
+   dw_sw <- as.vector(ifelse((dw_t == 2 & dec_t < 3 & !is.na(dh) & !is.na(l) & l > 1.3) |( dw_t == 5 & dec_t < 3 & !is.na(dh) & !is.na(l)  & l > 1.3), 
+                             tprBiomass(tprTrees(spp = tps_sp, Dm = as.list(d), Hm = as.list(dh), Ht = l, inv = 4), component = "sw"), 
+                             0));
+   return(dw_sw)
+ }
+ 
+ 
+ dw_sw_tapes.2 <- function(dw_data, dw_t, dec_t, tps_sp, d, dh, l){
+   spp = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{tps_sp}});
+   Dm = as.list(filter(dw_data,{{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{d}}));
+   Hm = as.list(filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{dh}}));
+   Ht = filter(dw_data, {{ dw_t }} == 2 & {{ dec_t}} < 3 & !is.na({{dh}}) & {{l}} > 1.3) %>% dplyr::pull({{l}});
+   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+   return(if (length(obj.tbio) != 0) {sw.df$sw})
+ }
+ 
+ dw_sw_tapes.2(DW_total, DW_total$DW_type, DW_total$dec_type_BWI, DW_total$tpS_ID,  DW_total$D_cm, DW_total$D_h_m, DW_total$L_m)
+ 
+ 
+ DW_total %>% 
+  mutate(dw_tapes_swB_kg = case_when((DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m))  ~ tapes_swB(tpS_ID, D_cm, D_h_m, L_m), 
+                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg-(B_dw_kg*dw_tapes_b_ratio),
+                                      TRUE ~ 0))
+ 
+
 #          dw_tapes_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ dw_tapes_swbB(tpS_ID, D_cm, D_h_m, L_m),
 #                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ B_dw_kg*dw_tapes_b_ratio,
 #                                       TRUE ~ 0), 
@@ -2796,8 +2836,8 @@ biotest %>%
          fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
-                                startsWith(method, 'G')~ "GHGI", 
-                                TRUE~"Vondernach"), 
+                                startsWith(method, 'V')~ "Vondernach", 
+                                TRUE~"GHGI"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
            method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
            method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
@@ -2832,8 +2872,8 @@ biotest %>%
          fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
-                                startsWith(method, 'G')~ "GHGI", 
-                                TRUE~"Vondernach"), 
+                                startsWith(method, 'V')~ "Vondernach", 
+                                TRUE~"GHGI"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
            method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
            method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
