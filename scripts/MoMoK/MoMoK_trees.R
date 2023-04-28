@@ -2075,10 +2075,14 @@ DW_total <- left_join(DW_total,
                                          # but to be able to calculate the whole biomass stepwise, 
                                          # but I will not add it to the final dw_kg column
                                         TRUE ~ "no"))
- 
+
+
+
+# ----- 2.2.2. Deadwood compartiment biomass, nitrogen stock ---------------------------------------------
 # addding compartiments biomasses to DW_total via filtered datasets
- DW_total <- DW_total %>%    
-   # 1. solid wood 
+ DW_total <- DW_total %>% 
+ # TapeS compartiment biomass 
+  # 1. solid wood 
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
@@ -2097,7 +2101,7 @@ DW_total <- left_join(DW_total,
                 mutate(dw_tps_sw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg)),
             by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swB_meth")) %>% 
-# 2. solid wood bark
+  # 2. solid wood bark
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
@@ -2116,7 +2120,7 @@ DW_total <- left_join(DW_total,
                 mutate(dw_tps_swb_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg)),
             by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swbB_meth")) %>%
-# 3. stump wood
+  # 3. stump wood
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
@@ -2135,7 +2139,7 @@ DW_total <- left_join(DW_total,
                 mutate(dw_tps_stw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg)), 
             by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwB_meth")) %>%
-# 4. solid wood bark
+  # 4. solid wood bark
   left_join(.,
             rbind(
               # dataset with whole trees in low satates of decay
@@ -2154,7 +2158,7 @@ DW_total <- left_join(DW_total,
                 mutate(dw_tps_stwb_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg)), 
             by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwbB_meth")) %>%
-# 5. fine wood including bark 
+  # 5. fine wood including bark 
   left_join(., 
             rbind(
               # dataset with whole trees in low satates of decay
@@ -2168,22 +2172,35 @@ DW_total <- left_join(DW_total,
                 mutate(dw_tps_fw_kg = 0) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg)), 
             by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
-   
+  # 6. foliage biomass (just pro forma, to deduct from the whole tree biomass, bec ause tapeS always creates a whole tree) 
+  left_join(., 
+            rbind(
+              # dataset with whole trees in low satates of decay
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "yes") %>% 
+                mutate(dw_tps_f_kg = tapes_fB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg), 
+              # dataset without foliage compartimenz
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "no") %>% 
+                mutate(dw_tps_f_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg)), 
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
 # stepwise cacluation of compartiemnt biomass vie bio - tapeS 
           # solid wood
-   mutate(dw_swB_kg = case_when(dw_tapes_swB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) - (dw_tps_swb_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+   mutate(dw_swB_kg = case_when(dw_tapes_swB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) - (dw_tps_swb_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
                                dw_tapes_swB_meth == "sw_tapeS_wood" ~ B_dw_kg-(B_dw_kg*(dw_tps_swb_kg/dw_tps_sw_kg)),
                                TRUE ~ B_dw_kg), 
           # solid wood bark
-          dw_swbB_kg = case_when(dw_tapes_swbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+          dw_swbB_kg = case_when(dw_tapes_swbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
                                 dw_tapes_swbB_meth == "sw_tapeS_bark" ~ B_dw_kg- dw_swB_kg,
                                 TRUE ~ 0),
           # stump wood
-          dw_stwB_kg = case_when(dw_tapes_stwB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_swbB_kg + dw_tps_stwb_kg),
+          dw_stwB_kg = case_when(dw_tapes_stwB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_tps_stwb_kg),
                                dw_tapes_stwB_meth == "st_tapeS_wood" ~ B_dw_kg- (B_dw_kg*(dw_tps_stwb_kg/dw_tps_stw_kg)),
                                TRUE ~ 0), 
           # stump wood bark
-          dw_stwbB_kg = case_when(dw_tapes_stwbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
+          dw_stwbB_kg = case_when(dw_tapes_stwbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
                                 dw_tapes_stwbB_meth == "st_tapeS_bark" ~ B_dw_kg- dw_stwB_kg,
                                 TRUE ~ 0),
           # fine wood
@@ -2198,55 +2215,10 @@ DW_total <- left_join(DW_total,
    mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
    
  
- 
- 
- 
- summary(DW_total)
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-  # solid wood bark  for dead trees of all types except 6
-  # fine wood has to be added instead of deducted because it´s not part of the calculation of the total biomass
-  mutate(dw_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI <3 & L_m > 3  ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
-                               DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
-                               DW_type == 1  & dec_type_BWI < 3 ~ 0, 
-                               TRUE ~ B_dw_kg), 
-         # solid wood bark  for dead trees of all types except 6
-         dw_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
-                                DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
-                                TRUE ~ 0), 
-         # stump wood only for dead trees of types 1, 2, 3, 5
-         dw_stwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
-                                DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg), 
-                                DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_tapes_stwbB_kg,
-                                TRUE ~ 0), 
-         # stump wood bark only for dead trees of types 1, 2, 3, 5
-          dw_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_tapes_fwB_kg),
-                                  DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg), 
-                                  DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_stwB_kg, 
-                                  TRUE ~ 0), 
-         # fine wood only for deadwood types 2 & 5 
-         dw_fwB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_stwbB_kg),
-                               DW_type == 1  & dec_type_BWI < 3 ~ B_dw_kg,
-                               TRUE ~ 0)) %>% 
-  select(-c(dw_tapes_swB_kg, dw_tapes_swbB_kg, dw_tapes_stwB_kg, dw_tapes_stwbB_kg, dw_tapes_fwB_kg)) %>%
- mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
-       N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-       N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-       N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
-       N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
-       N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
- mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
-
 summary(DW_total)
-DW_total %>% filter(dw_swB_kg < 0)
+
+ 
+
 
 
 
@@ -4389,8 +4361,41 @@ DW_total <- DW_total %>%
          # dw_tapes_stwbB_kg = as.vector(ifelse(dw_tapes_stwb_meth == "tapes_stwbB", dw_tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), 0)), 
          dw_tapes_fwB_kg = as.vector(ifelse(dw_tapes_fwB_meth == "tapes_dw_fw", dw_tapes_fwB(tpS_ID, D_cm, D_h_m, L_m), 0)))# %>% 
 # GHG-TapeS-stepwise
+# solid wood bark  for dead trees of all types except 6
+# fine wood has to be added instead of deducted because it´s not part of the calculation of the total biomass
+mutate(dw_swB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI <3 & L_m > 3  ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                             DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
+                             DW_type == 1  & dec_type_BWI < 3 ~ 0, 
+                             TRUE ~ B_dw_kg), 
+       # solid wood bark  for dead trees of all types except 6
+       dw_swbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                              DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg), 
+                              TRUE ~ 0), 
+       # stump wood only for dead trees of types 1, 2, 3, 5
+       dw_stwB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg),
+                              DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg), 
+                              DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_tapes_stwbB_kg,
+                              TRUE ~ 0), 
+       # stump wood bark only for dead trees of types 1, 2, 3, 5
+       dw_stwbB_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_tapes_fwB_kg),
+                               DW_type == 3 & dec_type_BWI <3 & L_m > 3 ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg), 
+                               DW_type == 4 & dec_type_BWI < 3 & L_m > 3 ~ B_dw_kg -dw_stwB_kg, 
+                               TRUE ~ 0), 
+       # fine wood only for deadwood types 2 & 5 
+       dw_fwB_kg = case_when((DW_type == 2 & dec_type_BWI < 3 & L_m > 3)| (DW_type == 5 & dec_type_BWI < 3 & L_m > 3) ~ B_dw_kg - (dw_swB_kg + dw_swbB_kg+ dw_stwB_kg  + dw_stwbB_kg),
+                             DW_type == 1  & dec_type_BWI < 3 ~ B_dw_kg,
+                             TRUE ~ 0)) %>% 
+  select(-c(dw_tapes_swB_kg, dw_tapes_swbB_kg, dw_tapes_stwB_kg, dw_tapes_stwbB_kg, dw_tapes_fwB_kg)) %>%
+  mutate(C_dw_kg = C_DW(V_dw_m3, SP_dec_type), 
+         N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+         N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+         N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
+         N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
+         N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
+  mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
 
-
+summary(DW_total)
+DW_total %>% filter(dw_swB_kg < 0)
 
 # ----- N.5 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
