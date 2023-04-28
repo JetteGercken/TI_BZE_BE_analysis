@@ -634,17 +634,16 @@ C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the
 # ----- 1.3.4.4. Deadwood compartiments ----------------------------------------
 
 # ----- 1.3.4.4.1. solid wood tapeS --------------------------------------------
-# dw_sw_tapes
- # dw_tapes_swB <- function(spec_tpS, d, dh, h){         
- #   spp = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(tpS_ID));
- #   Dm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_cm)));
- #   Hm = na.omit(as.list(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(D_h_m)));
- #   Ht = na.omit(DW_total %>% filter(dw_tapes_sw_meth == "tapes_swB" & !is.na(D_h_m)) %>% dplyr::pull(L_m));
- #   obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
- #   sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
- #   # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
- #   return(if (length(obj.tbio) != 0) {sw.df$sw})
- # }
+  dw_tapes_swB <- function(spec_tpS, d, dh, h){         
+    spp = na.omit(spec_tpS);
+    Dm = na.omit(as.list(d));
+    Hm = na.omit(as.list(dh));
+    Ht = na.omit(h);
+    obj.tbio <- if(length(spp) != 0) {tprTrees(spp, Dm, Hm, Ht, inv = 4)} else {list()};
+    sw.df <- if (length(obj.tbio) != 0) {as_tibble(tprBiomass(obj.tbio[obj.tbio@monotone == TRUE], component = "sw"))}
+    # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
+    return(if (length(obj.tbio) != 0) {sw.df$sw})
+  }
 
 
 
@@ -2077,13 +2076,40 @@ DW_total <- left_join(DW_total,
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
-         C_dw_kg = C_DW(V_dw_m3, SP_dec_type)) #%>% 
+         C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
   # TapeS compartiments
+   mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
+                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "no",
+                                      TRUE ~ "no"),
+          dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "ratio",
+                                        TRUE ~ "no"), 
+           dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes", 
+                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "no",
+                                        TRUE ~ "no"),
+           dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "ratio",
+                                        TRUE ~ "no"),
+           dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ "yes",
+                                       TRUE ~ "no"))
 
  
+ 
+ 
+ 
  DW_total %>% 
-   mutate(sw_dw_tapes_kg = ifelse((dw_t == 2 & dec_t < 3 & !is.na(dh) & !is.na(l) & l > 1.3) |( dw_t == 5 & dec_t < 3 & !is.na(dh) & !is.na(l)  & l > 1.3), 
-                                  tprBiomass(tprTrees(spp = tps_sp, Dm = as.list(d), Hm = as.list(dh), Ht = l, inv = 4), component = "sw"), 
+   filter()
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ DW_total %>% 
+   mutate(sw_dw_tapes_kg = ifelse(dw_tapes_swB_meth == "yes", 
+                                  tprBiomass(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = L_m, inv = 4), component = "sw"), 
                                   0))
  
  
