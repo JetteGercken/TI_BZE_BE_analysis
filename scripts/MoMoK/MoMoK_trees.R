@@ -1731,32 +1731,41 @@ trees_total_5 <- trees_total_5 %>%
          bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
     # compartiments:
   # TapeS
-  mutate(tapes_fB_kg = tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # foliage
-         tapes_brB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
-         tapes_DhB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
-         tapes_DhbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
+  mutate(tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # total aboveground biomass
+         tapes_fB_kg = ifelse(LH_NH == "NB", tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),  # foliage conifers 
+                              Wutzler_fB_L1(DBH_cm, H_m)),                            # foliage broadleaves
+         tapes_fwB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
+         tapes_swB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
+         tapes_swbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
          tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%               # stumbwood bark 
-  # GHG-TapeS-stepwise
-  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
-         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
-         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
+  
+ #### 
+  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
+   # GHG-TapeS-stepwise
+  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
+         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
          fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
          fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
          tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),                                # total aboveground biomass
          tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
-  select(-c(tapes_fB_kg, tapes_brB_kg, tapes_DhB_kg, tapes_DhbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
-  mutate(C_aB_t = (aB_kg/1000)*0.5,
+ # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
+ #### 
+  # Carbon stock
+   mutate(C_aB_t = (aB_kg/1000)*0.5,
+         C_ab_t_tapes = (tapes_ab_kg/1000)*05,
          C_bB_t = (bB_kg/1000)*0.5,
-         N_f_kg = ifelse(LH_NH == "NB", N_f(fB_kg, N_SP_group), 0),
-         N_fw_kg = N_fw(fwB_kg, N_SP_group), 
-         N_sw_kg = N_sw(swB_kg, N_SP_group), 
+  # Nitrogen stock
+         N_f_kg =  N_f(tapes_fB_kg, N_SP_group),
+         N_fw_kg = N_fw(tapes_fwB_kg, N_SP_group), 
+         N_sw_kg = N_sw(tapes_swB_kg, N_SP_group), 
          N_swb_kg = N_swb(swbB_kg, N_SP_group), 
          N_stw_kg = N_sw(stwB_kg, N_SP_group),
          N_stwb_kg =  N_swb(stwbB_kg, N_SP_group)) %>% 
   mutate(tot_N__t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
-         tot_C_t = C_aB_t + C_bB_t)
+         tot_C_t = C_ab_t_tapes + C_bB_t)
   
 
 
@@ -2238,15 +2247,20 @@ RG_total <- RG_total %>%
   # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
    mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
   # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
-          RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)), 
-          RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0)) %>% 
+          RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)),
+          RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
+          RG_tapeS_ab_kg = ifelse(H_cm > 130, tapes_aB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130))), h = H_cm/100),  Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
   # belated compartitioning via Poorter
-  mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
-         Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH))%>%       # root to shoot ratio
-  mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NH", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
-         Annig_Poorter_stem_kg = ifelse(LH_NH == "NH", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg))
-  # Nitrogen content
- #mutate(N_fw)
+  mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to shoot  ratio
+         Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
+         tapeS_Poorter_fB_kg = ifelse(LH_NH == "NB" & H_cm > 130, tapes_fB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130))), h = H_cm/100),   Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)))%>%       
+  mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
+         Annig_Poorter_stem_kg = ifelse(LH_NH == "NB", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg), 
+         tapes_Poorter_stem_kg = ifelse(LH_NH == "NB"  ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, RG_tapeS_ab_kg)) %>% 
+  # Nitrogen 
+ mutate(C_RG_t = (RG_tapeS_ab_kg*0.5)/1000, 
+        N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
+        N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group))
 
 
 
