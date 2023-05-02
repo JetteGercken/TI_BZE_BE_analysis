@@ -804,9 +804,9 @@ return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
 # ----- 1.3.5.3.2. leaf vs. root -----------------------------------------------
 # RLR means roots leafes ratio
 Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_LH here
-  a <- c(NH = 0.243, LH = 0.090);
-  b1 <- c(NH = 0.924, LH = 0.889);
-  b2 <- c(NH = -0.0282, LH = -0.0254);
+  a <- c(NB = 0.243, LB = 0.090);
+  b1 <- c(NB = 0.924, LB = 0.889);
+  b2 <- c(NB = -0.0282, LB = -0.0254);
   return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
 }
 
@@ -1344,7 +1344,7 @@ RG_total <- RG_total %>%
                                               LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                               LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                               TRUE ~ 'other')) %>% 
-              dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, tpS_ID), 
+              dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID), 
             by = c("SP_code" = "Chr_ger_cap"))  %>%
   # creating Species groups to assign the corect coefficients of the Annighöfer biomass functions based on BWI species groups
   mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  'WTA', 
@@ -2251,17 +2251,34 @@ RG_total <- RG_total %>%
           RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
           RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
                                    tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), 
-                                            RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm), 
+                                            RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>% 
+                                              filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm), 
                                             dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), 
-                                           RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% mutate %>%(H_m = H_cm/100) %>% dplyr::pull(H_m)), 
-                                   Dunger_aB_Hb1.3(LH_NH, H_cm/100))) #%>% 
+                                           RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 
+                                   Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
   # belated compartitioning via Poorter
   mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to shoot  ratio
          Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
-         tapeS_Poorter_fB_kg = ifelse(LH_NH == "NB" & H_cm > 130 &  D_class_cm > 0, tapes_fB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), h = H_cm/100),   Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)))%>%       
-  mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
+                             # broadleaved foliage via Poorter for trees that have a DBH because TapeS doesn´t have it, 
+                             # NH trees with a belowgrond masss but below 1.3m won´t have a DBH so they don´t have a bB so they cannot have foliage calcualted via root-leaf-ratio  
+         tapeS_Poorter_fB_kg = ifelse((LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0) | (LH_NH == "LB"), Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),
+                             # coniferous trees foliage is calcualted via TapeS for trees that have a DBH via                       
+                                       ifelse(LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 
+                                              tapes_fB(spec_tpS = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
+                                                d = RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
+                                                  filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),
+                                                dh = rep(1.3, nrow(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))),
+                                                h = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 0))) %>%  
+  mutate(tapeS_Poorter_meth = ifelse((LH_NH == "NB" & H_cm < 130 & D_class_cm <= 0) | LH_NH == "LB",'poorter', 
+                                     ifelse( LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 'tapes', 'non')), 
+         # tapeS kept calcualting negative values for the foliage of some trees, 
+         # which could be linked to the particularly small dimensions which TapeS models are not well fitted for
+         # thus negataive foliage values are relplaced by the foliage clauted via Poorters RLR
+         tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0, Poorter_fB_kg, tapeS_Poorter_fB_kg)) %>% 
+# compartiments 
+mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
          Annig_Poorter_stem_kg = ifelse(LH_NH == "NB", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg), 
-         tapes_Poorter_stem_kg = ifelse(LH_NH == "NB"  ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, RG_tapeS_ab_kg)) %>% 
+         tapes_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, RG_tapeS_ab_kg)) %>% 
   # Nitrogen 
  mutate(RG_C_t = (RG_tapeS_ab_kg*0.5)/1000, 
         RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
@@ -2270,17 +2287,46 @@ RG_total <- RG_total %>%
 
 
 
+RG
+
+summary(RG_total) # --> there are negative foliage values ! 
+
+nrow(RG_total %>% 
+       filter(LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0 | LH_NH == "LB"))
+
+nrow(RG_total %>% 
+       filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))
 
 
-summary(RG_total)
+
+RG_total %>% 
+  filter(LH_NH == "NB" & H_cm < 130 & D_class_cm <= 0)
+
+
+nrow()
 
 RG_total %>% 
   mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
                    D_class_cm == 1 ~ (4.9+0)/2, 
                    D_class_cm == 2 ~ (5.9+5)/2,
-                   TRUE ~ (6.9+6)/2)) %>% 
-  filter(H_cm > 130 & D_class_cm > 0) %>% 
-  mutate(aB_kg = tapes_aB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), h = H_cm/100))
+                   TRUE ~ (6.9+6)/2)) %>%
+  mutate(Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
+         tapeS_Poorter_fB_kg = case_when((LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) ~ "tapes_fB", 
+                                         LH_NH == "LB" & RG_GHG_bB_kg > 0 ~ "Poorter_rg_RSR" ,
+                                         TRUE ~ "non"))
+  
+  
+
+tapes_fB(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
+         RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
+           filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),
+         dh = rep(1.3, nrow(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))),
+         RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m))
+  
+  
+
+  
+ nrow(RG_total %>%  filter(LH_NH == "NB" & H_cm > 130 &  D_class_cm > 0))
 
 
 RG_total %>% 
