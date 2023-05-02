@@ -1833,7 +1833,7 @@ biotest <- trees_total_5 %>%
          diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
          diff_Vondr_tps = tapes_ab_kg - Vondr_oiB_kg)
                                          
-
+summary(biotest)
 
 
 
@@ -2249,24 +2249,38 @@ RG_total <- RG_total %>%
   # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
           RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)),
           RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
-          RG_tapeS_ab_kg = ifelse(H_cm > 130, tapes_aB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130))), h = H_cm/100),  Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
+          RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
+                                   tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), 
+                                            RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm), 
+                                            dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), 
+                                           RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% mutate %>%(H_m = H_cm/100) %>% dplyr::pull(H_m)), 
+                                   Dunger_aB_Hb1.3(LH_NH, H_cm/100))) #%>% 
   # belated compartitioning via Poorter
   mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to shoot  ratio
          Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
-         tapeS_Poorter_fB_kg = ifelse(LH_NH == "NB" & H_cm > 130, tapes_fB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130))), h = H_cm/100),   Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)))%>%       
+         tapeS_Poorter_fB_kg = ifelse(LH_NH == "NB" & H_cm > 130 &  D_class_cm > 0, tapes_fB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), h = H_cm/100),   Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH)))%>%       
   mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
          Annig_Poorter_stem_kg = ifelse(LH_NH == "NB", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg), 
          tapes_Poorter_stem_kg = ifelse(LH_NH == "NB"  ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, RG_tapeS_ab_kg)) %>% 
   # Nitrogen 
- mutate(C_RG_t = (RG_tapeS_ab_kg*0.5)/1000, 
-        N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
-        N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group))
+ mutate(RG_C_t = (RG_tapeS_ab_kg*0.5)/1000, 
+        RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
+        RG_N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group), 
+        RG_N_total_kg = RG_N_stem_kg + RG_N_f_kg)
 
 
 
 
 
 summary(RG_total)
+
+RG_total %>% 
+  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
+                   D_class_cm == 1 ~ (4.9+0)/2, 
+                   D_class_cm == 2 ~ (5.9+5)/2,
+                   TRUE ~ (6.9+6)/2)) %>% 
+  filter(H_cm > 130 & D_class_cm > 0) %>% 
+  mutate(aB_kg = tapes_aB(tpS_ID, D_cm, dh =  rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), h = H_cm/100))
 
 
 RG_total %>% 
@@ -2630,6 +2644,57 @@ ggplot(data = trees_total_6,
   theme(legend.position = "bottom")
 
 
+
+
+
+
+# ----- 3.1.5.4. heihgts with tapes all height methody compared -----------------
+
+# preparing dataset with all height methods 
+trees_total %>%
+  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% 
+  left_join(.,coeff_H_SP_P %>% 
+              select(plot_ID, SP_code, R2, b0, b1, b2), 
+            by = c("plot_ID", "SP_code")) %>% 
+  # if R2 or the coefficients are NA use the respective columns of the more general model
+  left_join(., coeff_H_SP %>% select(SP_code, R2, b0, b1, b2),
+            by = "SP_code") %>% 
+  left_join(., trees_total %>%                                  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
+              group_by(plot_ID, C_layer, SP_code) %>%             # group by plot and species and canopy layer to calcualte dg, hg 
+              summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+                        mean_DBH_mm = mean(DBH_mm),               # mean diameter per species per canopy layer per plot
+                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+            by = c("plot_ID", "SP_code", "C_layer")) %>%
+  mutate(H_m_sampled = ifelse(is.na(H_m), NA, H_m), 
+         nls_H_SP_P = ifelse(is.na(H_m), h_nls_SP_P(SP_P_ID, DBH_cm), NA), 
+         #nls_H_SP_P_meth = ifelse(is.na(H_m), "h_nls_SP_P", "sampled"), 
+         nls_H_SP = ifelse(is.na(H_m), h_nls_SP(SP_code, DBH_cm), NA), 
+         #nls_H_SP_meth = ifelse(is.na(H_m), "h_nls_SP", "sampled"), 
+         tapeS_H = ifelse(is.na(H_m), estHeight(DBH_cm, tpS_ID), NA), 
+         #tapeS_H_meth = ifelse(is.na(H_m), "tapeS", "sampled"),
+         sloboda_H = ifelse(is.na(H_m), ehk_sloboda(H_SP_group, DBH_mm, mean_DBH_mm, D_g, H_g), NA), 
+         #sloboda_H_meth = ifelse(is.na(H_m), "Sloboda", "sampled"),
+         curtis_H = ifelse(is.na(H_m) & !is.na(H_g), h_curtis(H_SP_group, DBH_mm), NA), 
+         #curtis_H_meth = ifelse(is.na(H_m), "Curtis", "sampled")
+         ) %>% 
+  select(plot_ID, SP_code, DBH_cm, 
+         H_m_sampled, 
+         nls_H_SP_P, 
+         #nls_H_SP_P_meth,
+         nls_H_SP, 
+        # nls_H_SP_meth,
+         tapeS_H, 
+         #tapeS_H_meth, 
+         sloboda_H, 
+         #sloboda_H_meth,
+        #curtis_H_meth,
+         curtis_H) %>% 
+  tidyr::gather("method", "height", 4:9) %>% 
+  ggplot(., aes(DBH_cm, height))+
+  geom_point(aes(colour = method))+
+  facet_wrap(plot_ID~SP_code)
+
+
 # ---- 3.2. Biomass visualization ----------------------------------------
 # ---- 3.2.1. foliage Biomass visualization ----------------------------------------
 biotest %>% 
@@ -2875,13 +2940,13 @@ biotest %>%
   tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'V')~ "Vondernach", 
-                                TRUE~"GHGI"), 
+                                TRUE~"stepwise GHGI"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
            method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
            method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
            method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
            method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("fw_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           method %in% c("fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>%
   group_by(method, gen_method, compartiment, plot_ID, SP_code) %>% 
   summarize(mean_bio = mean(biomass)) %>%
@@ -2917,7 +2982,7 @@ biotest %>%
            method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
            method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
            method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("fw_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           method %in% c("fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>%
   group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
   summarize(mean_bio = mean(biomass)) %>%
