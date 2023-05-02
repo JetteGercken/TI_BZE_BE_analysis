@@ -1691,7 +1691,7 @@ for(id in unique(trees_total_5$plot_ID)){
     mutate(percent_t100_corrected = as.numeric(ifelse(percent_t100 < 1.0, percent_t100, 1.0)), 
            n_rows_t100 = as.integer(N_trees_plot*percent_t100_corrected)) %>% # if the proportion would be higher then the total amount of rows because there are so few trees per hectare calcuate with all the trees per plot (1)
     dplyr::pull(n_rows_t100) 
- 
+  
    # dataframe with mean height of top n rows 
   sliced_plot <- trees_total_5 %>%
     #group_by(plot_ID) %>% 
@@ -1703,6 +1703,37 @@ for(id in unique(trees_total_5$plot_ID)){
   
   mean100top[id] <- sliced_plot[1,2]
 }
+
+
+# new idea by Lukas Mörler 31.04.2023: 
+# 10 000 m2 --> 100 Bäume
+#      1 ha --> 100 Bäume 
+#   1 /(1/0.05003) =  0.05003(plot area) --> 100/(1/0.05003) 
+
+for(id in unique(trees_total_5$plot_ID)){
+  # calcuate number of rows to extract per plot
+  
+  n_t100 = trees_total_5 %>% 
+    filter(plot_ID == id) %>% 
+    mutate(n_t100 = as.numeric(ceiling(100/(1/plot_A_ha)))) %>%
+    select(n_t100) %>% 
+    distinct() %>% 
+    dplyr::pull(n_t100)
+  
+  # dataframe with mean height of top n rows 
+  sliced_plot <- trees_total_5 %>%
+    #group_by(plot_ID) %>% 
+    filter(plot_ID == id) %>%
+    slice_max(DBH_cm, n = n_t100, with_ties = FALSE) %>% # select top 100 representing rows
+    summarise(plot_ID = mean(plot_ID),
+              H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+              top_H = mean(H_m))                         # calculate mean height
+  
+  mean100top[id] <- sliced_plot[1,2]
+}
+
+
+
 
 
 # ----- 2.1.2.2. estimated biomass living trees -----------------------------------------------------------
@@ -1753,6 +1784,7 @@ trees_total_5 <- trees_total_5 %>%
          tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
  # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
  #### 
+  
   # Carbon stock
    mutate(C_aB_t = (aB_kg/1000)*0.5,
          C_ab_t_tapes = (tapes_ab_kg/1000)*05,
@@ -1767,7 +1799,7 @@ trees_total_5 <- trees_total_5 %>%
   mutate(tot_N__t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
          tot_C_t = C_ab_t_tapes + C_bB_t)
   
-
+summary(trees_total_5)
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -2240,7 +2272,7 @@ RG_total <- RG_total %>%
                           D_class_cm == 1 ~ (4.9+0)/2, 
                           D_class_cm == 2 ~ (5.9+5)/2,
                           TRUE ~ (6.9+6)/2)) %>% 
-  # biomass
+  # total biomass
          # Biomass according to Annighoefer
          # estimating Root collar diameter via Annighoefer
   mutate(Annig_RCD_mm = ifelse(H_cm >= 130, annighoefer_RCD(D_cm, LH_NH, "130"), NA)) %>% # 130 = height at which the diameter was measured [cm]
@@ -2256,13 +2288,14 @@ RG_total <- RG_total %>%
                                             dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), 
                                            RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 
                                    Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
-  # belated compartitioning via Poorter
-  mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to shoot  ratio
-         Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
+  # belated compartitioning via Poorter: calautaing foliage biomass to deduct it from total biomass
+          # root to  leaf  ratio
+  mutate(Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             
+          # tapeS foliage when possible (coniferous trees above 1.3m heihgt and DBH > 0), if not possible foliage via Poorter or 0 
                              # broadleaved foliage via Poorter for trees that have a DBH because TapeS doesn´t have it, 
                              # NH trees with a belowgrond masss but below 1.3m won´t have a DBH so they don´t have a bB so they cannot have foliage calcualted via root-leaf-ratio  
          tapeS_Poorter_fB_kg = ifelse((LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0) | (LH_NH == "LB"), Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),
-                             # coniferous trees foliage is calcualted via TapeS for trees that have a DBH via                       
+                             # coniferous trees foliage is calculated via TapeS for trees that have a DBH via                       
                                        ifelse(LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 
                                               tapes_fB(spec_tpS = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
                                                 d = RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
@@ -2276,85 +2309,23 @@ RG_total <- RG_total %>%
          # thus negataive foliage values are relplaced by the foliage clauted via Poorters RLR
          tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0, Poorter_fB_kg, tapeS_Poorter_fB_kg)) %>% 
 # compartiments 
-mutate(GHG_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_GHG_aB_kg-Poorter_fB_kg, RG_GHG_aB_kg), 
-         Annig_Poorter_stem_kg = ifelse(LH_NH == "NB", Annig_aB_kg-Poorter_fB_kg, Annig_aB_kg), 
-         tapes_Poorter_stem_kg = ifelse(LH_NH == "NB", RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, RG_tapeS_ab_kg)) %>% 
+       # if subtracting the foliage mass frm the total biomass results in negative values, the compartiment in question is set to 0 
+  mutate(GHG_Poorter_stem_kg = case_when(LH_NH == "NB" & RG_GHG_aB_kg > Poorter_fB_kg ~ RG_GHG_aB_kg-Poorter_fB_kg, 
+                                         LH_NH == "LB" ~ RG_GHG_aB_kg, 
+                                         TRUE ~ 0), 
+         Annig_Poorter_stem_kg = case_when(LH_NH == "NB" & Annig_aB_kg > Poorter_fB_kg ~ Annig_aB_kg-Poorter_fB_kg, 
+                                           LH_NH == "LB" ~ Annig_aB_kg, 
+                                           TRUE ~ 0), 
+         tapes_Poorter_stem_kg = case_when(LH_NH == "NB" & RG_tapeS_ab_kg > tapeS_Poorter_fB_kg ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, 
+                                           LH_NH == "LB" ~ RG_tapeS_ab_kg, 
+                                           TRUE ~ 0)) %>% 
   # Nitrogen 
  mutate(RG_C_t = (RG_tapeS_ab_kg*0.5)/1000, 
         RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
         RG_N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group), 
         RG_N_total_kg = RG_N_stem_kg + RG_N_f_kg)
 
-
-
-RG
-
-summary(RG_total) # --> there are negative foliage values ! 
-
-nrow(RG_total %>% 
-       filter(LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0 | LH_NH == "LB"))
-
-nrow(RG_total %>% 
-       filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))
-
-
-
-RG_total %>% 
-  filter(LH_NH == "NB" & H_cm < 130 & D_class_cm <= 0)
-
-
-nrow()
-
-RG_total %>% 
-  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
-                   D_class_cm == 1 ~ (4.9+0)/2, 
-                   D_class_cm == 2 ~ (5.9+5)/2,
-                   TRUE ~ (6.9+6)/2)) %>%
-  mutate(Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             # root to  leaf  ratio
-         tapeS_Poorter_fB_kg = case_when((LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) ~ "tapes_fB", 
-                                         LH_NH == "LB" & RG_GHG_bB_kg > 0 ~ "Poorter_rg_RSR" ,
-                                         TRUE ~ "non"))
-  
-  
-
-tapes_fB(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
-         RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
-           filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),
-         dh = rep(1.3, nrow(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))),
-         RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m))
-  
-  
-
-  
- nrow(RG_total %>%  filter(LH_NH == "NB" & H_cm > 130 &  D_class_cm > 0))
-
-
-RG_total %>% 
-  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:5) %>% 
-  ggplot(., aes(D_cm, biomass, colour = method))+
-  geom_point(aes(colour = method))+
- # geom_line(aes(colour = method))+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(~LH_NH)
-
-
-
-RG_total %>% 
-  select(plot_ID, LH_NH, H_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:5) %>% 
-  ggplot(., aes(H_cm, biomass, colour = method))+
-  geom_point(aes(colour = method))+
-  # geom_line(aes(colour = method))+
-  geom_smooth(method = "loess", se=TRUE)+
-  facet_wrap(~LH_NH)
-
-RG_total %>% 
-  select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:5) %>% 
-  ggplot(., aes(method, biomass))+
-  geom_boxplot(aes(colour = method))+
-  facet_wrap(~LH_NH)
+summary(RG_total)
 
 
 
