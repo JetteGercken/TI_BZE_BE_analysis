@@ -1699,21 +1699,19 @@ trees_total_5 <- trees_total_5 %>%
          tapes_swbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
          tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
          tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%               # stumbwood bark 
-  
- #### 
-  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
-   # GHG-TapeS-stepwise
-  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
-         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
-         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
-         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
-         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
-         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),                                # total aboveground biomass
-         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
- # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
- #### 
-  
+ # #### 
+ #  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
+ #   # GHG-TapeS-stepwise
+ #  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+ #         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+ #         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
+ #         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
+ #         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
+ #         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
+ #         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),                                # total aboveground biomass
+ #         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
+ # # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
+ # #### 
   # Carbon stock
    mutate(C_aB_t = (aB_kg/1000)*0.5,
          C_ab_t_tapes = (tapes_ab_kg/1000)*05,
@@ -1722,9 +1720,9 @@ trees_total_5 <- trees_total_5 %>%
          N_f_kg =  N_f(tapes_fB_kg, N_SP_group),
          N_fw_kg = N_fw(tapes_fwB_kg, N_SP_group), 
          N_sw_kg = N_sw(tapes_swB_kg, N_SP_group), 
-         N_swb_kg = N_swb(swbB_kg, N_SP_group), 
-         N_stw_kg = N_sw(stwB_kg, N_SP_group),
-         N_stwb_kg =  N_swb(stwbB_kg, N_SP_group)) %>% 
+         N_swb_kg = N_swb(tapes_swbB_kg, N_SP_group), 
+         N_stw_kg = N_sw(tapes_stwB_kg, N_SP_group),
+         N_stwb_kg =  N_swb(tapes_stwbB_kg, N_SP_group)) %>% 
   mutate(tot_N__t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
          tot_C_t = C_ab_t_tapes + C_bB_t)
   
@@ -2253,15 +2251,19 @@ trees_P_CP_SP <- left_join(
               C_aB_t = sum(C_ab_t_tapes), 
               C_bB_t = sum(C_bB_t), 
               C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              N_aB_t = sum(tot_N__t)) %>%        # plot area in hectare to calculate BA per ha
+              N_aB_t = sum(na.omit(tot_N__t))) %>%        # plot area in hectare to calculate BA per ha
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,         # calculate BA per species per plot in m2/ ha
-           Nt_ha = Nt_plot/ plot_A_ha),                # number of trees per species and layer per hectare  
+           Nt_ha = Nt_plot/ plot_A_ha, 
+           C_aB_t_ha = C_aB_t/plot_A_ha, 
+           C_bB_t_ha = C_bB_t/plot_A_ha,
+           C_tot_t_ha = C_tot_t/ plot_A_ha, 
+           N_aB_t_ha = N_aB_t/plot_A_ha),                # number of trees per species and layer per hectare  
   # dataset with total BA per plot
   trees_total_5 %>%
     group_by(plot_ID, C_layer) %>%                  # group by plot to calculate total BA per plot
     summarise(tot_BA_plot = sum(BA_m2),             # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
               plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to calculate BA per ha
-    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha),    # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha),     # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
   by=c("plot_ID","C_layer", "plot_A_ha")) %>% 
   select(- c(plot_A_ha, tot_BA_plot)) %>%           # remove unnecessary variables
   mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
@@ -2278,7 +2280,7 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
 # ----- 2.5.2. grouped by Plot species ------------------------------------------------------------
 trees_P_SP <- left_join(
   # data set with BA per species
-  trees_total %>%
+  trees_total_5 %>%
     group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
     summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
               sd_DBH_cm = sd(DBH_cm),       
@@ -2290,11 +2292,15 @@ trees_P_SP <- left_join(
               C_aB_t = sum(C_ab_t_tapes), 
               C_bB_t = sum(C_bB_t), 
               C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              N_aB_t = sum(tot_N__t),
+              N_aB_t = sum(na.omit(tot_N__t)),
               plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha),    # calculate BA per species per plot in m2/ ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,
+           C_aB_t_ha = C_aB_t/plot_A_ha, 
+           C_bB_t_ha = C_bB_t/plot_A_ha,
+           C_tot_t_ha = C_tot_t/ plot_A_ha, 
+           N_aB_t_ha = N_aB_t/plot_A_ha),    # calculate BA per species per plot in m2/ ha
   # dataset with total BA per plot
-  trees_total %>%
+  trees_total_5 %>%
     group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
     summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
               plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
@@ -2326,7 +2332,7 @@ trees_P <- left_join(
               C_aB_t = sum(C_ab_t_tapes), 
               C_bB_t = sum(C_bB_t), 
               C_tot_t = sum(C_ab_t_tapes)+sum(C_bB_t),
-              N_aB_t = sum(tot_N__t),
+              N_aB_t = sum(na.omit(tot_N__t)),
               plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,      # calculate BA per species per plot in m2/ ha
            C_aB_t_ha = C_aB_t/plot_A_ha, 
@@ -2342,7 +2348,7 @@ trees_P <- left_join(
   by=c("plot_ID", "plot_A_ha")) %>% 
   select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
   mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%   # calculate proportion of each species to total BA in percent
-  left_join(., trees_total %>%
+  left_join(., trees_total_5 %>%
               group_by(plot_ID) %>%
               select(plot_ID, SP_code) %>% 
               distinct(SP_code) %>% 
@@ -2361,10 +2367,155 @@ trees_P <- left_join(trees_P,trees_P_SP %>%
 
 
 
+# ----- 2.5. DEAD TREES PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
+# deadwood grouped by Plot, species, deadwood type, decay type
+DW_P_SP_TY_DEC <- DW_total %>% 
+  group_by(plot_ID, SP_group, DW_type, dec_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>% 
+  # data set with total biomass, carbon, nitrogen per plot and species group
+  left_join(., DW_total %>% 
+              group_by(plot_ID, SP_group) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID", "SP_group")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
 
+# deadwood grouped by plot, species, deadwood type
+DW_P_SP_TY <- DW_total %>% 
+  group_by(plot_ID, SP_group, DW_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+  # data set with total biomass/ 
+  left_join(., DW_total %>% 
+              group_by(plot_ID, SP_group) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID", "SP_group")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
 
+# deadwood grouped by decay type and deadwood type
+DW_P_TY_DEC <- DW_total %>% 
+  group_by(plot_ID, dec_type, DW_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+  # data set with total biomass/ 
+  left_join(., DW_total %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
+
+
+# deadwood grouped by plot, species, decay type
+DW_P_SP_DEC <- DW_total %>% 
+  group_by(plot_ID, SP_group, dec_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+  # data set with total biomass/ 
+  left_join(., DW_total %>% 
+              group_by(plot_ID, SP_group) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID", "SP_group")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
+
+
+# deawood biomass, carbon and nitrogen grouped by decay type
+DW_P_DEC <- DW_total %>% 
+  group_by(plot_ID, dec_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+  # data set with total biomass/ 
+  left_join(., DW_total %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
+
+
+# deawood biomass, carbon and nitrogen grouped by deadwood type
+DW_P_TY <- DW_total %>% 
+  group_by(plot_ID, DW_type) %>% 
+  summarise(D_mean = mean(D_cm), 
+            L_mean = mean(L_m),
+            B_tot_t = sum(B_dw_kg/1000),
+            C_tot_t = sum(C_dw_kg/1000), 
+            N_tot_t = sum(tot_N_dw_kg/1000), 
+            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+  mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+  # data set with total biomass/ 
+  left_join(., DW_total %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_B_tot_t = sum(B_dw_kg/1000),
+                        plot_C_tot_t = sum(C_dw_kg/1000), 
+                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+            by= c("plot_ID")) %>% 
+  mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
+         N_share = (N_tot_t/plot_N_tot_t)*100, 
+         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
 
 
