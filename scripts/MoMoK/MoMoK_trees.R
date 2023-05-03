@@ -1984,9 +1984,8 @@ DW_total <- left_join(DW_total,
     #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
               (DW_total %>% 
                 # filter for DW 3 in low staes of decay
-              filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>% 
-                # height estimation like for living trees  --> unneccesarry cause we have estimated heights via tapeS
-              mutate(SP_code = dom_SP,
+              filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>%
+                mutate(SP_code = dom_SP,
                      H_m = NA, 
                      D_mm = D_cm*10, ) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
@@ -1997,9 +1996,10 @@ DW_total <- left_join(DW_total,
                             mutate(BA_m2 = (D_m/2)^2*pi) %>% 
                             group_by(plot_ID, SP_group_char) %>%                                # group by plot and species and canopy layer to calcualte dg, hg 
                             summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
-                                      SP_dw_tps = mean(SP_dw_tps)) %>%                          # this is just to keep the species group
+                                      SP_dw_tps = mean(SP_dw_tps), 
+                                      mean_L = mean(L_m)) %>%                          # this is just to keep the species group
                             mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
-                            select(plot_ID, SP_group_char, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                            select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
                           by = c("plot_ID", "SP_group_char")) %>% 
                 # the same for the dg height estimated via tapeS
                 mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L ~ L_m,
@@ -2017,7 +2017,7 @@ DW_total <- left_join(DW_total,
               (DW_total %>% 
                  # filter for the respective deadwood type and decay state
                 filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>% 
-                mutate(SP_code = dom_SP, 
+                mutate(SP_code = dom_SP,
                        H_m = NA, 
                        D_mm = D_cm*10,
                   # estimating diameter in 1.3m height, as the diameters were measured at the top of the stum which is < 1.3m 
@@ -2027,59 +2027,46 @@ DW_total <- left_join(DW_total,
                        # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)         
                        DBH_cm_BWI = (D_mm-2*((D_h_cm-130)/tan(40)))/10, 
                        # as the BWI taper formula returns negative values we´ll use a formula to estimate the DBH direktly by KUBLIN (BWI methodikband chap.5.2.2 ): dz = d ∗ (1.0 + (0.0011 ∗ (hd − 130)))
-                       DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10, 
+                       DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
+                       H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
+                       tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
+                                                      Dm = as.list(DBH_cm_Kublin), 
+                                                      Hm = as.list(D_h_m), 
+                                                      Ht = H_tps_Kublin, inv = 4), 
+                                             Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
                        DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
                        DBH_h_m = 1.3) %>% 
-                unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-                left_join(., DW_total %>%
-                            filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
-                            mutate(SP_code = dom_SP, 
-                    # estimating diameter
-                                   D_mm = D_cm*10, 
-                                   DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
-                                   DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10, 
-                                   BA_m2 = ((DBH_cm_Kublin/100)/2)^2*pi) %>% 
-                    # estimating height based on DBH_Kublin --> unneccesarry cause we have estimated heights via tapeS
-                            group_by(plot_ID, SP_code) %>%                               # group by plot and species and canopy layer to calcualte dg, hg 
-                            summarise(H_g = sum(mean(na.omit(L_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
-                                      mean_DBH_mm_Kublin = mean(DBH_mm_Kublin),                            # mean diameter per species per canopy layer per plot
-                                      D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100, 
-                                      mean_L = mean(L_m)),           # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
-                          by = c("plot_ID", "SP_code")) %>% 
-                left_join(.,coeff_H_SP_P %>%                                             # joining R2 from coeff_SP_P -> R2.x
-                            select(plot_ID, SP_code, R2) %>% 
-                            unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),  # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-                          by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
-                left_join(., coeff_H_SP %>% 
-                            select(SP_code, R2),                                         # joing R2 from coeff_SP data set -> R2.y
-                          by = "SP_code") %>%
-                mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x), 
-                       H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
-                                            is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
-                                            is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
-                                            is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
-                                            TRUE ~ "L_m"))%>% 
-                mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm_Kublin),
-                                       # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
-                                       # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
-                                       # 0.75 then use the SP_P models
-                                       is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm_Kublin),
-                                       # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                                       # and hm is na but there is a h_g and d_G
-                                       is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_mm_Kublin, mean_DBH_mm_Kublin, D_g, H_g),
-                                       # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
-                                       # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
-                                       is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm_Kublin), 
-                                       TRUE ~ L_m), 
-                       H_m_tapeS = estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)) %>%
-                 mutate(H_m = case_when(D_h_m > H_m & L_m > D_h_m & L_m > mean_L & L_m > H_m ~ L_m,
-                                        D_h_m > H_m & mean_L > D_h_m & L_m < mean_L & mean_L > H_m ~ mean_L,
-                                        TRUE ~ H_m), 
-                        H_diff =  H_m - H_m_tapeS) %>%
+                 # estimating height for Tapes for D_g deadwood species D_g 
+                 left_join(., DW_total %>%
+                             filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
+                             # calculate DBH via Kublin 
+                             # --> estimate height via TapeS with Kublin 
+                             # --> use that height to calcualte new DBH in  tapeS 
+                             # --> calculate D_g grouped by plot_ID and SP_dw_char
+                             # --> estimate height based on the tapes_D_g
+                             mutate(BA_m2 = (D_m/2)^2*pi, 
+                                    D_mm = D_cm*10, 
+                                    DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
+                                    H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
+                                    tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
+                                                                        Dm = as.list(DBH_cm_Kublin), 
+                                                                        Hm = as.list(D_h_m), 
+                                                                        Ht = H_tps_Kublin, inv = 4), 
+                                                               Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE)) %>% 
+                             group_by(plot_ID, SP_group_char) %>% 
+                             summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                                       mean_L = mean(L_m),
+                                       SP_dw_tps = mean(SP_dw_tps)) %>%                          # this is just to keep the species group
+                             mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
+                             select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                           by = c("plot_ID", "SP_group_char")) %>%
+                 mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L & L_m > dw_H_dg_tapes ~ L_m,
+                                                  D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L & mean_L > dw_H_dg_tapes ~ mean_L,
+                                                  TRUE ~ dw_H_dg_tapes)) %>%
                  # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
-                 filter(DBH_h_m < H_m) %>% 
-                 mutate(tapeS_wood = tapes_stwB(tpS_ID, DBH_cm_Kublin, DBH_h_m, estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)), 
-                       tapeS_bark = tapes_stwbB(tpS_ID, DBH_cm_Kublin, DBH_h_m, estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID)), 
+                 filter(DBH_h_m < dw_H_dg_tapes) %>% 
+                 mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                       tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
                        dw_tapes_b_ratio = tapeS_bark/tapeS_wood) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
             by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
@@ -4577,6 +4564,50 @@ DW_total %>%
 
 
 
+# estimating height like for living trees --> not necesarry anymore 
+DW_total %>% 
+unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(., DW_total %>%
+              filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%                   # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer wich we need for SLOBODA 
+              mutate(SP_code = dom_SP, 
+                     # estimating diameter
+                     D_mm = D_cm*10, 
+                     DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
+                     DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10, 
+                     BA_m2 = ((DBH_cm_Kublin/100)/2)^2*pi) %>% 
+              # estimating height based on DBH_Kublin --> unneccesarry cause we have estimated heights via tapeS
+              group_by(plot_ID, SP_code) %>%                               # group by plot and species and canopy layer to calcualte dg, hg 
+              summarise(H_g = sum(mean(na.omit(L_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+                        mean_DBH_mm_Kublin = mean(DBH_mm_Kublin),                            # mean diameter per species per canopy layer per plot
+                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100, 
+                        mean_L = mean(L_m)),           # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+            by = c("plot_ID", "SP_code")) %>% 
+  left_join(.,coeff_H_SP_P %>%                                             # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),  # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% 
+              select(SP_code, R2),                                         # joing R2 from coeff_SP data set -> R2.y
+            by = "SP_code") %>%
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x), 
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
+                              TRUE ~ "L_m"))%>% 
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm_Kublin),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm_Kublin),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na but there is a h_g and d_G
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_mm_Kublin, mean_DBH_mm_Kublin, D_g, H_g),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm_Kublin), 
+                         TRUE ~ L_m), 
+         H_m_tapeS = estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID))
 
 # ----- N.5 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
