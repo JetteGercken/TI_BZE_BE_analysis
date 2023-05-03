@@ -2567,16 +2567,23 @@ RG_P_SP <- RG_total %>%
               Nt_plot = n(),                                  # number of individuals per plot and species
               C_aB_t = sum(RG_C_t),                           # sum of aboveground carbon stock per plot and species
               C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),          # sum of belowground carbon stock per plot and species
-              N_aB_t = sum(na.omit(RG_N_total_kg/1000))) %>%  # sum of aboveground Nitrogen stock per plot and species
-  mutate(C_tot_t = C_aB_t + C_bB_t) %>%                       # sum of total carbon stock per plot and species
+              N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
+              CCS_max_dist_m = mean(CCS_max_dist/100)) %>%    # sum of aboveground Nitrogen stock per plot and species
+  mutate(C_tot_t = C_aB_t + C_bB_t,                           # sum of total carbon stock per plot and species
+         plot_A_ha = c_A(CCS_max_dist_m)/10000,               # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+         C_aB_t_ha = C_aB_t/plot_A_ha, 
+         C_bB_t_ha = C_bB_t/plot_A_ha, 
+         C_tot_t_ha = C_tot_t/plot_A_ha,
+         N_aB_t_ha = N_aB_t/plot_A_ha) %>%         
   left_join(., RG_total %>%
               group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
               summarise(BA_m2 = sum(c_A(D_cm/2)),
                         plot_C_aB_t = sum(RG_C_t), 
-                        ploC_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
-                        N_aB_t = sum(na.omit(RG_N_total_kg/1000))) %>% 
-              mutate(C_tot_t = C_aB_t + C_bB_t)) %>% 
-  mutate()
+                        plot_C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
+                        plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
+                        CCS_max_dist_m = mean(CCS_max_dist/100)) %>% 
+              mutate(plot_C_tot_t = C_aB_t + C_bB_t, 
+                     plot_A_ha = c_A(CCS_max_dist_m)/10000)) 
 
 # reffer values per plot to hectar --> plot size is still missing
     # should be linked to the distance to the sampling circle centre and the distance of the furthest plant in the RG sampling circle
