@@ -2375,8 +2375,15 @@ DW_P_SP_TY_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  left_join(., DW_total %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>% 
@@ -2399,8 +2406,15 @@ DW_P_SP_TY <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  left_join(., DW_total %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
@@ -2423,8 +2437,15 @@ DW_P_TY_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  left_join(., DW_total %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
@@ -2447,8 +2468,15 @@ DW_P_SP_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>% 
+  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  left_join(., DW_total %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
@@ -2471,8 +2499,15 @@ DW_P_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>% 
+  # dataset with area per plot considering multipple sampling circuits per plot
+  left_join(., DW_total %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
@@ -2490,13 +2525,7 @@ DW_P_DEC <- DW_total %>%
 
 # ----- 2.5.2.6.deawood biomass, carbon and nitrogen grouped by deadwood type -----------------------------
 DW_P_TY <- DW_total %>% 
-  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
-  left_join(., DW_total %>%
-              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
-              group_by(plot_ID) %>% 
-              summarize(plot_A_ha = sum(CCS_A_ha)), 
-            by = "plot_ID")
-# dataset grouped by plot and deadwood type 
+  # dataset grouped by plot and deadwood type 
   group_by(plot_ID, DW_type) %>% 
   summarise(D_mean = mean(D_cm), 
             L_mean = mean(L_m),
@@ -2504,6 +2533,14 @@ DW_P_TY <- DW_total %>%
             C_tot_t = sum(C_dw_kg/1000), 
             N_tot_t = sum(tot_N_dw_kg/1000)) %>%  
             #plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+    # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+    left_join(., DW_total %>%
+                select(plot_ID, CCS_nr) %>% 
+                distinct() %>%
+                mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                group_by(plot_ID) %>%
+                summarize(plot_A_ha = sum(CCS_A_ha)), 
+              by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
