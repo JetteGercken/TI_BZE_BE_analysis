@@ -2582,24 +2582,25 @@ RG_P_SP <- RG_total %>%
          C_bB_t_ha = C_bB_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_aB_t_ha = N_aB_t/plot_A_ha, 
-         N_trees_ha = N_trees( plot_A_ha)) %>%         
+         N_trees_ha = N_trees/plot_A_ha) %>%         
   left_join(., RG_total %>%
               # plot area of all sampling circuits together
-              left_join(., RG_total %>%
-                          group_by(plot_ID, CCS_nr) %>% 
-                          summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
-                          mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
-                          group_by(plot_ID) %>% 
-                          summarise(plot_A_ha = sum(CCS_A_ha)), 
-                        by = "plot_ID") %>% 
+              # left_join(., RG_total %>%
+              #             group_by(plot_ID, CCS_nr) %>% 
+              #             summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+              #             mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
+              #             group_by(plot_ID) %>% 
+              #             summarise(plot_A_ha = sum(CCS_A_ha)), 
+              #           by = "plot_ID") %>% 
               group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-              summarise(plot_C_aB_t = sum(RG_C_t), 
-                        plot_C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
+              summarise(plot_C_tot_t = sum(RG_C_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
+                        plot_C_aB_t = sum(RG_C_t), 
+                        plot_C_bB_t = sum((RG_GHG_bB_kg/1000)*0.5),
                         plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-                        plot_N_trees = n(),
-                        plot_A_ha = mean(plot_A_ha)) %>% 
-              # mutate(plot_C_tot_t = plot_C_aB_t + plot_C_bB_t,
-              #        plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
+                        plot_N_trees = n()),
+            # plotwise C, N and number of trees per hectar
+                       # plot_A_ha = mean(plot_A_ha)), #%>% 
+              # mutate(plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
               #        plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
               #        plot_C_tot_t_ha = plot_C_aB_t/ plot_A_ha, 
               #        plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
