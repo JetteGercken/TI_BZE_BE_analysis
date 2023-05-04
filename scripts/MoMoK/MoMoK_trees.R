@@ -2558,68 +2558,87 @@ trees_P_SP <- left_join(trees_P_SP,
 
 
 # ----- 2.5.4. REGENERATION PLOTWISE -------------------------------------------------------------------
-# ----- grouped by Plot and species  ------------------------------------------------------------------
-RG_P_SP <- RG_total %>%
+# ----- 2.5.4.1. grouped by Plot and species  ------------------------------------------------------------------
+RG_P_SP <- RG_total %>% 
+  # plot area of all sampling circuits together
+  left_join(., RG_total %>%
+              group_by(plot_ID, CCS_nr) %>% 
+              summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+              mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>% 
     group_by(plot_ID, SP_code) %>%                            # group by plot and species to calculate BA per species 
     summarise(mean_D_cm = mean(D_cm),                         # mean diameter per species per canopy layer per plot
               mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
               SP_BA_m2 = sum(c_A(D_cm/2)),                       # Basal area in m2 per plot and speices 
-              Nt_plot = n(),                                  # number of individuals per plot and species
+              N_trees = n(),                                  # number of individuals per plot and species
               C_aB_t = sum(RG_C_t),                           # sum of aboveground carbon stock per plot and species
-              C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),          # sum of belowground carbon stock per plot and species
-              N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-              CCS_max_dist_m = mean(CCS_max_dist/100)) %>%    # sum of aboveground Nitrogen stock per plot and species
-  mutate(C_tot_t = C_aB_t + C_bB_t,                           # sum of total carbon stock per plot and species
-         plot_A_ha = c_A(CCS_max_dist_m)/10000,               # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+              C_bB_t = sum((RG_GHG_bB_kg/1000)*0.5),          # sum of belowground carbon stock per plot and species
+              N_aB_t = sum(na.omit(RG_N_total_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species
+              plot_A_ha = mean(plot_A_ha)) %>%    
+  mutate(C_tot_t = C_aB_t + C_bB_t,                           # sum of total carbon stock per plot and species             
          C_aB_t_ha = C_aB_t/plot_A_ha, 
          C_bB_t_ha = C_bB_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
-         N_aB_t_ha = N_aB_t/plot_A_ha) %>%         
+         N_aB_t_ha = N_aB_t/plot_A_ha, 
+         N_trees_ha = N_trees( plot_A_ha)) %>%         
   left_join(., RG_total %>%
+              # plot area of all sampling circuits together
+              left_join(., RG_total %>%
+                          group_by(plot_ID, CCS_nr) %>% 
+                          summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+                          mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
+                          group_by(plot_ID) %>% 
+                          summarise(plot_A_ha = sum(CCS_A_ha)), 
+                        by = "plot_ID") %>% 
               group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-              summarise(BA_m2 = sum(c_A(D_cm/2)),
-                        plot_C_aB_t = sum(RG_C_t), 
+              summarise(plot_C_aB_t = sum(RG_C_t), 
                         plot_C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
                         plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-                        CCS_max_dist_m = mean(CCS_max_dist/100)) %>% 
-              mutate(plot_C_tot_t = C_aB_t + C_bB_t, 
-                     plot_A_ha = c_A(CCS_max_dist_m)/10000)) 
-
-# reffer values per plot to hectar --> plot size is still missing
-    # should be linked to the distance to the sampling circle centre and the distance of the furthest plant in the RG sampling circle
-# %>%    # plot area in hectare to calculate BA per ha
-    mutate(BA_m2ha = BA_m2/plot_A_ha,      # calculate BA per species per plot in m2/ ha --> I don´t know how big the circles are :/
-           C_aB_t_ha = C_aB_t/plot_A_ha, 
-           C_bB_t_ha = C_bB_t/plot_A_ha,
-           C_tot_t_ha = C_tot_t/ plot_A_ha, 
-           N_aB_t_ha = N_aB_t/plot_A_ha)
-
-
-  # dataset with total BA per plot
-  RG_total %>%
-    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
-    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
-  by=c("plot_ID", "plot_A_ha")) %>% 
-  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
-  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%   # calculate proportion of each species to total BA in percent
-  left_join(., trees_total_5 %>%
-              group_by(plot_ID) %>%
-              select(plot_ID, SP_code) %>% 
-              distinct(SP_code) %>% 
-              summarize(n_SP_plot = n()),
-            #summarise(n_SP_plot = length(SP_code)), 
+                        plot_N_trees = n(),
+                        plot_A_ha = mean(plot_A_ha)) %>% 
+              # mutate(plot_C_tot_t = plot_C_aB_t + plot_C_bB_t,
+              #        plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
+              #        plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
+              #        plot_C_tot_t_ha = plot_C_aB_t/ plot_A_ha, 
+              #        plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
+              #        plot_N_trees_ha = plot_N_trees/ plot_A_ha), 
             by = "plot_ID") %>% 
-  left_join(., trees_P_SP %>% select(plot_ID, dom_SP) %>% distinct(), 
-            by = "plot_ID")
+  mutate(C_tot_SP_share = (C_tot_t/plot_C_tot_t)*100, 
+         C_aB_SP_share = (C_aB_t/plot_C_aB_t)*100,
+         C_bB_SP_share = (C_bB_t/plot_C_bB_t)*100,
+         N_aB_SP_share = (C_aB_t/plot_C_aB_t)*100,
+         N_trees_SP_share = N_trees/plot_N_trees)
 
 
-# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
-trees_P <- left_join(trees_P,trees_P_SP %>% 
-                       select(plot_ID, dom_SP) %>% 
-                       distinct(), 
-                     by = "plot_ID")
+
+
+
+# ----- 2.5.4.2. grouped by Plot  ------------------------------------------------------------------
+RG_P <- RG_total %>%
+  # plot area of all sampling circuits together
+  left_join(., RG_total %>%
+              group_by(plot_ID, CCS_nr) %>% 
+              summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+              mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_A_ha = sum(CCS_A_ha)), 
+            by = "plot_ID") %>% 
+  group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
+  summarise(plot_C_aB_t = sum(RG_C_t), 
+            plot_C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
+            plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
+            plot_Nt = n(),
+            plot_A_ha = mean(plot_A_ha)) %>% 
+  mutate(plot_C_tot_t = plot_C_aB_t + plot_C_bB_t,
+         plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
+         plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
+         plot_C_tot_t_ha = plot_C_aB_t/ plot_A_ha, 
+         plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
+         plot_Nt_ha = plot_Nt/ plot_A_ha)
+
+
 
 
 # ------ 3. VISULAIZATION -------------------------------------------------
@@ -4875,7 +4894,45 @@ unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # crea
                          TRUE ~ L_m), 
          H_m_tapeS = estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID))
 
-# ----- N.5 workdays ------------------------------------------------------
+# ---- N. 5 REGENERTAION plotwise -----------------------------------------
+
+# reffer values per plot to hectar --> plot size is still missing
+# should be linked to the distance to the sampling circle centre and the distance of the furthest plant in the RG sampling circle
+# %>%    # plot area in hectare to calculate BA per ha
+mutate(BA_m2ha = BA_m2/plot_A_ha,      # calculate BA per species per plot in m2/ ha --> I don´t know how big the circles are :/
+       C_aB_t_ha = C_aB_t/plot_A_ha, 
+       C_bB_t_ha = C_bB_t/plot_A_ha,
+       C_tot_t_ha = C_tot_t/ plot_A_ha, 
+       N_aB_t_ha = N_aB_t/plot_A_ha)
+
+
+# dataset with total BA per plot
+RG_total %>%
+  group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+  summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+            plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+  mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+#by=c("plot_ID", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%   # calculate proportion of each species to total BA in percent
+  left_join(., trees_total_5 %>%
+              group_by(plot_ID) %>%
+              select(plot_ID, SP_code) %>% 
+              distinct(SP_code) %>% 
+              summarize(n_SP_plot = n()),
+            #summarise(n_SP_plot = length(SP_code)), 
+            by = "plot_ID") %>% 
+  left_join(., trees_P_SP %>% select(plot_ID, dom_SP) %>% distinct(), 
+            by = "plot_ID")
+
+
+# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
+trees_P <- left_join(trees_P,trees_P_SP %>% 
+                       select(plot_ID, dom_SP) %>% 
+                       distinct(), 
+                     by = "plot_ID"
+
+# ----- N.6 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
 tot_wd = 229
 ho_wd = tot_wd*0.5
