@@ -2164,7 +2164,7 @@ summary(DW_total)
 
 
 # ----- 2.3. REGENERATION ------------------------------------------------------
-# ----- 2.3.1. biomass, carbon---------------------------------------------------
+# ----- 2.3.1. biomass, carbon, nitrogen ---------------------------------------------------
 RG_total <- RG_total %>% 
   # assigning numeric diameters to size classes through mean per class 
   mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
@@ -2232,8 +2232,9 @@ summary(RG_total)
 
 
 
-# ----- 2.5. LIVING TREES PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
-# ----- 2.5.1. grouped by Plot, canopy layer, species ------------------------------------------------------------
+# ----- 2.5.PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd), numer of species carbon stock etc -------------
+# ----- 2.5.1. LIVING TREES plot level ------------------------------------------------------------
+# ----- 2.5.1.1. grouped by Plot, canopy layer, species ------------------------------
 trees_P_CP_SP <- left_join(
   # dataset with BA per species
   trees_total_5 %>%
@@ -2277,13 +2278,13 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
 
 
 
-# ----- 2.5.2. grouped by Plot species ------------------------------------------------------------
+# ----- 2.5.1.2. grouped by Plot, species -----------------------------------------------------------------
 trees_P_SP <- left_join(
   # data set with BA per species
   trees_total_5 %>%
     group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
     summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
-              sd_DBH_cm = sd(DBH_cm),       
+              sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
               mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
               sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
               SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
@@ -2316,8 +2317,7 @@ trees_P_SP <- left_join(trees_P_SP,
                         by = "plot_ID")
 
 
-# ----- 2.5.2. grouped by Plot ------------------------------------------------------------
-
+# ----- 2.5.1.3. grouped by Plot----------------------------------------------------------
 trees_P <- left_join(
   # data set with BA per species
   trees_total_5 %>%
@@ -2355,20 +2355,20 @@ trees_P <- left_join(
               summarize(n_SP_plot = n()),
               #summarise(n_SP_plot = length(SP_code)), 
             by = "plot_ID") %>% 
+  # dataset with dominatn species per plot
   left_join(., trees_P_SP %>% select(plot_ID, dom_SP) %>% distinct(), 
-            by = "plot_ID")
+            by = "plot_ID") %>% 
+  #calculating number of species per plot
+  left_join(., trees_total_5 %>% 
+            select(plot_ID, SP_code) %>%
+            group_by(plot_ID) %>%
+            distinct() %>% 
+            summarise(N_species_plot = n()),
+          by = "plot_ID")
 
 
-# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
-trees_P <- left_join(trees_P,trees_P_SP %>% 
-                       select(plot_ID, dom_SP) %>% 
-                       distinct(), 
-                        by = "plot_ID")
-
-
-
-# ----- 2.5.3. DEAD TREES PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd) --------------------------------------------------------
-# deadwood grouped by Plot, species, deadwood type, decay type
+# ----- 2.5.2. DEAD TREES plot level --------------------------------------------------------
+# ----- 2.5.2.1. grouped by Plot, species, deadwood type, decay type -------------------------
 DW_P_SP_TY_DEC <- DW_total %>% 
   group_by(plot_ID, SP_group, DW_type, dec_type) %>% 
   summarise(D_mean = mean(D_cm), 
@@ -2392,8 +2392,7 @@ DW_P_SP_TY_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-
-# deadwood grouped by plot, species, deadwood type
+# ----- 2.5.2.2.grouped by plot, species, deadwood type -------------------------
 DW_P_SP_TY <- DW_total %>% 
   group_by(plot_ID, SP_group, DW_type) %>% 
   summarise(D_mean = mean(D_cm), 
@@ -2417,8 +2416,7 @@ DW_P_SP_TY <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-
-# deadwood grouped by decay type and deadwood type
+# ----- 2.5.2.3.grouped by decay type and deadwood type -------------------------
 DW_P_TY_DEC <- DW_total %>% 
   group_by(plot_ID, dec_type, DW_type) %>% 
   summarise(D_mean = mean(D_cm), 
@@ -2442,8 +2440,7 @@ DW_P_TY_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-
-# deadwood grouped by plot, species, decay type
+# ----- 2.5.2.4.grouped by plot, species, decay type -----------------------------
 DW_P_SP_DEC <- DW_total %>% 
   group_by(plot_ID, SP_group, dec_type) %>% 
   summarise(D_mean = mean(D_cm), 
@@ -2467,8 +2464,7 @@ DW_P_SP_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-
-# deawood biomass, carbon and nitrogen grouped by decay type
+# ----- 2.5.2.5.deawood biomass, carbon and nitrogen grouped decay type -----------------------------
 DW_P_DEC <- DW_total %>% 
   group_by(plot_ID, dec_type) %>% 
   summarise(D_mean = mean(D_cm), 
@@ -2492,9 +2488,15 @@ DW_P_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-
-# deawood biomass, carbon and nitrogen grouped by deadwood type
+# ----- 2.5.2.6.deawood biomass, carbon and nitrogen grouped by deadwood type -----------------------------
 DW_P_TY <- DW_total %>% 
+  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  left_join(., DW_total %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>% 
+              summarize(plot_A_ha = sum(CCS_A_ha)), 
+            by = c("plot_ID", "CCS_nr"))
+# dataset grouped by plot and deadwood type 
   group_by(plot_ID, DW_type) %>% 
   summarise(D_mean = mean(D_cm), 
             L_mean = mean(L_m),
@@ -2517,47 +2519,38 @@ DW_P_TY <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) 
 
 
-# ----- 2.5.2. grouped by Plot species ------------------------------------------------------------
-trees_P_SP <- left_join(
-  # data set with BA per species
-  trees_total_5 %>%
-    group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
-    summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
-              sd_DBH_cm = sd(DBH_cm),       
-              mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
-              sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
-              SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
-              mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
-              Nt_plot = n(),
-              C_aB_t = sum(C_ab_t_tapes), 
-              C_bB_t = sum(C_bB_t), 
-              C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              N_aB_t = sum(na.omit(tot_N__t)),
-              plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,
-           C_aB_t_ha = C_aB_t/plot_A_ha, 
-           C_bB_t_ha = C_bB_t/plot_A_ha,
-           C_tot_t_ha = C_tot_t/ plot_A_ha, 
-           N_aB_t_ha = N_aB_t/plot_A_ha),    # calculate BA per species per plot in m2/ ha
-  # dataset with total BA per plot
-  trees_total_5 %>%
-    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
-    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
-  by=c("plot_ID", "plot_A_ha")) %>% 
-  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
-  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
-# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
-trees_P_SP <- left_join(trees_P_SP,
-                        as.data.table(trees_P_SP)[as.data.table(trees_P_SP)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
-                          rename(., dom_SP = SP_code) %>% 
-                          select(plot_ID, dom_SP), 
-                        by = "plot_ID")
+
+# -----2.5.2.7. deadwood  by plot ----------------
+
+DW_P <- DW_total %>% 
+  mutate(CCS_A_ha = c_A(12.62)/10000) %>%
+  group_by(plot_ID) %>% 
+  summarise(plot_A_ha = sum(CCS_A_ha), 
+            plot_B_tot_t = sum(na.omit(B_dw_kg)/1000),
+            plot_C_tot_t = sum(na.omit(C_dw_kg)/1000), 
+            plot_N_tot_t = sum(na.omit(tot_N_dw_kg)/1000)) %>% 
+  # number of decay types per plot
+  left_join(., DW_total %>% 
+              select(plot_ID, dec_type) %>%
+              group_by(plot_ID) %>%
+              distinct() %>% 
+              summarise(N_dec_type_plot = n()),
+            by = "plot_ID") %>% 
+  # number of deadwood types per plot
+  left_join(., DW_total %>% 
+            select(plot_ID, DW_type) %>%
+            group_by(plot_ID) %>%
+            distinct() %>% 
+            summarise(N_DW_type_plot = n()),
+          by = "plot_ID") %>% 
+    mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
+           C_tot_t_ha = C_tot_t/plot_A_ha, 
+           N_tot_t_ha = N_tot_t/plot_A_ha)
+  
 
 
 
-# ----- 2.5.4. REGENERATION PLOTWISE -------------------------------------------------------------------
+# ----- 2.5.4. REGENERATION plot level -------------------------------------------------------------------
 # ----- 2.5.4.1. grouped by Plot and species  ------------------------------------------------------------------
 RG_P_SP <- RG_total %>% 
   # plot area of all sampling circuits together
@@ -2637,7 +2630,17 @@ RG_P <- RG_total %>%
          plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
          plot_C_tot_t_ha = plot_C_aB_t/ plot_A_ha, 
          plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
-         plot_Nt_ha = plot_Nt/ plot_A_ha)
+         plot_Nt_ha = plot_Nt/ plot_A_ha) %>% 
+  # number of species per plot
+  left_join(., RG_total %>% 
+              select(plot_ID, SP_code) %>%
+              group_by(plot_ID) %>%
+              distinct() %>% 
+              summarise(N_species_plot = n()),
+            by = "plot_ID")
+
+
+# ----- 2.5.5.JOINT PLOTWISE: living trees, deadwood, regeneration  -------
 
 
 
@@ -4387,6 +4390,45 @@ help("tprBiomass")
 # BaMap(Ba = trees_total$tpS_ID, type = c(NULL))
 
 
+# --- N.3 plotwise livign trees -------------------------------------------
+
+# ----- 2.5.2. grouped by Plot & species ------------------------------------------------------------
+trees_P_SP <- left_join(
+  # data set with BA per species
+  trees_total_5 %>%
+    group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
+    summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
+              sd_DBH_cm = sd(DBH_cm),       
+              mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
+              sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
+              SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
+              mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
+              Nt_plot = n(),
+              C_aB_t = sum(C_ab_t_tapes), 
+              C_bB_t = sum(C_bB_t), 
+              C_tot_t = sum(C_ab_t_tapes+C_bB_t),
+              N_aB_t = sum(na.omit(tot_N__t)),
+              plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,
+           C_aB_t_ha = C_aB_t/plot_A_ha, 
+           C_bB_t_ha = C_bB_t/plot_A_ha,
+           C_tot_t_ha = C_tot_t/ plot_A_ha, 
+           N_aB_t_ha = N_aB_t/plot_A_ha),    # calculate BA per species per plot in m2/ ha
+  # dataset with total BA per plot
+  trees_total_5 %>%
+    group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
+    summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+              plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+    mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  by=c("plot_ID", "plot_A_ha")) %>% 
+  select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
+  mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100)  # calculate proportion of each species to total BA in percent
+# joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
+trees_P_SP <- left_join(trees_P_SP,
+                        as.data.table(trees_P_SP)[as.data.table(trees_P_SP)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
+                          rename(., dom_SP = SP_code) %>% 
+                          select(plot_ID, dom_SP), 
+                        by = "plot_ID")
 
 
 # N.4. Deadwood -----------------------------------------------------------
@@ -4912,7 +4954,7 @@ RG_total %>%
   group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
   summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
             plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-  mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
+  mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha) %>%  # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
 #by=c("plot_ID", "plot_A_ha")) %>% 
   select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
   mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100) %>%   # calculate proportion of each species to total BA in percent
@@ -4931,7 +4973,7 @@ RG_total %>%
 trees_P <- left_join(trees_P,trees_P_SP %>% 
                        select(plot_ID, dom_SP) %>% 
                        distinct(), 
-                     by = "plot_ID"
+                     by = "plot_ID")
 
 # ----- N.6 workdays ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
@@ -4950,3 +4992,16 @@ weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
 remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
 current_KW_week <- 17 # 24.04-31.04.
 rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
+
+
+
+
+# N.7 co2 calculations ----------------------------------------------------
+
+CO2_anteil_atmosphere = 0.035 #% # Quelle: https://www.noaa.gov/jetstream/atmosphere
+CO2_anteil_atmosphere_mensch = 0.012 #2% # Quelle: https://www.umweltbundesamt.de/service/uba-fragen/ist-nicht-der-menschliche-beitrag-treibhauseffekt
+CO2_anteil_deutschland_gloable_emissionen = 0.02 # 2% Quelle: https://www.klimafakten.de/behauptungen/behauptung-deutschland-verursacht-nur-rund-zwei-prozent-des-weltweiten-co2-ausstosses#lang
+
+CO2_einflus_deutschland_auf_globalen_CO2_anteil_in_Atmosphäre = CO2_anteil_atmosphere*CO2_anteil_atmosphere*CO2_anteil_deutschland_gloable_emissionen
+
+0.0000245
