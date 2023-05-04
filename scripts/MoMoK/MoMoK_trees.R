@@ -2495,15 +2495,15 @@ DW_P_TY <- DW_total %>%
               mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
               group_by(plot_ID) %>% 
               summarize(plot_A_ha = sum(CCS_A_ha)), 
-            by = c("plot_ID", "CCS_nr"))
+            by = "plot_ID")
 # dataset grouped by plot and deadwood type 
   group_by(plot_ID, DW_type) %>% 
   summarise(D_mean = mean(D_cm), 
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000), 
-            plot_A_ha = sum(c_A(12.62)/10000)) %>% 
+            N_tot_t = sum(tot_N_dw_kg/1000)) %>%  
+            #plot_A_ha = sum(c_A(12.62)/10000)) %>% 
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
@@ -2523,12 +2523,22 @@ DW_P_TY <- DW_total %>%
 # -----2.5.2.7. deadwood  by plot ----------------
 
 DW_P <- DW_total %>% 
-  mutate(CCS_A_ha = c_A(12.62)/10000) %>%
-  group_by(plot_ID) %>% 
-  summarise(plot_A_ha = sum(CCS_A_ha), 
+    group_by(plot_ID) %>% 
+    summarise(#plot_A_ha = mean(CCS_A_ha), 
             plot_B_tot_t = sum(na.omit(B_dw_kg)/1000),
             plot_C_tot_t = sum(na.omit(C_dw_kg)/1000), 
-            plot_N_tot_t = sum(na.omit(tot_N_dw_kg)/1000)) %>% 
+            plot_N_tot_t = sum(na.omit(tot_N_dw_kg)/1000)) %>%
+    # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+    left_join(., DW_total %>%
+                select(plot_ID, CCS_nr) %>% 
+                distinct() %>%
+                mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                group_by(plot_ID) %>%
+                summarize(plot_A_ha = sum(CCS_A_ha)), 
+              by = "plot_ID") %>% 
+    mutate(B_tot_t_ha = plot_B_tot_t/plot_A_ha, 
+           C_tot_t_ha = plot_C_tot_t/plot_A_ha, 
+           N_tot_t_ha = plot_N_tot_t/plot_A_ha) %>% 
   # number of decay types per plot
   left_join(., DW_total %>% 
               select(plot_ID, dec_type) %>%
@@ -2542,10 +2552,7 @@ DW_P <- DW_total %>%
             group_by(plot_ID) %>%
             distinct() %>% 
             summarise(N_DW_type_plot = n()),
-          by = "plot_ID") %>% 
-    mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
-           C_tot_t_ha = C_tot_t/plot_A_ha, 
-           N_tot_t_ha = N_tot_t/plot_A_ha)
+          by = "plot_ID") 
   
 
 
