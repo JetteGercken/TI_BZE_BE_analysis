@@ -2326,7 +2326,7 @@ trees_P <- left_join(
               sd_DBH_cm = sd(DBH_cm),       
               mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
               sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
-              SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
+              #SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
               mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
               Nt_plot = n(),
               C_aB_t = sum(C_ab_t_tapes), 
@@ -2335,7 +2335,7 @@ trees_P <- left_join(
               N_aB_t = sum(na.omit(tot_N__t)),
               plot_A_ha = mean(plot_A_ha), 
               MoMoK_A_ha = (50*50)/10000) %>%    # plot area in hectare to calculate BA per ha
-    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,      # calculate BA per species per plot in m2/ ha
+    mutate(#SP_BA_m2ha = SP_BA_plot/plot_A_ha,      # calculate BA per species per plot in m2/ ha
            C_aB_t_ha = C_aB_t/plot_A_ha, 
            C_bB_t_ha = C_bB_t/plot_A_ha,
            C_tot_t_ha = C_tot_t/ plot_A_ha, 
