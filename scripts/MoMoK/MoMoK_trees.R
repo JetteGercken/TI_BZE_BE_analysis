@@ -1716,6 +1716,12 @@ trees_total_5 <- trees_total_5 %>%
    mutate(C_aB_t = (aB_kg/1000)*0.5,
          C_ab_t_tapes = (tapes_ab_kg/1000)*05,
          C_bB_t = (bB_kg/1000)*0.5,
+         C_f_t =  (tapes_fB_kg/1000)*0.5,
+         C_fw_t = (tapes_fwB_kg/1000)*0.5, 
+         C_sw_t = (tapes_swB_kg/1000)*0.5, 
+         C_swb_t = (tapes_swbB_kg/1000)*0.5, 
+         C_stw_t = (tapes_stwB_kg/1000)*0.5,
+         C_stwb_t = (tapes_stwbB_kg/1000)*0.5,
   # Nitrogen stock
          N_f_kg =  N_f(tapes_fB_kg, N_SP_group),
          N_fw_kg = N_fw(tapes_fwB_kg, N_SP_group), 
@@ -2240,25 +2246,26 @@ trees_P_CP_SP <- left_join(
   trees_total_5 %>%
     group_by(plot_ID, C_layer, SP_code) %>%         # group by plot and species to calculate BA per species 
     summarise(mean_DBH_cm = mean(DBH_cm),           # mean diameter per species per canopy layer per plot
-              sd_DBH_cm = sd(DBH_cm),       
+              sd_DBH_cm = sd(DBH_cm),               # standart deviation of diameter per species, canopy layer and plot
               mean_H_m = mean(H_m),                 # mean height per species per canopy layer per plot
               sd_height_m = sd(H_m),                # standard deviation of height --> structural richness indicator
               SP_BA_plot = sum(BA_m2),              # calculate BA per species per canopy layer per plot in m2
               mean_BA_SP_plot = mean(BA_m2),        # calculate mean BA in m2 per species per canopy payer per plot
-              h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),
+              h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),  # Höhe des Grundfächenmittelstammes
               d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply by two to get radius into diameter, multiply by 10 to transform m into cm
-              Nt_plot = n(),                          # counting number of observations per group to get number of trees per ha
-              plot_A_ha = mean(plot_A_ha), 
-              C_aB_t = sum(C_ab_t_tapes), 
-              C_bB_t = sum(C_bB_t), 
-              C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              N_aB_t = sum(na.omit(tot_N__t))) %>%        # plot area in hectare to calculate BA per ha
+              Nt_plot = n(),                           # STückzahl pro plot counting number of observations per group to get number of trees per ha
+              plot_A_ha = mean(plot_A_ha)) %>% 
+              #C_aB_t = sum(C_ab_t_tapes), 
+              #C_bB_t = sum(C_bB_t), 
+              #C_tot_t = sum(C_ab_t_tapes+C_bB_t),
+              #N_aB_t = sum(na.omit(tot_N__t))) %>%        # plot area in hectare to calculate BA per ha
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,         # calculate BA per species per plot in m2/ ha
-           Nt_ha = Nt_plot/ plot_A_ha, 
-           C_aB_t_ha = C_aB_t/plot_A_ha, 
-           C_bB_t_ha = C_bB_t/plot_A_ha,
-           C_tot_t_ha = C_tot_t/ plot_A_ha, 
-           N_aB_t_ha = N_aB_t/plot_A_ha),                # number of trees per species and layer per hectare  
+           Nt_ha = Nt_plot/ plot_A_ha),         
+          # as this is the "forester summary we don´t need the cabron stock or nitrogen stock per species, plot and canopy layer 
+           # C_aB_t_ha = C_aB_t/plot_A_ha, 
+           # C_bB_t_ha = C_bB_t/plot_A_ha,
+           # C_tot_t_ha = C_tot_t/ plot_A_ha, 
+           # N_aB_t_ha = N_aB_t/plot_A_ha), 
   # dataset with total BA per plot
   trees_total_5 %>%
     group_by(plot_ID, C_layer) %>%                  # group by plot to calculate total BA per plot
@@ -2274,32 +2281,120 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
                                                                                       by= c("plot_ID", "C_layer")]$V1]) %>% 
                              rename(., dom_SP = SP_code) %>% 
                              select(plot_ID, C_layer, dom_SP), 
-                           by = c("plot_ID", "C_layer"))
+                           by = c("plot_ID", "C_layer")) %>% 
+  select(plot_ID, C_layer, 
+         SP_code, 
+         mean_DBH_cm, sd_DBH_cm, d_g, 
+         mean_H_m, sd_height_m, h_g, 
+         SP_BA_plot, mean_BA_SP_plot, SP_BA_m2ha, tot_BA_m2ha,
+         Nt_plot, Nt_ha, 
+         BA_SP_per, dom_SP)
 
+colnames(trees_P_CP_SP) <- c("Plot", "Bestandesschicht", 
+                             "B_Art", 
+                             "durchsch_D1.3_cm", "SD_D1.3_cm", "D_g_cm",
+                             "durchsch_H_m", "SD_H_m" , "H_g_m",
+                             "G_m2_Art", "durchsch_G_m2", "G_m2ha_Art", "G_m2ha_ges",
+                            "Stückzahl_Nplot", "stückzahl_Nha",  
+                             "G_Anteil_Art", "Hauptbaumart_G")
 
+write.csv(trees_P_CP_SP, "output/out_data/forst_zusammenfassung_MoMoK.csv")
 
 # ----- 2.5.1.2. grouped by Plot, species -----------------------------------------------------------------
 trees_P_SP <- left_join(
   # data set with BA per species
   trees_total_5 %>%
     group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
-    summarise(mean_DBH_cm = mean(DBH_cm),         # mean diameter per species per canopy layer per plot
+    # values per plot
+    summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
               sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
-              mean_H_m = mean(H_m),                # mean height per species per canopy layer per plot
+              mean_H_m = mean(H_m),                # mean height per species per  per plot
               sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
-              SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
-              mean_BA_SP_plot = mean(BA_m2),       # calculate mean BA in m2 per species per canopy payer per plot
-              Nt_plot = n(),
-              C_aB_t = sum(C_ab_t_tapes), 
-              C_bB_t = sum(C_bB_t), 
-              C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              N_aB_t = sum(na.omit(tot_N__t)),
-              plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
-    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,
-           C_aB_t_ha = C_aB_t/plot_A_ha, 
-           C_bB_t_ha = C_bB_t/plot_A_ha,
-           C_tot_t_ha = C_tot_t/ plot_A_ha, 
-           N_aB_t_ha = N_aB_t/plot_A_ha),    # calculate BA per species per plot in m2/ ha
+              SP_BA_plot = sum(BA_m2),             #  BA per species  per plot in m2
+              Nt_plot = n(),                       # number of trees per plot
+              B_tot_t_plot = sum((tapes_ab_kg/1000)+bB_t), # total biomass  in t per species per plot 
+              B_aB_t_plot = sum(tapes_ab_kg/1000),           # total aboveground biomass  in t per species per plot
+              B_bB_t_plot = sum(bB_t),                       # total belowgrond biomass  in t per species per plot
+              B_f_t_plot = sum(tapes_fB_kg/1000),            # foliage biomass in t per species per plot
+              B_fw_t_plot = sum(tapes_fwB_kg/1000),          # fine wood biomass in t per species per plot
+              B_sw_t_plot = sum(tapes_swB_kg/1000),          # solid wood biomassin t per species per plot
+              B_swb_t_plot = sum(tapes_swbB_kg/1000),        # solid wood bark biomass in t per species per plot
+              B_stw_t_plot = sum(tapes_stwB_kg/1000),        # stump wood biomass in t per species per plot
+              B_stwb_t_plot = sum(tapes_stwbB_kg/1000),      # stump wood bark biomass in t per species per plot
+              C_tot_t_plot = sum(C_ab_t_tapes+C_bB_t),    # total C stock in t per species per plot 
+              C_aB_t_plot = sum(C_ab_t_tapes),               # total aboveground C stock in t per species per plot
+              C_bB_t_plot = sum(C_bB_t),                     # total belowgrond C stock in t per species per plot
+              C_f_t_plot = sum(C_f_t),                       # foliage C stock in t per species per plot
+              C_fw_t_plot = sum( C_fw_t),                    # fine wood C stock in t per species per plot
+              C_sw_t_plot = sum( C_sw_t),                    # solid wood C stock in t per species per plot
+              C_swb_t_plot = sum( C_swb_t),                  # solid wood bark C stock in t per species per plot
+              C_stw_t_plot = sum( C_stw_t),                  # stump wood C stock in t per species per plot
+              C_stwb_t_plot = sum( C_stwb_t),                # stump wood bark C stock in t per species per plot
+              N_aB_t_plot = sum(na.omit(tot_N__t)),       # total aboveground N stock in t per species per plot
+              N_f_t_plot = sum(na.omit(N_f_kg/1000)),        # foliage N stock in t per species per plot
+              N_fw_t_plot = sum(na.omit(N_fw_kg/1000)),      # fine wood N stock in t per species per plot
+              N_sw_t_plot = sum(na.omit(N_sw_kg/1000)),      # solid wood N stock in t per species per plot
+              N_swb_t_plot = sum(na.omit(N_swb_kg/1000)),    # solid wood bark N stock in t per species per plot
+              N_stw_t_plot = sum(na.omit(N_stw_kg/1000)),    # stump wood N stock in t per species per plot
+              N_stwb_t_plot = sum(na.omit(N_stwb_kg/1000)),  # stump wood bark N stock in t per species per plot
+              plot_A_ha = mean(plot_A_ha),               # plot area in hectare to reffer data to hectar
+              MoMoK_A_ha = (50*50)/10000) %>%            # actual momok area in hectar
+    # values per hectar
+    mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,           # basal area in m2/ha per species per plot
+           Nt_ha = Nt_plot/ plot_A_ha,                   # number of trees per hectar per species per plot
+           B_tot_t_ha = B_tot_t_plot/plot_A_ha,     # total biomass in t/ha per species per plot
+           B_aB_t_ha = B_aB_t_plot/plot_A_ha,           # total aboveground biomass in t/ha per species per plot
+           B_bB_t_ha = B_bB_t_plot/plot_A_ha,           # total belowground biomass in t/ha per species per plot
+           B_f_t_ha = B_f_t_plot/plot_A_ha,             # foliage biomass in t/ha per species per plot
+           B_fw_t_ha = B_fw_t_plot/plot_A_ha,           # fine wood biomass in t/ha per species per plot
+           B_sw_t_ha = B_sw_t_plot/plot_A_ha,           # solid wood biomass in t/ha per species per plot
+           B_swb_t_ha = B_swb_t_plot/plot_A_ha,         # solid wood bark biomass in t/ha per species per plot
+           B_stw_t_ha = B_stw_t_plot/plot_A_ha,         # stump wood biomass in t/ha per species per plot
+           B_stwb_t_ha = B_stwb_t_plot/plot_A_ha,       # stump wood bark biomass in t/ha per species per plot
+           C_tot_t_ha = C_tot_t_plot/plot_A_ha,     # total C stock in t/ha per species per plot
+           C_aB_t_ha = C_aB_t_plot/plot_A_ha,           # total aboveground C stock in t/ha per species per plot
+           C_bB_t_ha = C_bB_t_plot/plot_A_ha,           # total belowground C stock in t/ha per species per plot
+           C_f_t_ha = C_f_t_plot/plot_A_ha,             # foliage C stock in t/ha per species per plot
+           C_fw_t_ha = C_fw_t_plot/plot_A_ha,           # fine wood C stock in t/ha per species per plot
+           C_sw_t_ha = C_sw_t_plot/plot_A_ha,           # solid wood C stock in t/ha per species per plot
+           C_swb_t_ha =  C_swb_t_plot/plot_A_ha,        # solid wood bark C stock in t/ha per species per plot
+           C_stw_t_ha = C_stw_t_plot/plot_A_ha,         # stump wood C stock in t/ha per species per plot
+           C_stwb_t_ha = C_stwb_t_plot/plot_A_ha,       # stump wood bark C stock in t/ha per species per plot
+           N_aB_t_ha = N_aB_t/plot_A_ha,            #  total aboveground N stock in t/ha species per plot 
+           N_f_t_ha = N_f_t_plot/plot_A_ha,             # foliage C stock in t/ha per species per plot
+           N_fw_t_ha = N_fw_t_plot/plot_A_ha,           # fine wood C stock in t/ha per species per plot
+           N_sw_t_ha = N_sw_t_plot/plot_A_ha,           # solid wood C stock in t/ha per species per plot
+           N_swb_t_ha = N_swb_t_plot/plot_A_ha,         # solid wood bark C stock in t/ha per species per plot
+           N_stw_t_ha = N_stw_t_plot/plot_A_ha,         # stump wood C stock in t/ha per species per plot
+           N_stwb_t_ha = N_stwb_t_plot/plot_A_ha) %>%   # stump wood bark C stock in t/ha per species per plot
+    # values per MoMoK area
+    mutate(SP_BA_m2ha = (SP_BA_plot/plot_A_ha)*MoMoK_A_ha,           # basal area in m2/ha per species per plot
+           Nt_ha = (Nt_plot/ plot_A_ha)*MoMoK_A_ha,                   # number of trees per hectar per species per plot
+           B_tot_t_ha = (B_tot_t_plot/plot_A_ha)*MoMoK_A_ha,     # total biomass in t/ha per species per plot
+           B_aB_t_ha = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total aboveground biomass in t/ha per species per plot
+           B_bB_t_ha = (B_bB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total belowground biomass in t/ha per species per plot
+           B_f_t_ha = (B_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage biomass in t/ha per species per plot
+           B_fw_t_ha = (B_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood biomass in t/ha per species per plot
+           B_sw_t_ha = (B_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood biomass in t/ha per species per plot
+           B_swb_t_ha =(B_swb_t_plot/plot_A_ha)*MoMoK_A_ha,         # solid wood bark biomass in t/ha per species per plot
+           B_stw_t_ha = (B_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood biomass in t/ha per species per plot
+           B_stwb_t_ha = (B_stwb_t_plot/plot_A_ha)*MoMoK_A_ha,       # stump wood bark biomass in t/ha per species per plot
+           C_tot_t_ha = (C_tot_t_plot/plot_A_ha)*MoMoK_A_ha,     # total C stock in t/ha per species per plot
+           C_aB_t_ha = (C_aB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total aboveground C stock in t/ha per species per plot
+           C_bB_t_ha = (C_bB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total belowground C stock in t/ha per species per plot
+           C_f_t_ha = (C_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage C stock in t/ha per species per plot
+           C_fw_t_ha = (C_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood C stock in t/ha per species per plot
+           C_sw_t_ha = (C_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood C stock in t/ha per species per plot
+           C_swb_t_ha =  (C_swb_t_plot/plot_A_ha)*MoMoK_A_ha,        # solid wood bark C stock in t/ha per species per plot
+           C_stw_t_ha = (C_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood C stock in t/ha per species per plot
+           C_stwb_t_ha = (C_stwb_t_plot/plot_A_ha)*MoMoK_A_ha,       # stump wood bark C stock in t/ha per species per plot
+           N_aB_t_ha = (N_aB_t/plot_A_ha)*MoMoK_A_ha,            #  total aboveground N stock in t/ha species per plot 
+           N_f_t_ha = (N_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage C stock in t/ha per species per plot
+           N_fw_t_ha = (N_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood C stock in t/ha per species per plot
+           N_sw_t_ha = (N_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood C stock in t/ha per species per plot
+           N_swb_t_ha = (N_swb_t_plot/plot_A_ha)*MoMoK_A_ha,         # solid wood bark C stock in t/ha per species per plot
+           N_stw_t_ha = (N_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood C stock in t/ha per species per plot
+           N_stwb_t_ha =(N_stwb_t_plot/plot_A_ha)*MoMoK_A_ha),      # stump wood bark C stock in t/ha per species per plot),                     
   # dataset with total BA per plot
   trees_total_5 %>%
     group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
