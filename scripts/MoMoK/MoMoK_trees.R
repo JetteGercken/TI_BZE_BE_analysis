@@ -2419,21 +2419,36 @@ trees_P_SP <- left_join(trees_P_SP,
 # "Stückzahl_Nplot", "stückzahl_Nha",  
 # "G_Anteil_Art", "Hauptbaumart_G")
 
-colnames(trees_P_SP) <- c("plot_ID", "B_Art", "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m", 
-                          "G_m2_Art",  "Stückzahl_Nplot", 
-                          "B_ges_t_Plot_Art",  "B_oi_t_Plot_Art",   "B_bB_t_Plot_Art",   "B_f_t_Plot_Art",    "B_fw_t_Plot_Art",   "B_sw_t_Plot_Art", "B_swb_t_Plot_Art",  "B_stw_t_Plot_Art",  "B_stwb_t_Plot_Art", 
-                          "C_ges_t_Plot_Art","C_oi_t_Plot_Art","C_bB_t_Plot_Art" ,"C_f_t_Plot_Art","C_fw_t_Plot_Art","C_sw_t_Plot_Art","C_swb_t_Plot_Art","C_stw_t_Plot_Art","C_stwb_t_Plot_Art", 
-                          "N_oi_t_Plot_Art", "N_f_t_Plot_Art","N_fw_t_Plot_Art",   "N_sw_t_Plot_Art",   "N_swb_t_Plot_Art",  "N_stw_t_Plot_Art" , "N_stwb_t_Plot_Art",
-                          "MoMoK_A_ha",   
-                          "SP_BA_m2ha",    "Nt_ha"  ,      
-                          "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_f_t_ha" ,"B_fw_t_ha","B_sw_t_ha","B_swb_t_ha", "B_stw_t_ha", "B_stwb_t_ha",
-                          "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_f_t_ha", "C_fw_t_ha", "C_sw_t_ha", "C_swb_t_ha", "C_stw_t_ha", "C_stwb_t_ha",
-                          "N_oi_t_ha", "N_f_t_ha", "N_fw_t_ha", "N_sw_t_ha","N_swb_t_ha", "N_stw_t_ha", "N_stwb_t_ha",  
-                          "SP_BA_m2MA" , "Nt_MA",
-                          "B_ges_t_MA", "B_oi_t_MA", "B_bB_t_MA", "B_f_t_MA","B_fw_t_MA","B_sw_t_MA","B_swb_t_MA", "B_stw_t_MA","B_stwb_t_MA",
-                          "C_ges_t_MA", "C_oi_t_MA", "C_bB_t_MA", "C_f_t_MA", "C_fw_t_MA", "C_sw_t_MA", "C_swb_t_MA", "C_stw_t_MA", "C_stwb_t_MA",
-                          "N_oi_t_MA" ,"N_f_t_MA","N_fw_t_MA", "N_sw_t_MA", "N_swb_t_MA","N_stw_t_MA","N_stwb_t_MA",
-                          "ges_BA_m2ha","G_Anteil_Art","Hauptbaumart_G")
+trees_P_SP.export <- trees_P_SP %>% 
+  select(-c(MoMoK_A_ha, )) %>% 
+  select(plot_ID, SP_code,
+         mean_DBH_cm, sd_DBH_cm, mean_H_m, sd_height_m, 
+         SP_BA_plot, SP_BA_m2ha, SP_BA_m2MA, tot_BA_m2ha, BA_SP_per, dom_SP,
+         Nt_P_SP, Nt_ha, Nt_MA,
+         B_tot_t_P_SP, B_aB_t_P_SP, B_bB_t_P_SP, B_f_t_P_SP, B_fw_t_P_SP, B_sw_t_P_SP,B_swb_t_P_SP, B_stw_t_P_SP, B_stwb_t_P_SP,
+         C_tot_t_P_SP, C_aB_t_P_SP, C_bB_t_P_SP, C_f_t_P_SP, C_fw_t_P_SP, C_sw_t_P_SP, C_swb_t_P_SP, C_stw_t_P_SP, C_stwb_t_P_SP,
+         N_aB_t_P_SP, N_f_t_P_SP, N_fw_t_P_SP,N_sw_t_P_SP,N_swb_t_P_SP,N_stw_t_P_SP,N_stwb_t_P_SP,
+         B_tot_t_ha, B_aB_t_ha, B_bB_t_ha, B_f_t_ha, B_fw_t_ha, B_sw_t_ha, B_swb_t_ha, B_stw_t_ha, B_stwb_t_ha, 
+         C_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_f_t_ha, C_fw_t_ha, C_sw_t_ha,C_swb_t_ha, C_stw_t_ha, C_stwb_t_ha, 
+         N_aB_t_ha, N_f_t_ha, N_fw_t_ha, N_sw_t_ha, N_swb_t_ha, N_stw_t_ha, N_stwb_t_ha, 
+         B_tot_t_MA, B_aB_t_MA, B_bB_t_MA, B_f_t_MA, B_fw_t_MA, B_sw_t_MA, B_swb_t_MA, B_stw_t_MA, B_stwb_t_MA, 
+         C_tot_t_MA, C_aB_t_MA, C_bB_t_MA,C_f_t_MA, C_fw_t_MA, C_sw_t_MA, C_swb_t_MA, C_stw_t_MA, C_stwb_t_MA, 
+         N_aB_t_MA, N_f_t_MA, N_fw_t_MA, N_sw_t_MA, N_swb_t_MA, N_stw_t_MA, N_stwb_t_MA)
+
+colnames(trees_P_SP.export) <- c("plot_ID", "B_Art", 
+                                 "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+                                 "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha","G_Anteil_Art","Hauptbaumart_G",
+                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
+                                 "B_ges_t_Art_Plot",  "B_oi_t_Art_Plot",   "B_bB_t_Art_Plot",   "B_Bl_t_Art_Plot",    "B_nDhmR_t_Art_Plot",   "B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot",
+                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_bB_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", 
+                                 "N_oi_t_Art_Plot", "N_Bl_t_Art_Plot","N_nDhmR_t_Art_Plot",   "N_DhoR_t_Art_Plot",   "N_DhR_t_Art_Plot",  "N_StoR_t_Art_Plot" , "N_StR_t_Art_Plot",
+                                 "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
+                                 "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
+                                 "N_oi_t_ha", "N_Bl_t_ha", "N_nDhmR_t_ha", "N_DhoR_t_ha","N_DhR_t_ha", "N_StoR_t_ha", "N_StR_t_ha",
+                                 "B_ges_t_MF", "B_oi_t_MF", "B_bB_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
+                                 "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
+                                 "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
+write.csv(trees_P_SP.export, "output/out_data/LB_Art_plot_MoMoK.csv")
 
 # ----- 2.5.1.3. grouped by Plot----------------------------------------------------------
 
