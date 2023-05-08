@@ -2448,7 +2448,8 @@ colnames(trees_P_SP.export) <- c("plot_ID", "B_Art",
                                  "B_ges_t_MF", "B_oi_t_MF", "B_bB_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
                                  "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
                                  "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
-write.csv(trees_P_SP.export, "output/out_data/LB_Art_plot_MoMoK.csv")
+
+write.csv(trees_P_SP, "output/out_data/LB_Art_Plot_MoMoK.csv")
 
 # ----- 2.5.1.3. grouped by Plot----------------------------------------------------------
 
@@ -2555,6 +2556,39 @@ trees_P <- trees_total_5 %>%
             summarise(N_SP_plot = n()),
           by = "plot_ID")
 
+
+
+trees_P.export <- trees_P %>% 
+  select(-c(MoMoK_A_ha,plot_A_ha)) %>% 
+  select(plot_ID,
+         mean_DBH_cm, sd_DBH_cm, mean_H_m, sd_height_m, 
+         BA_m2_plot, BA_m2MA, BA_m2_ha, dom_SP,
+         Nt_plot, Nt_ha, Nt_MA,
+         B_tot_t_plot, B_aB_t_plot, B_bB_t_plot, B_f_t_plot, B_fw_t_plot, B_sw_t_plot,B_swb_t_plot, B_stw_t_plot, B_stwb_t_plot,
+         C_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_f_t_plot, C_fw_t_plot, C_sw_t_plot, C_swb_t_plot, C_stw_t_plot, C_stwb_t_plot,
+         N_aB_t_plot, N_f_t_plot, N_fw_t_plot,N_sw_t_plot,N_swb_t_plot,N_stw_t_plot,N_stwb_t_plot,
+         B_tot_t_ha, B_aB_t_ha, B_bB_t_ha, B_f_t_ha, B_fw_t_ha, B_sw_t_ha, B_swb_t_ha, B_stw_t_ha, B_stwb_t_ha, 
+         C_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_f_t_ha, C_fw_t_ha, C_sw_t_ha,C_swb_t_ha, C_stw_t_ha, C_stwb_t_ha, 
+         N_aB_t_ha, N_f_t_ha, N_fw_t_ha, N_sw_t_ha, N_swb_t_ha, N_stw_t_ha, N_stwb_t_ha, 
+         B_tot_t_MA, B_aB_t_MA, B_bB_t_MA, B_f_t_MA, B_fw_t_MA, B_sw_t_MA, B_swb_t_MA, B_stw_t_MA, B_stwb_t_MA, 
+         C_tot_t_MA, C_aB_t_MA, C_bB_t_MA,C_f_t_MA, C_fw_t_MA, C_sw_t_MA, C_swb_t_MA, C_stw_t_MA, C_stwb_t_MA, 
+         N_aB_t_MA, N_f_t_MA, N_fw_t_MA, N_sw_t_MA, N_swb_t_MA, N_stw_t_MA, N_stwb_t_MA)
+
+colnames(trees_P.export) <- c("plot_ID", "B_Art", 
+                                 "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+                                 "G_m2_Plot", "G_m2ha", "G_m2MF", "Hauptbaumart_G",
+                                 "Stückzahl_n_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
+                                 "B_ges_t_Plot",  "B_oi_t_Plot",   "B_bB_t_Plot",   "B_Bl_t_Plot",    "B_nDhmR_t_Plot",   "B_DhoR_t_Plot", "B_DhR_t_Plot",  "B_StoR_t_Plot",  "B_StR_t_Plot",
+                                 "C_ges_t_Plot","C_oi_t_Plot","C_bB_t_Plot" ,"C_Bl_t_Plot","C_nDhmR_t_Plot","C_DhoR_t_Plot","C_DhR_t_Plot","C_StoR_t_Plot","C_StR_t_Plot", 
+                                 "N_oi_t_Plot", "N_Bl_t_Plot","N_nDhmR_t_Plot",   "N_DhoR_t_Plot",   "N_DhR_t_Plot",  "N_StoR_t_Plot" , "N_StR_t_Plot",
+                                 "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
+                                 "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
+                                 "N_oi_t_ha", "N_Bl_t_ha", "N_nDhmR_t_ha", "N_DhoR_t_ha","N_DhR_t_ha", "N_StoR_t_ha", "N_StR_t_ha",
+                                 "B_ges_t_MF", "B_oi_t_MF", "B_bB_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
+                                 "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
+                                 "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
+
+write.csv(trees_P, "output/out_data/LB_Plot_MoMoK.csv")
 
 # ----- 2.5.2. DEAD TREES plot level --------------------------------------------------------
 # ----- 2.5.2.1. grouped by Plot, species, deadwood type, decay type -------------------------
