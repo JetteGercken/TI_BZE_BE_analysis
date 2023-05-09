@@ -621,6 +621,15 @@ B_DW <- function(V, dec_SP){     # a column that holds the degree of decay and t
   return(V*BEF[dec_SP])
 }
 
+# relative density for tapeS deadwood compartiments
+rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
+  BEF <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
+           "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
+           "3_1" = 1, "3_2" = (1-((0.58-0.37)/0.58)), "3_3" = (1-((0.58-0.21)/0.58)), "3_4" = (1-((0.58-0.26)/0.58)) );      # relative change in density of oak trees according to Müller-Ursing basen on 100% = 0.58
+  return(B*BEF[dec_SP])
+}
+
+
 # ---- 1.3.4.3. Carbon deadwood according to IPCC default value from GHGI methodology 2006
 C_DW <- function(V, dec_SP){   # a column that holds the degree of decay and the species type has to be created (united)
   BEF <- c("2_1" = 0.372, "2_2" = 0.308, "2_3" = 0.141, "2_4" = 0.123,   # conferous trees according to Faver
@@ -1714,7 +1723,7 @@ trees_total_5 <- trees_total_5 %>%
  # #### 
   # Carbon stock
    mutate(C_aB_t = (aB_kg/1000)*0.5,
-         C_ab_t_tapes = (tapes_ab_kg/1000)*05,
+         C_ab_t_tapes = (tapes_ab_kg/1000)*0.5,
          C_bB_t = (bB_kg/1000)*0.5,
          C_f_t =  (tapes_fB_kg/1000)*0.5,
          C_fw_t = (tapes_fwB_kg/1000)*0.5, 
@@ -1881,7 +1890,8 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
          SP_dw_tps = case_when(SP_group == 1 | (SP_group == 4 & LH_NH == "NB") ~ 1,
                                SP_group == 2 | (SP_group == 4 & LH_NH == "LB") ~ 15,
                                SP_group == 3 ~ 17,
-                               TRUE ~ NA)) 
+                               TRUE ~ NA)) %>% 
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>%
 
 
 # ----- 2.2.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
@@ -1916,7 +1926,7 @@ DW_total <- left_join(DW_total,
                      H_m = NA, 
                      D_mm = D_cm*10, ) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-              #estimating height for Tapes for D_g deadwood species D_g
+             #estimating height for Tapes for D_g deadwood species D_g
                 # to create a more generally applicabple bark share the pseudo trees are going to be build around the diameter of the mean basal area per plot and species
                 left_join(., DW_total %>%
                             filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   
@@ -1938,13 +1948,13 @@ DW_total <- left_join(DW_total,
               # calculating biomass in compartiments via TapeS
                 mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
                      tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
-                     dw_tapes_b_ratio = tapeS_bark/tapeS_wood) %>%      # ratio between solid wood bark vs. solid wood
+                     dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
       # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
               (DW_total %>% 
                  # filter for the respective deadwood type and decay state
-                filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>% 
-                mutate(SP_code = dom_SP,
+                filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
+                 mutate(SP_code = dom_SP,
                        H_m = NA, 
                        D_mm = D_cm*10,
                   # estimating diameter in 1.3m height, as the diameters were measured at the top of the stum which is < 1.3m 
@@ -1994,12 +2004,11 @@ DW_total <- left_join(DW_total,
                  filter(DBH_h_m < dw_H_dg_tapes) %>% 
                  mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
                        tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
-                       dw_tapes_b_ratio = tapeS_bark/tapeS_wood) %>% 
+                       dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
             by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
   #  volume, biomass, carbon
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>% 
-  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+ mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
@@ -2225,7 +2234,8 @@ RG_total <- RG_total %>%
                                            LH_NH == "LB" ~ RG_tapeS_ab_kg, 
                                            TRUE ~ 0)) %>% 
   # Nitrogen 
- mutate(RG_C_t = (RG_tapeS_ab_kg*0.5)/1000, 
+ mutate(RG_C_aB_t = (RG_tapeS_ab_kg*0.5)/1000, 
+        RG_C_bB_t = (RG_GHG_bB_kg*0.5)/1000,
         RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
         RG_N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group), 
         RG_N_total_kg = RG_N_stem_kg + RG_N_f_kg)
@@ -2785,9 +2795,10 @@ DW_P_TY <- DW_total %>%
 DW_P <- DW_total %>% 
     group_by(plot_ID) %>% 
     summarise(#plot_A_ha = mean(CCS_A_ha), 
-            plot_B_tot_t = sum(na.omit(B_dw_kg)/1000),
-            plot_C_tot_t = sum(na.omit(C_dw_kg)/1000), 
-            plot_N_aB_t = sum(na.omit(tot_N_dw_kg)/1000)) %>%
+            B_aB_t_plot = sum(na.omit(B_dw_kg)/1000),
+            C_aB_t_plot = sum(na.omit(C_dw_kg)/1000), 
+            N_aB_t_plot = sum(na.omit(tot_N_dw_kg)/1000), 
+            Nt_plot = n()) %>%
     # dataset with are per plot cnsidreing multpiple sampling circuits per plot
     left_join(., DW_total %>%
                 select(plot_ID, CCS_nr) %>% 
@@ -2797,12 +2808,15 @@ DW_P <- DW_total %>%
                 summarize(plot_A_ha = sum(CCS_A_ha))%>% 
                 mutate(MoMoK_A_ha = (50*50)/10000), 
               by = "plot_ID") %>% 
-    mutate(B_tot_t_ha = plot_B_tot_t/plot_A_ha, 
-           C_tot_t_ha = plot_C_tot_t/plot_A_ha, 
-           N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
+    mutate(B_aB_t_ha = B_aB_t_plot/plot_A_ha, 
+           C_aB_t_ha = C_aB_t_plot/plot_A_ha, 
+           N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
+           Nt_ha = Nt_plot/plot_A_ha, 
            # referring carbon & nitrogen stocks to actual Momok size 
-           plot_C_tot_t_momok_A = plot_C_tot_t/MoMoK_A_ha, 
-           plot_N_aB_t_momok_A = plot_N_aB_t/MoMoK_A_ha ) %>% 
+           B_aB_t_MA = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
+           C_aB_t_MA = (C_aB_t_plot/ plot_A_ha)*MoMoK_A_ha, 
+           N_aB_t_MA = (N_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
+           Nt_MA = (Nt_plot/ plot_A_ha)*MoMoK_A_ha) %>% 
   # number of decay types per plot
   left_join(., DW_total %>% 
               select(plot_ID, dec_type) %>%
@@ -2837,22 +2851,24 @@ RG_P_SP <- RG_total %>%
               mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
               SP_BA_m2_plot = sum(c_A(D_cm/2)),                       # Basal area in m2 per plot and speices 
               N_trees_plot = n(),                                  # number of individuals per plot and species
-              C_aB_t_plot = sum(RG_C_t),                           # sum of aboveground carbon stock per plot and species
-              C_bB_t_plot = sum((RG_GHG_bB_kg/1000)*0.5),          # sum of belowground carbon stock per plot and species
+              C_aB_t_plot = sum(RG_C_aB_t),                           # sum of aboveground carbon stock per plot and species
+              C_bB_t_plot = sum(RG_C_bB_t),          # sum of belowground carbon stock per plot and species
               N_aB_t_plot = sum(na.omit(RG_N_total_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species
               plot_A_ha = mean(plot_A_ha),                    # plot area
               MoMok_A_ha = (50*50)/10000) %>%                 # momok area 0.25 ha 
   mutate(C_tot_t_plot = C_aB_t_plot + C_bB_t_plot,                           # sum of total carbon stock per plot and species             
-         C_aB_t_ha = C_aB_t_plot/plot_A_ha, 
+        # hectar values
+          C_aB_t_ha = C_aB_t_plot/plot_A_ha, 
          C_bB_t_ha = C_bB_t_plot/plot_A_ha, 
          C_tot_t_ha = C_tot_t_plot/plot_A_ha,
          N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
-         N_trees_ha = N_trees/plot_A_ha, 
-         C_aB_t_MA = C_aB_t_plot/MoMok_A_ha, 
+         N_trees_ha = N_trees_plot/plot_A_ha, 
+        # MoMoK area values 
+        C_aB_t_MA = C_aB_t_plot/MoMok_A_ha, 
          C_bB_t_MA = C_bB_t_plot/MoMok_A_ha, 
          C_tot_t_MA = C_tot_t_plot/MoMok_A_ha,
          N_aB_t_MA = N_aB_t_plot/MoMok_A_ha, 
-         N_trees_MA = N_trees/MoMok_A_ha) %>%         
+         N_trees_MA = N_trees_plot/MoMok_A_ha) %>%         
   left_join(., RG_total %>%
               # plot area of all sampling circuits together
               # left_join(., RG_total %>%
@@ -2898,22 +2914,34 @@ RG_P <- RG_total %>%
               mutate(MoMoK_A_ha = (50*50)/10000), 
             by = "plot_ID") %>% 
   group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-  summarise(plot_C_aB_t = sum(RG_C_t), 
-            plot_C_bB_t = sum((RG_GHG_bB_kg*1000)*0.5),
-            plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-            plot_Nt = n(),
+  summarise(B_aB_t_plot = sum(RG_tapeS_ab_kg/1000), 
+            B_bB_t_plot = sum(RG_GHG_bB_kg/1000), 
+            B_tot_t_plot = sum(RG_tapeS_ab_kg/1000) + sum(RG_GHG_bB_kg/1000), 
+            C_aB_t_plot = sum(RG_C_aB_t), 
+            C_bB_t_plot = sum(RG_C_bB_t),
+            C_tot_t_plot = C_aB_t_plot + C_bB_t_plot,
+            N_aB_t_plot = sum(na.omit(RG_N_total_kg/1000)), 
+            Nt_plot = n(),
             plot_A_ha = mean(plot_A_ha)) %>% 
   mutate(MoMoK_A_ha = (50*50)/10000) %>% 
         # referring carbon and nitrogen stocks to 1 ha 
-  mutate(plot_C_tot_t = plot_C_aB_t + plot_C_bB_t,
-         plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
-         plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
-         plot_C_tot_t_ha = plot_C_tot_t/ plot_A_ha, 
-         plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
-         plot_Nt_ha = plot_Nt/ plot_A_ha, 
+  mutate(B_aB_t_ha = B_aB_t_plot/ plot_A_ha, 
+         B_bB_t_ha = B_bB_t_plot/ plot_A_ha, 
+         B_tot_t_ha = B_tot_t_plot/ plot_A_ha, 
+         C_aB_t_ha = C_aB_t_plot/ plot_A_ha, 
+         C_bB_t_ha = C_bB_t_plot/ plot_A_ha, 
+         C_tot_t_ha = C_tot_t_plot/ plot_A_ha, 
+         N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
+         Nt_ha = Nt_plot/ plot_A_ha, 
          # referring carbon & nitrogen stocks to actual Momok size 
-         plot_C_tot_t_momok_A = plot_C_tot_t/MoMoK_A_ha, 
-         plot_N_aB_t_momok_A = plot_N_aB_t/MoMoK_A_ha ) %>% 
+         B_tot_t_MA = (B_tot_t_plot/plot_A_ha) *MoMoK_A_ha, 
+         B_aB_t_MA = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
+         B_bB_t_MA = (B_bB_t_plot/plot_A_ha)*MoMoK_A_ha,
+         C_tot_t_MA = (C_tot_t_plot/plot_A_ha) *MoMoK_A_ha, 
+         C_aB_t_MA = (C_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
+         C_bB_t_MA = (C_bB_t_plot/plot_A_ha)*MoMoK_A_ha,
+         N_aB_t_MA = (N_aB_t_plot/plot_A_ha) * MoMoK_A_ha, 
+         Nt_MA = (Nt_plot/plot_A_ha)*MoMoK_A_ha) %>% 
   # number of species per plot
   left_join(., RG_total %>% 
               select(plot_ID, SP_code) %>%
@@ -2925,33 +2953,120 @@ RG_P <- RG_total %>%
 
 # ----- 2.5.5.JOINT PLOTWISE: living trees, deadwood, regeneration  -------
 
-trees_P %>% 
+plot_total <- rbind(
+# living trees
+ trees_P %>% 
   dplyr::select(plot_ID,
-                C_aB_t, C_bB_t, C_tot_t, N_aB_t,   # per plot
-                plot_C_tot_t_momok_A, plot_N_aB_t_momok_A,  # per momok area 50X50m
-                C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha) %>%       # per hectare
-  mutate(stand_component = "LT")
-
-RG_P %>% 
-  dplyr::select(plot_ID, 
-                plot_N_aB_t, plot_C_aB_t, plot_C_bB_t, plot_C_tot_t,   # per plot
-                plot_C_tot_t_momok_A, plot_N_aB_t_momok_A,                      # per momok area 50X50m
-                plot_C_aB_t_ha, plot_C_bB_t_ha, plot_C_tot_t_ha, plot_N_aB_t_ha) %>%            # per hectare
-  mutate(stand_component = "RG")
-
-DW_P %>% 
+                B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+                B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+                B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha) %>%                # per hectare
+  mutate(stand_component = "LT"),
+# regeneration trees
+ RG_P %>% 
   dplyr::select(plot_ID,
-                plot_C_tot_t,plot_N_aB_t,   # per plot
-                plot_C_tot_t_momok_A, plot_N_aB_t_momok_A,  # per momok area 50X50m
-                C_tot_t_ha, N_aB_t_ha) %>%       # per hectare
+                B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+                B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+                B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha) %>%                # per hectare
+  mutate(stand_component = "RG"),
+# deadwood
+ DW_P %>% 
+  dplyr::select(plot_ID,
+                B_aB_t_plot, C_aB_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+                B_aB_t_MA, C_aB_t_MA, N_aB_t_MA, Nt_MA,            # per momok area 50X50m
+                B_aB_t_ha, C_aB_t_ha, N_aB_t_ha, Nt_ha) %>%        # per hectare
   mutate(stand_component = "DW", 
-         plot_C_aB_t = NA, 
-         plot_C_bB_t = NA, 
-         plot_C_aB_t_ha = NA, 
-         plot_C_bB_t_ha = NA)
+         B_tot_t_plot = NA, 
+         B_bB_t_plot = NA,
+         C_tot_t_plot = NA, 
+         C_bB_t_plot = NA, 
+         B_tot_t_ha = NA, 
+         B_bB_t_ha = NA,
+         C_tot_t_ha = NA, 
+         C_bB_t_ha = NA,
+         B_tot_t_MA = NA, 
+         B_bB_t_MA = NA,
+         C_tot_t_MA = NA, 
+         C_bB_t_MA = NA) %>% 
+  select(plot_ID,
+         B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+         B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha,                    # per hectar
+         stand_component)
+# combined rows of DW, RG and LT
+# trees_P %>% 
+#   select(plot_ID) %>% 
+#   distinct() %>% 
+#   mutate(B_aB_t_plot = NA, 
+#          B_bB_t_plot = NA,
+#          B_tot_t_plot = NA, 
+#          C_aB_t_plot = NA, 
+#          C_bB_t_plot = NA,
+#          C_tot_t_plot = NA,
+#          N_aB_t_plot = NA,
+#          Nt_plot = NA, 
+#          B_aB_t_MA = NA,
+#          B_bB_t_MA = NA,
+#          B_tot_t_MA = NA, 
+#          C_aB_t_MA = NA, 
+#          C_bB_t_MA = NA, 
+#          C_tot_t_MA = NA, 
+#          N_aB_t_MA = NA, 
+#          Nt_MA = NA, 
+#          B_aB_t_ha = NA,
+#          B_bB_t_ha = NA,
+#          B_tot_t_ha = NA, 
+#          C_aB_t_ha = NA,
+#          C_bB_t_ha = NA,
+#          C_tot_t_ha = NA,
+#          N_aB_t_ha = NA, 
+#          Nt_ha = NA,
+#          stand_component = "all")
+) 
+
+plot_total <- rbind( 
+  plot_total, 
+  plot_total %>% 
+  group_by(plot_ID) %>% 
+  arrange(plot_ID) %>% 
+  summarise(B_tot_t_plot = sum(na.omit(B_aB_t_plot)) + sum(na.omit(B_bB_t_plot)), 
+            C_tot_t_plot = sum(na.omit(C_aB_t_plot)) + sum(na.omit(C_bB_t_plot)), 
+            N_tot_t_plot = sum(na.omit(N_aB_t_plot)), 
+            B_tot_t_MA = sum(na.omit(B_aB_t_MA)) + sum(na.omit(B_bB_t_MA)), 
+            C_tot_t_MA = sum(na.omit(C_aB_t_MA)) + sum(na.omit(C_bB_t_MA)), 
+            N_tot_t_MA = sum(na.omit(N_aB_t_MA)), 
+            B_tot_t_ha = sum(na.omit(B_aB_t_ha)) + sum(na.omit(B_bB_t_ha)), 
+            C_tot_t_ha = sum(na.omit(C_aB_t_ha)) + sum(na.omit(C_bB_t_ha)), 
+            N_tot_t_ha = sum(na.omit(N_aB_t_ha))) %>% 
+  mutate(B_aB_t_plot = NA,
+         B_bB_t_plot = NA,
+         C_aB_t_plot = NA,
+         C_bB_t_plot = NA,
+         N_aB_t_plot = NA,
+         Nt_plot = NA, 
+         B_aB_t_MA = NA,
+         B_bB_t_MA = NA,
+         C_aB_t_MA = NA,
+         C_bB_t_MA = NA,
+         N_aB_t_MA = NA,
+         Nt_MA = NA,
+         B_aB_t_ha = NA,
+         B_bB_t_ha = NA,
+         C_aB_t_ha = NA,
+         C_bB_t_ha = NA,
+         N_aB_t_ha = NA,
+         Nt_ha = NA,
+         stand_component = "all") %>% 
+  select(plot_ID,
+         B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+         B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha,                    # per hectar
+         stand_component))
 
 
-# ------ 3. VISULAIZATION -------------------------------------------------
+
+
+
+# ----- 3. VISULAIZATION -------------------------------------------------
 # ----- 3.1.5. visualization height regression -------------------------------------------------------------
 # ----- 3.1.5.1. visualization height regression by plot and species ---------------------------------------
 # nls: plot estimated heights against dbh by plot and species
@@ -3243,7 +3358,6 @@ biotest %>%
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
-  
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)
@@ -3751,6 +3865,34 @@ RG_total %>%
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
   facet_wrap(~LH_NH)
+
+
+
+
+
+
+# ----- visualization plotwise --------------------------------------------
+
+
+
+
+plot_total %>% 
+  ggplot(., aes(stand_component, C_tot_t_ha))+
+  geom_bar(aes(fill = stand_component), 
+           stat="identity", 
+           position=position_dodge())+
+  facet_wrap(~plot_ID)
+
+
+
+plot_total %>% 
+  ggplot(., aes(stand_component, C_tot_t_ha))+
+  geom_boxplot(aes(colour = stand_component))+
+  facet_wrap(~plot_ID)
+
+
+
+
 
 
 # ----- NOTES ------------------------------------------------------------------
