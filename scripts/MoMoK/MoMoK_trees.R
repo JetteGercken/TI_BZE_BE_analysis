@@ -623,10 +623,10 @@ B_DW <- function(V, dec_SP){     # a column that holds the degree of decay and t
 
 # relative density for tapeS deadwood compartiments
 rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
-  BEF <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
+  rd <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
            "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
            "3_1" = 1, "3_2" = (1-((0.58-0.37)/0.58)), "3_3" = (1-((0.58-0.21)/0.58)), "3_4" = (1-((0.58-0.26)/0.58)) );      # relative change in density of oak trees according to Müller-Ursing basen on 100% = 0.58
-  return(B*BEF[dec_SP])
+  return(B*rd[dec_SP])
 }
 
 
@@ -1891,7 +1891,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                SP_group == 2 | (SP_group == 4 & LH_NH == "LB") ~ 15,
                                SP_group == 3 ~ 17,
                                TRUE ~ NA)) %>% 
-  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)%>%
+  unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)
 
 
 # ----- 2.2.2. Deadwood volume, biomass, carbon, compartiment methoden ---------------------------------------------
@@ -2004,7 +2004,8 @@ DW_total <- left_join(DW_total,
                  filter(DBH_h_m < dw_H_dg_tapes) %>% 
                  mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
                        tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
-                       dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>% 
+                       dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
+                                          # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
             by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
   #  volume, biomass, carbon
@@ -2012,7 +2013,7 @@ DW_total <- left_join(DW_total,
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
-  # TapeS compartiments methods to be able to subset dataset and aplly functions separately 
+  # TapeS compartiments methods to be able to subset dataset and apply functions separately 
    mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
                                         DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
                                         TRUE ~ "no"),
@@ -2043,12 +2044,12 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_swB_meth == "yes") %>% 
-                mutate(dw_tps_sw_kg = tapes_swB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_sw_kg = rdB_DW(tapes_swB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg), 
               # dataset broken trees with sw comapartiment
               DW_total %>% 
                 filter(dw_tapes_swB_meth == "sw_tapeS_wood") %>% 
-                mutate(dw_tps_sw_kg = tapeS_wood) %>% 
+                mutate(dw_tps_sw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg),
              # dataset without sw compartiment
              DW_total %>% 
@@ -2062,12 +2063,12 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_swbB_meth == "yes") %>% 
-                mutate(dw_tps_swb_kg = tapes_swbB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_swb_kg = rdB_DW(tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg), 
               # dataset broken trees with sw comapartiment
               DW_total %>% 
                 filter(dw_tapes_swbB_meth == "sw_tapeS_bark") %>% 
-                mutate(dw_tps_swb_kg = tapeS_bark) %>% 
+                mutate(dw_tps_swb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg),
               # dataset without swb compartiment
               DW_total %>% 
@@ -2081,12 +2082,12 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_stwB_meth == "yes") %>% 
-                mutate(dw_tps_stw_kg = tapes_stwB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_stw_kg =  rdB_DW(tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg), 
               # dataset broken trees with sw comapartiment
               DW_total %>% 
                 filter(dw_tapes_stwB_meth == "st_tapeS_wood") %>% 
-                mutate(dw_tps_stw_kg = tapeS_wood) %>% 
+                mutate(dw_tps_stw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg),
               # dataset without swb compartiment
               DW_total %>% 
@@ -2100,12 +2101,12 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_stwbB_meth == "yes") %>% 
-                mutate(dw_tps_stwb_kg = tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_stwb_kg = rdB_DW(tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg), 
               # dataset stumps with stb comapartiment
               DW_total %>% 
                 filter(dw_tapes_stwbB_meth == "st_tapeS_bark") %>% 
-                mutate(dw_tps_stwb_kg = tapeS_bark) %>% 
+                mutate(dw_tps_stwb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg),
               # dataset without swb compartiment
               DW_total %>% 
@@ -2119,7 +2120,7 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_fwB_meth == "yes") %>% 
-                mutate(dw_tps_fw_kg = tapes_brB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_fw_kg =  rdB_DW(tapes_brB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg), 
               # dataset without fine wood compartimenz
               DW_total %>% 
@@ -2133,7 +2134,7 @@ DW_total <- left_join(DW_total,
               # dataset with whole trees in low satates of decay
               DW_total %>% 
                 filter(dw_tapes_fwB_meth == "yes") %>% 
-                mutate(dw_tps_f_kg = tapes_fB(tpS_ID, D_cm, D_h_m, L_m)) %>% 
+                mutate(dw_tps_f_kg =  rdB_DW(tapes_fB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
                 dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg), 
               # dataset without foliage compartimenz
               DW_total %>% 
