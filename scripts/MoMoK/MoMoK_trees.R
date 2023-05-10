@@ -2961,14 +2961,22 @@ plot_total <- rbind(
                 B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
                 B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
                 B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha) %>%                # per hectare
-  mutate(stand_component = "LT"),
+  mutate(stand_component = "LT") %>% 
+   select(plot_ID,stand_component,
+          B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+          B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+          B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha),                    # per hectar
 # regeneration trees
  RG_P %>% 
   dplyr::select(plot_ID,
                 B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
                 B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
                 B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha) %>%                # per hectare
-  mutate(stand_component = "RG"),
+  mutate(stand_component = "RG") %>% 
+  select(plot_ID,stand_component,
+         B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+         B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha),                    # per hectar
 # deadwood
  DW_P %>% 
   dplyr::select(plot_ID,
@@ -2988,11 +2996,10 @@ plot_total <- rbind(
          B_bB_t_MA = NA,
          C_tot_t_MA = NA, 
          C_bB_t_MA = NA) %>% 
-  select(plot_ID,
+  select(plot_ID,stand_component,
          B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
          B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
-         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha,                    # per hectar
-         stand_component)
+         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha)                    # per hectar
 # combined rows of DW, RG and LT
 # trees_P %>% 
 #   select(plot_ID) %>% 
@@ -3057,14 +3064,14 @@ plot_total <- rbind(
          N_aB_t_ha = NA,
          Nt_ha = NA,
          stand_component = "all") %>% 
-  select(plot_ID,
-         B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
-         B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
-         B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha,                    # per hectar
-         stand_component))
+    select(plot_ID,stand_component,
+           B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+           B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
+           B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha))                    # per hectar
 
+summary(plot_total)
 
-
+write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------
