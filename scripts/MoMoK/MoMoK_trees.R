@@ -1914,123 +1914,111 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
     # this are: deadwood fragments (Bruchstücke) --> DW_type == 3 
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
+
 DW_total <- left_join(DW_total, 
- # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
-            rbind(
-    # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
-    #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
-              (DW_total %>% 
-                # filter for DW 3 in low staes of decay
-              filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>%
-                mutate(SP_code = dom_SP,
-                     H_m = NA, 
-                     D_mm = D_cm*10, ) %>% 
-              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
-             #estimating height for Tapes for D_g deadwood species D_g
-                # to create a more generally applicabple bark share the pseudo trees are going to be build around the diameter of the mean basal area per plot and species
-                left_join(., DW_total %>%
-                            filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   
-                            mutate(BA_m2 = (D_m/2)^2*pi) %>% 
-                            group_by(plot_ID, SP_group_char) %>%                                # group by plot and species and canopy layer to calcualte dg, hg 
-                            summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
-                                      SP_dw_tps = mean(SP_dw_tps), 
-                                      mean_L = mean(L_m)) %>%                          # this is just to keep the species group
-                            mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
-                            select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
-                          by = c("plot_ID", "SP_group_char")) %>% 
-                # the same for the dg height estimated via tapeS
-                mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L ~ L_m,
-                                       D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L ~ mean_L,
-                                       TRUE ~ dw_H_dg_tapes), 
-                       H_dg_diff = H_m - dw_H_dg_tapes) %>%
-                # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
-                filter(D_h_m < dw_H_dg_tapes) %>% 
-              # calculating biomass in compartiments via TapeS
-                mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
-                     tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
-                     dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
-      # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
-              (DW_total %>% 
-                 # filter for the respective deadwood type and decay state
-                filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
-                 mutate(SP_code = dom_SP,
-                       H_m = NA, 
-                       D_mm = D_cm*10,
-                  # estimating diameter in 1.3m height, as the diameters were measured at the top of the stum which is < 1.3m 
-                       # estimating diameter via TapeS doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
-                             # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
-                       #DBH_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = , inv = 4), Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)))), cp=FALSE), 
-                       # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)         
-                       DBH_cm_BWI = (D_mm-2*((D_h_cm-130)/tan(40)))/10, 
-                       # as the BWI taper formula returns negative values we´ll use a formula to estimate the DBH direktly by KUBLIN (BWI methodikband chap.5.2.2 ): dz = d ∗ (1.0 + (0.0011 ∗ (hd − 130)))
-                       DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
-                       H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
-                       tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
-                                                      Dm = as.list(DBH_cm_Kublin), 
-                                                      Hm = as.list(D_h_m), 
-                                                      Ht = H_tps_Kublin, inv = 4), 
-                                             Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
-                       DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
-                       DBH_h_m = 1.3) %>% 
-                 # estimating height for Tapes for D_g deadwood species D_g 
-                 left_join(., DW_total %>%
-                             filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
-                             # calculate DBH via Kublin 
-                             # --> estimate height via TapeS with Kublin 
-                             # --> use that height to calcualte new DBH in  tapeS 
-                             # --> calculate D_g grouped by plot_ID and SP_dw_char
-                             # --> estimate height based on the tapes_D_g
-                             mutate(BA_m2 = (D_m/2)^2*pi, 
-                                    D_mm = D_cm*10, 
-                                    DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
-                                    H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
-                                    tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
-                                                                        Dm = as.list(DBH_cm_Kublin), 
-                                                                        Hm = as.list(D_h_m), 
-                                                                        Ht = H_tps_Kublin, inv = 4), 
-                                                               Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE)) %>% 
-                             group_by(plot_ID, SP_group_char) %>% 
-                             summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
-                                       mean_L = mean(L_m),
-                                       SP_dw_tps = mean(SP_dw_tps)) %>%                          # this is just to keep the species group
-                             mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
-                             select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
-                           by = c("plot_ID", "SP_group_char")) %>%
-                 mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L & L_m > dw_H_dg_tapes ~ L_m,
-                                                  D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L & mean_L > dw_H_dg_tapes ~ mean_L,
-                                                  TRUE ~ dw_H_dg_tapes)) %>%
-                 # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
-                 filter(DBH_h_m < dw_H_dg_tapes) %>% 
-                 mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
-                       tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
-                       dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
-                                          # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
-            by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
+                      # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
+                      rbind(
+                # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
+                        #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
+                        (DW_total %>% 
+                           # filter for DW 3 in low staes of decay
+                           filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                   D_mm = D_cm*10) %>% 
+                           # unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+                           #estimating height for Tapes for D_g deadwood species D_g
+                           # to create a more generally applicable bark share the pseudo trees are going to be build around the diameter of the mean basal area per plot and species
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   
+                                       mutate(BA_m2 = (D_m/2)^2*pi) %>% 
+                                       group_by(plot_ID, SP_group_char, dec_type_BWI) %>%                  # group by plot and species and canopy layer to calcualte dg, hg 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm -> 1000mm
+                                                 SP_dw_tps = mean(SP_dw_tps),                              # this is just to keep the species group
+                                                 mean_L = mean(L_m),                                      
+                                                 dec_type_BWI = mean(dec_type_BWI)) %>%                   # this is just to keep the decay type     
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
+                                       select(plot_ID, SP_group_char, dec_type_BWI, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                                     by = c("plot_ID", "SP_group_char", "dec_type_BWI")) %>% 
+                           # the same for the dg height estimated via tapeS
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes)) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(D_h_m < dw_H_dg_tapes) %>% 
+                           # calculating biomass in compartiments via TapeS
+                           mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
+                                  tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
+                  # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
+                        (DW_total %>% 
+                           # filter for the respective deadwood type and decay state
+                           filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                  D_mm = D_cm*10, 
+                                  DBH_h_m = 1.3) %>% 
+                           # estimating height for Tapes for D_g deadwood species D_g
+                           # calculate DBH via Kublin 
+                           # --> estimate height via TapeS with Kublin 
+                           # --> use that height to calcualte new DBH in  tapeS 
+                           # --> calculate D_g grouped by plot_ID and SP_dw_char and dec_type
+                           # --> estimate height based on the tapes_D_g
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
+                                       mutate(D_mm = D_cm*10,
+                                              # estimating diameter via TapeS dirctly doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
+                                              # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
+                                              # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)
+                                              tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps,                                         # c) estimate diameter with TapeS
+                                                                                  Dm = as.list(((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10)),   # a) estimate DBH of the pseudotree via
+                                                                                  Hm = as.list(D_h_m),
+                                                                                  Ht = estHeight(d13 = ((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10), 
+                                                                                                 sp = SP_dw_tps), 
+                                                                                  inv = 4), 
+                                                                              Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE), 
+                                              BA_m2 = ((tapeS_DBH_cm/100)/2)^2*pi) %>%                    # calcualting basal area with tapeS diameter /100 to get from cm to m 
+                                       group_by(plot_ID, SP_group_char, dec_type_BWI) %>% 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm -> 1000mm
+                                                 mean_L = mean(L_m),                                       # mean length
+                                                 SP_dw_tps = mean(SP_dw_tps),                              # this is just to keep the species group
+                                                 dec_type_BWI = mean(dec_type_BWI)) %>%                    # this is just to keep the dec type
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>%  # estimate height for D_g of deadwood by deadwood species group 
+                                       select(plot_ID, SP_group_char, dec_type_BWI, mean_L, dw_H_dg_tapes, dw_D_g),                         
+                                     by = c("plot_ID", "SP_group_char", "dec_type_BWI")) %>%
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L & L_m > dw_H_dg_tapes ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L & mean_L > dw_H_dg_tapes ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes)) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(DBH_h_m < dw_H_dg_tapes) %>% 
+                           mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
+                           # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
+                      by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
   #  volume, biomass, carbon
- mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
   # TapeS compartiments methods to be able to subset dataset and apply functions separately 
-   mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
-                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+  mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
+                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+                                       TRUE ~ "no"),
+         dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
                                         TRUE ~ "no"),
-          dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                         DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
+         dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
                                          TRUE ~ "no"),
-          dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                          DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
-                                          TRUE ~ "no"),
-          dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                          DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
-                                          TRUE ~ "no"),
-          dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
-                                         # I have to add fine wood for BWI_dec_type 2 too,
-                                         # but to be able to calculate the whole biomass stepwise, 
-                                         # but I will not add it to the final dw_kg column
-                                        TRUE ~ "no"))
+         dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
+                                         TRUE ~ "no"),
+         dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
+                                       # I have to add fine wood for BWI_dec_type 2 too,
+                                       # but to be able to calculate the whole biomass stepwise, 
+                                       # but I will not add it to the final dw_kg column
+                                       TRUE ~ "no"))
 
 
 
@@ -2460,7 +2448,9 @@ colnames(trees_P_SP.export) <- c("plot_ID", "B_Art",
                                  "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
                                  "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
 
-write.csv(trees_P_SP, "output/out_data/LB_Art_Plot_MoMoK.csv")
+write.csv(trees_P_SP.export, "output/out_data/LB_Art_Plot_MoMoK.csv")
+
+summary(trees_P_SP)
 
 # ----- 2.5.1.3. grouped by Plot----------------------------------------------------------
 
@@ -2880,8 +2870,8 @@ RG_P_SP <- RG_total %>%
               #             summarise(plot_A_ha = sum(CCS_A_ha)), 
               #           by = "plot_ID") %>% 
               group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-              summarise(plot_C_tot_t = sum(RG_C_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
-                        plot_C_aB_t = sum(RG_C_t), 
+              summarise(plot_C_tot_t = sum(RG_C_aB_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
+                        plot_C_aB_t = sum(RG_C_aB_t), 
                         plot_C_bB_t = sum((RG_GHG_bB_kg/1000)*0.5),
                         plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
                         plot_N_trees = n()),
@@ -2950,7 +2940,7 @@ RG_P <- RG_total %>%
               distinct() %>% 
               summarise(N_species_plot = n()),
             by = "plot_ID")
-
+summary(RG_P)
 
 # ----- 2.5.5.JOINT PLOTWISE: living trees, deadwood, regeneration  -------
 
@@ -5392,6 +5382,262 @@ unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # crea
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm_Kublin), 
                          TRUE ~ L_m), 
          H_m_tapeS = estHeight(d13 = DBH_cm_Kublin, sp = tpS_ID))
+
+
+
+
+DW_total <- left_join(DW_total, 
+                      # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
+                      rbind(
+                        # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
+                        #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
+                        (DW_total %>% 
+                           # filter for DW 3 in low staes of decay
+                           filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                  H_m = NA, 
+                                  D_mm = D_cm*10, ) %>% 
+                           unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+                           #estimating height for Tapes for D_g deadwood species D_g
+                           # to create a more generally applicable bark share the pseudo trees are going to be build around the diameter of the mean basal area per plot and species
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   
+                                       mutate(BA_m2 = (D_m/2)^2*pi) %>% 
+                                       group_by(plot_ID, SP_group_char, dec_type_BWI) %>%                                # group by plot and species and canopy layer to calcualte dg, hg 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                                                 SP_dw_tps = mean(SP_dw_tps), 
+                                                 mean_L = mean(L_m)) %>%                          # this is just to keep the species group
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
+                                       select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                                     by = c("plot_ID", "SP_group_char", dec_type_BWI)) %>% 
+                           # the same for the dg height estimated via tapeS
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes), 
+                                  H_dg_diff = H_m - dw_H_dg_tapes) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(D_h_m < dw_H_dg_tapes) %>% 
+                           # calculating biomass in compartiments via TapeS
+                           mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
+                                  tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
+                        # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
+                        (DW_total %>% 
+                           # filter for the respective deadwood type and decay state
+                           filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                  H_m = NA, 
+                                  D_mm = D_cm*10,
+                                  DBH_h_m = 1.3) %>% 
+                           # estimating height for Tapes for D_g deadwood species D_g
+                             # calculate DBH via Kublin 
+                             # --> estimate height via TapeS with Kublin 
+                             # --> use that height to calcualte new DBH in  tapeS 
+                             # --> calculate D_g grouped by plot_ID and SP_dw_char and dec_type
+                             # --> estimate height based on the tapes_D_g
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
+                                       mutate(BA_m2 = (D_m/2)^2*pi, 
+                                              D_mm = D_cm*10, 
+                                              # estimating diameter via TapeS dirctly doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
+                                              # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
+                                              # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)
+                                              DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,               # a) estiamting diameter with Kublin because it doesnt require height
+                                              H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps),       # b) estimate height with TapeS based on Kublin
+                                              tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps,                 # c) estimate TapeS DBH with TapeS height based on Kublin
+                                                                                  Dm = as.list(DBH_cm_Kublin),
+                                                                                  Hm = as.list(D_h_m), 
+                                                                                  Ht = H_tps_Kublin, inv = 4), 
+                                                                         Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE), 
+                                              tapeS_DBH_cm.test = tprDiameter(tprTrees(spp = SP_dw_tps,                 # c) estimate TapeS DBH with TapeS height based on Kublin
+                                                                                  Dm = as.list(((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10)),   
+                                                                                  Hm = as.list(D_h_m), 
+                                                                                  Ht = estHeight(d13 = ((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10), sp = SP_dw_tps), inv = 4), 
+                                                                         Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),) %>% 
+                                       group_by(plot_ID, SP_group_char) %>% 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                                                 mean_L = mean(L_m),
+                                                 SP_dw_tps = mean(SP_dw_tps)) %>%                          # this is just to keep the species group
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>%  # estimate height for D_g of deadwood by deadwood species group 
+                                       select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),                         
+                                     by = c("plot_ID", "SP_group_char")) %>%
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L & L_m > dw_H_dg_tapes ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L & mean_L > dw_H_dg_tapes ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes)) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(DBH_h_m < dw_H_dg_tapes) %>% 
+                           mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
+                           # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
+                      by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
+  #  volume, biomass, carbon
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
+         C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
+  # TapeS compartiments methods to be able to subset dataset and apply functions separately 
+  mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
+                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+                                       TRUE ~ "no"),
+         dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
+                                        TRUE ~ "no"),
+         dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
+                                         TRUE ~ "no"),
+         dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
+                                         TRUE ~ "no"),
+         dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
+                                       # I have to add fine wood for BWI_dec_type 2 too,
+                                       # but to be able to calculate the whole biomass stepwise, 
+                                       # but I will not add it to the final dw_kg column
+                                       TRUE ~ "no"))
+
+
+# estimating diameter via TapeS dirctly doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
+# https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
+#DBH_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = , inv = 4), Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)))), cp=FALSE), 
+# thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)         
+DBH_cm_BWI = (D_mm-2*((D_h_cm-130)/tan(40)))/10, 
+# as the BWI taper formula returns negative values we´ll use a formula to estimate the DBH direktly by KUBLIN (BWI methodikband chap.5.2.2 ): dz = d ∗ (1.0 + (0.0011 ∗ (hd − 130)))
+DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
+H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
+tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
+                                    Dm = as.list(DBH_cm_Kublin), 
+                                    Hm = as.list(D_h_m), 
+                                    Ht = H_tps_Kublin, inv = 4), 
+                           Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
+DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
+
+DW_total <- left_join(DW_total, 
+                      # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
+                      rbind(
+                        # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
+                        #       L> For deadwoood type == 3 we have a dDBH, D_h_m but no proper height, so well estimate it with our height functions
+                        (DW_total %>% 
+                           # filter for DW 3 in low staes of decay
+                           filter(DW_type == 3 & dec_type_BWI < 3 &  L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                  H_m = NA, 
+                                  D_mm = D_cm*10, ) %>% 
+                           unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+                           #estimating height for Tapes for D_g deadwood species D_g
+                           # to create a more generally applicabple bark share the pseudo trees are going to be build around the diameter of the mean basal area per plot and species
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 3 & dec_type_BWI < 3 & L_m  > 1.3) %>%                   
+                                       mutate(BA_m2 = (D_m/2)^2*pi) %>% 
+                                       group_by(plot_ID, SP_group_char) %>%                                # group by plot and species and canopy layer to calcualte dg, hg 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                                                 SP_dw_tps = mean(SP_dw_tps), 
+                                                 mean_L = mean(L_m)) %>%                          # this is just to keep the species group
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
+                                       select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                                     by = c("plot_ID", "SP_group_char")) %>% 
+                           # the same for the dg height estimated via tapeS
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes), 
+                                  H_dg_diff = H_m - dw_H_dg_tapes) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(D_h_m < dw_H_dg_tapes) %>% 
+                           # calculating biomass in compartiments via TapeS
+                           mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
+                                  tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
+                        # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
+                        (DW_total %>% 
+                           # filter for the respective deadwood type and decay state
+                           filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
+                           mutate(SP_code = dom_SP,
+                                  H_m = NA, 
+                                  D_mm = D_cm*10,
+                                  # estimating diameter in 1.3m height, as the diameters were measured at the top of the stum which is < 1.3m 
+                                  # estimating diameter via TapeS doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
+                                  # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
+                                  #DBH_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(D_cm), Hm = as.list(D_h_m), Ht = , inv = 4), Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & !is.na(D_h_m)))), cp=FALSE), 
+                                  # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)         
+                                  DBH_cm_BWI = (D_mm-2*((D_h_cm-130)/tan(40)))/10, 
+                                  # as the BWI taper formula returns negative values we´ll use a formula to estimate the DBH direktly by KUBLIN (BWI methodikband chap.5.2.2 ): dz = d ∗ (1.0 + (0.0011 ∗ (hd − 130)))
+                                  DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
+                                  H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
+                                  tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
+                                                                      Dm = as.list(DBH_cm_Kublin), 
+                                                                      Hm = as.list(D_h_m), 
+                                                                      Ht = H_tps_Kublin, inv = 4), 
+                                                             Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
+                                  DBH_mm_Kublin = D_mm*(1.0+(0.0011*(D_h_cm-130))), 
+                                  DBH_h_m = 1.3) %>% 
+                           # estimating height for Tapes for D_g deadwood species D_g 
+                           left_join(., DW_total %>%
+                                       filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
+                                       # calculate DBH via Kublin 
+                                       # --> estimate height via TapeS with Kublin 
+                                       # --> use that height to calcualte new DBH in  tapeS 
+                                       # --> calculate D_g grouped by plot_ID and SP_dw_char
+                                       # --> estimate height based on the tapes_D_g
+                                       mutate(BA_m2 = (D_m/2)^2*pi, 
+                                              D_mm = D_cm*10, 
+                                              DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,
+                                              H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps), 
+                                              tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps, 
+                                                                                  Dm = as.list(DBH_cm_Kublin), 
+                                                                                  Hm = as.list(D_h_m), 
+                                                                                  Ht = H_tps_Kublin, inv = 4), 
+                                                                         Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE)) %>% 
+                                       group_by(plot_ID, SP_group_char) %>% 
+                                       summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                                                 mean_L = mean(L_m),
+                                                 SP_dw_tps = mean(SP_dw_tps)) %>%                          # this is just to keep the species group
+                                       mutate(dw_H_dg_tapes = estHeight(d13 = dw_D_g, sp = SP_dw_tps)) %>% 
+                                       select(plot_ID, SP_group_char, mean_L, dw_H_dg_tapes, dw_D_g),    # estimate height for D_g of deadwood by deadwood species group                      
+                                     by = c("plot_ID", "SP_group_char")) %>%
+                           mutate(dw_H_dg_tapes = case_when(D_h_m > dw_H_dg_tapes & L_m > D_h_m & L_m > mean_L & L_m > dw_H_dg_tapes ~ L_m,
+                                                            D_h_m > dw_H_dg_tapes & mean_L > D_h_m & L_m < mean_L & mean_L > dw_H_dg_tapes ~ mean_L,
+                                                            TRUE ~ dw_H_dg_tapes)) %>%
+                           # if there are still rows were the DBH measurment height exceeds the estiamted height they are excluded --> in this case 1
+                           filter(DBH_h_m < dw_H_dg_tapes) %>% 
+                           mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
+                           # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
+                           dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
+                      by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
+  #  volume, biomass, carbon
+  mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
+         C_dw_kg = C_DW(V_dw_m3, SP_dec_type))%>% 
+  # TapeS compartiments methods to be able to subset dataset and apply functions separately 
+  mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
+                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+                                       TRUE ~ "no"),
+         dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
+                                        TRUE ~ "no"),
+         dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
+                                         TRUE ~ "no"),
+         dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
+                                         TRUE ~ "no"),
+         dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
+                                       # I have to add fine wood for BWI_dec_type 2 too,
+                                       # but to be able to calculate the whole biomass stepwise, 
+                                       # but I will not add it to the final dw_kg column
+                                       TRUE ~ "no"))
+
+# DBH_cm_Kublin = (D_mm*(1.0+(0.0011*(D_h_cm-130))))/10,               # a) estiamting diameter with Kublin because it doesnt require height
+# H_tps_Kublin = estHeight(d13 = DBH_cm_Kublin, sp = SP_dw_tps),       # b) estimate height with TapeS based on Kublin
+# tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps,                 # c) estimate TapeS DBH with TapeS height based on Kublin
+#                                     Dm = as.list(DBH_cm_Kublin),
+#                                     Hm = as.list(D_h_m), 
+#                                     Ht = H_tps_Kublin, inv = 4), 
+#                            Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
 
 # ---- N. 5 REGENERTAION plotwise -----------------------------------------
 
