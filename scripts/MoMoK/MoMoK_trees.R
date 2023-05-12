@@ -2439,7 +2439,7 @@ colnames(trees_P_SP.export) <- c("plot_ID", "B_Art",
                                  "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha","G_Anteil_Art","Hauptbaumart_G",
                                  "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
                                  "B_ges_t_Art_Plot",  "B_oi_t_Art_Plot",   "B_bB_t_Art_Plot",   "B_Bl_t_Art_Plot",    "B_nDhmR_t_Art_Plot",   "B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot",
-                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_bB_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", 
+                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_ui_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", 
                                  "N_oi_t_Art_Plot", "N_Bl_t_Art_Plot","N_nDhmR_t_Art_Plot",   "N_DhoR_t_Art_Plot",   "N_DhR_t_Art_Plot",  "N_StoR_t_Art_Plot" , "N_StR_t_Art_Plot",
                                  "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
                                  "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
@@ -2448,6 +2448,42 @@ colnames(trees_P_SP.export) <- c("plot_ID", "B_Art",
                                  "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
                                  "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
 
+
+
+# pivoting all biomasses/ carbon / nitrogen into one column
+# https://stackoverflow.com/questions/25925556/gather-multiple-sets-of-columns
+trees_P_SP.export <- trees_P_SP.export %>% 
+  gather(key = "B_compartiment", value = "biomass", starts_with("B_")) %>% 
+  gather(key = "C_compartiment", value = "carbon", starts_with("C_")) %>% 
+  gather(key = "N_compartiment", value = "nitrogen", starts_with("N_")) %>% 
+  #ht tps://sparkbyexamples.com/r-programming/replace-character-in-a-string-of-r-dataframe/
+  mutate(B_compartiment = str_replace(B_compartiment, "B_", " ")) %>% 
+  rename("compartiment" = "B_compartiment")
+
+           
+           
+           case_when(ends_with(B_compartiment, "_ges_t_Art_Plot") ~ "ges_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_oi_t_Art_Plot") ~ "oi_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_ui_t_Art_Plot") ~ "ui_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_Bl_t_Art_Plot") ~ "Bl_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_nDhmR_t_Art_Plot") ~ "nDhmR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_DhoR_t_Art_Plot") ~ "DhoR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_DhR_t_Art_Plot") ~ "DhR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_StoR_t_Art_Plot") ~ "StoR_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_StR_t_Art_Plot") ~ "StR_t_Art_Plot",
+                                  
+                                  ends_with(B_compartiment, "_ges_t_Art_Plot") ~ "ges_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_oi_t_Art_Plot") ~ "oi_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_ui_t_Art_Plot") ~ "ui_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_Bl_t_Art_Plot") ~ "Bl_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_nDhmR_t_Art_Plot") ~ "nDhmR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_DhoR_t_Art_Plot") ~ "DhoR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_DhR_t_Art_Plot") ~ "DhR_t_Art_Plot",
+                                  ends_with(B_compartiment, "_StoR_t_Art_Plot") ~ "StoR_t_Art_Plot", 
+                                  ends_with(B_compartiment, "_StR_t_Art_Plot") ~ "StR_t_Art_Plot",))
+
+"B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot",
+# exxporting dataset
 write.csv(trees_P_SP.export, "output/out_data/LB_Art_Plot_MoMoK.csv")
 
 summary(trees_P_SP)
