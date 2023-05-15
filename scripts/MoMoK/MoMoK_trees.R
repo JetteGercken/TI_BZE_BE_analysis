@@ -743,9 +743,17 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 }
 
 
-
+B = trees_total_5$B_kg_tapes
+spec = trees_total_5$N_SP_group
+comp = trees_total_5$compartiment
 
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
+
+N_all_com <- function(B, comp, SP_com){
+  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com) 
+  return(ifesle(comp != "ag" & comp != "bg", B*n_con,  ))
+}
+
 # ----- 1.3.6.1. NItrogen foliage -----------------------------------------
 N_f <- function(B_compartiment, spec){
   n_con_f <- N_con_comp %>% filter(compartiment== "f") %>% dplyr::pull(N_con_per, SP_BWI) 
@@ -1338,44 +1346,46 @@ summary(RG_total)
   # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
  
-N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", 
-                            "EI", "EI", "EI", 
-                            "ES", "ES", "ES", 
-                            "AH", "AH", "AH", 
-                            "BI", "BI", "BI", 
-                            "ERL", "ERL", "ERL",
-                            "FI", "FI", "FI", "FI", 
-                            "KI",  "KI",  "KI",  "KI", 
-                            "DGL", "DGL", "DGL", "DGL"),
-                    compartiment <- c("sw", "swb", "fw", 
-                                      "sw", "swb", "fw", 
-                                      "sw", "swb", "fw", 
-                                      "sw", "swb", "fw", 
-                                      "sw", "swb", "fw", 
-                                      "sw", "swb", "fw",
-                                      "sw", "swb", "fw", "f", 
-                                      "sw", "swb", "fw", "f", 
-                                      "sw", "swb", "fw", "f"),
-                    N_mean_gkg <- as.numeric(c(1.335, 7.227, 4.601,
-                                    1.752, 6.507, 6.209, 
-                                    1.438, 5.348, 3.721, 
-                                    1.465, 7.729, 4.278, 
-                                    1.828, 6.131, 6.057, 
-                                    2.475, 11.028, 7.214, 
-                                    0.812, 4.84, 4.343, 12.978, 
-                                    0.794, 4.339, 4.058, 15.201, 
-                                    0.701, 3.910, 4.203, 15.166)), 
-                    data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018",
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
+N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", 
+                                          "EI", "EI", "EI", "EI", "EI", 
+                                          "ES", "ES","ES", "ES", "ES", 
+                                          "AH", "AH","AH", "AH", "AH", 
+                                          "BI", "BI","BI", "BI", "BI", 
+                                          "ERL", "ERL","ERL", "ERL", "ERL",
+                                          "FI", "FI","FI", "FI", "FI", "FI", 
+                                          "KI",  "KI","KI",  "KI",  "KI",  "KI", 
+                                          "DGL", "DGL", "DGL", "DGL", "DGL", "DGL"),
+                    compartiment <- c("stw", "stwb","sw", "swb", "fw",               # beech
+                                      "stw", "stwb", "sw", "swb", "fw",               # oak
+                                      "stw", "stwb", "sw", "swb", "fw",               # ash
+                                      "stw", "stwb", "sw", "swb", "fw",               # maple
+                                      "stw", "stwb", "sw", "swb", "fw",               # birch 
+                                      "stw", "stwb", "sw", "swb", "fw",               # alder
+                                      "stw", "stwb", "sw", "swb", "fw", "f",          # spruce
+                                      "stw", "stwb", "sw", "swb", "fw", "f",          # pine
+                                      "stw", "stwb", "sw", "swb", "fw", "f"),         # douglas fir
+                    N_mean_gkg <- as.numeric(c(1.335, 7.227, 1.335, 7.227, 4.601,
+                                               1.752, 6.507, 1.752, 6.507, 6.209, 
+                                               1.438, 5.348, 1.438, 5.348, 3.721, 
+                                               1.465, 7.729, 1.465, 7.729, 4.278, 
+                                               1.828, 6.131, 1.828, 6.131, 6.057, 
+                                               2.475, 11.028, 2.475, 11.028, 7.214, 
+                                               0.812, 4.84, 0.812, 4.84, 4.343, 12.978, 
+                                               0.794, 4.339, 0.794, 4.339, 4.058, 15.201, 
+                                               0.701, 3.910, 0.701, 3.910, 4.203, 15.166)), 
+                    data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018",
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                     "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
 colnames(N_con_comp) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
-N_con_comp <- N_con_comp %>% mutate(N_con_per = as.numeric(N_mean_gkg)/1000)
+N_con_comp <- N_con_comp %>% 
+  mutate(N_con_per = as.numeric(N_mean_gkg)/1000) %>% 
+  unite(sp_com, SP_BWI:compartiment, remove = FALSE)
         
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
@@ -1682,7 +1692,7 @@ trees_total_5 <- trees_total_5 %>%
          DBH_h_m = ifelse(is.na(DBH_h_cm), 1.3, DBH_h_cm/100)) %>% 
   # biomass
   # aboveground biomass   # for trees above species specific diameter threshold
-  mutate(aB_kg = case_when(Bio_SP_group == "fi" & DBH_cm >= 69.0 |
+  mutate(aB_kg_GHG = case_when(Bio_SP_group == "fi" & DBH_cm >= 69.0 |
                              Bio_SP_group == "ki" & DBH_cm >= 59.0 |
                              Bio_SP_group == "bu" & DBH_cm >= 86.0 |
                              Bio_SP_group == "ei" & DBH_cm >= 94.0 |
@@ -1697,17 +1707,19 @@ trees_total_5 <- trees_total_5 %>%
                            DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
                            H_m <= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
     # belowground biomass
-         bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
+         bg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
     # compartiments:
   # TapeS
-  mutate(tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # total aboveground biomass
-         tapes_fB_kg = ifelse(LH_NH == "NB", tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),  # foliage conifers 
+  mutate(ag = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # total aboveground biomass
+         f = ifelse(LH_NH == "NB", tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),  # foliage conifers 
                               Wutzler_fB_L1(DBH_cm, H_m)),                            # foliage broadleaves
-         tapes_fwB_kg = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
-         tapes_swB_kg = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
-         tapes_swbB_kg = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
-         tapes_stwB_kg = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
-         tapes_stwbB_kg = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m)) %>%               # stumbwood bark 
+         fw = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
+         sw = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
+         swb = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # bark of coarsewood,  Derbholzrinde 
+         stw = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
+         stwb = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m), 
+         total = ag + bg) %>%               # stumbwood bark 
+  pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), names_to = "compartiment", values_to = "B_kg_tapes", names_repair = "unique") %>% 
  # #### 
  #  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
  #   # GHG-TapeS-stepwise
@@ -1722,26 +1734,21 @@ trees_total_5 <- trees_total_5 %>%
  # # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
  # #### 
   # Carbon stock
-   mutate(C_aB_t = (aB_kg/1000)*0.5,
-         C_ab_t_tapes = (tapes_ab_kg/1000)*0.5,
-         C_bB_t = (bB_kg/1000)*0.5,
-         C_f_t =  (tapes_fB_kg/1000)*0.5,
-         C_fw_t = (tapes_fwB_kg/1000)*0.5, 
-         C_sw_t = (tapes_swB_kg/1000)*0.5, 
-         C_swb_t = (tapes_swbB_kg/1000)*0.5, 
-         C_stw_t = (tapes_stwB_kg/1000)*0.5,
-         C_stwb_t = (tapes_stwbB_kg/1000)*0.5,
+   mutate(B_t_tapes = B_kg_tapes/1000, 
+          C_aB_t_GHG = (aB_kg_GHG/1000)*0.5,
+         C_t_tapes = B_t_tapes*0.5,
   # Nitrogen stock
-         N_f_kg =  N_f(tapes_fB_kg, N_SP_group),
-         N_fw_kg = N_fw(tapes_fwB_kg, N_SP_group), 
-         N_sw_kg = N_sw(tapes_swB_kg, N_SP_group), 
-         N_swb_kg = N_swb(tapes_swbB_kg, N_SP_group), 
+         N_t = case_when(compartiment == "foliage" ~ N_f(B_t_tapes, N_SP_group),
+                         compartiment == "fine_wood" ~ N_fw(B_t_tapes, N_SP_group),
+                         compartiment == "solid_wood" ~ N_sw(B_t_tapes, N_SP_group),
+                         compartiment == "solid_bark" ~ N_swb(B_t_tapes, N_SP_group), 
          N_stw_kg = N_sw(tapes_stwB_kg, N_SP_group),
          N_stwb_kg =  N_swb(tapes_stwbB_kg, N_SP_group)) %>% 
   mutate(tot_N_t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
          tot_C_t = C_ab_t_tapes + C_bB_t)
   
 summary(trees_total_5)
+
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -2437,15 +2444,15 @@ trees_P_SP.export <- trees_P_SP %>%
 colnames(trees_P_SP.export) <- c("plot_ID", "B_Art", 
                                  "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
                                  "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha","G_Anteil_Art","Hauptbaumart_G",
-                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
-                                 "B_ges_t_Art_Plot",  "B_oi_t_Art_Plot",   "B_bB_t_Art_Plot",   "B_Bl_t_Art_Plot",    "B_nDhmR_t_Art_Plot",   "B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot",
-                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_ui_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", 
+                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF", # 15
+                                 "B_ges_t_Art_Plot",  "B_oi_t_Art_Plot",   "B_bB_t_Art_Plot",   "B_Bl_t_Art_Plot",    "B_nDhmR_t_Art_Plot",   "B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot", #24
+                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_ui_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", #33
                                  "N_oi_t_Art_Plot", "N_Bl_t_Art_Plot","N_nDhmR_t_Art_Plot",   "N_DhoR_t_Art_Plot",   "N_DhR_t_Art_Plot",  "N_StoR_t_Art_Plot" , "N_StR_t_Art_Plot",
-                                 "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
-                                 "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
+                                 "B_ges_t_ha" ,"B_oi_t_ha","B_ui_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
+                                 "C_ges_t_ha", "C_oi_t_ha", "C_ui_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
                                  "N_oi_t_ha", "N_Bl_t_ha", "N_nDhmR_t_ha", "N_DhoR_t_ha","N_DhR_t_ha", "N_StoR_t_ha", "N_StR_t_ha",
-                                 "B_ges_t_MF", "B_oi_t_MF", "B_bB_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
-                                 "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
+                                 "B_ges_t_MF", "B_oi_t_MF", "B_ui_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
+                                 "C_ges_t_MF", "C_oi_t_MF", "C_ui_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
                                  "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
 
 
@@ -2453,36 +2460,28 @@ colnames(trees_P_SP.export) <- c("plot_ID", "B_Art",
 # pivoting all biomasses/ carbon / nitrogen into one column
 # https://stackoverflow.com/questions/25925556/gather-multiple-sets-of-columns
 trees_P_SP.export <- trees_P_SP.export %>% 
-  gather(key = "B_compartiment", value = "biomass", starts_with("B_")) %>% 
-  gather(key = "C_compartiment", value = "carbon", starts_with("C_")) %>% 
-  gather(key = "N_compartiment", value = "nitrogen", starts_with("N_")) %>% 
-  #ht tps://sparkbyexamples.com/r-programming/replace-character-in-a-string-of-r-dataframe/
-  mutate(B_compartiment = str_replace(B_compartiment, "B_", " ")) %>% 
-  rename("compartiment" = "B_compartiment")
+  # biomass
+  gather(key = "B_compartiment_plot", value = "B_Art_Plot", 16:24) %>% 
+  gather(key = "B_compartiment_ha", value = "B_Art_ha", 40:48) %>%
+  gather(key = "B_compartiment_MF", value = "B_Art_MF", 65:73) %>% 
+  # carbon 
+  gather(key = "C_compartiment_plot", value = "C_Art_Plot", 16:23) %>% 
+  gather(key = "C_compartiment_ha", value = "C_Art_ha", 49:57) %>%
+  gather(key = "C_compartiment_MF", value = "C_Art_MF", 74:83) %>% 
+  # nitrogen
+  gather(key = "N_compartiment_plot", value = "N_Art_Plot", 34:39) %>% 
+  gather(key = "N_compartiment_ha", value = "N_Art_ha", 58:64) %>%
+  gather(key = "N_compartiment_MF", value = "N_Art_MF", 84:90) %>% 
+  #https://sparkbyexamples.com/r-programming/replace-character-in-a-string-of-r-dataframe/
+  mutate(B_compartiment_plot = str_replace(B_compartiment_plot, "B_", ""))
+
+# %>% 
+ # rename("compartiment" = "B_compartiment_plot") %>% 
+ # select(-c(B_compartiment_ha, B_compartiment_MF, 
+            C_compartiment_plot, C_compartiment_ha, C_compartiment_MF, 
+            N_compartiment_plot, N_compartiment_ha, N_compartiment_MF))
 
            
-           
-           case_when(ends_with(B_compartiment, "_ges_t_Art_Plot") ~ "ges_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_oi_t_Art_Plot") ~ "oi_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_ui_t_Art_Plot") ~ "ui_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_Bl_t_Art_Plot") ~ "Bl_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_nDhmR_t_Art_Plot") ~ "nDhmR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_DhoR_t_Art_Plot") ~ "DhoR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_DhR_t_Art_Plot") ~ "DhR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_StoR_t_Art_Plot") ~ "StoR_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_StR_t_Art_Plot") ~ "StR_t_Art_Plot",
-                                  
-                                  ends_with(B_compartiment, "_ges_t_Art_Plot") ~ "ges_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_oi_t_Art_Plot") ~ "oi_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_ui_t_Art_Plot") ~ "ui_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_Bl_t_Art_Plot") ~ "Bl_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_nDhmR_t_Art_Plot") ~ "nDhmR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_DhoR_t_Art_Plot") ~ "DhoR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_DhR_t_Art_Plot") ~ "DhR_t_Art_Plot",
-                                  ends_with(B_compartiment, "_StoR_t_Art_Plot") ~ "StoR_t_Art_Plot", 
-                                  ends_with(B_compartiment, "_StR_t_Art_Plot") ~ "StR_t_Art_Plot",))
-
-"B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot",
 # exxporting dataset
 write.csv(trees_P_SP.export, "output/out_data/LB_Art_Plot_MoMoK.csv")
 
