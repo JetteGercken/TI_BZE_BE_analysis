@@ -750,9 +750,11 @@ comp = trees_total_5$compartiment
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 
 N_all_com <- function(B, comp, SP_com){
-  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com) 
-  return(ifesle(comp != "ag" & comp != "bg", B*n_con,  ))
+  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com); 
+  return(B*n_con[SP_com])
 }
+
+
 
 # ----- 1.3.6.1. NItrogen foliage -----------------------------------------
 N_f <- function(B_compartiment, spec){
@@ -775,7 +777,17 @@ N_swb <- function(B_compartiment, spec){
   return(B_compartiment*n_con_swb[spec])
 }
 
+# ----- 1.3.6.5. Nitrogen stump wood  ---------------------------------
+N_swb <- function(B_compartiment, spec){
+  n_con_swb <- N_con_comp %>% filter(compartiment== "stwb") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_swb[spec])
+}
 
+# ----- 1.3.6.6. Nitrogen stump wood bark ---------------------------------
+N_swb <- function(B_compartiment, spec){
+  n_con_swb <- N_con_comp %>% filter(compartiment== "swb") %>% dplyr::pull(N_con_per, SP_BWI) 
+  return(B_compartiment*n_con_swb[spec])
+}
 
 
 
@@ -1385,7 +1397,7 @@ N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU",
 colnames(N_con_comp) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
 N_con_comp <- N_con_comp %>% 
   mutate(N_con_per = as.numeric(N_mean_gkg)/1000) %>% 
-  unite(sp_com, SP_BWI:compartiment, remove = FALSE)
+  unite(SP_com, SP_BWI:compartiment, remove = FALSE)
         
 
 # ----- 2. CALCULATIONS --------------------------------------------------------
@@ -1720,6 +1732,7 @@ trees_total_5 <- trees_total_5 %>%
          stwb = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m), 
          total = ag + bg) %>%               # stumbwood bark 
   pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), names_to = "compartiment", values_to = "B_kg_tapes", names_repair = "unique") %>% 
+  unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
  # #### 
  #  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
  #   # GHG-TapeS-stepwise
@@ -1736,7 +1749,81 @@ trees_total_5 <- trees_total_5 %>%
   # Carbon stock
    mutate(B_t_tapes = B_kg_tapes/1000, 
           C_aB_t_GHG = (aB_kg_GHG/1000)*0.5,
-         C_t_tapes = B_t_tapes*0.5,
+          C_t_tapes = B_t_tapes*0.5,
+          N_t = ifelse(!(compartiment %in% c("bg", "ag", "total")), N_all_com(B_t_tapes, SP_com), 0))
+  
+view(trees_total_5 %>% mutate(N_t = ifelse(compartiment == "ag", N_ag_func(trees_total_5, plot_ID, t_ID, N_t), N_t)))
+ 
+
+N_ag_func <- function(df, p_ID, t_ID, N) {
+  N_t_ag <- trees_total_5 %>% 
+    group_by(plot_ID, t_ID) %>%
+    summarise(N_t = unlist(across(N_t, sum, na.rm = TRUE))) %>% 
+    dplyr::pull(N_t);
+  return(N_t_ag)
+}
+
+trees_total_5$N_t[trees_total_5$compartiment == "fw"]
+
+ag_N_t_func.2 <- function(df, p_t_ID, comp, N){
+  ag_N_list <- list()
+  for(i in unique(df$df[[p_t_ID]])){
+    ag_N_list[[i]] <- list(df$df[[N]][df$df[[comp]]== "f"] + 
+                             df$df[[N]][df$df[[comp]]== "fw"] + 
+                             df$df[[N]][df$df[[comp]]== "sw"] + 
+                             df$df[[N]][df$df[[comp]]== "swb"] + 
+                             df$df[[N]][df$df[[comp]]== "stw"] + 
+                             df$df[[N]][df$df[[comp]]== "stwb"])} 
+  ag_N <- ag_N_list
+    return(ag_N)
+}
+
+i = 333001
+
+ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
+ag_N_list <- list()
+for(i in unique(trees_total_5$ID_pt)){
+  ag_N[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] + trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+                           trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
+                           trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
+                           trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
+                           trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
+  } 
+ag_N <- ag_N_list
+return(ag_N)
+}
+
+view(ag_N)
+
+
+ag_N_t_func.2(trees_total_5, trees_total_5$compartiment, trees_total_5$N)
+
+# test if the function works
+
+trees_total_5 %>% 
+  filter(ID_pt == 333001 ) %>% 
+  group_by(plot_ID, t_ID) %>%
+  summarise(N_sum = sum(N_t))
+  
+5.616406e-03
+  
+  
+trees_total_5 %>% 
+  filter(ID_pt == 333001 ) %>% 
+  mutate(N_t = ifelse(compartiment == "ag", N_ag_func(trees_total_5, plot_ID, t_ID, N_t), N_t)) %>%
+  dplyr::pull(compartiment, N_t)
+
+
+N_ag_func.1 <- function(df, p_ID, t_ID, N) {
+  N_t_ag <- df %>% 
+    group_by(df[[p_ID]], df[[t_ID]]) %>%
+    summarise(N_t = unlist(across(df[[N]], sum, na.rm = TRUE))) %>% 
+    dplyr::pull(N_t);
+  return(N_t_ag)
+}
+         
+N_ag_func.1(trees_total_5, trees_total_5$plot_ID, trees_total_5$t_ID, trees_total_5$N_t)        
+          
   # Nitrogen stock
          N_t = case_when(compartiment == "foliage" ~ N_f(B_t_tapes, N_SP_group),
                          compartiment == "fine_wood" ~ N_fw(B_t_tapes, N_SP_group),
@@ -1747,8 +1834,8 @@ trees_total_5 <- trees_total_5 %>%
   mutate(tot_N_t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
          tot_C_t = C_ab_t_tapes + C_bB_t)
   
-summary(trees_total_5)
-
+view(  trees_total_5 %>% 
+         mutate(N_t = ifelse(compartiment == "ag", unlist(across(N_t, sum, na.rm = TRUE)), N_t)))
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
