@@ -1768,14 +1768,14 @@ trees_total_5$N_t[trees_total_5$compartiment == "fw"]
 ag_N_t_func.2 <- function(df, p_t_ID, comp, N){
   ag_N_list <- list()
   for(i in unique(df$df[[p_t_ID]])){
-    ag_N_list[[i]] <- list(df$df[[N]][df$df[[comp]]== "f"] + 
-                             df$df[[N]][df$df[[comp]]== "fw"] + 
-                             df$df[[N]][df$df[[comp]]== "sw"] + 
-                             df$df[[N]][df$df[[comp]]== "swb"] + 
-                             df$df[[N]][df$df[[comp]]== "stw"] + 
-                             df$df[[N]][df$df[[comp]]== "stwb"])} 
+    ag_N_list[[i]] <- list(df$df[[N]][df$df[[comp]]== "f" & df$df[[p_t_ID]]== i] + 
+                             df$df[[N]][df$df[[comp]]== "fw" & df$df[[p_t_ID]]== i] + 
+                             df$df[[N]][df$df[[comp]]== "sw" & df$df[[p_t_ID]]== i] + 
+                             df$df[[N]][df$df[[comp]]== "swb" & df$df[[p_t_ID]]== i] + 
+                             df$df[[N]][df$df[[comp]]== "stw" & df$df[[p_t_ID]]== i] + 
+                             df$df[[N]][df$df[[comp]]== "stwb"& df$df[[p_t_ID]]== i])} 
   ag_N <- ag_N_list
-    return(ag_N)
+    return(unlist(ag_N[p_t_ID]))
 }
 
 i = 333001
@@ -1783,17 +1783,39 @@ i = 333001
 ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
 ag_N_list <- list()
 for(i in unique(trees_total_5$ID_pt)){
-  ag_N[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] + trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+  ag_N_list[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
+                           trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
                            trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
                            trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
                            trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
                            trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
   } 
 ag_N <- ag_N_list
-return(ag_N)
+return(unlist(ag_N[p_t_ID]))
 }
 
+
+ag_N_t_func.2(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
+
 view(ag_N)
+
+
+
+ag_N_t_func.4 <- function(df, p_t_ID, comp, N){
+  ag_N_list <- list()
+  for(i in unique(trees_total_5$ID_pt)){
+    ag_N_list[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
+      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
+  } 
+  ag_N <- ag_N_list
+  return(unlist(ag_N[p_t_ID]))
+}
+
+
 
 
 ag_N_t_func.2(trees_total_5, trees_total_5$compartiment, trees_total_5$N)
