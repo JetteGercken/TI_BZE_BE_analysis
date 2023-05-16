@@ -622,6 +622,9 @@ B_DW <- function(V, dec_SP){     # a column that holds the degree of decay and t
 }
 
 # relative density for tapeS deadwood compartiments
+# Biomasse unzersetzt * (100% - relative Veränderung der Dichte) = 
+# B * (1-(D1 - D2/ D1))
+
 rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
   rd <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
            "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
