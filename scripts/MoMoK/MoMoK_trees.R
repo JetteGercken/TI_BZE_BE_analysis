@@ -1755,7 +1755,24 @@ trees_total_5 <- trees_total_5 %>%
           C_t_tapes = B_t_tapes*0.5,
           N_t = ifelse(!(compartiment %in% c("bg", "ag", "total")), N_all_com(B_t_tapes, SP_com), 0))
   
-view(trees_total_5 %>% mutate(N_t = ifelse(compartiment == "ag", N_ag_func(trees_total_5, plot_ID, t_ID, N_t), N_t)))
+
+ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
+  ag_N_list <- list()
+  for(i in unique(trees_total_5$ID_pt)){
+    ag_N_list[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
+      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
+  } 
+  ag_N <- ag_N_list
+  return(unlist(ag_N[p_t_ID]))
+}
+
+
+
+view(trees_total_5 %>% mutate(N_t = ifelse(compartiment == "ag", ag_N_t_func.3(trees_total_5, plot_ID, t_ID, N_t), N_t)))
  
 
 N_ag_func <- function(df, p_ID, t_ID, N) {
@@ -1783,22 +1800,10 @@ ag_N_t_func.2 <- function(df, p_t_ID, comp, N){
 
 i = 333001
 
-ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
-ag_N_list <- list()
-for(i in unique(trees_total_5$ID_pt)){
-  ag_N_list[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
-                           trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
-                           trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
-                           trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
-                           trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
-                           trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
-  } 
-ag_N <- ag_N_list
-return(unlist(ag_N[p_t_ID]))
-}
 
+ag_N_t_func.3(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
 
-ag_N_t_func.2(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
+ag_N_t_func.4(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
 
 view(ag_N)
 
