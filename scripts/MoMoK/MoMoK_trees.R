@@ -1742,6 +1742,8 @@ trees_total_5 <-  trees_total_5 %>%
 
 
 # ----- 2.1.2.3. estimated nitrogen in living trees -----------------------------------------------------------
+# there is a problem with the join but maybe i can solce it with join by sambling curcuit and canipy layer
+
 trees_total_5 <- trees_total_5 %>% 
   # joingin nitrogen content in
   left_join(., rbind(
