@@ -1563,7 +1563,8 @@ trees_total_5 <- trees_total %>%
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm), 
-                         TRUE ~ H_m))
+                         TRUE ~ H_m), 
+         HD_value = H_m/DBH_cm)     # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
 
 # ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
@@ -1731,8 +1732,8 @@ trees_total_5 <-  trees_total_5 %>%
              sw = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
              swb = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),
              stw = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
-             stwb = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m), 
-             total = ag + bg) %>%               # stumbwood bark
+             stwb = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                  # stumbwood bark
+             total = ag + bg) %>%               
   # pivoting all compartiments in 1 column
       pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), names_to = "compartiment", values_to = "B_kg_tapes", names_repair = "unique") %>% 
       # Carbon stock
@@ -1781,204 +1782,11 @@ trees_total_5 <- trees_total_5 %>%
 #         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
 # # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
 # #### 
-ag_N_t_func.5 <- function(df, N, comp, p_t_ID) {
-  ag_N_ptID = df$df[[N]][df$df[[comp]]== "f"] + 
-    df$df[[N]][df$df[[comp]]== "fw" ] + 
-    df$df[[N]][df$df[[comp]]== "sw"] + 
-    df$df[[N]][df$df[[comp]]== "swb"] + 
-    df$df[[N]][df$df[[comp]]== "stw"] + 
-    df$df[[N]][df$df[[comp]]== "stwb"]
-  return(ag_N_ptID)
-}
-
-ag_N_t_func.5(trees_total_5, trees_total_5$N_t, trees_total_5$compartiment, trees_total_5$ID_pt)  
-  
-  
-  
-  
-
-i = 333001
-p_t_ID = 333001
-
-ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
-  ag_N <- as.numeric()
-  for(i in unique(trees_total_5$ID_pt)){
-    ag_N[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
-      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
-  } 
-  ag_N_t = ag_N
-  return(ag_N_t[p_t_ID])
-}
-
-trees_total_5 %>%
-  rowwise() %>%
-  mutate(sum = sum(across(compartiment %in% ), na.rm = T))
-
-view(trees_total_5 %>% mutate(N_t = ifelse(compartiment == "ag", ag_N_t_func.3(trees_total_5, plot_ID, t_ID, N_t), N_t)))
- 
-
-N_ag_func <- function(df, p_ID, t_ID, N) {
-  N_t_ag <- trees_total_5 %>% 
-    group_by(plot_ID, t_ID) %>%
-    summarise(N_t = unlist(across(N_t, sum, na.rm = TRUE))) %>% 
-    dplyr::pull(N_t);
-  return(N_t_ag)
-}
-
-trees_total_5$N_t[trees_total_5$compartiment == "fw"]
-
-ag_N_t_func.2 <- function(df, p_t_ID, comp, N){
-  ag_N_.vec <- numeric()
-  for(i in unique(df$df[[p_t_ID]])){
-    ag_N <- df$df[[N]][df$df[[comp]]== "f" & df$df[[p_t_ID]]== i] +
-      df$df[[N]][df$df[[comp]]== "fw" & df$df[[p_t_ID]]== i] +
-      df$df[[N]][df$df[[comp]]== "sw" & df$df[[p_t_ID]]== i] +
-      df$df[[N]][df$df[[comp]]== "swb" & df$df[[p_t_ID]]== i] +
-      df$df[[N]][df$df[[comp]]== "stw" & df$df[[p_t_ID]]== i] +
-      df$df[[N]][df$df[[comp]]== "stwb"& df$df[[p_t_ID]]== i]
-    
-    ID <- df$df[[p_t_ID]][df$df[[p_t_ID]] == i]
-
-    
-    ag_N.vec[i] <- ag_N[1]}
-  
-    return(ag_N.vec[p_t_ID])
-}
-
-i = 333001
-
-
-df = trees_total_5
-p_t_ID = trees_total_5$plot_ID
-comp = trees_total_5$compartiment
-N = trees_total_5$N_t
-  
-  
-  
-ag_N_t_func.3(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
-
-ag_N_t_func.4(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
-
-view(ag_N)
-
-ag_N$`2603044`
-
-ag_N_t_func.4 <- function(df, p_t_ID, comp, N){
-  ag_N.vec <- list()
-  for(i in unique(trees_total_5$ID_pt)){
-    ag_N <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
-      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
-      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
-    names(ag_N) <- NULL   
-    
-    ag_N_ID[i] <- unique(trees_total_5$ID_pt[trees_total_5$ID_pt == i])
-    
-    ag_N.vec[i] <- cbind(ag_N[1], ag_N_ID[1])
-    #names(ag_N.vec) <- NULL
-    print(ag_N.vec)
-  } 
-  return(ag_N.vec[ag_N_ID])
-}
-
-
-trees_total_5 %>% mutate(N_t = ifelse(compartiment != "ag", N_t, ag_N_t_func.4(trees_total_5,ID_pt, compartiment,N_t)))
-
-ag_N_t_func.8 <- function(df, p_t_ID, comp, N){
-  ag_N.vec <- numeric()
-  for(i in unique(trees_total_5$ID_pt)){
-    # summing up 
-    ag_N <- (trees_total_5 %>%
-               filter(ID_pt == i & !(compartiment %in% c("bg", "ag", "total"))) %>%
-               group_by(ID_pt) %>%
-               summarise(N_t = sum(N_t)) %>% 
-               pull(N_t, ID_pt))
-    
-    ag_N.vec[i] <- as.vector(ag_N[1])
-  }
-  
-  return(trees_total_5$N_t[trees_total_5$compartiment == "ag"] <- ag_N.vec )
-}
-
-
-as.vector(trees_total_5 %>% filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt)  %>% summarise(sum(N_t)))
-  mutate(N_t = ifelse(compartiment != "ag", N_t, filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt) %>% select(., N_t) %>% summarise(sum(N_t)) %>% pull()), 
-         N_t_meth = ifelse(compartiment != "ag", "N_t", filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt) %>% select(., N_t) %>% summarise(mean(t_ID))))
-
-ag_N_t_func.2(trees_total_5, trees_total_5$compartiment, trees_total_5$N)
-
-# test if the function works
-
-b <- trees_total_5 %>% 
-  group_by(ID_pt) %>%
-  summarise(N_sum = sum(N_t))
-as.vector(b$N_sum)  
-b %>% dplyr::pull(N_sum, ID_pt)
-
-ag_N_t_func.6 <- function(df, p_t_ID, N){
-  for(i in unique(trees_total_5$ID_pt)){
-  N_ag <- df %>% 
-    filter(df[[p_t_ID]] == i ) %>% 
-    group_by(df[[p_t_ID]]) %>%
-    summarise(N_sum = sum(df[[N]]))
-  }
-  return(as.vector(N_ag$N_sum[1]))
-}
-
-ag_N_t_func.6(trees_total_5, trees_total_5$ID_pt, trees_total_5$N)
-
-ag_N_t_func.7 <- function(df, p_t_ID, N){
-    N_ag <- df %>% 
-      filter(df[[p_t_ID]] == df[[p_t_ID]]) %>% 
-      group_by(df[[p_t_ID]]) %>%
-      summarise(N_sum = sum(df[[N]]));
-    N_ag_vec <- as.vector(N_ag$N_sum);
-  return(N_ag_vec[p_t_ID])
-}
-ag_N_t_func.7(trees_total_5 %>% filter(ID_pt ==333001), 333001, trees_total_5$N[trees_total_5$ID_pt ==333001])
 
 
 
-5.616406e-03
-  
-  
-trees_total_5 %>% 
-  filter(ID_pt == 333001 ) %>% 
-  mutate(N_t = ifelse(compartiment == "ag", N_ag_func(trees_total_5, plot_ID, t_ID, N_t), N_t)) %>%
-  dplyr::pull(compartiment, N_t)
 
 
-N_ag_func.1 <- function(df, p_ID, t_ID, N) {
-  N_t_ag <- df %>% 
-    group_by(df[[p_ID]], df[[t_ID]]) %>%
-    summarise(N_t = unlist(across(df[[N]], sum, na.rm = TRUE))) %>% 
-    dplyr::pull(N_t);
-  return(N_t_ag)
-}
-         
-N_ag_func.1(trees_total_5, trees_total_5$plot_ID, trees_total_5$t_ID, trees_total_5$N_t)        
-          
-  # Nitrogen stock
-         N_t = case_when(compartiment == "foliage" ~ N_f(B_t_tapes, N_SP_group),
-                         compartiment == "fine_wood" ~ N_fw(B_t_tapes, N_SP_group),
-                         compartiment == "solid_wood" ~ N_sw(B_t_tapes, N_SP_group),
-                         compartiment == "solid_bark" ~ N_swb(B_t_tapes, N_SP_group), 
-         N_stw_kg = N_sw(tapes_stwB_kg, N_SP_group),
-         N_stwb_kg =  N_swb(tapes_stwbB_kg, N_SP_group)) %>% 
-  mutate(tot_N_t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
-         tot_C_t = C_ab_t_tapes + C_bB_t)
-  
-view(  trees_total_5 %>% 
-         mutate(N_t = ifelse(compartiment == "ag", unlist(across(N_t, sum, na.rm = TRUE)), N_t))
-       
-       
-       )
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -2255,7 +2063,11 @@ DW_total <- left_join(DW_total,
                                        # I have to add fine wood for BWI_dec_type 2 too,
                                        # but to be able to calculate the whole biomass stepwise, 
                                        # but I will not add it to the final dw_kg column
-                                       TRUE ~ "no"))
+                                       TRUE ~ "no"), 
+                            # for decay type 1 I have to add the Biomass of the fine wood compartment to get the total biomass because 
+                            # the B formula only covers stem and stump
+                            # and this helps with pivoting later
+         dw_tapes_ag_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ "B + fw", TRUE ~ "B")) # this is just 
 
 
 
@@ -2387,13 +2199,20 @@ DW_total <- left_join(DW_total,
           # fine wood
           dw_fwB_kg = case_when(dw_tapes_fwB_meth == "yes"  ~  dw_tps_fw_kg,
                                dw_tapes_fwB_meth == "yes" & dec_type_BWI == 2 ~ 0,
-                               TRUE ~ 0)) %>%
+                               TRUE ~ 0),
+          # aboveground 
+          dw_ag_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m  > 1.3 & !is.na(D_h_m) ~ B_dw_kg + dw_fwB_kg, # for not decayed standng and lying whole trees we have to add the fine wood mass 
+                               TRUE ~ B_dw_kg)) %>%
    mutate(N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
           N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
           N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
           N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
-          N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group)) %>% 
-   mutate(tot_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
+          N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group))%>% 
+   mutate(ag_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg) %>% 
+  pivot_longer(c(dw_tapes_fwB_meth, dw_tapes_swB_meth, dw_tapes_swbB_meth, dw_tapes_stwB_meth, dw_tapes_stwbB_meth, dw_tapes_ag_meth), names_to = "tapes_compartiment", values_to = "tapes_method", names_repair = "unique") %>% 
+  pivot_longer(c(dw_fwB_kg, dw_swB_kg, dw_swbB_kg, dw_stwB_kg, dw_ag_kg), names_to = "B_compartiment", values_to = "B_kg", names_repair = "unique") %>% 
+  pivot_longer(c(N_dw_fw_kg, N_dw_sw_kg, N_dw_swb_kg, N_dw_stw_kg, N_dw_stwb_kg, ag_N_dw_kg), names_to = "N_compartiment", values_to = "N_kg", names_repair = "unique")
+  
    
  
 summary(DW_total)
@@ -5072,7 +4891,213 @@ TapeR::E_HDx_HmDm_HT.f(Dx,
                        sHt = 0, 
                        par.lme = taper.model$par.lme)
 
+
+
+
+
+# ----- N. nitrogen aboveground formulas  ---------------------------------
+
+ag_N_t_func.5 <- function(df, N, comp, p_t_ID) {
+  ag_N_ptID = df$df[[N]][df$df[[comp]]== "f"] + 
+    df$df[[N]][df$df[[comp]]== "fw" ] + 
+    df$df[[N]][df$df[[comp]]== "sw"] + 
+    df$df[[N]][df$df[[comp]]== "swb"] + 
+    df$df[[N]][df$df[[comp]]== "stw"] + 
+    df$df[[N]][df$df[[comp]]== "stwb"]
+  return(ag_N_ptID)
+}
+
+ag_N_t_func.5(trees_total_5, trees_total_5$N_t, trees_total_5$compartiment, trees_total_5$ID_pt)  
+
+
+
+
+
+i = 333001
+p_t_ID = 333001
+
+ag_N_t_func.3 <- function(df, p_t_ID, comp, N){
+  ag_N <- as.numeric()
+  for(i in unique(trees_total_5$ID_pt)){
+    ag_N[[i]] <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
+      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
+  } 
+  ag_N_t = ag_N
+  return(ag_N_t[p_t_ID])
+}
+
+trees_total_5 %>%
+  rowwise() %>%
+  mutate(sum = sum(across(compartiment %in% ), na.rm = T))
+
+view(trees_total_5 %>% mutate(N_t = ifelse(compartiment == "ag", ag_N_t_func.3(trees_total_5, plot_ID, t_ID, N_t), N_t)))
+
+
+N_ag_func <- function(df, p_ID, t_ID, N) {
+  N_t_ag <- trees_total_5 %>% 
+    group_by(plot_ID, t_ID) %>%
+    summarise(N_t = unlist(across(N_t, sum, na.rm = TRUE))) %>% 
+    dplyr::pull(N_t);
+  return(N_t_ag)
+}
+
+trees_total_5$N_t[trees_total_5$compartiment == "fw"]
+
+ag_N_t_func.2 <- function(df, p_t_ID, comp, N){
+  ag_N_.vec <- numeric()
+  for(i in unique(df$df[[p_t_ID]])){
+    ag_N <- df$df[[N]][df$df[[comp]]== "f" & df$df[[p_t_ID]]== i] +
+      df$df[[N]][df$df[[comp]]== "fw" & df$df[[p_t_ID]]== i] +
+      df$df[[N]][df$df[[comp]]== "sw" & df$df[[p_t_ID]]== i] +
+      df$df[[N]][df$df[[comp]]== "swb" & df$df[[p_t_ID]]== i] +
+      df$df[[N]][df$df[[comp]]== "stw" & df$df[[p_t_ID]]== i] +
+      df$df[[N]][df$df[[comp]]== "stwb"& df$df[[p_t_ID]]== i]
+    
+    ID <- df$df[[p_t_ID]][df$df[[p_t_ID]] == i]
+    
+    
+    ag_N.vec[i] <- ag_N[1]}
+  
+  return(ag_N.vec[p_t_ID])
+}
+
+i = 333001
+
+
+df = trees_total_5
+p_t_ID = trees_total_5$plot_ID
+comp = trees_total_5$compartiment
+N = trees_total_5$N_t
+
+
+
+ag_N_t_func.3(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
+
+ag_N_t_func.4(trees_total_5,trees_total_5$ID_pt, trees_total_5$compartiment, trees_total_5$N_t)
+
+view(ag_N)
+
+ag_N$`2603044`
+
+ag_N_t_func.4 <- function(df, p_t_ID, comp, N){
+  ag_N.vec <- list()
+  for(i in unique(trees_total_5$ID_pt)){
+    ag_N <- trees_total_5$N_t[trees_total_5$compartiment == "f" & trees_total_5$ID_pt == i] +
+      trees_total_5$N_t[trees_total_5$compartiment == "fw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "sw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "swb" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stw" & trees_total_5$ID_pt == i] + 
+      trees_total_5$N_t[trees_total_5$compartiment == "stwb" & trees_total_5$ID_pt == i]
+    names(ag_N) <- NULL   
+    
+    ag_N_ID[i] <- unique(trees_total_5$ID_pt[trees_total_5$ID_pt == i])
+    
+    ag_N.vec[i] <- cbind(ag_N[1], ag_N_ID[1])
+    #names(ag_N.vec) <- NULL
+    print(ag_N.vec)
+  } 
+  return(ag_N.vec[ag_N_ID])
+}
+
+
+trees_total_5 %>% mutate(N_t = ifelse(compartiment != "ag", N_t, ag_N_t_func.4(trees_total_5,ID_pt, compartiment,N_t)))
+
+ag_N_t_func.8 <- function(df, p_t_ID, comp, N){
+  ag_N.vec <- numeric()
+  for(i in unique(trees_total_5$ID_pt)){
+    # summing up 
+    ag_N <- (trees_total_5 %>%
+               filter(ID_pt == i & !(compartiment %in% c("bg", "ag", "total"))) %>%
+               group_by(ID_pt) %>%
+               summarise(N_t = sum(N_t)) %>% 
+               pull(N_t, ID_pt))
+    
+    ag_N.vec[i] <- as.vector(ag_N[1])
+  }
+  
+  return(trees_total_5$N_t[trees_total_5$compartiment == "ag"] <- ag_N.vec )
+}
+
+
+as.vector(trees_total_5 %>% filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt)  %>% summarise(sum(N_t)))
+mutate(N_t = ifelse(compartiment != "ag", N_t, filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt) %>% select(., N_t) %>% summarise(sum(N_t)) %>% pull()), 
+       N_t_meth = ifelse(compartiment != "ag", "N_t", filter(.,!(compartiment %in% c("bg", "ag", "total")) ) %>%  group_by(ID_pt) %>% select(., N_t) %>% summarise(mean(t_ID))))
+
+ag_N_t_func.2(trees_total_5, trees_total_5$compartiment, trees_total_5$N)
+
+# test if the function works
+
+b <- trees_total_5 %>% 
+  group_by(ID_pt) %>%
+  summarise(N_sum = sum(N_t))
+as.vector(b$N_sum)  
+b %>% dplyr::pull(N_sum, ID_pt)
+
+ag_N_t_func.6 <- function(df, p_t_ID, N){
+  for(i in unique(trees_total_5$ID_pt)){
+    N_ag <- df %>% 
+      filter(df[[p_t_ID]] == i ) %>% 
+      group_by(df[[p_t_ID]]) %>%
+      summarise(N_sum = sum(df[[N]]))
+  }
+  return(as.vector(N_ag$N_sum[1]))
+}
+
+ag_N_t_func.6(trees_total_5, trees_total_5$ID_pt, trees_total_5$N)
+
+ag_N_t_func.7 <- function(df, p_t_ID, N){
+  N_ag <- df %>% 
+    filter(df[[p_t_ID]] == df[[p_t_ID]]) %>% 
+    group_by(df[[p_t_ID]]) %>%
+    summarise(N_sum = sum(df[[N]]));
+  N_ag_vec <- as.vector(N_ag$N_sum);
+  return(N_ag_vec[p_t_ID])
+}
+ag_N_t_func.7(trees_total_5 %>% filter(ID_pt ==333001), 333001, trees_total_5$N[trees_total_5$ID_pt ==333001])
+
+
+
+5.616406e-03
+
+
+trees_total_5 %>% 
+  filter(ID_pt == 333001 ) %>% 
+  mutate(N_t = ifelse(compartiment == "ag", N_ag_func(trees_total_5, plot_ID, t_ID, N_t), N_t)) %>%
+  dplyr::pull(compartiment, N_t)
+
+
+N_ag_func.1 <- function(df, p_ID, t_ID, N) {
+  N_t_ag <- df %>% 
+    group_by(df[[p_ID]], df[[t_ID]]) %>%
+    summarise(N_t = unlist(across(df[[N]], sum, na.rm = TRUE))) %>% 
+    dplyr::pull(N_t);
+  return(N_t_ag)
+}
+
+N_ag_func.1(trees_total_5, trees_total_5$plot_ID, trees_total_5$t_ID, trees_total_5$N_t)        
+
+# Nitrogen stock
+N_t = case_when(compartiment == "foliage" ~ N_f(B_t_tapes, N_SP_group),
+                compartiment == "fine_wood" ~ N_fw(B_t_tapes, N_SP_group),
+                compartiment == "solid_wood" ~ N_sw(B_t_tapes, N_SP_group),
+                compartiment == "solid_bark" ~ N_swb(B_t_tapes, N_SP_group), 
+                N_stw_kg = N_sw(tapes_stwB_kg, N_SP_group),
+                N_stwb_kg =  N_swb(tapes_stwbB_kg, N_SP_group)) %>% 
+  mutate(tot_N_t = (N_f_kg + N_fw_kg + N_sw_kg + N_swb_kg)/1000, 
+         tot_C_t = C_ab_t_tapes + C_bB_t)
+
+view(  trees_total_5 %>% 
+         mutate(N_t = ifelse(compartiment == "ag", unlist(across(N_t, sum, na.rm = TRUE)), N_t))
+       
+       
+)
+
 # ----- 2.2.8. getting diameter at 1/3 of the tree height for biomass ----------
+
 
 #tree <- buildTree(tree = list(spp=1, D1=30, H=27)
 getSpeciesCode()
