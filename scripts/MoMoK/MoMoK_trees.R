@@ -112,6 +112,10 @@ DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep =
 # REGENERATION
 RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep = ";", dec = ",")
 
+# BWI DATA
+BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C_age_SP.csv"), sep = ";", dec = ",")
+
+
 # ----- 1.2. colnames, vector type ---------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                            "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
@@ -126,6 +130,7 @@ trees_total$SP_code <- as.factor(trees_total$SP_code)
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
+
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
 # changing DW variable D_cm from character into numeric variable
@@ -141,6 +146,11 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
                         "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
 RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
+
+colnames(BWI_C_age_SP) <- c("SP_group_BWI", "unit", 
+                            "1-20", "21-40", "41-60", "1-60", 
+                            "61-80", "81-100", "101-120", "61-120",
+                            "121-140", "141-160"  ,">160", ">120", "all", "Bemerkung")
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -1910,6 +1920,7 @@ trees_tot_piv_wider %>%
                                HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
                                TRUE ~ "FINE")) %>% 
   filter(HD_status == "ERROR" & H_method == "sampled")
+
 
 
 
