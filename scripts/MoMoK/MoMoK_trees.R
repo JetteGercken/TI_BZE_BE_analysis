@@ -1011,6 +1011,7 @@ write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 # the distribution of alnus rubra extents mainly to north america so we can assume that those trees labbeled
 # RER are actually supposed to be labelled SER
 
+
 trees_total <- left_join(trees_total %>% 
                            #mutate(SP_code = ifelse(SP_code == "RER", "SER", SP_code)) %>% 
   # 1. replace missing DBH_class values with labels according to DBH_cm (1.4.1.)
@@ -1899,29 +1900,6 @@ summary(biotest)
 
 # export biotest
 
-# ----- 2.1.3. living trees plausibility test -----------------------------------------------------------
-# via HD: 
-  # Vorbedingung: Die Bäume stehen im Hauptbestand.
-  # HD_Warnung 5,0-65 und 85-139,9
-  # HD_Fehler: 0-4,9 und >140,0
-
-
-trees_tot_piv_wider %>% 
-  filter(C_layer == 1) %>% 
-  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
-                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
-                               TRUE ~ "FINE")) %>% 
-  filter(HD_status == "WARNING" & H_method == "sampled")
-
-
-trees_tot_piv_wider %>% 
-  filter(C_layer == 1) %>% 
-  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
-                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
-                               TRUE ~ "FINE")) %>% 
-  filter(HD_status == "ERROR" & H_method == "sampled")
-
-
 
 
 # 2.2. DEAD WOOD ---------------------------------------------------------------
@@ -2608,8 +2586,8 @@ trees_P_SP.export <- trees_P_SP.export %>%
 # %>% 
  # rename("compartiment" = "B_compartiment_plot") %>% 
  # select(-c(B_compartiment_ha, B_compartiment_MF, 
-            C_compartiment_plot, C_compartiment_ha, C_compartiment_MF, 
-            N_compartiment_plot, N_compartiment_ha, N_compartiment_MF))
+            # C_compartiment_plot, C_compartiment_ha, C_compartiment_MF, 
+            # N_compartiment_plot, N_compartiment_ha, N_compartiment_MF))
 
            
 # exxporting dataset
@@ -3227,6 +3205,78 @@ plot_total <- rbind(
 summary(plot_total)
 
 write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
+
+
+
+
+# ----- 4. PLAUSIBILTY  --------------------------------------------------------
+# ----- 4.1. living trees plausibility test ------------------------------------
+# via HD: 
+# Vorbedingung: Die Bäume stehen im Hauptbestand.
+# HD_Warnung 5,0-65 und 85-139,9
+# HD_Fehler: 0-4,9 und >140,0
+
+# trees with HD status "warning" and sampled height
+trees_tot_piv_wider %>% 
+  filter(C_layer == 1) %>% 
+  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                               TRUE ~ "FINE")) %>% 
+  filter(HD_status == "WARNING" & H_method == "sampled")
+
+# trees with HD status "error" and sampled height
+trees_tot_piv_wider %>% 
+  filter(C_layer == 1) %>% 
+  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                               TRUE ~ "FINE")) %>% 
+  filter(HD_status == "ERROR" & H_method == "sampled")
+
+summary(trees_tot_piv_wider %>% 
+          filter(C_layer == 1) %>% 
+          mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                                       HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                                       TRUE ~ "FINE")) %>% 
+          filter(HD_status == "ERROR" & H_method == "sampled"))
+
+# ----- 4.2. living trees plausibility test ------------------------------------
+labs_age <- c(seq(1, 160, by = 20))
+
+
+
+trees_total_5 %>% 
+  filter(compartiment=="total") %>% 
+  group_by(BWI_SP_group, age) %>% 
+  summarise(mean(C_t_tapes)) %>% 
+  mutate(age_class = ifelse(!is.na(age), 
+                            cut(age,         # cut the diameter
+                                breaks = c(seq(1, 160, by = 20), Inf),  # in sequences of 5
+                                labels = labs_age,                        # and label it according to labs (1.4.1)
+                                right = FALSE), 
+                            NA))
+
+
+# changing unit fromkg to t
+# https://stackoverflow.com/questions/73674827/is-there-a-function-in-r-to-convert-the-units-of-multiple-columns-with-a-built-i  
+f <- function(kg){
+  tons <- kg/1000
+  return(tons)
+}
+
+# ' HAVE TO ADD AGE CLASSE HERE TO FOR FINAL JOIN & COMPARISSON'
+
+BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
+  mutate(across(c("1-20", "21-40", "41-60", "1-60", "61-80", "81-100", "101-120", "61-120", "121-140", "141-160", ">160", ">120", "all"), ~ f(.x))) %>% 
+  select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
+  pivot_longer(c("1-20", "21-40", "41-60", "61-80", "81-100", "101-120", "121-140", "141-160", ">160", "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
+  pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
+  # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
+  rename("C_t_ha_BWI" = "[kg/ha]") %>% 
+  rename("SD" = "SE95 Â±")
+
+
+
+
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------
@@ -4031,13 +4081,7 @@ RG_total %>%
 
 
 
-
-
-
-# ----- visualization plotwise --------------------------------------------
-
-
-
+# ----- 3.3.2. visualization plotwise --------------------------------------------
 
 plot_total %>% 
   ggplot(., aes(stand_component, C_tot_t_ha))+
@@ -4052,6 +4096,12 @@ plot_total %>%
   ggplot(., aes(stand_component, C_tot_t_ha))+
   geom_boxplot(aes(colour = stand_component))+
   facet_wrap(~plot_ID)
+
+
+
+
+
+
 
 
 
