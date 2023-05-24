@@ -147,10 +147,10 @@ colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_p
                         "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
 RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
 
-colnames(BWI_C_age_SP) <- c("SP_group_BWI", "unit", 
-                            "1-20", "21-40", "41-60", "1-60", 
-                            "61-80", "81-100", "101-120", "61-120",
-                            "121-140", "141-160"  ,">160", ">120", "all", "Bemerkung")
+colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit", 
+                            "1", "21", "41", "1-60", 
+                            "61", "81", "101", "61-120",
+                            "121", "141"  ,"161", ">120", "all", "Bemerkung")
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -158,6 +158,13 @@ colnames(BWI_C_age_SP) <- c("SP_group_BWI", "unit",
 c_A = function(r){
   circle_area <- r^2*pi
   return(circle_area)}
+
+# changing unit fromkg to t
+# https://stackoverflow.com/questions/73674827/is-there-a-function-in-r-to-convert-the-units-of-multiple-columns-with-a-built-i  
+tons = function(kg){
+  tons <- kg/1000
+  return(tons)
+}
 
 # ---- 1.3.2. HEIGHTS ------------------------------------------------------
 # ---- 1.3.2.1. height coefficient selection ------------------------------------------------------
@@ -2490,9 +2497,13 @@ trees_P_SP <-  trees_total_5 %>%
                         sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
                         SP_BA_plot = sum(BA_m2),             #  BA per species  per plot in m2
                         Nt_P_SP = n(), 
-                        plot_A_ha = mean(plot_A_ha)) %>%                         # number of trees per plot
-              mutate(compartiment = "total", 
-                     SP_BA_m2ha = SP_BA_plot/ plot_A_ha) %>%             # this is to only add the values to one row per plot and species and avoid repeted plot-species wise values that are not grouped by compartiment and thus keep being repeated 
+                        plot_A_ha = mean(plot_A_ha)) %>% 
+              mutate(MoMoK_A_ha = (50*50)/10000, 
+                     compartiment = "total", 
+                     Nt_ha = Nt_P_SP/ plot_A_ha, 
+                     Nt_MA = (Nt_P_SP/ plot_A_ha)*MoMoK_A_ha, 
+                     SP_BA_m2ha = SP_BA_plot/ plot_A_ha, 
+                     SP_BA_m2MA = (SP_BA_plot/ plot_A_ha)*MoMoK_A_ha) %>%             # this is to only add the values to one row per plot and species and avoid repeted plot-species wise values that are not grouped by compartiment and thus keep being repeated 
               # dataset with total BA per plot to calcualte share of each species by total basal area
               left_join(.,trees_total_5 %>%
                           group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
@@ -2501,7 +2512,7 @@ trees_P_SP <-  trees_total_5 %>%
                           mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha,   # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
                                  compartiment = "total"),               # just to ensure the join works
                         by=c("plot_ID", "plot_A_ha", "compartiment")) %>% 
-              select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
+              select(- c(plot_A_ha, tot_BA_plot, MoMoK_A_ha)) %>%  # remove unnecessary variables
               mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100),  # calculate proportion of each species to total BA in percent)
     by = c("plot_ID", "SP_code", "compartiment")) %>%   # join it to the dataset grouped by plot, species and compartiment 
   mutate(B_t_P_SP_ha = B_t_P_SP/plot_A_ha, 
@@ -2510,87 +2521,32 @@ trees_P_SP <-  trees_total_5 %>%
          B_t_P_SP_MA = (B_t_P_SP/plot_A_ha)*MoMoK_A_ha, 
          C_t_P_SP_MA = (C_t_P_SP/plot_A_ha)*MoMoK_A_ha,
          N_t_P_SP_MA = (N_t_P_SP/plot_A_ha)*MoMoK_A_ha)
-  
-
 
 # joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
 trees_P_SP <- left_join(trees_P_SP,
                         as.data.table(trees_P_SP %>% filter(compartiment== "total"))[as.data.table(trees_P_SP %>% filter(compartiment== "total"))[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
                           rename(., dom_SP = SP_code) %>% 
-                          select(plot_ID, dom_SP), 
+                          select(plot_ID, compartiment, dom_SP), 
                         by = c("plot_ID", "compartiment"))
 
-
-# "Plot", "Bestandesschicht", "B_Art",
-# "durchsch_D1.3_cm", "SD_D1.3_cm", "D_g_cm",
-# "durchsch_H_m", "SD_H_m" , "H_g_m",
-# "G_m2_Art", "durchsch_G_m2", "G_m2ha_Art", "G_m2ha_ges",
-# "Stückzahl_Nplot", "stückzahl_Nha",  
-# "G_Anteil_Art", "Hauptbaumart_G")
-
-
 trees_P_SP.export <- trees_P_SP %>% 
-  select(-c(MoMoK_A_ha, )) %>% 
-  select(plot_ID, SP_code,
+  select(-c(MoMoK_A_ha, plot_A_ha)) %>% 
+  select(plot_ID, SP_code, compartiment,
          mean_DBH_cm, sd_DBH_cm, mean_H_m, sd_height_m, 
          SP_BA_plot, SP_BA_m2ha, SP_BA_m2MA, tot_BA_m2ha, BA_SP_per, dom_SP,
          Nt_P_SP, Nt_ha, Nt_MA,
-         B_tot_t_P_SP, B_aB_t_P_SP, B_bB_t_P_SP, B_f_t_P_SP, B_fw_t_P_SP, B_sw_t_P_SP,B_swb_t_P_SP, B_stw_t_P_SP, B_stwb_t_P_SP,
-         C_tot_t_P_SP, C_aB_t_P_SP, C_bB_t_P_SP, C_f_t_P_SP, C_fw_t_P_SP, C_sw_t_P_SP, C_swb_t_P_SP, C_stw_t_P_SP, C_stwb_t_P_SP,
-         N_aB_t_P_SP, N_f_t_P_SP, N_fw_t_P_SP,N_sw_t_P_SP,N_swb_t_P_SP,N_stw_t_P_SP,N_stwb_t_P_SP,
-         B_tot_t_ha, B_aB_t_ha, B_bB_t_ha, B_f_t_ha, B_fw_t_ha, B_sw_t_ha, B_swb_t_ha, B_stw_t_ha, B_stwb_t_ha, 
-         C_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_f_t_ha, C_fw_t_ha, C_sw_t_ha,C_swb_t_ha, C_stw_t_ha, C_stwb_t_ha, 
-         N_aB_t_ha, N_f_t_ha, N_fw_t_ha, N_sw_t_ha, N_swb_t_ha, N_stw_t_ha, N_stwb_t_ha, 
-         B_tot_t_MA, B_aB_t_MA, B_bB_t_MA, B_f_t_MA, B_fw_t_MA, B_sw_t_MA, B_swb_t_MA, B_stw_t_MA, B_stwb_t_MA, 
-         C_tot_t_MA, C_aB_t_MA, C_bB_t_MA,C_f_t_MA, C_fw_t_MA, C_sw_t_MA, C_swb_t_MA, C_stw_t_MA, C_stwb_t_MA, 
-         N_aB_t_MA, N_f_t_MA, N_fw_t_MA, N_sw_t_MA, N_swb_t_MA, N_stw_t_MA, N_stwb_t_MA)
+         B_t_P_SP, C_t_P_SP, N_t_P_SP,
+         B_t_P_SP_ha, C_t_P_SP_ha, N_t_P_SP_ha,
+         B_t_P_SP_MA, C_t_P_SP_MA, N_t_P_SP_MA)
 
-colnames(trees_P_SP.export) <- c("plot_ID", "B_Art", 
-                                 "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
-                                 "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha","G_Anteil_Art","Hauptbaumart_G",
-                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF", # 15
-                                 "B_ges_t_Art_Plot",  "B_oi_t_Art_Plot",   "B_bB_t_Art_Plot",   "B_Bl_t_Art_Plot",    "B_nDhmR_t_Art_Plot",   "B_DhoR_t_Art_Plot", "B_DhR_t_Art_Plot",  "B_StoR_t_Art_Plot",  "B_StR_t_Art_Plot", #24
-                                 "C_ges_t_Art_Plot","C_oi_t_Art_Plot","C_ui_t_Art_Plot" ,"C_Bl_t_Art_Plot","C_nDhmR_t_Art_Plot","C_DhoR_t_Art_Plot","C_DhR_t_Art_Plot","C_StoR_t_Art_Plot","C_StR_t_Art_Plot", #33
-                                 "N_oi_t_Art_Plot", "N_Bl_t_Art_Plot","N_nDhmR_t_Art_Plot",   "N_DhoR_t_Art_Plot",   "N_DhR_t_Art_Plot",  "N_StoR_t_Art_Plot" , "N_StR_t_Art_Plot",
-                                 "B_ges_t_ha" ,"B_oi_t_ha","B_ui_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
-                                 "C_ges_t_ha", "C_oi_t_ha", "C_ui_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
-                                 "N_oi_t_ha", "N_Bl_t_ha", "N_nDhmR_t_ha", "N_DhoR_t_ha","N_DhR_t_ha", "N_StoR_t_ha", "N_StR_t_ha",
-                                 "B_ges_t_MF", "B_oi_t_MF", "B_ui_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
-                                 "C_ges_t_MF", "C_oi_t_MF", "C_ui_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
-                                 "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
-
-
-
-
-
-
-
-# pivoting all biomasses/ carbon / nitrogen into one column
-# https://stackoverflow.com/questions/25925556/gather-multiple-sets-of-columns
-trees_P_SP.export <- trees_P_SP.export %>% 
-  # biomass
-  gather(key = "B_compartiment_plot", value = "B_Art_Plot", 16:24) %>% 
-  gather(key = "B_compartiment_ha", value = "B_Art_ha", 40:48) %>%
-  gather(key = "B_compartiment_MF", value = "B_Art_MF", 65:73) %>% 
-  # carbon 
-  gather(key = "C_compartiment_plot", value = "C_Art_Plot", 16:23) %>% 
-  gather(key = "C_compartiment_ha", value = "C_Art_ha", 49:57) %>%
-  gather(key = "C_compartiment_MF", value = "C_Art_MF", 74:83) %>% 
-  # nitrogen
-  gather(key = "N_compartiment_plot", value = "N_Art_Plot", 34:39) %>% 
-  gather(key = "N_compartiment_ha", value = "N_Art_ha", 58:64) %>%
-  gather(key = "N_compartiment_MF", value = "N_Art_MF", 84:90) %>% 
-  #https://sparkbyexamples.com/r-programming/replace-character-in-a-string-of-r-dataframe/
-  mutate(B_compartiment_plot = str_replace(B_compartiment_plot, "B_", ""))
-
-# %>% 
- # rename("compartiment" = "B_compartiment_plot") %>% 
- # select(-c(B_compartiment_ha, B_compartiment_MF, 
-            # C_compartiment_plot, C_compartiment_ha, C_compartiment_MF, 
-            # N_compartiment_plot, N_compartiment_ha, N_compartiment_MF))
-
-           
-# exxporting dataset
+colnames(trees_P_SP.export) <- c("Plot", "B_Art", "Kompartiment", 
+                                 "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+                                 "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha", "G_Anteil_Art","Hauptbaumart_G",
+                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
+                                 "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
+                                 "B_t_ha", "C_t_ha", "N_t_ha",
+                                 "B_t_MF", "C_t_MF", "N_t_MF")
+# exporting dataset
 write.csv(trees_P_SP.export, "output/out_data/LB_Art_Plot_MoMoK.csv")
 
 summary(trees_P_SP)
@@ -2598,141 +2554,75 @@ summary(trees_P_SP)
 # ----- 2.5.1.3. grouped by Plot----------------------------------------------------------
 
 trees_P <- trees_total_5 %>%
-    group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-    # values per plot
-    summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
-              sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
-              mean_H_m = mean(H_m),                # mean height per species per  per plot
-              sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
-              BA_m2_plot = sum(BA_m2),             #  BA per species  per plot in m2
-              Nt_plot = n(),                       # number of trees per plot
-              B_tot_t_plot = sum((tapes_ab_kg/1000)+(bB_kg/1000)), # total biomass  in t per species per plot 
-              B_aB_t_plot = sum(tapes_ab_kg/1000),           # total aboveground biomass  in t per species per plot
-              B_bB_t_plot = sum(bB_kg/1000),                       # total belowgrond biomass  in t per species per plot
-              B_f_t_plot = sum(tapes_fB_kg/1000),            # foliage biomass in t per species per plot
-              B_fw_t_plot = sum(tapes_fwB_kg/1000),          # fine wood biomass in t per species per plot
-              B_sw_t_plot = sum(tapes_swB_kg/1000),          # solid wood biomassin t per species per plot
-              B_swb_t_plot = sum(tapes_swbB_kg/1000),        # solid wood bark biomass in t per species per plot
-              B_stw_t_plot = sum(tapes_stwB_kg/1000),        # stump wood biomass in t per species per plot
-              B_stwb_t_plot = sum(tapes_stwbB_kg/1000),      # stump wood bark biomass in t per species per plot
-              C_tot_t_plot = sum(C_ab_t_tapes+C_bB_t),    # total C stock in t per species per plot 
-              C_aB_t_plot = sum(C_ab_t_tapes),               # total aboveground C stock in t per species per plot
-              C_bB_t_plot = sum(C_bB_t),                     # total belowgrond C stock in t per species per plot
-              C_f_t_plot = sum(C_f_t),                       # foliage C stock in t per species per plot
-              C_fw_t_plot = sum( C_fw_t),                    # fine wood C stock in t per species per plot
-              C_sw_t_plot = sum( C_sw_t),                    # solid wood C stock in t per species per plot
-              C_swb_t_plot = sum( C_swb_t),                  # solid wood bark C stock in t per species per plot
-              C_stw_t_plot = sum( C_stw_t),                  # stump wood C stock in t per species per plot
-              C_stwb_t_plot = sum( C_stwb_t),                # stump wood bark C stock in t per species per plot
-              N_aB_t_plot = sum(na.omit(tot_N_t)),       # total aboveground N stock in t per species per plot
-              N_f_t_plot = sum(na.omit(N_f_kg/1000)),        # foliage N stock in t per species per plot
-              N_fw_t_plot = sum(na.omit(N_fw_kg/1000)),      # fine wood N stock in t per species per plot
-              N_sw_t_plot = sum(na.omit(N_sw_kg/1000)),      # solid wood N stock in t per species per plot
-              N_swb_t_plot = sum(na.omit(N_swb_kg/1000)),    # solid wood bark N stock in t per species per plot
-              N_stw_t_plot = sum(na.omit(N_stw_kg/1000)),    # stump wood N stock in t per species per plot
-              N_stwb_t_plot = sum(na.omit(N_stwb_kg/1000)),  # stump wood bark N stock in t per species per plot
-              plot_A_ha = mean(plot_A_ha),               # plot area in hectare to reffer data to hectar
-              MoMoK_A_ha = (50*50)/10000) %>%            # actual momok area in hectar
-    # values per hectar
-    mutate(BA_m2_ha = BA_m2_plot/plot_A_ha,           # basal area in m2/ha per species per plot
-           Nt_ha = Nt_plot/ plot_A_ha,                   # number of trees per hectar per species per plot
-           B_tot_t_ha = B_tot_t_plot/plot_A_ha,     # total biomass in t/ha per species per plot
-           B_aB_t_ha = B_aB_t_plot/plot_A_ha,           # total aboveground biomass in t/ha per species per plot
-           B_bB_t_ha = B_bB_t_plot/plot_A_ha,           # total belowground biomass in t/ha per species per plot
-           B_f_t_ha = B_f_t_plot/plot_A_ha,             # foliage biomass in t/ha per species per plot
-           B_fw_t_ha = B_fw_t_plot/plot_A_ha,           # fine wood biomass in t/ha per species per plot
-           B_sw_t_ha = B_sw_t_plot/plot_A_ha,           # solid wood biomass in t/ha per species per plot
-           B_swb_t_ha = B_swb_t_plot/plot_A_ha,         # solid wood bark biomass in t/ha per species per plot
-           B_stw_t_ha = B_stw_t_plot/plot_A_ha,         # stump wood biomass in t/ha per species per plot
-           B_stwb_t_ha = B_stwb_t_plot/plot_A_ha,       # stump wood bark biomass in t/ha per species per plot
-           C_tot_t_ha = C_tot_t_plot/plot_A_ha,     # total C stock in t/ha per species per plot
-           C_aB_t_ha = C_aB_t_plot/plot_A_ha,           # total aboveground C stock in t/ha per species per plot
-           C_bB_t_ha = C_bB_t_plot/plot_A_ha,           # total belowground C stock in t/ha per species per plot
-           C_f_t_ha = C_f_t_plot/plot_A_ha,             # foliage C stock in t/ha per species per plot
-           C_fw_t_ha = C_fw_t_plot/plot_A_ha,           # fine wood C stock in t/ha per species per plot
-           C_sw_t_ha = C_sw_t_plot/plot_A_ha,           # solid wood C stock in t/ha per species per plot
-           C_swb_t_ha =  C_swb_t_plot/plot_A_ha,        # solid wood bark C stock in t/ha per species per plot
-           C_stw_t_ha = C_stw_t_plot/plot_A_ha,         # stump wood C stock in t/ha per species per plot
-           C_stwb_t_ha = C_stwb_t_plot/plot_A_ha,       # stump wood bark C stock in t/ha per species per plot
-           N_aB_t_ha = N_aB_t_plot/plot_A_ha,       #  total aboveground N stock in t/ha species per plot 
-           N_f_t_ha = N_f_t_plot/plot_A_ha,             # foliage N stock in t/ha per species per plot
-           N_fw_t_ha = N_fw_t_plot/plot_A_ha,           # fine wood N stock in t/ha per species per plot
-           N_sw_t_ha = N_sw_t_plot/plot_A_ha,           # solid wood N stock in t/ha per species per plot
-           N_swb_t_ha = N_swb_t_plot/plot_A_ha,         # solid wood bark N stock in t/ha per species per plot
-           N_stw_t_ha = N_stw_t_plot/plot_A_ha,         # stump wood N stock in t/ha per species per plot
-           N_stwb_t_ha = N_stwb_t_plot/plot_A_ha) %>%   # stump wood bark N stock in t/ha per species per plot
-    # values per MoMoK area
-    mutate(BA_m2MA = (BA_m2_plot/plot_A_ha)*MoMoK_A_ha,           # basal area in m2 per MoMoK area  per species per plot
-           Nt_MA = (Nt_plot/ plot_A_ha)*MoMoK_A_ha,                   # number of trees per MoMoK area  per species per plot
-           B_tot_t_MA = (B_tot_t_plot/plot_A_ha)*MoMoK_A_ha,     # total biomass in t per MoMoK area  per species per plot
-           B_aB_t_MA = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total aboveground biomass in t per MoMoK area  per species per plot
-           B_bB_t_MA = (B_bB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total belowground biomass in t per MoMoK area  per species per plot
-           B_f_t_MA = (B_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage biomass in t per MoMoK area  per species per plot
-           B_fw_t_MA = (B_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood biomass in t per MoMoK area  per species per plot
-           B_sw_t_MA = (B_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood biomass in t per MoMoK area  per species per plot
-           B_swb_t_MA =(B_swb_t_plot/plot_A_ha)*MoMoK_A_ha,         # solid wood bark biomass in t per MoMoK area  per species per plot
-           B_stw_t_MA = (B_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood biomass in t per MoMoK area  per species per plot
-           B_stwb_t_MA = (B_stwb_t_plot/plot_A_ha)*MoMoK_A_ha,       # stump wood bark biomass in t per MoMoK area  per species per plot
-           C_tot_t_MA = (C_tot_t_plot/plot_A_ha)*MoMoK_A_ha,     # total C stock in t per MoMoK area  per species per plot
-           C_aB_t_MA = (C_aB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total aboveground C stock in t per MoMoK area  per species per plot
-           C_bB_t_MA= (C_bB_t_plot/plot_A_ha)*MoMoK_A_ha,           # total belowground C stock in t per MoMoK area  per species per plot
-           C_f_t_MA = (C_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage C stock in t per MoMoK area  per species per plot
-           C_fw_t_MA = (C_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood C stock in t per MoMoK area  per species per plot
-           C_sw_t_MA = (C_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood C stock in t per MoMoK area  per species per plot
-           C_swb_t_MA =  (C_swb_t_plot/plot_A_ha)*MoMoK_A_ha,        # solid wood bark C stock in t per MoMoK area  per species per plot
-           C_stw_t_MA = (C_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood C stock in t per MoMoK area  per species per plot
-           C_stwb_t_MA = (C_stwb_t_plot/plot_A_ha)*MoMoK_A_ha,       # stump wood bark C stock in t per MoMoK area  per species per plot
-           N_aB_t_MA = (N_aB_t_plot/plot_A_ha)*MoMoK_A_ha,            #  total aboveground N stock in t per MoMoK area  species per plot 
-           N_f_t_MA = (N_f_t_plot/plot_A_ha)*MoMoK_A_ha,             # foliage N stock in t per MoMoK area a per species per plot
-           N_fw_t_MA = (N_fw_t_plot/plot_A_ha)*MoMoK_A_ha,           # fine wood N stock in t per MoMoK area  per species per plot
-           N_sw_t_MA = (N_sw_t_plot/plot_A_ha)*MoMoK_A_ha,           # solid wood N stock in t per MoMoK area  per species per plot
-           N_swb_t_MA = (N_swb_t_plot/plot_A_ha)*MoMoK_A_ha,         # solid wood bark N stock in t per MoMoK area  per species per plot
-           N_stw_t_MA = (N_stw_t_plot/plot_A_ha)*MoMoK_A_ha,         # stump wood N stock in t per MoMoK area per species per plot
-           N_stwb_t_MA =(N_stwb_t_plot/plot_A_ha)*MoMoK_A_ha) %>%       # stump wood bark N stock in t per MoMoK area  per species per plot 
+  group_by(plot_ID, compartiment) %>% 
+  summarise(B_t_P = sum(B_t_tapes),             # Biomass per plot per compartiment
+            C_t_P = sum(C_t_tapes),             # Carbon per plot per compartiment    
+            N_t_P = sum(N_t),                   # Nitrogen per plot per compartiment
+            plot_A_ha = mean(plot_A_ha)) %>%       # plot area in hectare to reffer data to hectar later
+  mutate(MoMoK_A_ha = (50*50)/10000) %>%           # MoMoK area in hectare to reffer data to MoMoK area later
+  left_join(., trees_total_5 %>%
+              group_by(plot_ID) %>%                         # group by plot only to create column with 
+              summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
+                        sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
+                        mean_H_m = mean(H_m),                # mean height per species per  per plot
+                        sd_height_m = sd(H_m),               # standart deviation height
+                        BA_m2_plot = sum(BA_m2),            # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+                        Nt_plot = n(),                          # number of trees per plot
+                        plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+              mutate(MoMoK_A_ha = (50*50)/10000, 
+                     BA_m2ha = BA_m2_plot/plot_A_ha,       # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
+                     BA_m2MA = (BA_m2_plot/plot_A_ha)*MoMoK_A_ha,
+                     Nt_ha = Nt_plot/plot_A_ha,
+                     Nt_MA = (Nt_plot/plot_A_ha)*MoMoK_A_ha,
+                     compartiment = "total") %>% 
+              select(-c(plot_A_ha, MoMoK_A_ha)),            # just to ensure the join works
+            by = c("plot_ID", "compartiment")) %>%           # join it to the dataset grouped by plot, species and compartiment 
+  mutate(B_t_P_ha = B_t_P/plot_A_ha, 
+         C_t_P_ha = C_t_P/plot_A_ha,
+         N_t_P_ha = N_t_P/plot_A_ha,
+         B_t_P_MA = (B_t_P/plot_A_ha)*MoMoK_A_ha, 
+         C_t_P_MA = (C_t_P/plot_A_ha)*MoMoK_A_ha,
+         N_t_P_MA = (N_t_P/plot_A_ha)*MoMoK_A_ha) %>% 
   # dataset with dominatn species per plot
-  left_join(., trees_P_SP %>% select(plot_ID, dom_SP) %>% distinct(), 
-            by = "plot_ID") %>% 
+  left_join(., trees_P_SP %>% 
+              ungroup() %>%
+              dplyr::select(plot_ID, compartiment, dom_SP) %>%
+              filter(compartiment == "total") %>%
+              distinct(), 
+            by = c("plot_ID", "compartiment")) %>% 
   #calculating number of species per plot
   left_join(., trees_total_5 %>% 
-            select(plot_ID, SP_code) %>%
-            group_by(plot_ID) %>%
-            distinct() %>% 
-            summarise(N_SP_plot = n()),
-          by = "plot_ID")
+              select(plot_ID, SP_code) %>%
+              group_by(plot_ID) %>% 
+              distinct() %>% 
+              summarise(N_SP_plot = n())%>%
+              mutate(compartiment = "total"),
+            by = c("plot_ID", "compartiment"))
 
 
-
+# preparing trees_P for 
 trees_P.export <- trees_P %>% 
   select(-c(MoMoK_A_ha,plot_A_ha)) %>% 
-  select(plot_ID,
+  select(plot_ID, compartiment,
          mean_DBH_cm, sd_DBH_cm, mean_H_m, sd_height_m, 
-         BA_m2_plot, BA_m2MA, BA_m2_ha, dom_SP,
+         BA_m2_plot, BA_m2MA, BA_m2ha, dom_SP, N_SP_plot,
          Nt_plot, Nt_ha, Nt_MA,
-         B_tot_t_plot, B_aB_t_plot, B_bB_t_plot, B_f_t_plot, B_fw_t_plot, B_sw_t_plot,B_swb_t_plot, B_stw_t_plot, B_stwb_t_plot,
-         C_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_f_t_plot, C_fw_t_plot, C_sw_t_plot, C_swb_t_plot, C_stw_t_plot, C_stwb_t_plot,
-         N_aB_t_plot, N_f_t_plot, N_fw_t_plot,N_sw_t_plot,N_swb_t_plot,N_stw_t_plot,N_stwb_t_plot,
-         B_tot_t_ha, B_aB_t_ha, B_bB_t_ha, B_f_t_ha, B_fw_t_ha, B_sw_t_ha, B_swb_t_ha, B_stw_t_ha, B_stwb_t_ha, 
-         C_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_f_t_ha, C_fw_t_ha, C_sw_t_ha,C_swb_t_ha, C_stw_t_ha, C_stwb_t_ha, 
-         N_aB_t_ha, N_f_t_ha, N_fw_t_ha, N_sw_t_ha, N_swb_t_ha, N_stw_t_ha, N_stwb_t_ha, 
-         B_tot_t_MA, B_aB_t_MA, B_bB_t_MA, B_f_t_MA, B_fw_t_MA, B_sw_t_MA, B_swb_t_MA, B_stw_t_MA, B_stwb_t_MA, 
-         C_tot_t_MA, C_aB_t_MA, C_bB_t_MA,C_f_t_MA, C_fw_t_MA, C_sw_t_MA, C_swb_t_MA, C_stw_t_MA, C_stwb_t_MA, 
-         N_aB_t_MA, N_f_t_MA, N_fw_t_MA, N_sw_t_MA, N_swb_t_MA, N_stw_t_MA, N_stwb_t_MA)
+         B_t_P, C_t_P, N_t_P, 
+         B_t_P_ha, C_t_P_ha, N_t_P_ha,
+         B_t_P_MA, C_t_P_MA, N_t_P_MA)
 
-colnames(trees_P.export) <- c("plot_ID", "B_Art", 
-                                 "durchsch_D1.3_cm","SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
-                                 "G_m2_Plot", "G_m2ha", "G_m2MF", "Hauptbaumart_G",
-                                 "Stückzahl_n_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
-                                 "B_ges_t_Plot",  "B_oi_t_Plot",   "B_bB_t_Plot",   "B_Bl_t_Plot",    "B_nDhmR_t_Plot",   "B_DhoR_t_Plot", "B_DhR_t_Plot",  "B_StoR_t_Plot",  "B_StR_t_Plot",
-                                 "C_ges_t_Plot","C_oi_t_Plot","C_bB_t_Plot" ,"C_Bl_t_Plot","C_nDhmR_t_Plot","C_DhoR_t_Plot","C_DhR_t_Plot","C_StoR_t_Plot","C_StR_t_Plot", 
-                                 "N_oi_t_Plot", "N_Bl_t_Plot","N_nDhmR_t_Plot",   "N_DhoR_t_Plot",   "N_DhR_t_Plot",  "N_StoR_t_Plot" , "N_StR_t_Plot",
-                                 "B_ges_t_ha" ,"B_oi_t_ha","B_bB_t_ha" ,"B_Bl_t_ha" ,"B_nDhmR_t_ha","B_DhoR_t_ha","B_DhR_t_ha", "B_StoR_t_ha", "B_StR_t_ha",
-                                 "C_ges_t_ha", "C_oi_t_ha", "C_bB_t_ha", "C_Bl_t_ha", "C_nDhmR_t_ha", "C_DhoR_t_ha", "C_DhR_t_ha", "C_StoR_t_ha", "C_StR_t_ha",
-                                 "N_oi_t_ha", "N_Bl_t_ha", "N_nDhmR_t_ha", "N_DhoR_t_ha","N_DhR_t_ha", "N_StoR_t_ha", "N_StR_t_ha",
-                                 "B_ges_t_MF", "B_oi_t_MF", "B_bB_t_MF", "B_Bl_t_MF","B_nDhmR_t_MF","B_DhoR_t_MF","B_DhR_t_MF", "B_StoR_t_MF","B_StR_t_MF",
-                                 "C_ges_t_MF", "C_oi_t_MF", "C_bB_t_MF", "C_Bl_t_MF", "C_nDhmR_t_MF", "C_DhoR_t_MF", "C_DhR_t_MF", "C_StoR_t_MF", "C_StR_t_MF",
-                                 "N_oi_t_MF" ,"N_Bl_t_MF","N_nDhmR_t_MF", "N_DhoR_t_MF", "N_DhR_t_MF","N_StoR_t_MF","N_StR_t_MF")
+colnames(trees_P.export) <- c("Plot", "Kompartiment", 
+                                 "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+                                 "G_m2_Plot", "G_m2ha", "G_m2MF", "Hauptbaumart_G", "Anzahl_Art_Plot",
+                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF", 
+                                 "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
+                                 "B_t_ha", "C_t_ha", "N_t_ha",
+                                 "B_t_MF", "C_t_MF", "N_t_MF")
 
-write.csv(trees_P, "output/out_data/LB_Plot_MoMoK.csv")
+write.csv(trees_P.export, "output/out_data/LB_Plot_MoMoK.csv")
+
+
+
 
 # ----- 2.5.2. DEAD TREES plot level --------------------------------------------------------
 # ----- 2.5.2.1. grouped by Plot, species, deadwood type, decay type -------------------------
@@ -3210,7 +3100,7 @@ write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
 
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
-# ----- 4.1. living trees plausibility test ------------------------------------
+# ----- 4.1. HD value living trees plausibility test ------------------------------------
 # via HD: 
 # Vorbedingung: Die Bäume stehen im Hauptbestand.
 # HD_Warnung 5,0-65 und 85-139,9
@@ -3239,42 +3129,96 @@ summary(trees_tot_piv_wider %>%
                                        TRUE ~ "FINE")) %>% 
           filter(HD_status == "ERROR" & H_method == "sampled"))
 
-# ----- 4.2. living trees plausibility test ------------------------------------
-labs_age <- c(seq(1, 160, by = 20))
+# ----- 4.2. BWI comparisson living trees plausibility test ------------------------------------
+labs_age <- c(seq(1, 180, by = 20))
+
+
+c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
+  filter(compartiment=="total" & C_layer == "1") %>% 
+  group_by(plot_ID, BWI_SP_group, age) %>% 
+  summarise(C_t_tapes = sum(C_t_tapes), 
+            plot_A_ha = mean(plot_A_ha),
+            Nt = n()) %>% 
+  mutate(C_t_ha_tapes= C_t_tapes/ plot_A_ha, 
+         Nt_ha = Nt/ plot_A_ha,
+         BWI_SP_group = toupper(BWI_SP_group), 
+         age_class = case_when(!is.na(age) ~ cut(age,         # cut the diameter
+                                                 breaks = c(seq(1, 180, by = 20), Inf),  # in sequences of 5
+                                                 labels = labs_age,                        # and label it according to labs (1.4.1)
+                                                 right = FALSE),
+                               TRUE ~ 'all')) %>%
+  group_by(BWI_SP_group, age_class) %>% 
+  summarise(C_t_ha_tapes = mean(C_t_ha_tapes)) %>%  
+  left_join(.,na.omit(BWI_C_age_SP) %>%
+              mutate(across(c("1", "21", "41", "1-60", "61", "81", "101", "61-120", "121", "141"  ,"161", ">120", "all"), ~ tons(.x))) %>% 
+              select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
+              pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
+              pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
+              # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
+              rename("C_t_ha_BWI" = "[kg/ha]") %>% 
+              rename("SD_BWI" = "SE95 Â±") %>% 
+              mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
+                                              BWI_SP_group == "Buche" ~ "BU",
+                                              BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
+                                              BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
+                                              BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
+                                              BWI_SP_group == "Fichte" ~ "FI",
+                                              BWI_SP_group == "Tanne" ~ "TA",
+                                              BWI_SP_group == "Douglasie" ~ "DGL",
+                                              BWI_SP_group == "Kiefer" ~ "KI",
+                                              BWI_SP_group == "LÃ¤rche" ~ "LA",
+                                              BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
+                                              TRUE ~ "all")), 
+            by = c("BWI_SP_group" ,"age_class")) %>% 
+  mutate(C_diff = C_t_ha_tapes-C_t_ha_BWI)
 
 
 
-trees_total_5 %>% 
-  filter(compartiment=="total") %>% 
-  group_by(BWI_SP_group, age) %>% 
-  summarise(mean(C_t_tapes)) %>% 
-  mutate(age_class = ifelse(!is.na(age), 
-                            cut(age,         # cut the diameter
-                                breaks = c(seq(1, 160, by = 20), Inf),  # in sequences of 5
-                                labels = labs_age,                        # and label it according to labs (1.4.1)
-                                right = FALSE), 
-                            NA))
+c_comp_Momok_BWI_P <- trees_total_5 %>% 
+  filter(compartiment == "total") %>% 
+  group_by(plot_ID) %>% 
+  summarise(C_t_tapes = sum(C_t_tapes), 
+            plot_A_ha = mean(plot_A_ha), 
+            Nt = n()) %>% 
+  mutate(C_t_ha = C_t_tapes/plot_A_ha, 
+         Nt_ha = Nt/plot_A_ha,
+         BWI_SP_group = "all", 
+         age_class = "all") %>% 
+  left_join(., na.omit(BWI_C_age_SP) %>%
+              mutate(across(c("1", "21", "41", "1-60", "61", "81", "101", "61-120", "121", "141"  ,"161", ">120", "all"), ~ tons(.x))) %>% 
+              select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
+              pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
+              pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
+              # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
+              rename("C_t_ha_BWI" = "[kg/ha]") %>% 
+              rename("SD_BWI" = "SE95 Â±") %>% 
+              mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
+                                              BWI_SP_group == "Buche" ~ "BU",
+                                              BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
+                                              BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
+                                              BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
+                                              BWI_SP_group == "Fichte" ~ "FI",
+                                              BWI_SP_group == "Tanne" ~ "TA",
+                                              BWI_SP_group == "Douglasie" ~ "DGL",
+                                              BWI_SP_group == "Kiefer" ~ "KI",
+                                              BWI_SP_group == "LÃ¤rche" ~ "LA",
+                                              BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
+                                              TRUE ~ "all")) %>% 
+              filter(BWI_SP_group == "all" & age_class == "all"), 
+            by = c("BWI_SP_group" ,"age_class")) %>% 
+  mutate(C_diff = C_t_ha - C_t_ha_BWI)
 
 
-# changing unit fromkg to t
-# https://stackoverflow.com/questions/73674827/is-there-a-function-in-r-to-convert-the-units-of-multiple-columns-with-a-built-i  
-f <- function(kg){
-  tons <- kg/1000
-  return(tons)
-}
-
-# ' HAVE TO ADD AGE CLASSE HERE TO FOR FINAL JOIN & COMPARISSON'
-
-BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
-  mutate(across(c("1-20", "21-40", "41-60", "1-60", "61-80", "81-100", "101-120", "61-120", "121-140", "141-160", ">160", ">120", "all"), ~ f(.x))) %>% 
-  select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
-  pivot_longer(c("1-20", "21-40", "41-60", "61-80", "81-100", "101-120", "121-140", "141-160", ">160", "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
-  pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
-  # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
-  rename("C_t_ha_BWI" = "[kg/ha]") %>% 
-  rename("SD" = "SE95 Â±")
+wilcox.test(c_comp_Momok_BWI_SP_A$C_t_ha_tapes, c_comp_Momok_BWI_SP_A$C_t_ha_BWI)
+# W = 7, p-value = 0.0004871
+# alternative hypothesis: true location shift is not equal to 0
 
 
+# Nt_ha, C_t_ha ungrouped, plotwise comparisson with BWI ha C stocks 
+
+
+# export comparisson table
+write.csv(c_comp_Momok_BWI, "output/out_data/C_comp_LB_BWI_MoMoK.csv")
 
 
 
