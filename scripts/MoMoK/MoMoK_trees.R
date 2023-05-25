@@ -113,7 +113,11 @@ DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep =
 RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep = ";", dec = ",")
 
 # BWI DATA
-BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C_age_SP.csv"), sep = ";", dec = ",")
+# c stock ha by age and species
+BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C__SP.csv"), sep = ";", dec = ",")
+# DW_BWI Voluem of deadwood by deadwood type and federal state
+BWI_DW_V <- read.delim(file = here("data/input/General/DW_BWI.csv"), sep = ";", dec = ",")
+
 
 
 # ----- 1.2. colnames, vector type ---------------------------------------------
@@ -151,6 +155,17 @@ colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit",
                             "1", "21", "41", "1-60", 
                             "61", "81", "101", "61-120",
                             "121", "141"  ,"161", ">120", "all", "Bemerkung")
+
+# stehend, ganzer Baum = 2
+# Bruchstück = 3
+# liegend ganzer Baum = 5
+# liegend stark = 1
+# haufen = 6
+# Wurzelstock = 4
+colnames(BWI_DW_V) <- c("state", "unit", 
+                        "2",  "3", "stehend", 
+                        "5", "1W", "1", "liegend", 
+                        "4", "6", "all", "Bemerkung")
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -822,6 +837,11 @@ summary(RG_total)
 # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
 labs <- c(seq(5, 55, by = 5)) 
 
+# ----- 1.4.2 assign age class to trees -----------------------------------------
+# defining age classes from 1 to 160 in steps of 20
+# this is a preparation fot the comparison with carbon stocks calcualted by te
+labs_age <- c(seq(1, 180, by = 20))
+
 # ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
     # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
@@ -1372,7 +1392,64 @@ summary(RG_total)
 
 
 
+# ----- 1.4.2.3. BWI comparisson datasets ---------------------------------------------------------
 
+# CARBON LIVING TREES
+# carbon stock in t per ha separeted by age and species groups
+BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
+  # changing unit from kg to tons
+  mutate(across(c("1", "21", "41", "1-60", "61", "81", "101", "61-120", "121", "141"  ,"161", ">120", "all"), ~ tons(.x))) %>% 
+  # deselecting summaries
+  select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
+  # pivoting all ages into one column 
+  pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
+  # pivoting SD next to carbon values
+  pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
+  # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
+  rename("C_t_ha_BWI" = "[kg/ha]") %>% 
+  rename("SD_BWI" = "SE95 Â±") %>% 
+  # introducing BWI species abbreviations 
+  mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
+                                  BWI_SP_group == "Buche" ~ "BU",
+                                  BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
+                                  BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
+                                  BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
+                                  BWI_SP_group == "Fichte" ~ "FI",
+                                  BWI_SP_group == "Tanne" ~ "TA",
+                                  BWI_SP_group == "Douglasie" ~ "DGL",
+                                  BWI_SP_group == "Kiefer" ~ "KI",
+                                  BWI_SP_group == "LÃ¤rche" ~ "LA",
+                                  BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
+                                  TRUE ~ "all"))
+
+
+# VOLUME DEADWOOD
+BWI_DW_V$state
+BWI_DW_V <- BWI_DW_V %>% 
+  #select(-c("Bemerkung")) %>% 
+   pivot_longer(c("2",  "3", "stehend", 
+                  "5", "1W", "1", "liegend", 
+                  "4", "all"), 
+                names_to = "DW_type", 
+                values_to = "V_m3_ha_BWI", 
+                names_repair = "unique") %>% 
+  mutate(state_abbreviation = case_when(state == "Baden-WÃ¼rttemberg" ~ "BW", 
+                           state == "Bayern" ~ "BY", 
+                           state == "Brandenburg + Berlin" ~"BB", 
+                           state == "Hessen" ~ "HE", 
+                           state == "Mecklenburg-Vorpommern" ~ "MV", 
+                           state == "Niedersachsen" ~ "NI", 
+                           state == "Nordrhein-Westfalen" ~ "NW", 
+                           state == "Rheinland-Pfalz" ~ "RP", 
+                           state == "Saarland" ~ "SL", 
+                           state == "Sachsen" ~ "SN", 
+                           state == "Sachsen-Anhalt" ~ "ST", 
+                           state == "Schleswig-Holstein" ~ "SH", 
+                           state == "ThÃ¼ringen" ~ "TH", 
+                           state == "Hamburg + Bremen" ~ "HB", 
+                           state == "Deutschland (alle LÃ¤nder)" ~ "all", 
+                           TRUE ~ "NA")) 
+  
 
 # ----- 1.4.3. Nitrogen content dataset ----------------------------------------
 # Reference: 
@@ -1786,7 +1863,10 @@ trees_tot_piv_wider <- trees_total_5
 
 # pivoting all compartiments in 1 column
 trees_total_5 <- trees_total_5 %>% 
-   pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), names_to = "compartiment", values_to = "B_kg_tapes", names_repair = "unique") %>% 
+   pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), 
+                names_to = "compartiment", 
+                values_to = "B_kg_tapes", 
+                names_repair = "unique") %>% 
       # Carbon stock
     mutate(B_t_tapes = B_kg_tapes/1000, 
               C_aB_t_GHG = (aB_kg_GHG/1000)*0.5,
@@ -2095,7 +2175,8 @@ DW_total <- left_join(DW_total,
   #  volume, biomass, carbon
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
-         B_dw_kg = B_DW(V_dw_m3, SP_dec_type))%>% 
+         B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
+         C_dw_kg = C_DW(V_dw_m3,SP_dec_type))%>% 
   # TapeS compartiments methods to be able to subset dataset and apply functions separately 
   mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
@@ -2632,7 +2713,7 @@ DW_P_SP_TY_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>%
   # dataset with are per plot cnsidreing multpiple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -2649,7 +2730,7 @@ DW_P_SP_TY_DEC <- DW_total %>%
               group_by(plot_ID, SP_group) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID", "SP_group")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2663,7 +2744,7 @@ DW_P_SP_TY <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>%
   # dataset with are per plot cnsidreing multpiple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -2680,7 +2761,7 @@ DW_P_SP_TY <- DW_total %>%
               group_by(plot_ID, SP_group) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID", "SP_group")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2694,7 +2775,7 @@ DW_P_TY_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>%
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>%
   # dataset with are per plot cnsidreing multpiple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -2711,7 +2792,7 @@ DW_P_TY_DEC <- DW_total %>%
               group_by(plot_ID) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2725,7 +2806,7 @@ DW_P_SP_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>% 
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>% 
   # dataset with are per plot cnsidreing multpiple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -2742,7 +2823,7 @@ DW_P_SP_DEC <- DW_total %>%
               group_by(plot_ID, SP_group) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID", "SP_group")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2756,7 +2837,7 @@ DW_P_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>% 
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>% 
   # dataset with area per plot considering multipple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -2773,7 +2854,7 @@ DW_P_DEC <- DW_total %>%
               group_by(plot_ID) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2788,7 +2869,7 @@ DW_P_TY <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(tot_N_dw_kg/1000)) %>%  
+            N_tot_t = sum(ag_N_dw_kg/1000)) %>%  
             #plot_A_ha = sum(c_A(12.62)/10000)) %>% 
     # dataset with are per plot cnsidreing multpiple sampling circuits per plot
     left_join(., DW_total %>%
@@ -2806,7 +2887,7 @@ DW_P_TY <- DW_total %>%
               group_by(plot_ID) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(tot_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
             by= c("plot_ID")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
@@ -2818,10 +2899,11 @@ DW_P_TY <- DW_total %>%
 
 DW_P <- DW_total %>% 
     group_by(plot_ID) %>% 
-    summarise(#plot_A_ha = mean(CCS_A_ha), 
-            B_aB_t_plot = sum(na.omit(B_dw_kg)/1000),
-            C_aB_t_plot = sum(na.omit(C_dw_kg)/1000), 
-            N_aB_t_plot = sum(na.omit(tot_N_dw_kg)/1000), 
+    summarise(#plot_A_ha = mean(CCS_A_ha),
+            V_m3_plot = sum(na.omit(V_dw_m3)), 
+            B_t_plot = sum(na.omit(B_dw_kg)/1000),
+            C_t_plot = sum(na.omit(C_dw_kg)/1000), 
+            N_t_plot = sum(na.omit(ag_N_dw_kg)/1000), 
             Nt_plot = n()) %>%
     # dataset with are per plot cnsidreing multpiple sampling circuits per plot
     left_join(., DW_total %>%
@@ -2832,14 +2914,16 @@ DW_P <- DW_total %>%
                 summarize(plot_A_ha = sum(CCS_A_ha))%>% 
                 mutate(MoMoK_A_ha = (50*50)/10000), 
               by = "plot_ID") %>% 
-    mutate(B_aB_t_ha = B_aB_t_plot/plot_A_ha, 
-           C_aB_t_ha = C_aB_t_plot/plot_A_ha, 
-           N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
+    mutate(V_m3_ha = V_m3_plot/plot_A_ha, 
+           B_t_ha = B_t_plot/plot_A_ha, 
+           C_t_ha = C_t_plot/plot_A_ha, 
+           N_t_ha = N_t_plot/plot_A_ha, 
            Nt_ha = Nt_plot/plot_A_ha, 
            # referring carbon & nitrogen stocks to actual Momok size 
-           B_aB_t_MA = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
-           C_aB_t_MA = (C_aB_t_plot/ plot_A_ha)*MoMoK_A_ha, 
-           N_aB_t_MA = (N_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
+           V_m3_MA = (V_m3_plot/plot_A_ha)*MoMoK_A_ha,
+           B_t_MA = (B_t_plot/plot_A_ha)*MoMoK_A_ha,
+           C_t_MA = (C_t_plot/ plot_A_ha)*MoMoK_A_ha, 
+           N_t_MA = (N_t_plot/plot_A_ha)*MoMoK_A_ha,
            Nt_MA = (Nt_plot/ plot_A_ha)*MoMoK_A_ha) %>% 
   # number of decay types per plot
   left_join(., DW_total %>% 
@@ -3100,7 +3184,9 @@ write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
 
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
-# ----- 4.1. HD value living trees plausibility test ------------------------------------
+
+# ----- 4.1. LIVING TREES PLAUSIBILITY ------------------------------------
+# ----- 4.1.1. HD value living trees plausibility test ------------------------------------
 # via HD: 
 # Vorbedingung: Die Bäume stehen im Hauptbestand.
 # HD_Warnung 5,0-65 und 85-139,9
@@ -3129,10 +3215,8 @@ summary(trees_tot_piv_wider %>%
                                        TRUE ~ "FINE")) %>% 
           filter(HD_status == "ERROR" & H_method == "sampled"))
 
-# ----- 4.2. BWI comparisson living trees plausibility test ------------------------------------
-labs_age <- c(seq(1, 180, by = 20))
-
-
+# ----- 4.1.2. BWI comparisson living trees plausibility test ------------------------------------
+# by species and age class
 c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
   filter(compartiment=="total" & C_layer == "1") %>% 
   group_by(plot_ID, BWI_SP_group, age) %>% 
@@ -3149,31 +3233,13 @@ c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
                                TRUE ~ 'all')) %>%
   group_by(BWI_SP_group, age_class) %>% 
   summarise(C_t_ha_tapes = mean(C_t_ha_tapes)) %>%  
-  left_join(.,na.omit(BWI_C_age_SP) %>%
-              mutate(across(c("1", "21", "41", "1-60", "61", "81", "101", "61-120", "121", "141"  ,"161", ">120", "all"), ~ tons(.x))) %>% 
-              select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
-              pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
-              pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
-              # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
-              rename("C_t_ha_BWI" = "[kg/ha]") %>% 
-              rename("SD_BWI" = "SE95 Â±") %>% 
-              mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
-                                              BWI_SP_group == "Buche" ~ "BU",
-                                              BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
-                                              BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
-                                              BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
-                                              BWI_SP_group == "Fichte" ~ "FI",
-                                              BWI_SP_group == "Tanne" ~ "TA",
-                                              BWI_SP_group == "Douglasie" ~ "DGL",
-                                              BWI_SP_group == "Kiefer" ~ "KI",
-                                              BWI_SP_group == "LÃ¤rche" ~ "LA",
-                                              BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
-                                              TRUE ~ "all")), 
+  left_join(.,BWI_C_age_SP, 
             by = c("BWI_SP_group" ,"age_class")) %>% 
   mutate(C_diff = C_t_ha_tapes-C_t_ha_BWI)
 
 
-
+# comparisson of carbon stock in t per hektar per plot with overall german average
+# across all species and sites
 c_comp_Momok_BWI_P <- trees_total_5 %>% 
   filter(compartiment == "total") %>% 
   group_by(plot_ID) %>% 
@@ -3184,26 +3250,11 @@ c_comp_Momok_BWI_P <- trees_total_5 %>%
          Nt_ha = Nt/plot_A_ha,
          BWI_SP_group = "all", 
          age_class = "all") %>% 
-  left_join(., na.omit(BWI_C_age_SP) %>%
-              mutate(across(c("1", "21", "41", "1-60", "61", "81", "101", "61-120", "121", "141"  ,"161", ">120", "all"), ~ tons(.x))) %>% 
-              select(-c( "1-60", "61-120", ">120", "Bemerkung")) %>% 
-              pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
-              pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
-              # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
-              rename("C_t_ha_BWI" = "[kg/ha]") %>% 
-              rename("SD_BWI" = "SE95 Â±") %>% 
-              mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
-                                              BWI_SP_group == "Buche" ~ "BU",
-                                              BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
-                                              BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
-                                              BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
-                                              BWI_SP_group == "Fichte" ~ "FI",
-                                              BWI_SP_group == "Tanne" ~ "TA",
-                                              BWI_SP_group == "Douglasie" ~ "DGL",
-                                              BWI_SP_group == "Kiefer" ~ "KI",
-                                              BWI_SP_group == "LÃ¤rche" ~ "LA",
-                                              BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
-                                              TRUE ~ "all")) %>% 
+  left_join(., trees_P %>% 
+              filter(compartiment == "total") %>% 
+              select(plot_ID, dom_SP, mean_DBH_cm, mean_H_m), 
+            by = "plot_ID") %>% 
+  left_join(., BWI_C_age_SP %>% 
               filter(BWI_SP_group == "all" & age_class == "all"), 
             by = c("BWI_SP_group" ,"age_class")) %>% 
   mutate(C_diff = C_t_ha - C_t_ha_BWI)
@@ -3220,7 +3271,16 @@ wilcox.test(c_comp_Momok_BWI_SP_A$C_t_ha_tapes, c_comp_Momok_BWI_SP_A$C_t_ha_BWI
 # export comparisson table
 write.csv(c_comp_Momok_BWI, "output/out_data/C_comp_LB_BWI_MoMoK.csv")
 
+c_comp_Momok_BWI_P %>%
+  summarise(C_t_ha = mean(C_t_ha), 
+            C_t_ha_BWI = mean(C_t_ha_BWI))
 
+
+# ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
+DW_P %>% 
+  select(plot_ID, V_m3_ha) %>% 
+  left_join(trees_total %>% select(plot_ID, state), 
+            by = "plot_ID")
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------
