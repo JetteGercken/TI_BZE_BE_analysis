@@ -39,6 +39,8 @@
  #    install.packages("remotes")
  #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
  # install.packages("magrittr")
+# install.packages("sjmisc")
+
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -81,6 +83,7 @@ library("TapeS")
 require(TapeS)
 vignette("tapes", package = "TapeS")
 library(magrittr)
+library(sjmisc)
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -114,7 +117,7 @@ RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep =
 
 # BWI DATA
 # c stock ha by age and species
-BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C__SP.csv"), sep = ";", dec = ",")
+BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C_age_SP.csv"), sep = ";", dec = ",")
 # DW_BWI Voluem of deadwood by deadwood type and federal state
 BWI_DW_V <- read.delim(file = here("data/input/General/DW_BWI.csv"), sep = ";", dec = ",")
 
@@ -778,10 +781,6 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 }
 
 
-B = trees_total_5$B_kg_tapes
-spec = trees_total_5$N_SP_group
-comp = trees_total_5$compartiment
-
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 
 N_all_com <- function(B, comp, SP_com){
@@ -1424,12 +1423,11 @@ BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
 
 
 # VOLUME DEADWOOD
-BWI_DW_V$state
 BWI_DW_V <- BWI_DW_V %>% 
-  #select(-c("Bemerkung")) %>% 
+  select(-c("Bemerkung")) %>% 
    pivot_longer(c("2",  "3", "stehend", 
                   "5", "1W", "1", "liegend", 
-                  "4", "all"), 
+                  "4", "6","all"), 
                 names_to = "DW_type", 
                 values_to = "V_m3_ha_BWI", 
                 names_repair = "unique") %>% 
@@ -1663,7 +1661,7 @@ trees_total_5 <- trees_total %>%
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm), 
                          TRUE ~ H_m), 
-         HD_value = (H_m/100)/DBH_cm)     # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
+         HD_value = (H_m*100)/DBH_cm)     # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
 
 # ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
@@ -2411,18 +2409,36 @@ RG_total<- RG_total %>%
          # tapeS kept calcualting negative values for the foliage of some trees, 
          # which could be linked to the particularly small dimensions which TapeS models are not well fitted for
          # thus negataive foliage values are relplaced by the foliage clauted via Poorters RLR
-         tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0, Poorter_fB_kg, tapeS_Poorter_fB_kg)) %>% 
+         tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0,  Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH), tapeS_Poorter_fB_kg)) %>% 
   # compartiments 
   # if subtracting the foliage mass frm the total biomass results in negative values, the compartiment in question is set to 0 
   mutate(tapes_Poorter_stem_kg = case_when(LH_NH == "NB" & RG_tapeS_ab_kg > tapeS_Poorter_fB_kg ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, 
                                            LH_NH == "LB" ~ RG_tapeS_ab_kg, 
                                            TRUE ~ 0)) %>% 
-  # Nitrogen 
-  mutate(RG_C_aB_t = (RG_tapeS_ab_kg*0.5)/1000, 
-         RG_C_bB_t = (RG_GHG_bB_kg*0.5)/1000,
-         RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
-         RG_N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group), 
-         RG_N_total_kg = RG_N_stem_kg + RG_N_f_kg)
+  select(-tapeS_Poorter_meth) %>%
+  # reordering for the pivot so the same compartiemtns are in the same  row
+  select( plot_ID,loc_name, state,date ,CCS_nr, CCS_position, dist_MB ,CCS_max_dist, t_ID, SP_number, SP_code, H_cm, D_class_cm, Chr_code_ger,
+          bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID, Annig_SP_group, D_cm,
+          tapeS_Poorter_fB_kg, tapes_Poorter_stem_kg, RG_tapeS_ab_kg, RG_GHG_bB_kg) %>% 
+  mutate(B_total_kg = RG_GHG_bB_kg+ RG_tapeS_ab_kg, 
+         C_f_t = (tapeS_Poorter_fB_kg*0.5)/1000, 
+         C_stem_t = (tapes_Poorter_stem_kg*0.5)/1000,
+         C_aB_t = (RG_tapeS_ab_kg*0.5)/1000,
+         C_bB_t = (RG_GHG_bB_kg*0.5)/1000,
+         C_total_t = C_aB_t+C_bB_t,
+         N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group),
+         N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
+         N_ag_kg = N_stem_kg + N_f_kg, 
+         N_bB_kg = RG_GHG_bB_kg*0,   # I´ll add the belowground carbon content here later, 
+         N_tot_kg = N_ag_kg + N_bB_kg) %>% 
+  # pivoting B, C and N
+  # https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+  to_long(keys = c("B_compartiment",  "C_compartiment", "N_compartiment"), 
+          values = c( "B_kg", "C_t",  "N_kg"),  names(.)[26:30], names(.)[31:35], names(.)[36:40] ) 
+# now the only thing left to do is changing the compartiments names and deselct the other compartiment columns 
+  
+
+
 
 
 
@@ -2861,7 +2877,7 @@ DW_P_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
-# ----- 2.5.2.6.deawood biomass, carbon and nitrogen grouped by deadwood type -----------------------------
+# ----- 2.5.2.6.deawood by deadwood type -----------------------------
 DW_P_TY <- DW_total %>% 
   # dataset grouped by plot and deadwood type 
   group_by(plot_ID, DW_type) %>% 
@@ -2869,7 +2885,8 @@ DW_P_TY <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(B_dw_kg/1000),
             C_tot_t = sum(C_dw_kg/1000), 
-            N_tot_t = sum(ag_N_dw_kg/1000)) %>%  
+            N_tot_t = sum(ag_N_dw_kg/1000), 
+            V_tot_m3 = sum(V_dw_m3)) %>%  
             #plot_A_ha = sum(c_A(12.62)/10000)) %>% 
     # dataset with are per plot cnsidreing multpiple sampling circuits per plot
     left_join(., DW_total %>%
@@ -2881,17 +2898,20 @@ DW_P_TY <- DW_total %>%
               by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
-         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+         N_tot_t_ha = N_tot_t/plot_A_ha, 
+         V_tot_m3_ha = V_tot_m3/plot_A_ha) %>%  
   # data set with total biomass/ 
   left_join(., DW_total %>% 
               group_by(plot_ID) %>% 
               summarise(plot_B_tot_t = sum(B_dw_kg/1000),
                         plot_C_tot_t = sum(C_dw_kg/1000), 
-                        plot_N_tot_t = sum(ag_N_dw_kg/1000)), 
+                        plot_N_tot_t = sum(ag_N_dw_kg/1000), 
+                        plot_V_tot_m3 = sum(V_dw_m3)), 
             by= c("plot_ID")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
-         B_share = (B_tot_t/plot_B_tot_t)*100) 
+         B_share = (B_tot_t/plot_B_tot_t)*100, 
+         V_share = (V_tot_m3/plot_V_tot_m3)*100) 
 
 
 
@@ -3215,15 +3235,76 @@ summary(trees_tot_piv_wider %>%
                                        TRUE ~ "FINE")) %>% 
           filter(HD_status == "ERROR" & H_method == "sampled"))
 
+
+view(trees_total_5 %>% 
+       filter(compartiment == "ag") %>%
+       mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
+       mutate(HD_tps = (H_tapes*100)/DBH_cm, 
+              HD_diff = HD_value - HD_tps, 
+              HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                                    HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                                    TRUE ~ "FINE"), 
+              HD_tps_status = case_when(HD_tps >= 5 & HD_tps <= 65 | HD_tps >= 85  & HD_tps <= 139.9 ~ "WARNING", 
+                                        HD_tps <= 4.9 | HD_tps > 140 ~ "ERROR", 
+                                        TRUE ~ "FINE")) %>% 
+       select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status))
+
+
+
+# comparisson of HD between measured and tapeS generated heights
+trees_total_5 %>% 
+  filter(compartiment == "ag") %>%
+  mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
+  mutate(HD_tps = (H_tapes*100)/DBH_cm, 
+         HD_diff = HD_value - HD_tps, 
+         HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                               TRUE ~ "FINE"), 
+         HD_tps_status = case_when(HD_tps >= 5 & HD_tps <= 65 | HD_tps >= 85  & HD_tps <= 139.9 ~ "WARNING", 
+                                   HD_tps <= 4.9 | HD_tps > 140 ~ "ERROR", 
+                                   TRUE ~ "FINE")) %>% 
+  select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status) #%>% 
+  #filter(HD_tps_status == "WARNING" & H_method == "sampled") # 174
+  # filter(HD_status == "WARNING" & H_method == "sampled") # 175 
+  # filter(HD_status == "ERROR" & H_method == "sampled") # 5
+  # filter(HD_tps_status == "ERROR" & H_method == "sampled") # 0
+
+
+
+
+summary(trees_total_5 %>% 
+  filter(compartiment == "ag") %>%
+  mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
+  mutate(HD_tps = (H_tapes*100)/DBH_cm, 
+         HD_diff = HD_value - HD_tps))
+
+
+
+ggcorrplot(corr, hc.order = TRUE, type = "lower",
+           lab = TRUE)
+
+
+
 # ----- 4.1.2. BWI comparisson living trees plausibility test ------------------------------------
+
 # by species and age class
 c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
-  filter(compartiment=="total" & C_layer == "1") %>% 
+  filter(compartiment=="ag") %>% 
+  mutate(B_kg_tapes = tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                          Dm = as.list(DBH_cm),
+                                          Hm = as.list(DBH_h_m ),
+                                          Ht = estHeight(d13 = (DBH_cm), sp = tpS_ID),
+                                          inv = 4), component = "agb"),
+         C_t_tps_H_tps = (B_kg_tapes/1000)*0.5) %>% 
   group_by(plot_ID, BWI_SP_group, age) %>% 
-  summarise(C_t_tapes = sum(C_t_tapes), 
+  summarise(C_t_tapes = sum(C_t_tapes),
+            C_t_H_tps = sum(C_t_tps_H_tps),
+            C_aB_t_GHG = sum(C_aB_t_GHG),
             plot_A_ha = mean(plot_A_ha),
             Nt = n()) %>% 
   mutate(C_t_ha_tapes= C_t_tapes/ plot_A_ha, 
+         C_t_ha_tps_H= C_t_tapes/ plot_A_ha,
+         C_t_ha_GHG = C_aB_t_GHG/ plot_A_ha,
          Nt_ha = Nt/ plot_A_ha,
          BWI_SP_group = toupper(BWI_SP_group), 
          age_class = case_when(!is.na(age) ~ cut(age,         # cut the diameter
@@ -3232,21 +3313,102 @@ c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
                                                  right = FALSE),
                                TRUE ~ 'all')) %>%
   group_by(BWI_SP_group, age_class) %>% 
-  summarise(C_t_ha_tapes = mean(C_t_ha_tapes)) %>%  
+  summarise(C_t_ha_tapes = mean(C_t_ha_tapes),
+            C_t_ha_tps_H = mean(C_t_ha_tps_H),
+            C_t_ha_GHG = mean(C_t_ha_GHG)) %>%  
   left_join(.,BWI_C_age_SP, 
             by = c("BWI_SP_group" ,"age_class")) %>% 
-  mutate(C_diff = C_t_ha_tapes-C_t_ha_BWI)
+  mutate(C_diff_tps_BWI = C_t_ha_tapes-C_t_ha_BWI,
+         C_diff_tpsH_BWI = C_t_ha_tps_H-C_t_ha_BWI,
+         C_diff_GHG_BWI = C_t_ha_GHG-C_t_ha_BWI)
+
+
+# by species 
+c_comp_Momok_BWI_SP <- trees_total_5 %>%
+  filter(compartiment=="ag") %>% 
+  mutate(B_kg_tapes = tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                          Dm = as.list(DBH_cm),
+                                          Hm = as.list(DBH_h_m ),
+                                          Ht = estHeight(d13 = (DBH_cm), sp = tpS_ID),
+                                          inv = 4), component = "agb"),
+         C_t_tps_H_tps = (B_kg_tapes/1000)*0.5) %>% 
+  group_by(plot_ID, BWI_SP_group) %>% 
+  summarise(C_t_tapes = sum(C_t_tapes),
+            C_t_H_tps = sum(C_t_tps_H_tps),
+            C_aB_t_GHG = sum(C_aB_t_GHG),
+            plot_A_ha = mean(plot_A_ha),
+            Nt = n()) %>%  
+  mutate(C_t_ha_tapes= C_t_tapes/ plot_A_ha, 
+         C_t_ha_tps_H= C_t_tapes/ plot_A_ha,
+         C_t_ha_GHG = C_aB_t_GHG/ plot_A_ha,
+         Nt_ha = Nt/ plot_A_ha,
+         BWI_SP_group = toupper(BWI_SP_group)) %>%
+  group_by(BWI_SP_group) %>% 
+  summarise(C_t_ha_tapes = mean(C_t_ha_tapes),
+            C_t_ha_tps_H = mean(C_t_ha_tps_H),
+            C_t_ha_GHG = mean(C_t_ha_GHG)) %>%
+  left_join(.,BWI_C_age_SP %>% 
+              filter(age_class == "all") %>% 
+              select(BWI_SP_group, C_t_ha_BWI), 
+            by = c("BWI_SP_group")) %>% 
+  mutate(C_diff_tps_BWI = C_t_ha_tapes-C_t_ha_BWI,
+         C_diff_tpsH_BWI = C_t_ha_tps_H-C_t_ha_BWI,
+         C_diff_GHG_BWI = C_t_ha_GHG-C_t_ha_BWI)
+
+
+
+c_comp_Momok_BWI_SP_P <- trees_total_5 %>%
+  filter(compartiment=="ag") %>% 
+  mutate(B_kg_tapes = tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                          Dm = as.list(DBH_cm),
+                                          Hm = as.list(DBH_h_m ),
+                                          Ht = estHeight(d13 = (DBH_cm), sp = tpS_ID),
+                                          inv = 4), component = "agb"),
+         C_t_tps_H_tps = (B_kg_tapes/1000)*0.5) %>% 
+  group_by(plot_ID, BWI_SP_group) %>% 
+  summarise(C_t_tapes = sum(C_t_tapes),
+            C_t_H_tps = sum(C_t_tps_H_tps),
+            C_aB_t_GHG = sum(C_aB_t_GHG),
+            plot_A_ha = mean(plot_A_ha),
+            Nt = n()) %>%  
+  mutate(C_t_ha_tapes= C_t_tapes/ plot_A_ha, 
+         C_t_ha_tps_H= C_t_tapes/ plot_A_ha,
+         C_t_ha_GHG = C_aB_t_GHG/ plot_A_ha,
+         Nt_ha = Nt/ plot_A_ha,
+         BWI_SP_group = toupper(BWI_SP_group)) %>%
+  group_by(BWI_SP_group, plot_ID) %>% 
+  summarise(C_t_ha_tapes = mean(C_t_ha_tapes),
+            C_t_ha_tps_H = mean(C_t_ha_tps_H),
+            C_t_ha_GHG = mean(C_t_ha_GHG)) %>%
+  left_join(.,BWI_C_age_SP %>% 
+              filter(age_class == "all") %>% 
+              select(BWI_SP_group, C_t_ha_BWI), 
+            by = c("BWI_SP_group")) %>% 
+  mutate(C_diff_tps_BWI = C_t_ha_tapes-C_t_ha_BWI,
+         C_diff_tpsH_BWI = C_t_ha_tps_H-C_t_ha_BWI,
+         C_diff_GHG_BWI = C_t_ha_GHG-C_t_ha_BWI)
 
 
 # comparisson of carbon stock in t per hektar per plot with overall german average
 # across all species and sites
 c_comp_Momok_BWI_P <- trees_total_5 %>% 
-  filter(compartiment == "total") %>% 
+  filter(compartiment == "ag") %>%
+  mutate(H_tapes = ifelse(H_method == "sampled", H_m, estHeight(d13 = (DBH_cm), sp = tpS_ID)),
+         B_kg_tapes = tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                          Dm = as.list(DBH_cm),
+                                          Hm = as.list(DBH_h_m ),
+                                          Ht = H_tapes,
+                                          inv = 4), component = "agb"), 
+         C_t_tps_H_tps = (B_kg_tapes/1000)*0.5) %>% 
   group_by(plot_ID) %>% 
   summarise(C_t_tapes = sum(C_t_tapes), 
+            C_t_tps_H = sum(C_t_tps_H_tps), 
+            C_t_GHG = sum(C_aB_t_GHG),
             plot_A_ha = mean(plot_A_ha), 
             Nt = n()) %>% 
-  mutate(C_t_ha = C_t_tapes/plot_A_ha, 
+  mutate(C_t_ha_tapes = C_t_tapes/plot_A_ha, 
+         C_t_ha_tps_H = C_t_tps_H/ plot_A_ha, 
+         C_t_ha_GHG = C_t_GHG/ plot_A_ha, 
          Nt_ha = Nt/plot_A_ha,
          BWI_SP_group = "all", 
          age_class = "all") %>% 
@@ -3257,7 +3419,15 @@ c_comp_Momok_BWI_P <- trees_total_5 %>%
   left_join(., BWI_C_age_SP %>% 
               filter(BWI_SP_group == "all" & age_class == "all"), 
             by = c("BWI_SP_group" ,"age_class")) %>% 
-  mutate(C_diff = C_t_ha - C_t_ha_BWI)
+  mutate(C_diff_tps_BWI = C_t_ha_tapes-C_t_ha_BWI,
+         C_diff_tpsH_BWI = C_t_ha_tps_H-C_t_ha_BWI,
+         C_diff_GHG_BWI = C_t_ha_GHG-C_t_ha_BWI) %>% 
+  select(-c(C_t_tapes,C_t_tps_H,C_t_GHG, plot_A_ha, Nt))
+
+
+summary(c_comp_Momok_BWI_P)
+
+
 
 
 wilcox.test(c_comp_Momok_BWI_SP_A$C_t_ha_tapes, c_comp_Momok_BWI_SP_A$C_t_ha_BWI)
@@ -3277,10 +3447,38 @@ c_comp_Momok_BWI_P %>%
 
 
 # ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
-DW_P %>% 
+DW_V_com <- DW_P %>% 
   select(plot_ID, V_m3_ha) %>% 
-  left_join(trees_total %>% select(plot_ID, state), 
-            by = "plot_ID")
+  left_join(., trees_total %>% 
+              select(plot_ID, state) %>% 
+              distinct(), 
+            by = "plot_ID") %>% 
+  left_join(., BWI_DW_V %>% 
+              filter(DW_type == "all") %>% 
+              select(state_abbreviation, V_m3_ha_BWI), 
+            by = c("state" = "state_abbreviation")) %>% 
+  mutate(V_diff = V_m3_ha - V_m3_ha_BWI)
+
+
+DW_V_com <- DW_P_TY %>% 
+  mutate(DW_type = as.character(DW_type)) %>% 
+  select(plot_ID, DW_type, V_tot_m3_ha) %>% 
+  left_join(., trees_total %>% 
+              select(plot_ID, state) %>% 
+              distinct(), 
+            by = "plot_ID") %>% 
+  left_join(., BWI_DW_V %>% 
+              #filter(DW_type == "all") %>% 
+              mutate(DW_type = ifelse(DW_type != "1W", DW_type, "1")) %>% 
+              select(state_abbreviation, DW_type, V_m3_ha_BWI), 
+            by = c("state" = "state_abbreviation", "DW_type")) %>% 
+  mutate(V_diff = V_tot_m3_ha - V_m3_ha_BWI)
+
+
+# export comparisson table
+write.csv(DW_V_com, "output/out_data/V_comp_DW_BWI_MoMoK.csv")
+
+mean(DW_V_com$V_diff)
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------
