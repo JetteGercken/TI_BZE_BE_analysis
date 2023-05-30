@@ -2368,91 +2368,7 @@ summary(DW_total)
 
 # ----- 2.3. REGENERATION ------------------------------------------------------
 # ----- 2.3.1. biomass, carbon, nitrogen ---------------------------------------------------
-RG_total<- RG_total %>% 
-  # assigning numeric diameters to size classes through mean per class 
-  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
-                          D_class_cm == 1 ~ (4.9+0)/2, 
-                          D_class_cm == 2 ~ (5.9+5)/2,
-                          TRUE ~ (6.9+6)/2)) %>% 
-  # total biomass
-         # beloeground biomass for trees aith DBH according to GHGI --> TapeS cannot calculate belowground. 
-  mutate(RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
-         # if there is a DBH use tapeS aboveground biomass, if not use GHGI function
-         RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
-                                  tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), # spp
-                                           RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0,               # DBH, Dm    
-                                                                                 D_class_cm == 1 ~ (4.9+0)/2, 
-                                                                                 D_class_cm == 2 ~ (5.9+5)/2,
-                                                                                 TRUE ~ (6.9+6)/2)) %>%
-                                             filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),             
-                                           dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))),   # dh, D_h_m
-                                           RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>%                     # H_m, Hm 
-                                             mutate (H_m = H_cm/100) %>% 
-                                             dplyr::pull(H_m)), 
-                                  Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>%                  # if there´s no DBH use the GHGI formula for trees below 1.3m 
-  # belated compartitioning via Poorter: calautaing foliage biomass to deduct it from total biomass
-  # root to  leaf  ratio
-      # tapeS foliage when possible (coniferous trees above 1.3m heihgt and DBH > 0), if not possible foliage via Poorter or 0 
-      # broadleaved foliage via Poorter for trees that have a DBH because TapeS doesn´t have it, 
-      # NH trees with a belowgrond masss but below 1.3m won´t have a DBH so they don´t have a bB so they cannot have foliage calcualted via root-leaf-ratio  
-  mutate(tapeS_Poorter_fB_kg = ifelse((LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0) | (LH_NH == "LB"), Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),
-                                      # coniferous trees foliage is calculated via TapeS for trees that have a DBH                       
-                                      ifelse(LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 
-                                             tapes_fB(spec_tpS = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
-                                                      d = RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
-                                                        filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),
-                                                      dh = rep(1.3, nrow(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))),
-                                                      h = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 0))) %>%  
-  # just to control if the tapes Poorter combination worked
-  mutate(tapeS_Poorter_meth = ifelse((LH_NH == "NB" & H_cm < 130 & D_class_cm <= 0) | LH_NH == "LB",'poorter', 
-                                     ifelse( LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 'tapes', 'non')), 
-         # tapeS kept calcualting negative values for the foliage of some trees, 
-         # which could be linked to the particularly small dimensions which TapeS models are not well fitted for
-         # thus negataive foliage values are relplaced by the foliage clauted via Poorters RLR
-         tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0,  Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH), tapeS_Poorter_fB_kg)) %>% 
-  # compartiments 
-  # if subtracting the foliage mass frm the total biomass results in negative values, the compartiment in question is set to 0 
-  mutate(tapes_Poorter_stem_kg = case_when(LH_NH == "NB" & RG_tapeS_ab_kg > tapeS_Poorter_fB_kg ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, 
-                                           LH_NH == "LB" ~ RG_tapeS_ab_kg, 
-                                           TRUE ~ 0)) %>% 
-  select(-tapeS_Poorter_meth) %>%
-  # reordering for the pivot so the same compartiemtns are in the same  row
-  select( plot_ID,loc_name, state,date,CCS_nr, CCS_position, dist_MB ,CCS_max_dist, t_ID, 
-          SP_number, SP_code, Chr_code_ger,bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID, Annig_SP_group, 
-          H_cm, D_class_cm, D_cm,
-          tapeS_Poorter_fB_kg, tapes_Poorter_stem_kg, RG_tapeS_ab_kg, RG_GHG_bB_kg) %>% 
-  # calculating carbon and nitrogen stock in all compartiments
-  mutate(B_total_kg = RG_GHG_bB_kg+ RG_tapeS_ab_kg, 
-         C_f_t = (tapeS_Poorter_fB_kg*0.5)/1000, 
-         C_stem_t = (tapes_Poorter_stem_kg*0.5)/1000,
-         C_aB_t = (RG_tapeS_ab_kg*0.5)/1000,
-         C_bB_t = (RG_GHG_bB_kg*0.5)/1000,
-         C_total_t = C_aB_t+C_bB_t,
-         N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group),
-         N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
-         N_ag_kg = N_stem_kg + N_f_kg, 
-         N_bB_kg = RG_GHG_bB_kg*0,   # I´ll add the belowground nitrogen content here later, this is just so that the pivot results in columns of the same length
-         N_tot_kg = N_ag_kg + N_bB_kg) %>% 
-  # pivoting B, C and N
-  # https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-  to_long(keys = c("B_compartiment",  "C_compartiment", "N_compartiment"), 
-          values = c( "B_kg", "C_t",  "N_kg"),  names(.)[26:30], names(.)[31:35], names(.)[36:40] )%>% 
-  # now the only thing left to do is changing the compartiments names and deselct the other compartiment columns
-  mutate(B_compartiment = case_when(B_compartiment == "RG_GHG_bB_kg" ~ "bg", 
-                                  B_compartiment == "RG_tapeS_ab_kg" ~ "ag", 
-                                  B_compartiment == "tapeS_Poorter_fB_kg" ~ "f", 
-                                  B_compartiment == "tapes_Poorter_stem_kg" ~ "stem", 
-                                  B_compartiment == "B_total_kg" ~ "total", 
-                                  TRUE ~ NA)) %>% 
-  rename("compartiment" = "B_compartiment") %>% 
-  select(-c(C_compartiment , N_compartiment))
-
-  
-
-
-
-
-
+# I have to do the bimass comparisson first because after i pivot RG_total under the same name 
 RG_total_comparisson <- RG_total %>% 
   # assigning numeric diameters to size classes through mean per class 
   mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
@@ -2512,6 +2428,88 @@ RG_total_comparisson <- RG_total %>%
         RG_N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
         RG_N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group), 
         RG_N_total_kg = RG_N_stem_kg + RG_N_f_kg)
+
+
+
+RG_total<- RG_total %>% 
+  # assigning numeric diameters to size classes through mean per class 
+  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
+                          D_class_cm == 1 ~ (4.9+0)/2, 
+                          D_class_cm == 2 ~ (5.9+5)/2,
+                          TRUE ~ (6.9+6)/2)) %>% 
+  # total biomass
+  # beloeground biomass for trees aith DBH according to GHGI --> TapeS cannot calculate belowground. 
+  mutate(RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
+         # if there is a DBH use tapeS aboveground biomass, if not use GHGI function
+         RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
+                                  tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), # spp
+                                           RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0,               # DBH, Dm    
+                                                                                 D_class_cm == 1 ~ (4.9+0)/2, 
+                                                                                 D_class_cm == 2 ~ (5.9+5)/2,
+                                                                                 TRUE ~ (6.9+6)/2)) %>%
+                                             filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),             
+                                           dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))),   # dh, D_h_m
+                                           RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>%                     # H_m, Hm 
+                                             mutate (H_m = H_cm/100) %>% 
+                                             dplyr::pull(H_m)), 
+                                  Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>%                  # if there´s no DBH use the GHGI formula for trees below 1.3m 
+  # belated compartitioning via Poorter: calautaing foliage biomass to deduct it from total biomass
+  # root to  leaf  ratio
+  # tapeS foliage when possible (coniferous trees above 1.3m heihgt and DBH > 0), if not possible foliage via Poorter or 0 
+  # broadleaved foliage via Poorter for trees that have a DBH because TapeS doesn´t have it, 
+  # NH trees with a belowgrond masss but below 1.3m won´t have a DBH so they don´t have a bB so they cannot have foliage calcualted via root-leaf-ratio  
+  mutate(tapeS_Poorter_fB_kg = ifelse((LH_NH == "NB" & H_cm <= 130 & D_class_cm <= 0) | (LH_NH == "LB"), Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),
+                                      # coniferous trees foliage is calculated via TapeS for trees that have a DBH                       
+                                      ifelse(LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 
+                                             tapes_fB(spec_tpS = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID),
+                                                      d = RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>%
+                                                        filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm),
+                                                      dh = rep(1.3, nrow(RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0))),
+                                                      h = RG_total %>% filter(LH_NH == "NB" & H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 0))) %>%  
+  # just to control if the tapes Poorter combination worked
+  mutate(tapeS_Poorter_meth = ifelse((LH_NH == "NB" & H_cm < 130 & D_class_cm <= 0) | LH_NH == "LB",'poorter', 
+                                     ifelse( LH_NH == "NB" & H_cm >= 130 & D_class_cm > 0, 'tapes', 'non')), 
+         # tapeS kept calcualting negative values for the foliage of some trees, 
+         # which could be linked to the particularly small dimensions which TapeS models are not well fitted for
+         # thus negataive foliage values are relplaced by the foliage clauted via Poorters RLR
+         tapeS_Poorter_fB_kg = ifelse(tapeS_Poorter_fB_kg < 0,  Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH), tapeS_Poorter_fB_kg)) %>% 
+  # compartiments 
+  # if subtracting the foliage mass frm the total biomass results in negative values, the compartiment in question is set to 0 
+  mutate(tapes_Poorter_stem_kg = case_when(LH_NH == "NB" & RG_tapeS_ab_kg > tapeS_Poorter_fB_kg ~ RG_tapeS_ab_kg-tapeS_Poorter_fB_kg, 
+                                           LH_NH == "LB" ~ RG_tapeS_ab_kg, 
+                                           TRUE ~ 0)) %>% 
+  select(-tapeS_Poorter_meth) %>%
+  # reordering for the pivot so the same compartiemtns are in the same  row
+  select( plot_ID,loc_name, state,date,CCS_nr, CCS_position, dist_MB ,CCS_max_dist, t_ID, 
+          SP_number, SP_code, Chr_code_ger,bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID, Annig_SP_group, 
+          H_cm, D_class_cm, D_cm,
+          tapeS_Poorter_fB_kg, tapes_Poorter_stem_kg, RG_tapeS_ab_kg, RG_GHG_bB_kg) %>% 
+  # calculating carbon and nitrogen stock in all compartiments
+  mutate(B_total_kg = RG_GHG_bB_kg+ RG_tapeS_ab_kg, 
+         C_f_t = (tapeS_Poorter_fB_kg*0.5)/1000, 
+         C_stem_t = (tapes_Poorter_stem_kg*0.5)/1000,
+         C_aB_t = (RG_tapeS_ab_kg*0.5)/1000,
+         C_bB_t = (RG_GHG_bB_kg*0.5)/1000,
+         C_total_t = C_aB_t+C_bB_t,
+         N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group),
+         N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
+         N_ag_kg = N_stem_kg + N_f_kg, 
+         N_bB_kg = RG_GHG_bB_kg*0,   # I´ll add the belowground nitrogen content here later, this is just so that the pivot results in columns of the same length
+         N_tot_kg = N_ag_kg + N_bB_kg) %>% 
+  # pivoting B, C and N
+  # https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+  to_long(keys = c("B_compartiment",  "C_compartiment", "N_compartiment"), 
+          values = c( "B_kg", "C_t",  "N_kg"),  names(.)[26:30], names(.)[31:35], names(.)[36:40] )%>% 
+  # now the only thing left to do is changing the compartiments names and deselct the other compartiment columns
+  mutate(B_compartiment = case_when(B_compartiment == "RG_GHG_bB_kg" ~ "bg", 
+                                    B_compartiment == "RG_tapeS_ab_kg" ~ "ag", 
+                                    B_compartiment == "tapeS_Poorter_fB_kg" ~ "f", 
+                                    B_compartiment == "tapes_Poorter_stem_kg" ~ "stem", 
+                                    B_compartiment == "B_total_kg" ~ "total", 
+                                    TRUE ~ NA)) %>% 
+  rename("compartiment" = "B_compartiment") %>% 
+  select(-c(C_compartiment , N_compartiment))
+
 
 summary(RG_total)
 
@@ -2982,13 +2980,13 @@ RG_P_SP <- RG_total %>%
     summarise(B_t_plot = sum(B_kg/1000), 
               C_t_plot = sum(C_t),                           # sum of  carbon stock per plot,  species and compartiment
               N_t_plot = sum(na.omit(N_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species and compartiment
-              plot_A_ha = mean(plot_A_ha),                    # plot area
-              MoMok_A_ha = (50*50)/10000) %>%                 # momok area 0.25 ha 
-  # hectar values
-  mutate(B_t_ha = B_t_plot/plot_A_ha, 
+              plot_A_ha = mean(plot_A_ha)) %>% # plot area
+    mutate(MoMok_A_ha = (50*50)/10000,                 # momok area 0.25 ha 
+  # B, C, N hectar values
+         B_t_ha = B_t_plot/plot_A_ha, 
          C_t_ha = C_t_plot/plot_A_ha, 
          N_t_ha = N_t_plot/plot_A_ha,
-  # MoMoK area values 
+  # B, C, N  MoMoK area values 
          B_t_MA = (B_t_plot/plot_A_ha)*MoMok_A_ha,
          C_t_MA = (C_t_plot/plot_A_ha)*MoMok_A_ha,
          N_t_MA = (N_t_plot/plot_A_ha)*MoMok_A_ha) %>% 
@@ -2998,23 +2996,34 @@ RG_P_SP <- RG_total %>%
               group_by(plot_ID, SP_code) %>%
               summarise(mean_D_cm = mean(D_cm),                         # mean diameter per species per canopy layer per plot
                         mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
-                        SP_BA_m2_plot = sum(c_A(D_cm/2)),               # Basal area in m2 per plot and speices 
-                        N_trees_plot = n()),                            # number of individuals per plot and species
-            by = c("plot_ID", "SP_code")) 
+                        #SP_BA_m2_plot = sum(c_A(D_cm/2)),               # Basal area in m2 per plot and speices --> doesnt make sense bacause not all trees have a diameter 
+                        N_trees_plot = n()) %>%                          # number of individuals per plot and species
+              mutate(compartiment = "total"),                           # just to enable a clean join
+            by = c("plot_ID", "SP_code", "compartiment")) %>% 
+  # join in C, N and number of trees of whole plot to calculate shares
   left_join(., RG_total %>%
-              filter(compartiment == "total") %>% 
-              group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-              summarise(plot_C_t = sum(RG_C_aB_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
-                        plot_C_aB_t = sum(RG_C_aB_t), 
-                        plot_C_bB_t = sum((RG_GHG_bB_kg/1000)*0.5),
-                        plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-                        plot_tot_N_trees = n()) ,         # total number of trees per plot
-            by = "plot_ID") %>% 
-  mutate(N_trees_ha = na.omit(N_trees_plot)/plot_A_ha,
-         N_trees_MA = na.omit(N_trees_plot)/plot_A_ha*MoMok_A_ha, 
-         C_SP_share = (C_t_plot/plot_C_tot_t)*100, 
-         N_SP_share = (C_aB_t_plot/plot_C_aB_t)*100,
-         N_trees_SP_share =  na.omit(N_trees_plot)/plot_tot_N_trees)
+              filter(compartiment == "total") %>%
+              group_by(plot_ID, CCS_nr) %>%
+              summarise(CCS_max_dist_m = mean(CCS_max_dist/100), 
+                        CCS_tot_C_t = sum(C_t),                    # total C stock in tons per sampling circuit
+                        CCs_tot_N_t = sum(na.omit(N_kg/1000)),     # total N stock in tons per sampling circuit
+                        CCS_tot_N_trees = n()) %>%                 # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
+              mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
+              group_by(plot_ID) %>% 
+              summarise(plot_A_ha = sum(CCS_A_ha),                  # calcualte plot area in ha by summing up area of sampling circuits per plot
+                        plot_tot_C_t = sum(CCS_tot_C_t),                    # total C stock in tons per plot
+                        plot_tot_N_t = sum(CCs_tot_N_t),     # total N stock in tons per plot
+                        plot_tot_N_trees = sum(CCS_tot_N_trees)) %>%                 # total number of trees per plot
+              mutate(compartiment = "total") %>% 
+              select(-plot_A_ha),         
+            by = c("plot_ID", "compartiment")) %>% 
+  mutate(tot_N_trees_ha = plot_tot_N_trees/plot_A_ha,
+         tot_N_trees_MA = (plot_tot_N_trees/plot_A_ha)*MoMok_A_ha,
+         SP_N_trees_ha = N_trees_plot/ plot_A_ha,
+         SP_N_trees_MA =( N_trees_plot/ plot_A_ha)*MoMok_A_ha,
+         C_SP_share = (C_t_plot/plot_tot_C_t)*100, 
+         N_SP_share = (N_t_plot/plot_tot_N_t)*100,
+         N_trees_SP_share =  (N_trees_plot)/plot_tot_N_trees)
 
 
 
@@ -3024,6 +3033,7 @@ RG_P_SP <- RG_total %>%
 RG_P <- RG_total %>%
   # plot area of all sampling circuits together
   left_join(., RG_total %>%
+              filter(compartiment == "total") %>% 
               group_by(plot_ID, CCS_nr) %>% 
               summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
               mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
@@ -3031,42 +3041,44 @@ RG_P <- RG_total %>%
               summarise(plot_A_ha = sum(CCS_A_ha)) %>% 
               mutate(MoMoK_A_ha = (50*50)/10000), 
             by = "plot_ID") %>% 
-  group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-  summarise(B_aB_t_plot = sum(RG_tapeS_ab_kg/1000), 
-            B_bB_t_plot = sum(RG_GHG_bB_kg/1000), 
-            B_tot_t_plot = sum(RG_tapeS_ab_kg/1000) + sum(RG_GHG_bB_kg/1000), 
-            C_aB_t_plot = sum(RG_C_aB_t), 
-            C_bB_t_plot = sum(RG_C_bB_t),
-            C_tot_t_plot = C_aB_t_plot + C_bB_t_plot,
-            N_aB_t_plot = sum(na.omit(RG_N_total_kg/1000)), 
-            Nt_plot = n(),
-            plot_A_ha = mean(plot_A_ha)) %>% 
-  mutate(MoMoK_A_ha = (50*50)/10000) %>% 
-        # referring carbon and nitrogen stocks to 1 ha 
-  mutate(B_aB_t_ha = B_aB_t_plot/ plot_A_ha, 
-         B_bB_t_ha = B_bB_t_plot/ plot_A_ha, 
-         B_tot_t_ha = B_tot_t_plot/ plot_A_ha, 
-         C_aB_t_ha = C_aB_t_plot/ plot_A_ha, 
-         C_bB_t_ha = C_bB_t_plot/ plot_A_ha, 
-         C_tot_t_ha = C_tot_t_plot/ plot_A_ha, 
-         N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
-         Nt_ha = Nt_plot/ plot_A_ha, 
-         # referring carbon & nitrogen stocks to actual Momok size 
-         B_tot_t_MA = (B_tot_t_plot/plot_A_ha) *MoMoK_A_ha, 
-         B_aB_t_MA = (B_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
-         B_bB_t_MA = (B_bB_t_plot/plot_A_ha)*MoMoK_A_ha,
-         C_tot_t_MA = (C_tot_t_plot/plot_A_ha) *MoMoK_A_ha, 
-         C_aB_t_MA = (C_aB_t_plot/plot_A_ha)*MoMoK_A_ha,
-         C_bB_t_MA = (C_bB_t_plot/plot_A_ha)*MoMoK_A_ha,
-         N_aB_t_MA = (N_aB_t_plot/plot_A_ha) * MoMoK_A_ha, 
-         Nt_MA = (Nt_plot/plot_A_ha)*MoMoK_A_ha) %>% 
+  # summing up biomass, carbon and nitrogen per speices, plot and compartiment 
+  group_by(plot_ID, compartiment) %>%                            # group by plot and species to calculate BA per species 
+  summarise(B_t_plot = sum(B_kg/1000), 
+            C_t_plot = sum(C_t),                           # sum of  carbon stock per plot,  species and compartiment
+            N_t_plot = sum(na.omit(N_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species and compartiment
+            plot_A_ha = mean(plot_A_ha)) %>% # plot area
+  mutate(MoMok_A_ha = (50*50)/10000,                 # momok area 0.25 ha 
+         # B, C, N hectar values
+         B_t_ha = B_t_plot/plot_A_ha, 
+         C_t_ha = C_t_plot/plot_A_ha, 
+         N_t_ha = N_t_plot/plot_A_ha,
+         # B, C, N  MoMoK area values 
+         B_t_MA = (B_t_plot/plot_A_ha)*MoMok_A_ha,
+         C_t_MA = (C_t_plot/plot_A_ha)*MoMok_A_ha,
+         N_t_MA = (N_t_plot/plot_A_ha)*MoMok_A_ha) %>% 
   # number of species per plot
   left_join(., RG_total %>% 
+              filter(compartiment == "total") %>% 
               select(plot_ID, SP_code) %>%
               group_by(plot_ID) %>%
               distinct() %>% 
-              summarise(N_species_plot = n()),
-            by = "plot_ID")
+              summarise(N_species_plot = n()) %>% 
+              mutate(compartiment = "total"),
+            by = c("plot_ID", "compartiment")) %>% 
+  left_join(., RG_total %>% 
+              filter(compartiment == "total") %>% 
+              group_by(plot_ID) %>% 
+              summarise(Nt_plot = n())%>% 
+              mutate(compartiment = "total"), 
+            by = c("plot_ID", "compartiment")) %>% 
+  mutate(Nt_ha = Nt_plot/plot_A_ha, 
+         Nt_MA = (Nt_plot/plot_A_ha)*MoMok_A_ha)
+
+
+
+
+
+
 summary(RG_P)
 
 # ----- 2.5.5.JOINT PLOTWISE: living trees, deadwood, regeneration  -------
@@ -3086,7 +3098,7 @@ plot_total <- rbind(
 # regeneration trees
  RG_P %>% 
   dplyr::select(plot_ID,
-                B_aB_t_plot, B_bB_t_plot, B_tot_t_plot, C_aB_t_plot, C_bB_t_plot, C_tot_t_plot, N_aB_t_plot, Nt_plot,    # per plot
+                B_t_plot, C_t_plot, N_t_plot, Nt_plot,    # per plot
                 B_aB_t_MA, B_bB_t_MA, B_tot_t_MA, C_aB_t_MA, C_bB_t_MA, C_tot_t_MA, N_aB_t_MA, Nt_MA,                    # per momok area 50X50m
                 B_aB_t_ha, B_bB_t_ha, B_tot_t_ha, C_aB_t_ha, C_bB_t_ha, C_tot_t_ha, N_aB_t_ha, Nt_ha) %>%                # per hectare
   mutate(stand_component = "RG") %>% 
