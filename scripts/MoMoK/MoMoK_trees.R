@@ -2417,9 +2417,11 @@ RG_total<- RG_total %>%
                                            TRUE ~ 0)) %>% 
   select(-tapeS_Poorter_meth) %>%
   # reordering for the pivot so the same compartiemtns are in the same  row
-  select( plot_ID,loc_name, state,date ,CCS_nr, CCS_position, dist_MB ,CCS_max_dist, t_ID, SP_number, SP_code, H_cm, D_class_cm, Chr_code_ger,
-          bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID, Annig_SP_group, D_cm,
+  select( plot_ID,loc_name, state,date,CCS_nr, CCS_position, dist_MB ,CCS_max_dist, t_ID, 
+          SP_number, SP_code, Chr_code_ger,bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, tpS_ID, Annig_SP_group, 
+          H_cm, D_class_cm, D_cm,
           tapeS_Poorter_fB_kg, tapes_Poorter_stem_kg, RG_tapeS_ab_kg, RG_GHG_bB_kg) %>% 
+  # calculating carbon and nitrogen stock in all compartiments
   mutate(B_total_kg = RG_GHG_bB_kg+ RG_tapeS_ab_kg, 
          C_f_t = (tapeS_Poorter_fB_kg*0.5)/1000, 
          C_stem_t = (tapes_Poorter_stem_kg*0.5)/1000,
@@ -2429,13 +2431,22 @@ RG_total<- RG_total %>%
          N_f_kg = N_f(tapeS_Poorter_fB_kg, N_SP_group),
          N_stem_kg =  N_fw(tapes_Poorter_stem_kg, N_SP_group), 
          N_ag_kg = N_stem_kg + N_f_kg, 
-         N_bB_kg = RG_GHG_bB_kg*0,   # I´ll add the belowground carbon content here later, 
+         N_bB_kg = RG_GHG_bB_kg*0,   # I´ll add the belowground nitrogen content here later, this is just so that the pivot results in columns of the same length
          N_tot_kg = N_ag_kg + N_bB_kg) %>% 
   # pivoting B, C and N
   # https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
   to_long(keys = c("B_compartiment",  "C_compartiment", "N_compartiment"), 
-          values = c( "B_kg", "C_t",  "N_kg"),  names(.)[26:30], names(.)[31:35], names(.)[36:40] ) 
-# now the only thing left to do is changing the compartiments names and deselct the other compartiment columns 
+          values = c( "B_kg", "C_t",  "N_kg"),  names(.)[26:30], names(.)[31:35], names(.)[36:40] )%>% 
+  # now the only thing left to do is changing the compartiments names and deselct the other compartiment columns
+  mutate(B_compartiment = case_when(B_compartiment == "RG_GHG_bB_kg" ~ "bg", 
+                                  B_compartiment == "RG_tapeS_ab_kg" ~ "ag", 
+                                  B_compartiment == "tapeS_Poorter_fB_kg" ~ "f", 
+                                  B_compartiment == "tapes_Poorter_stem_kg" ~ "stem", 
+                                  B_compartiment == "B_total_kg" ~ "total", 
+                                  TRUE ~ NA)) %>% 
+  rename("compartiment" = "B_compartiment") %>% 
+  select(-c(C_compartiment , N_compartiment))
+
   
 
 
@@ -2527,18 +2538,9 @@ trees_P_CP_SP <- left_join(
               h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),  # Höhe des Grundfächenmittelstammes
               d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply by two to get radius into diameter, multiply by 10 to transform m into cm
               Nt_plot = n(),                           # STückzahl pro plot counting number of observations per group to get number of trees per ha
-              plot_A_ha = mean(plot_A_ha)) %>% 
-              #C_aB_t = sum(C_ab_t_tapes), 
-              #C_bB_t = sum(C_bB_t), 
-              #C_tot_t = sum(C_ab_t_tapes+C_bB_t),
-              #N_aB_t = sum(na.omit(tot_N__t))) %>%        # plot area in hectare to calculate BA per ha
+              plot_A_ha = mean(plot_A_ha)) %>%
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,         # calculate BA per species per plot in m2/ ha
            Nt_ha = Nt_plot/ plot_A_ha),         
-          # as this is the "forester summary we don´t need the cabron stock or nitrogen stock per species, plot and canopy layer 
-           # C_aB_t_ha = C_aB_t/plot_A_ha, 
-           # C_bB_t_ha = C_bB_t/plot_A_ha,
-           # C_tot_t_ha = C_tot_t/ plot_A_ha, 
-           # N_aB_t_ha = N_aB_t/plot_A_ha), 
   # dataset with total BA per plot
   trees_total_5 %>%
     filter(compartiment == "ag") %>% 
@@ -2966,65 +2968,53 @@ DW_P <- DW_total %>%
 # ----- 2.5.4. REGENERATION plot level -------------------------------------------------------------------
 # ----- 2.5.4.1. grouped by Plot and species  ------------------------------------------------------------------
 RG_P_SP <- RG_total %>% 
-  # plot area of all sampling circuits together
+  # sum plot area of all sampling circuits per plot together to calcualte plot area to reffer data to hectare
   left_join(., RG_total %>%
+              filter(compartiment == "total") %>% 
               group_by(plot_ID, CCS_nr) %>% 
               summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
               mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
               group_by(plot_ID) %>% 
               summarise(plot_A_ha = sum(CCS_A_ha)), 
             by = "plot_ID") %>% 
-    group_by(plot_ID, SP_code) %>%                            # group by plot and species to calculate BA per species 
-    summarise(mean_D_cm = mean(D_cm),                         # mean diameter per species per canopy layer per plot
-              mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
-              SP_BA_m2_plot = sum(c_A(D_cm/2)),                       # Basal area in m2 per plot and speices 
-              N_trees_plot = n(),                                  # number of individuals per plot and species
-              C_aB_t_plot = sum(RG_C_aB_t),                           # sum of aboveground carbon stock per plot and species
-              C_bB_t_plot = sum(RG_C_bB_t),          # sum of belowground carbon stock per plot and species
-              N_aB_t_plot = sum(na.omit(RG_N_total_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species
+  # summing up biomass, carbon and nitrogen per speices, plot and compartiment 
+    group_by(plot_ID, SP_code, compartiment) %>%                            # group by plot and species to calculate BA per species 
+    summarise(B_t_plot = sum(B_kg/1000), 
+              C_t_plot = sum(C_t),                           # sum of  carbon stock per plot,  species and compartiment
+              N_t_plot = sum(na.omit(N_kg/1000)),      # sum of aboveground Nitrogen stock per plot and species and compartiment
               plot_A_ha = mean(plot_A_ha),                    # plot area
               MoMok_A_ha = (50*50)/10000) %>%                 # momok area 0.25 ha 
-  mutate(C_tot_t_plot = C_aB_t_plot + C_bB_t_plot,                           # sum of total carbon stock per plot and species             
-        # hectar values
-          C_aB_t_ha = C_aB_t_plot/plot_A_ha, 
-         C_bB_t_ha = C_bB_t_plot/plot_A_ha, 
-         C_tot_t_ha = C_tot_t_plot/plot_A_ha,
-         N_aB_t_ha = N_aB_t_plot/plot_A_ha, 
-         N_trees_ha = N_trees_plot/plot_A_ha, 
-        # MoMoK area values 
-        C_aB_t_MA = C_aB_t_plot/MoMok_A_ha, 
-         C_bB_t_MA = C_bB_t_plot/MoMok_A_ha, 
-         C_tot_t_MA = C_tot_t_plot/MoMok_A_ha,
-         N_aB_t_MA = N_aB_t_plot/MoMok_A_ha, 
-         N_trees_MA = N_trees_plot/MoMok_A_ha) %>%         
+  # hectar values
+  mutate(B_t_ha = B_t_plot/plot_A_ha, 
+         C_t_ha = C_t_plot/plot_A_ha, 
+         N_t_ha = N_t_plot/plot_A_ha,
+  # MoMoK area values 
+         B_t_MA = (B_t_plot/plot_A_ha)*MoMok_A_ha,
+         C_t_MA = (C_t_plot/plot_A_ha)*MoMok_A_ha,
+         N_t_MA = (N_t_plot/plot_A_ha)*MoMok_A_ha) %>% 
+  # join in mean diameter and height per plot and species group (grouped separately to avoid repetition with every compartiment)
+  left_join(., RG_total %>% 
+              filter(compartiment == "total") %>% 
+              group_by(plot_ID, SP_code) %>%
+              summarise(mean_D_cm = mean(D_cm),                         # mean diameter per species per canopy layer per plot
+                        mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
+                        SP_BA_m2_plot = sum(c_A(D_cm/2)),               # Basal area in m2 per plot and speices 
+                        N_trees_plot = n()),                            # number of individuals per plot and species
+            by = c("plot_ID", "SP_code")) 
   left_join(., RG_total %>%
-              # plot area of all sampling circuits together
-              # left_join(., RG_total %>%
-              #             group_by(plot_ID, CCS_nr) %>% 
-              #             summarise(CCS_max_dist_m = mean(CCS_max_dist/100)) %>%  # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
-              #             mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
-              #             group_by(plot_ID) %>% 
-              #             summarise(plot_A_ha = sum(CCS_A_ha)), 
-              #           by = "plot_ID") %>% 
+              filter(compartiment == "total") %>% 
               group_by(plot_ID) %>%       # group by plot and species to calculate BA per species 
-              summarise(plot_C_tot_t = sum(RG_C_aB_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
+              summarise(plot_C_t = sum(RG_C_aB_t)+sum((RG_GHG_bB_kg/1000)*0.5), 
                         plot_C_aB_t = sum(RG_C_aB_t), 
                         plot_C_bB_t = sum((RG_GHG_bB_kg/1000)*0.5),
                         plot_N_aB_t = sum(na.omit(RG_N_total_kg/1000)), 
-                        plot_N_trees = n()),
-            # plotwise C, N and number of trees per hectar
-                       # plot_A_ha = mean(plot_A_ha)), #%>% 
-              # mutate(plot_C_aB_t_ha = plot_C_aB_t/ plot_A_ha, 
-              #        plot_C_bB_t_ha = plot_C_bB_t/ plot_A_ha, 
-              #        plot_C_tot_t_ha = plot_C_aB_t/ plot_A_ha, 
-              #        plot_N_aB_t_ha = plot_N_aB_t/plot_A_ha, 
-              #        plot_N_trees_ha = plot_N_trees/ plot_A_ha), 
+                        plot_tot_N_trees = n()) ,         # total number of trees per plot
             by = "plot_ID") %>% 
-  mutate(C_tot_SP_share = (C_tot_t_plot/plot_C_tot_t)*100, 
-         C_aB_SP_share = (C_aB_t_plot/plot_C_aB_t)*100,
-         C_bB_SP_share = (C_bB_t_plot/plot_C_bB_t)*100,
-         N_aB_SP_share = (C_aB_t_plot/plot_C_aB_t)*100,
-         N_trees_SP_share = N_trees_plot/plot_N_trees)
+  mutate(N_trees_ha = na.omit(N_trees_plot)/plot_A_ha,
+         N_trees_MA = na.omit(N_trees_plot)/plot_A_ha*MoMok_A_ha, 
+         C_SP_share = (C_t_plot/plot_C_tot_t)*100, 
+         N_SP_share = (C_aB_t_plot/plot_C_aB_t)*100,
+         N_trees_SP_share =  na.omit(N_trees_plot)/plot_tot_N_trees)
 
 
 
