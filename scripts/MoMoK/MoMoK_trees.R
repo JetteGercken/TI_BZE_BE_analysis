@@ -118,26 +118,33 @@ RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep =
 # BWI DATA
 # c stock ha by age and species
 BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C_age_SP.csv"), sep = ";", dec = ",")
+# general stand characteristics per ha by species (simulated single species stand)
+BWI_stand_char_SP <- read.delim(file = here("data/input/General/zielmerkmale_SP_2017.csv"), sep = ";", dec = ",")
 # DW_BWI Voluem of deadwood by deadwood type and federal state
 BWI_DW_V <- read.delim(file = here("data/input/General/DW_BWI.csv"), sep = ";", dec = ",")
 
 
 
-# ----- 1.2. colnames, vector type ---------------------------------------------
+# ----- 1.2. colnames, vector type --------------------------------------------------------
+# ----- 1.2.1. living trees --------------------------------------------------------------
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
                            "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
                            "Kraft", "age", "age_m", "DBH_mm", "DBH_h_cm", 
                            "DBH_p_mm", "DBH_class", "H_dm", "CH_dm", 
                            "azimut_g", "azimut_d", "dist_m")
 trees_total$C_layer <- as.numeric(trees_total$C_layer)
-#trees_total$Kraft <- as.numeric(trees_total$Kraft)
-trees_total$SP_code[trees_total$SP_code == "RER"] <- "SER"
+# there was a mistake in the species abbreviations where Alnus glutinosa was abbreviated with RER (Roterle) instead of SER (Schwarzerle)
+trees_total$SP_code[trees_total$SP_code == "RER"] <- "SER"  
 trees_total$SP_code <- as.factor(trees_total$SP_code)
 
+
+# ----- 1.2.2. species list BZE --------------------------------------------------------------
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
 
+
+# ----- 1.2.3. dead wood --------------------------------------------------------------
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
 # changing DW variable D_cm from character into numeric variable
@@ -150,21 +157,49 @@ DW_total <- DW_total %>% filter(!is.na(D_cm))
 # DW_type = standing, lying
 # dec_type = decay type / Zersetzungsgrad
 
+
+# ----- 1.2.4. regeneration --------------------------------------------------------------
 colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
                         "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
 RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
 
+
+# ----- 1.2.5. BWI data --------------------------------------------------------------
+#LIVINg TREES
 colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit", 
                             "1", "21", "41", "1-60", 
                             "61", "81", "101", "61-120",
                             "121", "141"  ,"161", ">120", "all", "Bemerkung")
 
-# stehend, ganzer Baum = 2
-# Bruchstück = 3
-# liegend ganzer Baum = 5
-# liegend stark = 1
-# haufen = 6
-# Wurzelstock = 4
+# LIVING trees stand characteristics
+# species groups abbreviations: 
+    # case_when(BWI_SP_group == "Eiche" ~ "EI", 
+    #           BWI_SP_group == "Buche" ~ "BU",
+    #           BWI_SP_group == "andere Lb hoher Lebensdauer" ~ "ALH",
+    #           BWI_SP_group == "andere Lb niedriger Lebensdauer" ~ "ALN",
+    #           BWI_SP_group == "alle LaubbÃ¤ume" ~ "LB",
+    #           BWI_SP_group == "Fichte" ~ "FI",
+    #           BWI_SP_group == "Tanne" ~ "TA",
+    #           BWI_SP_group == "Douglasie" ~ "DGL",
+    #           BWI_SP_group == "Kiefer" ~ "KI",
+    #           BWI_SP_group == "LÃ¤rche" ~ "LA",
+    #           BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
+    #           TRUE ~ "all"))
+colnames(BWI_stand_char_SP) <- c("stand_characteristic", "unit", "EI", "BU", "ALH", "ALN", "LB", "FI", "TA", "DGL", "KI", "LA", "NB", "all", "Bemerkung")
+
+# DEADWOOD
+# deadwood categories MoMoK
+  # stehend, ganzer Baum = 2
+  # Bruchstück = 3
+  # liegend ganzer Baum = 5
+  # liegend stark = 1
+  # haufen = 6
+  # Wurzelstock = 4
+# the deadwood categories of MoMoK do not comply with the deadwood categories in the BWI
+# thus the category 1 occures twice
+      # 1 = liegend, starkes totholz (lying, strong/ large deadwood without roots)
+      # 1W = liegend starkes totholz mit wurzelstock (lying, strong/ large deadwood with roots)
+      # later, however, they will be summarized as group 1 
 colnames(BWI_DW_V) <- c("state", "unit", 
                         "2",  "3", "stehend", 
                         "5", "1W", "1", "liegend", 
@@ -1434,7 +1469,7 @@ summary(RG_total)
 
 
 
-# ----- 1.4.2.3. BWI comparisson datasets ---------------------------------------------------------
+# ----- 1.4.3. BWI comparisson datasets ---------------------------------------------------------
 
 # CARBON LIVING TREES
 # carbon stock in t per ha separeted by age and species groups
@@ -1465,6 +1500,34 @@ BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
                                   TRUE ~ "all"))
 
 
+# STAND CHARACTERISTICS LIVING TREES
+#zielmerkmale_SP_2017
+BWI_stand_char_SP <- na.omit(BWI_stand_char_SP) %>%
+  filter(unit != "SE95 ±") %>% 
+  dplyr::select(-c("Bemerkung", "unit")) %>% 
+  pivot_longer(c(EI:all), names_to = "BWI_SP_group", values_to = "values") %>% 
+  pivot_wider(names_from = stand_characteristic, values_from = values) %>% 
+  dplyr::select(BWI_SP_group, ends_with("ha]")) %>% 
+  # this is just to reorder to then pivot all compartiments into one column
+  select("BWI_SP_group", "Grundfläche [m²/ha]", "Stammzahl [1/ha]",  
+         "Biomasse [kg/ha]", "oberirdische Biomasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
+         "Kohlenstoffmasse [kg/ha]", "oberirdische Kohlenstoffmasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
+         "Vorrat [m³/ha]", "Waldfläche (gemäß Standflächenanteil) [ha]", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") %>%  
+# pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+to_long(keys = c("B_compartiment",  "C_compartiment"), 
+        values = c( "B_kg", "C_kg"),  names(.)[4:6], names(.)[7:9]) %>% 
+  # hanging the compartiments names and deselct the other compartiment columns: https://stackoverflow.com/questions/61425318/using-mutate-and-starts-with
+  mutate(B_compartiment = case_when(startsWith(B_compartiment, "unterirdische") ~ "bg", 
+                                    startsWith(B_compartiment, "oberirdische") ~ "ag",
+                                    TRUE ~ "total")) %>% 
+  rename("compartiment" = "B_compartiment") %>%
+  rename("BA_m2_ha" = "Grundfläche [m²/ha]") %>% 
+  rename("Nt_ha" = "Stammzahl [1/ha]") %>% 
+  rename("SP_A_ha" = "Waldfläche (gemäß Standflächenanteil) [ha]") %>% 
+  rename("total_A_ha" = "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") %>% 
+  select(- "C_compartiment")
+
+
 # VOLUME DEADWOOD
 BWI_DW_V <- BWI_DW_V %>% 
   select(-c("Bemerkung")) %>% 
@@ -1492,7 +1555,7 @@ BWI_DW_V <- BWI_DW_V %>%
                            TRUE ~ "NA")) 
   
 
-# ----- 1.4.3. Nitrogen content dataset ----------------------------------------
+# ----- 1.4.4. Nitrogen content dataset ----------------------------------------
 # Reference: 
   # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
@@ -2476,6 +2539,9 @@ RG_total_comparisson <- RG_total %>%
 
 
 
+
+
+
 RG_total<- RG_total %>% 
   # assigning numeric diameters to size classes through mean per class 
   mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
@@ -3153,7 +3219,7 @@ plot_total <- rbind(
                 B_t_ha, C_t_ha, N_t_ha, Nt_ha),           # per hectar                    
 # deadwood
  DW_P %>% 
-  mutate(compartiment = "ag") %>% 
+  mutate(compartiment = "total") %>% 
   dplyr::select(plot_ID, compartiment,
                 B_t_plot, C_t_plot, N_t_plot, Nt_plot,    # per plot
                 B_t_MA, C_t_MA, N_t_MA, Nt_MA,            # per momok area 50X50m
@@ -3255,6 +3321,7 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
 
 # ----- 4.1.2. BWI comparisson living trees plausibility test ------------------------------------
 
+# ----- 4.1.2.1. carbon BWI comparisson living trees plausibility test ------------------------------------
 # by species and age class
 c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
   filter(compartiment=="ag") %>% 
@@ -3405,41 +3472,83 @@ wilcox.test(c_comp_Momok_BWI_SP_A$C_t_ha_tapes, c_comp_Momok_BWI_SP_A$C_t_ha_BWI
 # there are significant differences between our carbon stocks and those published by the Kohloenstoffinventur 2017
 # let´s try to plot the biomass, carbon and nitrogen over all plots and stand components to see if there´s a pattern
 
+# 
+# biomass in kg per plot in the stand component deadwood (DW), living trees (LT),  
 plot_total %>% 
-  select(plot_ID, compartiment, stand_component, 
-         swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
-         stwB_kg,tapes_stwB_kg, 
-         stwbB_kg, tapes_stwbB_kg,
-         swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
-         fwB_kg, tapes_brB_kg, Vondr_brB_kg,
-         fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
-  tidyr::gather("method", "biomass", 4:19) %>% 
-  mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
-                                startsWith(method, 'V')~ "Vondernach", 
-                                TRUE~"GHGI"), 
-         compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-           method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
-           method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
-           method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
-           method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
-           TRUE~"foliage")) %>%
-  group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
-  summarize(mean_bio = mean(biomass)) %>%
-  ggplot(., aes(gen_method, mean_bio))+
+        filter(compartiment == "total") %>%
+        select(plot_ID, stand_component, B_t_plot) %>%
+  mutate(B_kg_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(stand_component, B_kg_plot))+
   #ggplot(., aes(gen_method, biomass))+
   #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
   #scale_x_discrete(name = "compartiment")+
-  geom_bar(aes(fill = reorder(compartiment, + mean_bio)),
+  geom_bar(aes(fill = reorder(stand_component, + B_kg_plot)),
            stat="identity", 
            # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
            position="dodge")+
   #scale_fill_discrete()+
-  scale_fill_viridis_d(name = "Compartiment")+
+  scale_fill_viridis_d(name = "stand component")+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(plot_ID~SP_code)+
+  facet_wrap(~plot_ID)+
   theme_bw()
+
+plot_total %>% 
+  filter(compartiment == "total") %>%
+  select(plot_ID, stand_component, C_t_ha) %>%
+  mutate(BWI_C_t_ha = 108.00) %>% 
+ # mutate(B_kg_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(x= stand_component))+
+  geom_bar(aes(y = C_t_ha, fill = reorder(stand_component, + C_t_ha)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  geom_line(aes(y = BWI_C_t_ha), size = 0.5, color="red", group = 3)+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "stand component")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(~plot_ID)+
+  theme_bw()
+
+# mean carbon stock per hectar over all plots and species 
+rbind(plot_total %>% 
+        filter(compartiment == "total") %>%
+        select(plot_ID, stand_component, C_t_ha) %>%
+        group_by(stand_component) %>%
+        summarise(C_t_ha = mean(C_t_ha)),
+      BWI_C_age_SP %>%
+        filter(BWI_SP_group == "all" & age_class == "all") %>%
+        mutate(stand_component = "BWI") %>% 
+        rename("C_t_ha" = "C_t_ha_BWI") %>% 
+        select(stand_component, C_t_ha)) %>% 
+  #mutate(B_t_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(stand_component, C_t_ha))+
+  #ggplot(., aes(gen_method, biomass))+
+  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
+  #scale_x_discrete(name = "compartiment")+
+  geom_bar(aes(fill = reorder(stand_component, + C_t_ha)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "stand component")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  #facet_wrap(~plot_ID)+
+  theme_bw()
+
+
+
+# -----4.1.2.3. number of stems per ha -----------------------------------------------------------
+trees_P_SP %>%
+  left_join() # here i have to join in the dominant species first
+  left_join(., SP_names_com_ID_tapeS %>% 
+              select(Chr_code_ger, BWI_SP_group) %>% 
+              mutate(Chr_code_ger = toupper(Chr_code_ger), 
+                     BWI_SP_group = toupper(BWI_SP_group)), 
+            by = ("dom_SP" = "Chr_code_ger"))
+
 
 
 
