@@ -2769,6 +2769,7 @@ trees_P <- trees_total_5 %>%
             plot_A_ha = mean(plot_A_ha)) %>%       # plot area in hectare to reffer data to hectar later
   mutate(MoMoK_A_ha = (50*50)/10000) %>%           # MoMoK area in hectare to reffer data to MoMoK area later
   left_join(., trees_total_5 %>%
+              filter(compartiment == "total") %>% 
               group_by(plot_ID) %>%                         # group by plot only to create column with 
               summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
                         sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
@@ -2799,7 +2800,8 @@ trees_P <- trees_total_5 %>%
               distinct(), 
             by = c("plot_ID", "compartiment")) %>% 
   #calculating number of species per plot
-  left_join(., trees_total_5 %>% 
+  left_join(., trees_total_5 %>%
+              filter(compartiment == "total") %>% 
               select(plot_ID, SP_code) %>%
               group_by(plot_ID) %>% 
               distinct() %>% 
@@ -3542,19 +3544,41 @@ rbind(plot_total %>%
 
 # -----4.1.2.3. number of stems per ha -----------------------------------------------------------
 trees_P_SP %>%
-  left_join() # here i have to join in the dominant species first
+  filter(compartiment == "total") %>% 
+  distinct() %>% 
   left_join(., SP_names_com_ID_tapeS %>% 
               select(Chr_code_ger, BWI_SP_group) %>% 
               mutate(Chr_code_ger = toupper(Chr_code_ger), 
                      BWI_SP_group = toupper(BWI_SP_group)), 
-            by = ("dom_SP" = "Chr_code_ger"))
+            by = c("dom_SP" = "Chr_code_ger")) %>% 
+  left_join(., BWI_stand_char_SP %>%
+              rename("Nt_ha_BWI" = "Nt_ha") %>% 
+              select(BWI_SP_group, Nt_ha_BWI), 
+            by = "BWI_SP_group", multiple = "all")
 
-
+view(trees_P %>%
+       filter(compartiment == "total") %>% 
+       distinct() %>% 
+       left_join(., SP_names_com_ID_tapeS %>% 
+                   select(Chr_code_ger, BWI_SP_group) %>% 
+                   mutate(Chr_code_ger = toupper(Chr_code_ger), 
+                          BWI_SP_group = toupper(BWI_SP_group)), 
+                 by = c("dom_SP" = "Chr_code_ger")) %>% 
+       left_join(., BWI_stand_char_SP %>%
+                   filter(compartiment == "total") %>% 
+                   mutate(C_t_ha_BWI = C_kg/1000) %>% 
+                   rename("Nt_ha_BWI" = "Nt_ha") %>% 
+                   select(BWI_SP_group, Nt_ha_BWI, BA_m2_ha, C_t_ha_BWI) %>% 
+                   distinct(), 
+                 by = "BWI_SP_group") %>% 
+       mutate(C_diff = C_t_ha-C_t_ha_BWI,
+                Nt_diff = Nt_ha-Nt_ha_BWI, 
+              BA_diff = BA_m2ha-BA_m2_ha))
 
 
 # ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
 DW_V_com <- DW_P %>% 
-  select(plot_ID, V_m3_ha) %>% 
+  select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
   left_join(., trees_total %>% 
               select(plot_ID, state) %>% 
               distinct(), 
