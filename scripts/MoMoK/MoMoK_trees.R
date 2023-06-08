@@ -1581,37 +1581,41 @@ BWI_DW_V <- BWI_DW_V %>%
                            TRUE ~ "NA")) 
 
 # CARBON DEADWOOD
-BWI_DW_C <- BWI_DW_C %>% 
-  select(-c("Bemerkung", "unit")) %>% 
-  select("2",  "3", "stehend", "5", "1W", "1", "liegend", "4", "6","all",
+#BWI_DW_C <-
+  
+  BWI_DW_C %>% 
+    filter(unit == "SE95 Â±") %>% 
+    filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
+             Zielmerkmal == "Totholzmasse [t/ha]" |
+             Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
+    select(-c("Bemerkung", "unit")) %>% 
+    select("2",  "3", "stehend", "5", "1W", "1", "liegend", "4", "6","all",
          "Zielmerkmal") %>%   
-  filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
-                                       Zielmerkmal == "Totholzmasse [t/ha]" |
-                                       Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
-  mutate(Zielmerkmal = case_when(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" ~ "V_m3_ha", 
+    mutate(Zielmerkmal = case_when(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" ~ "V_m3_ha", 
                                  Zielmerkmal == "Totholzmasse [t/ha]" ~ "B_t_ha", 
                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" ~ "C_t_ha", 
                                  TRUE ~ NA)) %>% 
-  pivot_longer(c("2",  "3", "stehend", 
+    pivot_longer(c("2",  "3", "stehend", 
                  "5", "1W", "1", "liegend", 
                  "4", "6","all"), 
                names_to = "DW_type", 
                values_to = "values", 
                names_repair = "unique") %>% 
-  distinct()
+    distinct()
 
-BWI_DW_C <- cbind(BWI_DW_C %>% 
-  filter(Zielmerkmal == "V_m3_ha") %>% 
-  select(-Zielmerkmal) %>% 
-  rename("V_m3_ha" = "values"),
-  BWI_DW_C %>% 
-    filter(Zielmerkmal == "B_t_ha") %>% 
-    select(values) %>% 
-    rename("B_t_ha" = "values"),
-  BWI_DW_C %>% 
-    filter(Zielmerkmal == "C_t_ha") %>% 
-    select(values) %>% 
-    rename("C_t_ha" = "values"))
+  
+# BWI_DW_C <- cbind(BWI_DW_C %>% 
+#   filter(Zielmerkmal == "V_m3_ha") %>% 
+#   select(-Zielmerkmal) %>% 
+#   rename("V_m3_ha" = "values"),
+#   BWI_DW_C %>% 
+#     filter(Zielmerkmal == "B_t_ha") %>% 
+#     select(values) %>% 
+#     rename("B_t_ha" = "values"),
+#   BWI_DW_C %>% 
+#     filter(Zielmerkmal == "C_t_ha") %>% 
+#     select(values) %>% 
+#     rename("C_t_ha" = "values"))
 
 
 
@@ -3791,7 +3795,9 @@ write.csv(DW_V_com, "output/out_data/V_comp_DW_BWI_MoMoK.csv")
 mean(DW_V_com$V_diff)
 
 
-# -----4.3. correlation to explain C diff per ha -----------------------------------------------------------
+# -----4.3. Tests to explain C diff per ha -----------------------------------------------------------
+
+# ----- 4.3.1. correlation C Diff N_diff, BA_diff ---------------------------------------------
                   # select stand characteristics/ plot characteristics saved under compartiment "total"
 cor.df <- trees_P %>% 
   filter(compartiment == "total") %>%
@@ -3918,8 +3924,11 @@ for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
            order = 'AOE', diag = FALSE)$corrPos -> p1
   text(p1$x, p1$y, round(p1$corr, 2))
 
+  
+  
+# ----- 4.3.2. Visulaization differences in C vs. differences in BA or N_trees  
 # C COMPARISON BY DOMINANT SPECIES 
-# difference in C_t_ha vs. difference in N_ha
+# difference in C_t_ha vs. difference in N_ha without age groups
 ggplot(data = cor.df, 
        aes(x = Nt_diff, y = C_diff, color = dom_SP))+
   geom_point()+
@@ -3936,7 +3945,7 @@ ggplot(data = cor.df,
   theme_light()+
   theme(legend.position = "right")
 
-# difference in C_t_ha vs. difference in BA_m2_ha
+# difference in C_t_ha vs. difference in BA_m2_ha without age groups
 ggplot(data = cor.df, 
        aes(x = BA_diff, y = C_diff, color = dom_SP))+
   geom_point()+
@@ -3953,7 +3962,7 @@ ggplot(data = cor.df,
   theme_light()+
   theme(legend.position = "right")
 
-# difference in C vs. difference in DW volume
+# difference in C vs. difference in DW volume without age or DW groups
 ggplot(data = cor.df, 
        aes(x = BA_diff, y = V_diff, color = dom_SP))+
   geom_point()+
@@ -3970,7 +3979,8 @@ ggplot(data = cor.df,
   theme_light()+
   theme(legend.position = "right")
 
-# difference in C_t_ha per dom_SP and age vs. C_t_ha_BWI per species from BWI
+
+# difference in C_t_ha per dom_SP C_t_ha_BWI per species from BWI
 ggplot(data = cor.df, 
        aes(x = C_t_ha_BWI, y = C_t_ha, color = dom_SP))+
   geom_point()+
@@ -4041,7 +4051,53 @@ ggplot(data = C_comp_domSP_BWI_A,
   theme_light()+
   theme(legend.position = "right")
 
-summary(cor.df)
+
+
+# ----- 4.3.4. Linear model C plausibility
+# 1. calualte differences in C, number of stem and BA differences between 
+#    MoMoK and BWI
+# 2. define threshold of difference 
+#     L> "if the plots C stock exceedes or undergoes a range of .... have a closer look at it"
+# 3. fit linear model including C, number of stem and BA differences between 
+#    MoMoK and BWI 
+# 4. filter plots that differ from the predicted C stock to a defined extend
+# 5. check if the basal area differs significantly from BWI as well to "explain" the difference in C
+
+# coefficents of non-linear height model per species and plot
+#https://rdrr.io/cran/forestmangr/man/lm_table.html
+# 1. dataset containing C, BA and Nt differences grouped by dominant species but not by age: 
+cor.df %>% 
+  # table with lm for C_diff = b0 + b1* BA_diff+ b2*Nt_diff
+  left_join(.,cor.df %>% 
+              # 3. fit linear model with 
+              lm_table(C_diff ~ BA_diff + Nt_diff, "dom_SP", output = "table") %>% 
+              select(dom_SP, b0, b1, b2, Rsqr) %>% 
+              # replace NAs with 0 
+              mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
+            by = "dom_SP") %>% 
+  # 4. predict the expectable C_diff at the given basal area and tree number difference
+  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
+         # 5. calculate difference between calculated values and predicted values 
+         C_pred_vs_C_calc = C_diff - C_diff_pred) %>% 
+  ggplot(aes(x = BA_diff))+
+  geom_point(aes(y = C_diff, color = dom_SP))+
+  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(~dom_SP)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+summary(lm(C_diff ~ Nt_diff + BA_diff, data = C_comp_domSP_BWI_A))
 
 # ----- 3. VISULAIZATION -------------------------------------------------
 # ----- 3.1.5. visualization height regression -------------------------------------------------------------
