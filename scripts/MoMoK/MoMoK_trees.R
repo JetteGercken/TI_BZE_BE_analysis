@@ -3895,6 +3895,90 @@ summary(C_comp_domSP_BWI_A)
 
 summary(cor.df)
 
+
+
+# creating dataset with pseudo monocultures of the respective mixed species
+ # dataset with stand characteristics apart from C stock
+comp_pseudo_mono <- trees_P_SP %>% 
+  filter(compartiment == "total") %>%
+  select(-c(C_t_P_SP_ha, C_t_P_SP, compartiment)) %>% 
+  distinct() %>% 
+  # just use aboveground carbon stock to enable proper comparisson with BWI data which do not include total C stock
+  left_join(., trees_P_SP %>%  
+              filter(compartiment == "ag") %>%
+              select(plot_ID, compartiment, SP_code, C_t_P_SP, C_t_P_SP_ha) %>% 
+              distinct(), 
+            by = c("plot_ID", "SP_code")) %>%
+  # assign BWI SP names to the  species so we can join in BWI Speices specific data
+  left_join(., SP_names_com_ID_tapeS %>%       
+              select(Chr_code_ger, BWI_SP_group) %>% 
+              mutate(Chr_code_ger = toupper(Chr_code_ger), 
+                     BWI_SP_group = toupper(BWI_SP_group)), 
+            by = c("SP_code" = "Chr_code_ger")) %>% 
+  # BWI stand characteristics dataset to compare N, C, BA by species group
+  left_join(., BWI_stand_char_SP %>%
+              filter(compartiment == "ag") %>% 
+              mutate(C_t_ha_BWI = C_kg/1000) %>% 
+              rename("Nt_ha_BWI" = "Nt_ha") %>% 
+              rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
+              select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, BA_m2ha_BWI) %>% 
+              distinct(), 
+            by = "BWI_SP_group") %>% 
+  # dataset with deadwood volume
+  left_join(., DW_V_com %>% 
+              select(plot_ID, V_m3_ha , V_diff), 
+            by= "plot_ID") %>% 
+  # dataset with expected growth behavior at the respecitive plot, depending on dominant species and regeneration status of the peatland 
+  left_join(., site_info %>% 
+              dplyr::select(plot_ID, growth), 
+            by = "plot_ID") %>%
+  # create pseudo monocultures:
+      # carbon stock of species per hectar divided by 1 Hektar mulitplied with the actual area covered by the species according to basal area 
+  mutate(C_t_ha_mono = C_t_P_SP_ha/(1*(SP_BA_m2ha/tot_BA_m2ha)),
+         #C_t_ha_P_mono =  C_t_P_SP/(plot_A_ha*(SP_BA_m2ha/tot_BA_m2ha)), 
+         Nt_ha_mono = Nt_ha/(1*(SP_BA_m2ha/tot_BA_m2ha)), 
+         BA_m2_ha_mono = SP_BA_m2ha/(1*SP_BA_m2ha/tot_BA_m2ha)) %>% 
+  # calculate differences in carbon, basal area and number of stems
+  mutate(C_diff = C_t_ha_mono - C_t_ha_BWI,
+         Nt_diff = Nt_ha_mono - Nt_ha_BWI, 
+         BA_diff = BA_m2_ha_mono - BA_m2ha_BWI, 
+         dom_SP = as.factor(dom_SP)) 
+
+comp_pseudo_mono<- comp_pseudo_mono %>%
+  # create linear model with BA diff and Nt diff per species group
+  left_join(., comp_pseudo_mono %>% 
+              lm_table(C_diff ~ BA_diff + Nt_diff, "SP_code", output = "table") %>% 
+              select(SP_code, b0, b1, b2, Rsqr) %>% 
+              # replace NAs with 0 
+              mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
+            by = "SP_code") %>% 
+  # predict the expectable C_diff at the given basal area and tree number difference
+  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
+         # 5. calculate difference between calculated values and predicted values 
+         C_pred_vs_C_calc = C_diff - C_diff_pred) 
+
+ summary(comp_pseudo_mono)
+
+comp_pseudo_mono %>% 
+  ggplot(., aes(x = BA_diff))+
+  geom_point(aes(y = C_diff, color = SP_code))+
+  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  facet_wrap(~SP_code)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA diff")+
+  theme_light()+
+  theme(legend.position = "right")
+  
+
+
 # creating correlation matrix for every dominant species
 for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
    # SP= "SER"
