@@ -3947,11 +3947,11 @@ comp_pseudo_mono <- trees_P_SP %>%
 comp_pseudo_mono<- comp_pseudo_mono %>%
   # create linear model with BA diff and Nt diff per species group
   left_join(., comp_pseudo_mono %>% 
-              lm_table(C_diff ~ BA_diff + Nt_diff, "SP_code", output = "table") %>% 
-              select(SP_code, b0, b1, b2, Rsqr) %>% 
+              lm_table(C_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
+              select(BWI_SP_group, b0, b1, b2, Rsqr) %>% 
               # replace NAs with 0 
               mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
-            by = "SP_code") %>% 
+            by = "BWI_SP_group") %>% 
   # predict the expectable C_diff at the given basal area and tree number difference
   mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
