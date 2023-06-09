@@ -3615,6 +3615,27 @@ write.csv(DW_V_com, "output/out_data/V_comp_DW_BWI_MoMoK.csv")
 mean(DW_V_com$V_diff)
 
 
+DW_C_V_comp <- DW_P_TY %>% 
+  mutate(DW_type = as.character(DW_type)) %>% 
+  select(plot_ID, DW_type, C_tot_t_ha, V_tot_m3_ha) %>% 
+  # left_join(., trees_total %>% 
+  #             select(plot_ID, state) %>% 
+  #             distinct(), 
+  #           by = "plot_ID") %>% 
+  left_join(., BWI_DW_C %>% 
+              #filter(DW_type == "all") %>% 
+              mutate(DW_type = ifelse(DW_type != "1W", DW_type, "1")) %>% 
+              group_by(DW_type) %>%  # here i am summarizing DW type "liegend stark ohne wurzlstock and liegend stark mit wurzelstock
+              summarise(C_t_ha = mean(C_t_ha), 
+                        B_t_ha = mean(B_t_ha), 
+                        V_m3_ha = mean(V_m3_ha)) %>% 
+              select(DW_type, V_m3_ha, C_t_ha), 
+            by = "DW_type") %>% 
+  mutate(V_diff = V_tot_m3_ha - V_m3_ha,
+         C_diff = C_tot_t_ha - C_t_ha)
+
+summary(DW_C_V_comp)
+
 # -----4.3. Tests to explain C diff per ha -----------------------------------------------------------
 
 # ----- 4.3.1. correlation C Diff N_diff, BA_diff ---------------------------------------------
@@ -4911,6 +4932,30 @@ ggplot(data = C_comp_domSP_BWI_A,
 
 
 
+
+# ----- 3.4.2. deadwood C & V comparisson to BWI  -----------------------
+
+# ----- 3.4.2.1. Deadwood comparisson with BWI by deadwood type -----------
+summary(DW_C_V_comp)
+
+DW_C_V_comp %>% 
+  group_by(DW_type) %>% 
+  summarise(C_tot_t_ha=mean(na.omit(C_tot_t_ha)), 
+            V_tot_m3_ha = mean(na.omit(V_tot_m3_ha)), 
+            C_t_ha = mean(C_t_ha), 
+            V_m3_ha = mean(V_m3_ha)) %>% 
+  ggplot(., aes(x= DW_type))+
+  geom_bar(aes(y = C_tot_t_ha, fill = DW_type),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  geom_line(aes(y = C_t_ha), size = 0.5, color = "red", group = 3)+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "deadwood type")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  #facet_wrap(~plot_ID)+
+  theme_bw()
 
 
 
