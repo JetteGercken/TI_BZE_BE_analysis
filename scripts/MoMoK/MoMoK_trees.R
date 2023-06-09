@@ -1581,10 +1581,8 @@ BWI_DW_V <- BWI_DW_V %>%
                            TRUE ~ "NA")) 
 
 # CARBON DEADWOOD
-#BWI_DW_C <-
-  
-  BWI_DW_C %>% 
-    filter(unit == "SE95 Â±") %>% 
+BWI_DW_C <- BWI_DW_C %>% 
+    filter(unit != "SE95 Â±") %>% 
     filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
              Zielmerkmal == "Totholzmasse [t/ha]" |
              Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
@@ -1601,31 +1599,10 @@ BWI_DW_V <- BWI_DW_V %>%
                names_to = "DW_type", 
                values_to = "values", 
                names_repair = "unique") %>% 
-    distinct()
+    distinct() %>% 
+    pivot_wider(values_from = values, 
+                names_from = Zielmerkmal)
 
-  
-# BWI_DW_C <- cbind(BWI_DW_C %>% 
-#   filter(Zielmerkmal == "V_m3_ha") %>% 
-#   select(-Zielmerkmal) %>% 
-#   rename("V_m3_ha" = "values"),
-#   BWI_DW_C %>% 
-#     filter(Zielmerkmal == "B_t_ha") %>% 
-#     select(values) %>% 
-#     rename("B_t_ha" = "values"),
-#   BWI_DW_C %>% 
-#     filter(Zielmerkmal == "C_t_ha") %>% 
-#     select(values) %>% 
-#     rename("C_t_ha" = "values"))
-
-
-
-  pivot_wider(values_from = values, 
-              names_from = Zielmerkmal) #%>% 
-  # dplyr::group_by(DW_type, Zielmerkmal) %>%
-  # dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-  # dplyr::filter(n > 1L) 
-  
-  
 
 # ----- 1.4.4. Nitrogen content dataset ----------------------------------------
 # Reference: 
@@ -2045,32 +2022,32 @@ for(id in unique(trees_total_5$plot_ID)){
 #   1 /(1/0.05003) =  0.05003(plot area) --> 100/(1/0.05003) Bäume
 #                                0.05003 --> 5 Bäume pro plot 
 
-mean100top.1 <- numeric(nrow(trees_total_5 %>% 
-                             dplyr::select(plot_ID) %>% 
-                             distinct()))
-
-for(id in unique(trees_total_5$plot_ID)){
-  # calcuate number of rows to extract per plot
-  # id = 26030
-  
-  n_t100 = as.numeric(trees_total_5 %>% 
-    filter(plot_ID == id) %>% 
-    mutate(n_t100 = as.numeric(ceiling(100/(1/plot_A_ha)))) %>%
-    select(n_t100) %>% 
-    distinct() %>% 
-    dplyr::pull(n_t100))
-  
-  # dataframe with mean height of top n rows 
-  sliced_plot <- trees_total_5 %>%
-    #group_by(plot_ID) %>% 
-    filter(plot_ID == id) %>%
-    slice_max(DBH_cm, n = n_t100, with_ties = FALSE) %>% # select top 100 representing rows
-    summarise(plot_ID = mean(plot_ID),
-              H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
-              top_H = mean(H_m))                         # calculate mean height
-  
-  mean100top.1[id] <- sliced_plot[1,2]
-}
+  # mean100top.1 <- numeric(nrow(trees_total_5 %>% 
+  #                              dplyr::select(plot_ID) %>% 
+  #                              distinct()))
+  # 
+  # for(id in unique(trees_total_5$plot_ID)){
+  #   # calcuate number of rows to extract per plot
+  #   # id = 26030
+  #   
+  #   n_t100 = as.numeric(trees_total_5 %>% 
+  #     filter(plot_ID == id) %>% 
+  #     mutate(n_t100 = as.numeric(ceiling(100/(1/plot_A_ha)))) %>%
+  #     select(n_t100) %>% 
+  #     distinct() %>% 
+  #     dplyr::pull(n_t100))
+  #   
+  #   # dataframe with mean height of top n rows 
+  #   sliced_plot <- trees_total_5 %>%
+  #     #group_by(plot_ID) %>% 
+  #     filter(plot_ID == id) %>%
+  #     slice_max(DBH_cm, n = n_t100, with_ties = FALSE) %>% # select top 100 representing rows
+  #     summarise(plot_ID = mean(plot_ID),
+  #               H_g_top = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+  #               top_H = mean(H_m))                         # calculate mean height
+  #   
+  #   mean100top.1[id] <- sliced_plot[1,2]
+  # }
 
 
 # ----- 2.1.2.1.3. dominant height # dominant height without loop basen on Lukas Mörler ----------------------------------------------------------------
@@ -2081,21 +2058,21 @@ for(id in unique(trees_total_5$plot_ID)){
     #   1 /(1/0.05003) =  0.05003(plot area) --> 100/(1/0.05003) Bäume
     #                                0.05003 --> 5 Bäume pro plot 
 
-x = floor(100/(1/trees_total_5$plot_A_ha));
-
-H_o <- trees_total_5 %>%
-  group_by(plot_ID, CCS_nr, C_layer, SP_code) %>% 
-  slice_max(DBH_cm, n = 5, with_ties = FALSE) %>%                  # select top 100 representing rows --> 5 per plot (actually per sampling circuit)
-  summarise(H_g_top = sum(mean(na.omit(H_m))*c_A((DBH_cm/2)/100))/sum(c_A((DBH_cm/2)/100)),    # Hoehe des Grundflächemittelstammes der 100 stärksten Bäume, calculation according to S. Schnell
-            top_H = mean(H_m))
-
+# x = floor(100/(1/trees_total_5$plot_A_ha));
+# 
+# H_o <- trees_total_5 %>%
+#   group_by(plot_ID, CCS_nr, C_layer, SP_code) %>% 
+#   slice_max(DBH_cm, n = unique(floor(100/(1/trees_total_5$plot_A_ha))), with_ties = FALSE) %>%                  # select top 100 representing rows --> 5 per plot (actually per sampling circuit)
+#   summarise(H_g_top = sum(mean(na.omit(H_m))*c_A((DBH_cm/2)/100))/sum(c_A((DBH_cm/2)/100)),    # Hoehe des Grundflächemittelstammes der 100 stärksten Bäume, calculation according to S. Schnell
+#             top_H = mean(H_m))
+# 
 
 # ----- 2.1.2.2. estimated biomass & carbon living trees -----------------------------------------------------------
 trees_total_5 <-  trees_total_5 %>%
-  # joiing H_o100 in 
+  # joining H_o100 in 
   left_join(., trees_total_5 %>%
               group_by(plot_ID, CCS_nr, C_layer, SP_code) %>%     # top 100 are setermined per plot, smaöing corcuit, canopy layer and species
-              slice_max(DBH_cm, n = 5, with_ties = FALSE) %>%                     # select top 100 representing rows --> 5 per plot basen on dreisatz (actually per sampling circuit)
+              slice_max(DBH_cm, n = unique(floor(100/(1/trees_total_5$plot_A_ha))), with_ties = FALSE) %>%                     # select top 100 representing rows --> 5 per plot basen on dreisatz (actually per sampling circuit)
               summarise(H_g_top = sum(mean(na.omit(H_m))*c_A((DBH_cm/2)/100))/sum(c_A((DBH_cm/2)/100))),    # Hoehe des Grundflächemittelstammes der 100 stärksten Bäume, calculation according to S. Schnell
             by = c("plot_ID", "CCS_nr", "C_layer", "SP_code")) %>% 
       # TapeS : aing diameter at 0.3 tree height to trees_total dataframe
@@ -2173,24 +2150,6 @@ trees_total_5 <-trees_total_5 %>%
       mutate(compartiment = "total")),
     by = c("ID_pt",  "CCS_nr", "C_layer", "compartiment")) 
           
-
- 
-#  # change in methodology so everything is calcaulted in TapeS and this part will be left out 
-#   # GHG-TapeS-stepwise
-#  mutate(swB_kg = ifelse(LH_NH == "NB", (aB_kg - (tapes_fB_kg +tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(aB_kg - (tapes_fwB_kg+tapes_swbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
-#         swbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-#         stwB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
-#         stwbB_kg = aB_kg - (swB_kg + tapes_fB_kg + tapes_fwB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
-#         fwB_kg = aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
-#         fB_kg = ifelse(LH_NH == "NB", aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
-#         tot_aB_kg = ifelse(LH_NH == "NB", aB_kg, aB_kg+fB_kg),                                # total aboveground biomass
-#         tot_waB_kg = ifelse(LH_NH == "NB", aB_kg-fB_kg, aB_kg)) %>%                           # total woody aboveground biomass
-# # select(-c(tapes_fB_kg, tapes_fwB_kg, tapes_DhB_kg, tapes_swbB_kg, tapes_stwbB_kg, tapes_stwB_kg)) %>%
- 
-
-
-
-
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -2451,170 +2410,109 @@ DW_total <- left_join(DW_total,
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3,SP_dec_type))%>% 
-  # TapeS compartiments methods to be able to subset dataset and apply functions separately 
-  mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
-                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
-                                       TRUE ~ "no"),
-         dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                        DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
-                                        TRUE ~ "no"),
-         dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
-                                         TRUE ~ "no"),
-         dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
-                                         DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
-                                         TRUE ~ "no"),
-         dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
-                                       # I have to add fine wood for BWI_dec_type 2 too,
-                                       # but to be able to calculate the whole biomass stepwise, 
-                                       # but I will not add it to the final dw_kg column
-                                       TRUE ~ "no"), 
-                            # for decay type 1 I have to add the Biomass of the fine wood compartment to get the total biomass because 
-                            # the B formula only covers stem and stump
-                            # and this helps with pivoting later
-         dw_tapes_ag_meth = case_when( DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ "B + fw", 
-                                      TRUE ~ "B")) 
-
-
-
-# ----- 2.2.2. Deadwood compartiment biomass, nitrogen stock ---------------------------------------------
-# addding compartiments biomasses to DW_total via filtered datasets
- DW_total <- DW_total %>% 
- # TapeS compartiment biomass 
-  # 1. solid wood 
-  left_join(.,
-            rbind(
-              # dataset with whole trees in low satates of decay
-              DW_total %>% 
-                filter(dw_tapes_swB_meth == "yes") %>% 
-                mutate(dw_tps_sw_kg = rdB_DW(tapes_swB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg), 
-              # dataset broken trees with sw comapartiment
-              DW_total %>% 
-                filter(dw_tapes_swB_meth == "sw_tapeS_wood") %>% 
-                mutate(dw_tps_sw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg),
-             # dataset without sw compartiment
-             DW_total %>% 
-                filter(dw_tapes_swB_meth == "no") %>% 
-                mutate(dw_tps_sw_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg)),
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swB_meth")) %>% 
-  # 2. solid wood bark
-  left_join(.,
-            rbind(
-              # dataset with whole trees in low satates of decay
-              DW_total %>% 
-                filter(dw_tapes_swbB_meth == "yes") %>% 
-                mutate(dw_tps_swb_kg = rdB_DW(tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg), 
-              # dataset broken trees with swb comapartiment --> sw was calcualted via solid wood bark ratio*biomass and relative density
-              DW_total %>% 
-                filter(dw_tapes_swbB_meth == "sw_tapeS_bark") %>% 
-                mutate(dw_tps_swb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg),
-              # dataset without swb compartiment --> sw = 0
-              DW_total %>% 
-                filter(dw_tapes_swbB_meth == "no") %>% 
-                mutate(dw_tps_swb_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg)),
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swbB_meth")) %>%
-  # 3. stump wood
-  left_join(.,
-            rbind(
-              # dataset with whole trees in low states of decay -> stw calculated via tape S
-              DW_total %>% 
-                filter(dw_tapes_stwB_meth == "yes") %>% 
-                mutate(dw_tps_stw_kg =  rdB_DW(tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg), 
-              # dataset broken trees with stw comapartiment --> stw was calcualted via: biomass - (stump bark ratio*biomass)* relative density
-              DW_total %>% 
-                filter(dw_tapes_stwB_meth == "st_tapeS_wood") %>% 
-                mutate(dw_tps_stw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg),
-              # dataset without stw compartiment stwb = 0 
-              DW_total %>% 
-                filter(dw_tapes_stwB_meth == "no") %>% 
-                mutate(dw_tps_stw_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg)), 
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwB_meth")) %>%
-  # 4. solid wood bark
-  left_join(.,
-            rbind(
-              # dataset with whole trees in low states of decay
-              DW_total %>% 
-                filter(dw_tapes_stwbB_meth == "yes") %>% 
-                mutate(dw_tps_stwb_kg = rdB_DW(tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg), 
-              # dataset stumps with stb comapartiment
-              DW_total %>% 
-                filter(dw_tapes_stwbB_meth == "st_tapeS_bark") %>% 
-                mutate(dw_tps_stwb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg),
-              # dataset without swb compartiment
-              DW_total %>% 
-                filter(dw_tapes_stwbB_meth == "no") %>% 
-                mutate(dw_tps_stwb_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg)), 
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwbB_meth")) %>%
-  # 5. fine wood including bark 
-  left_join(., 
-            rbind(
-              # dataset with whole trees in low satates of decay
-              DW_total %>% 
-                filter(dw_tapes_fwB_meth == "yes") %>% 
-                mutate(dw_tps_fw_kg =  rdB_DW(tapes_brB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg), 
-              # dataset without fine wood compartimenz
-              DW_total %>% 
-                filter(dw_tapes_fwB_meth == "no") %>% 
-                mutate(dw_tps_fw_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg)), 
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
-  # 6. foliage biomass (just pro forma, to deduct from the whole tree biomass, bec ause tapeS always creates a whole tree) 
-  left_join(., 
-            rbind(
-              # dataset with whole trees in low satates of decay
-              DW_total %>% 
-                filter(dw_tapes_fwB_meth == "yes") %>% 
-                mutate(dw_tps_f_kg =  rdB_DW(tapes_fB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg), 
-              # dataset without foliage compartimenz
-              DW_total %>% 
-                filter(dw_tapes_fwB_meth == "no") %>% 
-                mutate(dw_tps_f_kg = 0) %>% 
-                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg)), 
-            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
-# stepwise cacluation of compartiemnt biomass vie bio - tapeS 
-          # solid wood
-   mutate(dw_swB_kg = case_when(dw_tapes_swB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) - (dw_tps_swb_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
-                               dw_tapes_swB_meth == "sw_tapeS_wood" ~ B_dw_kg-(B_dw_kg*(dw_tps_swb_kg/dw_tps_sw_kg)),
-                               TRUE ~ B_dw_kg), 
-          # solid wood bark
-          dw_swbB_kg = case_when(dw_tapes_swbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
-                                dw_tapes_swbB_meth == "sw_tapeS_bark" ~ B_dw_kg- dw_swB_kg,
-                                TRUE ~ 0),
-          # stump wood
-          dw_stwB_kg = case_when(dw_tapes_stwB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_tps_stwb_kg),
-                               dw_tapes_stwB_meth == "st_tapeS_wood" ~ B_dw_kg- (B_dw_kg*(dw_tps_stwb_kg/dw_tps_stw_kg)),
-                               TRUE ~ 0), 
-          # stump wood bark
-          dw_stwbB_kg = case_when(dw_tapes_stwbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
-                                dw_tapes_stwbB_meth == "st_tapeS_bark" ~ B_dw_kg- dw_stwB_kg,
-                                TRUE ~ 0),
-          # fine wood
-          dw_fwB_kg = case_when(dw_tapes_fwB_meth == "yes"  ~  dw_tps_fw_kg,
-                               dw_tapes_fwB_meth == "yes" & dec_type_BWI == 2 ~ 0,
-                               TRUE ~ 0),
-          # aboveground 
-          dw_ag_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m  > 1.3 & !is.na(D_h_m) ~ B_dw_kg + dw_fwB_kg, # for not decayed standng and lying whole trees we have to add the fine wood mass 
-                               TRUE ~ B_dw_kg)) %>%
+  # calculating TapeS compartiments 
+  mutate(dw_tapes_swB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),      # yes: tapes_swB
+                                  rdB_DW(tapes_swB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                   D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                   D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                                   L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                         SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                  ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),       # "sw_tapeS_wood"
+                                         rdB_DW(tapeS_wood[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)], 
+                                                SP_dec_type[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
+                                         0)),                                                              # "no"
+         dw_tapes_swbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),    # yes: tapes_swbB
+                                   rdB_DW(tapes_swbB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                     D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                     D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                                     L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                          SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]), 
+                                   ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),     #"sw_tapeS_bark"
+                                          rdB_DW(tapeS_bark[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)],
+                                                 SP_dec_type[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
+                                          0)),                                                           # no
+         dw_tapes_stwB_kg =  ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),   # yes: tapes_stwB
+                                    rdB_DW(tapes_stwB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                      D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                      D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                                      L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                           SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                    ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),     # st_tapeS_wood
+                                           rdB_DW(tapeS_wood[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)], 
+                                                  SP_dec_type[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
+                                           0)),                                                            
+         dw_tapes_stwbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),   # yes : tapes_stwbB
+                                    rdB_DW(tapes_stwbB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                       D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                       D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                                       L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                           SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                    ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),     # st_tapeS_bark
+                                           rdB_DW(tapeS_bark[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]),  
+                                           0)),                                                           # no
+         dw_tapes_fwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),     # yes: "tapes_foliage"
+                                  # I have to add fine wood for BWI_dec_type 2 too,
+                                  # but to be able to calculate the whole biomass stepwise, 
+                                  # but I will not add it to the final dw_kg column
+                                  rdB_DW(tapes_brB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                   D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                                   D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                                   L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                         SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                  0), # no
+         dw_tapes_fB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),     # yes: "tapes_foliage"
+                                 # there is no foliage biomass for deadwood but i need it to correctly calcualte the tapeS compartiemnt stepwise,
+                                 # but I will not add it to the final dw_kg column
+                                 tapes_fB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                          D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                          D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
+                                          L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
+                                 0),
+         dw_tapes_ag_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3, 
+                                 B_dw_kg[DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3] + dw_tapes_fwB_kg[DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3],
+                                 B_dw_kg)) %>% 
+  # stepwise cacluation of compartiemnt biomass via bio - tapeS 
+        # solid wood
+  mutate(dw_swB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m), 
+                            (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
+                            ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
+                                   B_dw_kg-(B_dw_kg*(dw_tapes_swbB_kg/dw_tapes_swB_kg)),
+                                   B_dw_kg)), 
+         # solid wood bark
+         dw_swbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),
+                             (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
+                             ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
+                                    B_dw_kg - dw_swB_kg,
+                                    0)),
+         # stump wood
+         dw_stwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),
+                             (B_dw_kg +dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg),
+                             ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
+                                    B_dw_kg- (B_dw_kg*(dw_tapes_stwbB_kg/dw_tapes_stwB_kg)),
+                                    0)), 
+         # stump wood bark
+         dw_stwbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m), 
+                              (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
+                              ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),
+                                     B_dw_kg - dw_stwB_kg,
+                                     0)),
+         # fine wood
+         dw_fwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 & !is.na(D_h_m), 
+                            dw_tapes_fwB_kg, 
+                            0),
+         # aboveground 
+         dw_ag_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m  > 1.3 & !is.na(D_h_m),
+                           B_dw_kg + dw_fwB_kg, # for not decayed standng and lying whole trees we have to add the fine wood mass
+                           B_dw_kg)) %>%
+  # calcualte nitrogen stock per compartiment
   mutate(N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
-          N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
-          N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
-          N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
-          N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group))%>% 
-   mutate(ag_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
+         N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+         N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
+         N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
+         N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group))%>% 
+  mutate(ag_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
+  
+
 
 # checking summary
 summary(DW_total)
@@ -2631,8 +2529,7 @@ DW_total <- DW_total %>%
             N_dw_fw_kg, N_dw_sw_kg, N_dw_swb_kg, N_dw_stw_kg, N_dw_stwb_kg,
             dw_tapes_b_ratio, 
             V_dw_meth, 
-            dw_tapes_fwB_meth, dw_tapes_swB_meth, dw_tapes_swbB_meth, dw_tapes_stwB_meth, dw_tapes_stwbB_meth, dw_tapes_ag_meth, 
-              dw_tps_sw_kg, dw_tps_swb_kg, dw_tps_stw_kg, dw_tps_stwb_kg, dw_tps_fw_kg, dw_tps_f_kg, dw_stwbB_kg,
+              dw_tapes_swB_kg, dw_tapes_swbB_kg, dw_tapes_stwB_kg, dw_tapes_stwbB_kg, dw_tapes_fwB_kg, dw_tapes_fB_kg,
              tapeS_wood, tapeS_bark))
 
  
@@ -3449,18 +3346,18 @@ summary(trees_tot_piv_wider %>%
           filter(HD_status == "ERROR" & H_method == "sampled"))
 
 
-view(trees_total_5 %>% 
-       filter(compartiment == "ag") %>%
-       mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
-       mutate(HD_tps = (H_tapes*100)/DBH_cm, 
-              HD_diff = HD_value - HD_tps, 
-              HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
-                                    HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
-                                    TRUE ~ "FINE"), 
-              HD_tps_status = case_when(HD_tps >= 5 & HD_tps <= 65 | HD_tps >= 85  & HD_tps <= 139.9 ~ "WARNING", 
-                                        HD_tps <= 4.9 | HD_tps > 140 ~ "ERROR", 
-                                        TRUE ~ "FINE")) %>% 
-       select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status))
+# view(trees_total_5 %>% 
+#        filter(compartiment == "ag") %>%
+#        mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
+#        mutate(HD_tps = (H_tapes*100)/DBH_cm, 
+#               HD_diff = HD_value - HD_tps, 
+#               HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+#                                     HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+#                                     TRUE ~ "FINE"), 
+#               HD_tps_status = case_when(HD_tps >= 5 & HD_tps <= 65 | HD_tps >= 85  & HD_tps <= 139.9 ~ "WARNING", 
+#                                         HD_tps <= 4.9 | HD_tps > 140 ~ "ERROR", 
+#                                         TRUE ~ "FINE")) %>% 
+#        select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status))
 
 
 
@@ -3679,84 +3576,7 @@ C_comp_domSP_BWI<- trees_P %>%
            dom_SP = as.factor(dom_SP))
 
 
-
-
-
-wilcox.test(c_comp_Momok_BWI_SP_A$C_t_ha_tapes, c_comp_Momok_BWI_SP_A$C_t_ha_BWI)
-# W = 7, p-value = 0.0004871
-# alternative hypothesis: true location shift is not equal to 0
-
-# there are significant differences between our carbon stocks and those published by the Kohloenstoffinventur 2017
-# let´s try to plot the biomass, carbon and nitrogen over all plots and stand components to see if there´s a pattern
-
-# 
-# biomass in kg per plot in the stand component deadwood (DW), living trees (LT),  
-plot_total %>% 
-        filter(compartiment == "ag") %>%
-        select(plot_ID, stand_component, B_t_plot) %>%
-  mutate(B_kg_plot = B_t_plot*1000) %>%  
-  ggplot(., aes(stand_component, B_kg_plot))+
-  #ggplot(., aes(gen_method, biomass))+
-  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
-  #scale_x_discrete(name = "compartiment")+
-  geom_bar(aes(fill = reorder(stand_component, + B_kg_plot)),
-           stat="identity", 
-           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
-           position="dodge")+
-  #scale_fill_discrete()+
-  scale_fill_viridis_d(name = "stand component")+
-  #geom_line(aes(colour = method))+
-  #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(~plot_ID)+
-  theme_bw()
-
-plot_total %>% 
-  filter(compartiment == "ag") %>%
-  select(plot_ID, stand_component, C_t_ha) %>%
-  mutate(BWI_C_t_ha = 108.00) %>% 
-  left_join(., na.omit(trees_P %>% select(plot_ID, dom_SP) %>% distinct()), 
-            by = "plot_ID") %>% 
- # mutate(B_kg_plot = B_t_plot*1000) %>%  
-  ggplot(., aes(x= stand_component))+
-  geom_bar(aes(y = C_t_ha, fill = reorder(stand_component, + C_t_ha)),
-           stat="identity", 
-           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
-           position="dodge")+
-  geom_line(aes(y = BWI_C_t_ha), size = 0.5, color="red", group = 3)+
-  #scale_fill_discrete()+
-  scale_fill_viridis_d(name = "stand component")+
-  #geom_line(aes(colour = method))+
-  #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(dom_SP~plot_ID)+
-  theme_bw()
-
-# mean carbon stock per hectar over all plots and species 
-rbind(plot_total %>% 
-        filter(compartiment == "ag") %>%
-        select(plot_ID, stand_component, C_t_ha) %>%
-        group_by(stand_component) %>%
-        summarise(C_t_ha = mean(C_t_ha)),
-      BWI_C_age_SP %>%
-        filter(BWI_SP_group == "all" & age_class == "all") %>%
-        mutate(stand_component = "BWI") %>% 
-        rename("C_t_ha" = "C_t_ha_BWI") %>% 
-        select(stand_component, C_t_ha)) %>% 
-  #mutate(B_t_plot = B_t_plot*1000) %>%  
-  ggplot(., aes(stand_component, C_t_ha))+
-  #ggplot(., aes(gen_method, biomass))+
-  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
-  #scale_x_discrete(name = "compartiment")+
-  geom_bar(aes(fill = reorder(stand_component, + C_t_ha)),
-           stat="identity", 
-           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
-           position="dodge")+
-  #scale_fill_discrete()+
-  scale_fill_viridis_d(name = "stand component")+
-  #geom_line(aes(colour = method))+
-  #geom_smooth(method = "lm", se=FALSE, color="black")+
-  #facet_wrap(~plot_ID)+
-  theme_bw()
-
+ 
 
 
 
@@ -3944,7 +3764,7 @@ comp_pseudo_mono <- trees_P_SP %>%
          BA_diff = BA_m2_ha_mono - BA_m2ha_BWI, 
          dom_SP = as.factor(dom_SP)) 
 
-comp_pseudo_mono<- comp_pseudo_mono %>%
+comp_pseudo_mono <- comp_pseudo_mono %>%
   # create linear model with BA diff and Nt diff per species group
   left_join(., comp_pseudo_mono %>% 
               lm_table(C_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
@@ -3956,26 +3776,6 @@ comp_pseudo_mono<- comp_pseudo_mono %>%
   mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
          C_pred_vs_C_calc = C_diff - C_diff_pred) 
-
- summary(comp_pseudo_mono)
-
-comp_pseudo_mono %>% 
-  ggplot(., aes(x = BA_diff))+
-  geom_point(aes(y = C_diff, color = SP_code))+
-  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
-  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  facet_wrap(~SP_code)+
-  xlab("difference BA m2 per hectar ") +
-  ylab("difference C t per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. BA diff")+
-  theme_light()+
-  theme(legend.position = "right")
   
 
 
@@ -4009,132 +3809,6 @@ for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
   text(p1$x, p1$y, round(p1$corr, 2))
 
   
-  
-# ----- 4.3.2. Visulaization differences in C vs. differences in BA or N_trees  
-# C COMPARISON BY DOMINANT SPECIES 
-# difference in C_t_ha vs. difference in N_ha without age groups
-ggplot(data = cor.df, 
-       aes(x = Nt_diff, y = C_diff, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(min(cor.df$Nt_diff), min(cor.df$Nt_diff)*(-1))+
-  ylim(min(cor.df$C_diff), min(cor.df$C_diff)*(-1))+
- # geom_line()+
- # facet_wrap(SP_code~plot_ID)+
-  xlab("difference N per hectar ") +
-  ylab("difference C per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. N diff")+
-  theme_light()+
-  theme(legend.position = "right")
-
-# difference in C_t_ha vs. difference in BA_m2_ha without age groups
-ggplot(data = cor.df, 
-       aes(x = BA_diff, y = C_diff, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("difference BA m2 per hectar ") +
-  ylab("difference C t per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. BA diff")+
-  theme_light()+
-  theme(legend.position = "right")
-
-# difference in C vs. difference in DW volume without age or DW groups
-ggplot(data = cor.df, 
-       aes(x = BA_diff, y = V_diff, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(max(cor.df$V_diff)*(-1), max(cor.df$V_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("difference DW volume m3 per hectar ") +
-  ylab("difference C t per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. DW volume diff")+
-  theme_light()+
-  theme(legend.position = "right")
-
-
-# difference in C_t_ha per dom_SP C_t_ha_BWI per species from BWI
-ggplot(data = cor.df, 
-       aes(x = C_t_ha_BWI, y = C_t_ha, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("C BWI ") +
-  ylab("C MoMoK")+
-  #ylim(0, 50)+
-  ggtitle("C MoMoK vs. C BWI")+
-  theme_light()+
-  theme(legend.position = "right")
-
-
-
-# C COMPARISON BY DOMINANT SPECIES AND AGE CLASS
-# difference in C_t_ha per dom_SP and age vs. difference in N_ha
-ggplot(data = C_comp_domSP_BWI_A, 
-       aes(x = Nt_diff, y = C_diff, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(min(C_comp_domSP_BWI_A$Nt_diff), min(C_comp_domSP_BWI_A$Nt_diff)*(-1))+
-  ylim(min(C_comp_domSP_BWI_A$C_diff), min(C_comp_domSP_BWI_A$C_diff)*(-1))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("difference N per hectar ") +
-  ylab("difference C per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. N diff")+
-  theme_light()+
-  theme(legend.position = "right")
-
-# difference in C_t_ha per dom_SP and age vs. difference in basal area in m2 per ha from BWI
-ggplot(data = C_comp_domSP_BWI_A, 
-       aes(x = BA_diff, y = C_diff, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("difference in BA in m2 per hectar ") +
-  ylab("difference C t per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. BA volume diff")+
-  theme_light()+
-  theme(legend.position = "right")
-
-# difference in C_t_ha per dom_SP and age vs. C_t_ha_BWI per species and ageclass from BWI
-ggplot(data = C_comp_domSP_BWI_A, 
-       aes(x = C_t_ha_BWI, y = C_t_ha, color = dom_SP))+
-  geom_point()+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(SP_code~plot_ID)+
-  xlab("C BWI ") +
-  ylab("C MoMoK")+
-  #ylim(0, 50)+
-  ggtitle("C MoMoK vs. C BWI")+
-  theme_light()+
-  theme(legend.position = "right")
-
 
 
 # ----- 4.3.4. Linear model C plausibility
@@ -4150,7 +3824,7 @@ ggplot(data = C_comp_domSP_BWI_A,
 # coefficents of non-linear height model per species and plot
 #https://rdrr.io/cran/forestmangr/man/lm_table.html
 # 1. dataset containing C, BA and Nt differences grouped by dominant species but not by age: 
-cor.df %>% 
+cor.df <- cor.df %>% 
   # table with lm for C_diff = b0 + b1* BA_diff+ b2*Nt_diff
   left_join(.,cor.df %>% 
               # 3. fit linear model with 
@@ -4162,26 +3836,17 @@ cor.df %>%
   # 4. predict the expectable C_diff at the given basal area and tree number difference
   mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
-         C_pred_vs_C_calc = C_diff - C_diff_pred) %>% 
-  ggplot(aes(x = BA_diff))+
-  geom_point(aes(y = C_diff, color = dom_SP))+
-  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
-  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+
-  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
-  # geom_line()+
-  # facet_wrap(~dom_SP)+
-  xlab("difference BA m2 per hectar ") +
-  ylab("difference C t per hectar")+
-  #ylim(0, 50)+
-  ggtitle("C diff vs. BA diff")+
-  theme_light()+
-  theme(legend.position = "right")
+         C_pred_vs_C_calc = C_diff - C_diff_pred) 
 
 
 summary(lm(C_diff ~ Nt_diff + BA_diff, data = C_comp_domSP_BWI_A))
+
+
+
+
+
+
+
 
 # ----- 3. VISULAIZATION -------------------------------------------------
 # ----- 3.1.5. visualization height regression -------------------------------------------------------------
@@ -4669,8 +4334,6 @@ biotest %>%
 
 
 # ---- 3.2.7. GHG & tapeS compartiments with stepwise GHG & TapeS calcualtion  ----------------------------------------
-#install.packages("viridis")
-library(viridis)
 
 # bar
  # all compartiments
@@ -4988,8 +4651,9 @@ RG_total %>%
 # ----- 3.3.2. visualization plotwise --------------------------------------------
 
 plot_total %>% 
-  ggplot(., aes(stand_component, C_tot_t_ha))+
-  geom_bar(aes(fill = stand_component), 
+  filter(compartiment == "ag") %>% 
+  ggplot()+
+  geom_bar(aes(x = stand_component, y = C_t_ha, fill = stand_component), 
            stat="identity", 
            position=position_dodge())+
   facet_wrap(~plot_ID)
@@ -5000,6 +4664,250 @@ plot_total %>%
   ggplot(., aes(stand_component, C_tot_t_ha))+
   geom_boxplot(aes(colour = stand_component))+
   facet_wrap(~plot_ID)
+
+
+# biomass in kg per plot in the stand component deadwood (DW), living trees (LT),  
+plot_total %>% 
+  filter(compartiment == "ag") %>%
+  select(plot_ID, stand_component, B_t_plot) %>%
+  mutate(B_kg_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(stand_component, B_kg_plot))+
+  #ggplot(., aes(gen_method, biomass))+
+  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
+  #scale_x_discrete(name = "compartiment")+
+  geom_bar(aes(fill = reorder(stand_component, + B_kg_plot)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "stand component")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(~plot_ID)+
+  theme_bw()
+
+# ----- 3.4.1. Visualization of plaubility tests & comparisson with BWI data -----------------
+
+# ----- 3.4.1.1.  carbon overall MoMoK compared with bwi carbon, n --------
+# mean carbon stock per hectar over all plots and species
+plot_total %>% 
+  filter(compartiment == "ag") %>%
+  select(plot_ID, stand_component, C_t_ha) %>%
+  mutate(BWI_C_t_ha = 108.00) %>% 
+  left_join(., na.omit(trees_P %>% select(plot_ID, dom_SP) %>% distinct()), 
+            by = "plot_ID") %>% 
+  # mutate(B_kg_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(x= stand_component))+
+  geom_bar(aes(y = C_t_ha, fill = reorder(stand_component, + C_t_ha)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  geom_line(aes(y = BWI_C_t_ha), size = 0.5, color="red", group = 3)+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "stand component")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  facet_wrap(dom_SP~plot_ID)+
+  theme_bw()
+
+
+# mean carbon stock per hectar over all plots and species 
+rbind(plot_total %>% 
+        filter(compartiment == "ag") %>%
+        select(plot_ID, stand_component, C_t_ha) %>%
+        group_by(stand_component) %>%
+        summarise(C_t_ha = mean(C_t_ha)),
+      BWI_C_age_SP %>%
+        filter(BWI_SP_group == "all" & age_class == "all") %>%
+        mutate(stand_component = "BWI") %>% 
+        rename("C_t_ha" = "C_t_ha_BWI") %>% 
+        select(stand_component, C_t_ha)) %>% 
+  #mutate(B_t_plot = B_t_plot*1000) %>%  
+  ggplot(., aes(stand_component, C_t_ha))+
+  #ggplot(., aes(gen_method, biomass))+
+  #geom_bar(aes(fill = reorder(compartiment, -biomass)), #color= "white", 
+  #scale_x_discrete(name = "compartiment")+
+  geom_bar(aes(fill = reorder(stand_component, + C_t_ha)),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+
+  #scale_fill_discrete()+
+  scale_fill_viridis_d(name = "stand component")+
+  #geom_line(aes(colour = method))+
+  #geom_smooth(method = "lm", se=FALSE, color="black")+
+  #facet_wrap(~plot_ID)+
+  theme_bw()
+
+
+
+# ----- 3.4.1.2. difference carbon MoMoK vs. BWI grouped by dominant species  -----------------
+# C COMPARISON BY DOMINANT SPECIES 
+# difference in C_t_ha vs. difference in N_ha without age groups
+ggplot(data = cor.df, 
+       aes(x = Nt_diff, y = C_diff, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(min(cor.df$Nt_diff), min(cor.df$Nt_diff)*(-1))+
+  ylim(min(cor.df$C_diff), min(cor.df$C_diff)*(-1))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("difference N per hectar ") +
+  ylab("difference C per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. N diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+# difference in C_t_ha vs. difference in BA_m2_ha without age groups
+ggplot(data = cor.df, 
+       aes(x = BA_diff, y = C_diff, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+# difference in C vs. difference in DW volume without age or DW groups
+ggplot(data = cor.df, 
+       aes(x = BA_diff, y = V_diff, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$V_diff)*(-1), max(cor.df$V_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("difference DW volume m3 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. DW volume diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+# difference in C_t_ha per dom_SP C_t_ha_BWI per species from BWI
+ggplot(data = cor.df, 
+       aes(x = C_t_ha_BWI, y = C_t_ha, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("C BWI ") +
+  ylab("C MoMoK")+
+  #ylim(0, 50)+
+  ggtitle("C MoMoK vs. C BWI")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+cor.df %>% 
+  ggplot(aes(x = BA_diff))+
+  geom_point(aes(y = C_diff, color = dom_SP))+
+  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(~dom_SP)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+
+# ----- 3.4.1.3. difference carbon MoMoK vs. BWI  by pseudo monocultures  -----------------
+comp_pseudo_mono %>% 
+  ggplot(., aes(x = BA_diff))+
+  geom_point(aes(y = C_diff, color = BWI_SP_group))+
+  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  facet_wrap(~BWI_SP_group)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+# ----- 3.4.1.4. difference carbon MoMoK vs. BWI  by dominant species and age class  -----------------
+# C COMPARISON BY DOMINANT SPECIES AND AGE CLASS
+# difference in C_t_ha per dom_SP and age vs. difference in N_ha
+ggplot(data = C_comp_domSP_BWI_A, 
+       aes(x = Nt_diff, y = C_diff, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(min(C_comp_domSP_BWI_A$Nt_diff), min(C_comp_domSP_BWI_A$Nt_diff)*(-1))+
+  ylim(min(C_comp_domSP_BWI_A$C_diff), min(C_comp_domSP_BWI_A$C_diff)*(-1))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("difference N per hectar ") +
+  ylab("difference C per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. N diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+# difference in C_t_ha per dom_SP and age vs. difference in basal area in m2 per ha from BWI
+ggplot(data = C_comp_domSP_BWI_A, 
+       aes(x = BA_diff, y = C_diff, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("difference in BA in m2 per hectar ") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. BA volume diff")+
+  theme_light()+
+  theme(legend.position = "right")
+
+# difference in C_t_ha per dom_SP and age vs. C_t_ha_BWI per species and ageclass from BWI
+ggplot(data = C_comp_domSP_BWI_A, 
+       aes(x = C_t_ha_BWI, y = C_t_ha, color = dom_SP))+
+  geom_point()+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  #xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
+  #ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  # geom_line()+
+  # facet_wrap(SP_code~plot_ID)+
+  xlab("C BWI ") +
+  ylab("C MoMoK")+
+  #ylim(0, 50)+
+  ggtitle("C MoMoK vs. C BWI")+
+  theme_light()+
+  theme(legend.position = "right")
+
+
+
+
 
 
 
@@ -7078,6 +6986,180 @@ DW_total <- left_join(DW_total,
 #                                     Ht = H_tps_Kublin, inv = 4), 
 #                            Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE),
 
+
+
+
+
+# calculating DW compartiments --> originally with dw_compartiemnt method
+
+
+
+
+
+# TapeS compartiments methods to be able to subset dataset and apply functions separately 
+# mutate(dw_tapes_swB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)  ~ "yes", 
+#                                      DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_wood",
+#                                      TRUE ~ "no"),
+#        dw_tapes_swbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+#                                       DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "sw_tapeS_bark",
+#                                       TRUE ~ "no"),
+#        dw_tapes_stwB_meth =  case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+#                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_wood",
+#                                        TRUE ~ "no"),
+#        dw_tapes_stwbB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m) ~ "yes",
+#                                        DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio) ~ "st_tapeS_bark",
+#                                        TRUE ~ "no"),
+#        dw_tapes_fwB_meth = case_when(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 ~ "yes",
+#                                      # I have to add fine wood for BWI_dec_type 2 too,
+#                                      # but to be able to calculate the whole biomass stepwise, 
+#                                      # but I will not add it to the final dw_kg column
+#                                      TRUE ~ "no"), 
+#                           # for decay type 1 I have to add the Biomass of the fine wood compartment to get the total biomass because 
+#                           # the B formula only covers stem and stump
+#                           # and this helps with pivoting later
+#        dw_tapes_ag_meth = case_when( DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 ~ "B + fw", 
+#                                     TRUE ~ "B")) 
+
+
+
+# ----- 2.2.2. Deadwood compartiment biomass, nitrogen stock ---------------------------------------------
+# addding compartiments biomasses to DW_total via filtered datasets
+DW_total <- DW_total %>% 
+  # TapeS compartiment biomass 
+  # 1. solid wood 
+  left_join(.,
+            rbind(
+              # dataset with whole trees in low satates of decay
+              DW_total %>% 
+                filter(dw_tapes_swB_meth == "yes") %>% 
+                mutate(dw_tps_sw_kg = rdB_DW(tapes_swB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg), 
+              # dataset broken trees with sw comapartiment
+              DW_total %>% 
+                filter(dw_tapes_swB_meth == "sw_tapeS_wood") %>% 
+                mutate(dw_tps_sw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg),
+              # dataset without sw compartiment
+              DW_total %>% 
+                filter(dw_tapes_swB_meth == "no") %>% 
+                mutate(dw_tps_sw_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swB_meth, dw_tps_sw_kg)),
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swB_meth")) %>% 
+  # 2. solid wood bark
+  left_join(.,
+            rbind(
+              # dataset with whole trees in low satates of decay
+              DW_total %>% 
+                filter(dw_tapes_swbB_meth == "yes") %>% 
+                mutate(dw_tps_swb_kg = rdB_DW(tapes_swbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg), 
+              # dataset broken trees with swb comapartiment --> sw was calcualted via solid wood bark ratio*biomass and relative density
+              DW_total %>% 
+                filter(dw_tapes_swbB_meth == "sw_tapeS_bark") %>% 
+                mutate(dw_tps_swb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg),
+              # dataset without swb compartiment --> sw = 0
+              DW_total %>% 
+                filter(dw_tapes_swbB_meth == "no") %>% 
+                mutate(dw_tps_swb_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_swbB_meth, dw_tps_swb_kg)),
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_swbB_meth")) %>%
+  # 3. stump wood
+  left_join(.,
+            rbind(
+              # dataset with whole trees in low states of decay -> stw calculated via tape S
+              DW_total %>% 
+                filter(dw_tapes_stwB_meth == "yes") %>% 
+                mutate(dw_tps_stw_kg =  rdB_DW(tapes_stwB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg), 
+              # dataset broken trees with stw comapartiment --> stw was calcualted via: biomass - (stump bark ratio*biomass)* relative density
+              DW_total %>% 
+                filter(dw_tapes_stwB_meth == "st_tapeS_wood") %>% 
+                mutate(dw_tps_stw_kg = rdB_DW(tapeS_wood, SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg),
+              # dataset without stw compartiment stwb = 0 
+              DW_total %>% 
+                filter(dw_tapes_stwB_meth == "no") %>% 
+                mutate(dw_tps_stw_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwB_meth, dw_tps_stw_kg)), 
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwB_meth")) %>%
+  # 4. solid wood bark
+  left_join(.,
+            rbind(
+              # dataset with whole trees in low states of decay
+              DW_total %>% 
+                filter(dw_tapes_stwbB_meth == "yes") %>% 
+                mutate(dw_tps_stwb_kg = rdB_DW(tapes_stwbB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg), 
+              # dataset stumps with stb comapartiment
+              DW_total %>% 
+                filter(dw_tapes_stwbB_meth == "st_tapeS_bark") %>% 
+                mutate(dw_tps_stwb_kg = rdB_DW(tapeS_bark, SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg),
+              # dataset without swb compartiment
+              DW_total %>% 
+                filter(dw_tapes_stwbB_meth == "no") %>% 
+                mutate(dw_tps_stwb_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_stwbB_meth, dw_tps_stwb_kg)), 
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_stwbB_meth")) %>%
+  # 5. fine wood including bark 
+  left_join(., 
+            rbind(
+              # dataset with whole trees in low satates of decay
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "yes") %>% 
+                mutate(dw_tps_fw_kg =  rdB_DW(tapes_brB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg), 
+              # dataset without fine wood compartimenz
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "no") %>% 
+                mutate(dw_tps_fw_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_fw_kg)), 
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
+  # 6. foliage biomass (just pro forma, to deduct from the whole tree biomass, bec ause tapeS always creates a whole tree) 
+  left_join(., 
+            rbind(
+              # dataset with whole trees in low satates of decay
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "yes") %>% 
+                mutate(dw_tps_f_kg =  rdB_DW(tapes_fB(tpS_ID, D_cm, D_h_m, L_m), SP_dec_type)) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg), 
+              # dataset without foliage compartimenz
+              DW_total %>% 
+                filter(dw_tapes_fwB_meth == "no") %>% 
+                mutate(dw_tps_f_kg = 0) %>% 
+                dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, dw_tapes_fwB_meth, dw_tps_f_kg)), 
+            by = c("plot_ID", "t_ID", "DW_type", "dec_type_BWI", "CCS_nr", "dw_tapes_fwB_meth")) %>%
+  # stepwise cacluation of compartiemnt biomass vie bio - tapeS 
+  # solid wood
+  mutate(dw_swB_kg = case_when(dw_tapes_swB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) - (dw_tps_swb_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+                               dw_tapes_swB_meth == "sw_tapeS_wood" ~ B_dw_kg-(B_dw_kg*(dw_tps_swb_kg/dw_tps_sw_kg)),
+                               TRUE ~ B_dw_kg), 
+         # solid wood bark
+         dw_swbB_kg = case_when(dw_tapes_swbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_tps_stw_kg + dw_tps_stwb_kg),
+                                dw_tapes_swbB_meth == "sw_tapeS_bark" ~ B_dw_kg- dw_swB_kg,
+                                TRUE ~ 0),
+         # stump wood
+         dw_stwB_kg = case_when(dw_tapes_stwB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_tps_stwb_kg),
+                                dw_tapes_stwB_meth == "st_tapeS_wood" ~ B_dw_kg- (B_dw_kg*(dw_tps_stwb_kg/dw_tps_stw_kg)),
+                                TRUE ~ 0), 
+         # stump wood bark
+         dw_stwbB_kg = case_when(dw_tapes_stwbB_meth == "yes"  ~ (B_dw_kg + dw_tps_fw_kg + dw_tps_f_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
+                                 dw_tapes_stwbB_meth == "st_tapeS_bark" ~ B_dw_kg- dw_stwB_kg,
+                                 TRUE ~ 0),
+         # fine wood
+         dw_fwB_kg = case_when(dw_tapes_fwB_meth == "yes"  ~  dw_tps_fw_kg,
+                               dw_tapes_fwB_meth == "yes" & dec_type_BWI == 2 ~ 0,
+                               TRUE ~ 0),
+         # aboveground 
+         dw_ag_kg = case_when(DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m  > 1.3 & !is.na(D_h_m) ~ B_dw_kg + dw_fwB_kg, # for not decayed standng and lying whole trees we have to add the fine wood mass 
+                              TRUE ~ B_dw_kg)) %>%
+  mutate(N_dw_fw_kg = N_fw(dw_fwB_kg, N_SP_group), 
+         N_dw_sw_kg = N_sw(dw_swB_kg, N_SP_group), 
+         N_dw_swb_kg = N_swb(dw_swbB_kg, N_SP_group), 
+         N_dw_stw_kg = N_swb(dw_stwB_kg, N_SP_group),
+         N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group))%>% 
+  mutate(ag_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg) 
 # ---- N. 5 REGENERTAION plotwise -----------------------------------------
 
 # reffer values per plot to hectar --> plot size is still missing
