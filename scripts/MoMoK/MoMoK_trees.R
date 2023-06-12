@@ -899,7 +899,7 @@ N_bg <- function(B_compartiment, N_bg_spec){
 
 
 # ----- 1.3.6.8. assigning SD class ----------------------------------------------
-SD_class <- function(spec, sd_bwi, diff_c){
+SD_class <- function(sd_bwi, diff_c){
   # call it group 1 if the difference is below or equal the respective SD
   # call it group 2 if the difference is below or equal the 2 times respective SD (SD*2)
   # call it group 3 if the difference is below or equal the 3 times respective SD (SD*3)
@@ -924,8 +924,8 @@ return(sd_cl_df)
 diff_c_betrag = ifelse(C_comp_domSP_BWI$C_diff <0, C_comp_domSP_BWI$C_diff*(-1), C_comp_domSP_BWI$C_diff)
 
 SD_class(1, -4)
-view( C_comp_domSP_BWI %>% mutate(SD_group = SD_class(BWI_SP_group, SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff))
-C_comp_domSP_BWI %>% mutate(SD_group = SD_class(BWI_SP_group, SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff)
+view( C_comp_domSP_BWI %>% mutate(SD_group = SD_class(SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff))
+C_comp_domSP_BWI %>% mutate(SD_group = SD_class(SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff)
 # ----- 1.4. dealing with missing info ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
