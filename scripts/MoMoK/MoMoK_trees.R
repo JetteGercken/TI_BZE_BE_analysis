@@ -3581,6 +3581,7 @@ C_comp_domSP_BWI<- trees_P %>%
 
 
 # ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
+# ----- 4.2.1. DW volume üper hectar per plot compared with BWI DW volume (not separated by deadwood type) ------------------------------------
 DW_V_com <- DW_P %>% 
   select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
   left_join(., trees_total %>% 
@@ -3593,10 +3594,21 @@ DW_V_com <- DW_P %>%
             by = c("state" = "state_abbreviation")) %>% 
   mutate(V_diff = V_m3_ha - V_m3_ha_BWI)
 
+# export comparisson table
+write.csv(DW_V_com, "output/out_data/V_comp_DW_BWI_MoMoK.csv")
 
-DW_V_com_TY <- DW_P_TY %>% 
-  mutate(DW_type = as.character(DW_type)) %>% 
-  select(plot_ID, DW_type, V_tot_m3_ha) %>% 
+# ----- 4.2.2. DW volume comparisson with BWI by DW tpye per plot and state ------------------------------------
+# the comparisson via deadwood type resulted at first in great differences per deadwood type 
+# this was, however, caused by the issue that the different reference areas per type were
+# not facted in. To calculate the deadwood carbon or biomass per hectar in a comparable way,
+# we have to divide it by the area that is actually occupied by this deadwood type
+# which in our case we will use the volume share of each deadwood type to calculate the 
+# area occupied by the respective type
+
+DW_V_com_TY_ST <- DW_P_TY %>% 
+  mutate(DW_type = as.character(DW_type), 
+         V_pseu_mono = V_tot_m3_ha*(V_share/100)) %>% 
+  select(plot_ID, DW_type, V_tot_m3_ha, V_pseu_mono) %>% 
   left_join(., trees_total %>% 
               select(plot_ID, state) %>% 
               distinct(), 
@@ -3606,18 +3618,17 @@ DW_V_com_TY <- DW_P_TY %>%
               mutate(DW_type = ifelse(DW_type != "1W", DW_type, "1")) %>% 
               select(state_abbreviation, DW_type, V_m3_ha_BWI), 
             by = c("state" = "state_abbreviation", "DW_type")) %>% 
-  mutate(V_diff = V_tot_m3_ha - V_m3_ha_BWI)
+  mutate(V_diff = V_tot_m3_ha - V_m3_ha_BWI, 
+         V_diff_pseu_mono = V_pseu_mono - V_m3_ha_BWI)
+summary(DW_V_com_TY_ST)
 
 
-# export comparisson table
-write.csv(DW_V_com, "output/out_data/V_comp_DW_BWI_MoMoK.csv")
-
-mean(DW_V_com$V_diff)
-
-
+# ----- 4.2.3. DW volume & carbon comparisson with BWI by DW tpye per plot ------------------------------------
 DW_C_V_comp <- DW_P_TY %>% 
-  mutate(DW_type = as.character(DW_type)) %>% 
-  select(plot_ID, DW_type, C_tot_t_ha, V_tot_m3_ha) %>% 
+  mutate(DW_type = as.character(DW_type), 
+         V_pseu_mono = V_tot_m3_ha*(V_share/100), 
+         C_pseu_mono = C_tot_t_ha*(C_share/100)) %>% 
+  select(plot_ID, DW_type, C_tot_t_ha, V_tot_m3_ha, V_pseu_mono, C_pseu_mono) %>% 
   # left_join(., trees_total %>% 
   #             select(plot_ID, state) %>% 
   #             distinct(), 
@@ -3632,12 +3643,15 @@ DW_C_V_comp <- DW_P_TY %>%
               select(DW_type, V_m3_ha, C_t_ha), 
             by = "DW_type") %>% 
   mutate(V_diff = V_tot_m3_ha - V_m3_ha,
-         C_diff = C_tot_t_ha - C_t_ha)
+         C_diff = C_tot_t_ha - C_t_ha, 
+         V_diff_pseu = V_pseu_mono - V_m3_ha,
+         C_diff_pseu = C_pseu_mono - C_t_ha)
 
 summary(DW_C_V_comp)
 
-# -----4.3. Tests to explain C diff per ha -----------------------------------------------------------
 
+
+# -----4.3. Tests to explain C diff per ha -----------------------------------------------------------
 # ----- 4.3.1. correlation C Diff N_diff, BA_diff ---------------------------------------------
                   # select stand characteristics/ plot characteristics saved under compartiment "total"
 cor.df <- trees_P %>% 
@@ -3674,6 +3688,8 @@ cor.df <- trees_P %>%
          Nt_diff = Nt_ha - Nt_ha_BWI, 
          BA_diff = BA_m2ha - BA_m2ha_BWI, 
          dom_SP = as.factor(dom_SP)) 
+
+
 
 
 C_comp_domSP_BWI_A <- trees_P %>%                  
@@ -3785,18 +3801,6 @@ comp_pseudo_mono <- trees_P_SP %>%
          BA_diff = BA_m2_ha_mono - BA_m2ha_BWI, 
          dom_SP = as.factor(dom_SP)) 
 
-comp_pseudo_mono <- comp_pseudo_mono %>%
-  # create linear model with BA diff and Nt diff per species group
-  left_join(., comp_pseudo_mono %>% 
-              lm_table(C_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
-              select(BWI_SP_group, b0, b1, b2, Rsqr) %>% 
-              # replace NAs with 0 
-              mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
-            by = "BWI_SP_group") %>% 
-  # predict the expectable C_diff at the given basal area and tree number difference
-  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
-         # 5. calculate difference between calculated values and predicted values 
-         C_pred_vs_C_calc = C_diff - C_diff_pred) 
   
 
 
@@ -3832,7 +3836,7 @@ for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
   
 
 
-# ----- 4.3.4. Linear model C plausibility
+# ----- 4.3.4. Linear model C plausibility -------------------------------------------------------------
 # 1. calualte differences in C, number of stem and BA differences between 
 #    MoMoK and BWI
 # 2. define threshold of difference 
@@ -3842,6 +3846,7 @@ for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
 # 4. filter plots that differ from the predicted C stock to a defined extend
 # 5. check if the basal area differs significantly from BWI as well to "explain" the difference in C
 
+# ----- 4.3.4.1. Linear model C plausibility by SP & plot -------------------------------------------------------------
 # coefficents of non-linear height model per species and plot
 #https://rdrr.io/cran/forestmangr/man/lm_table.html
 # 1. dataset containing C, BA and Nt differences grouped by dominant species but not by age: 
@@ -3863,9 +3868,19 @@ cor.df <- cor.df %>%
 summary(lm(C_diff ~ Nt_diff + BA_diff, data = C_comp_domSP_BWI_A))
 
 
-
-
-
+# ----- 4.3.4.2. Linear model C plausibility by SP, Age, plot -------------------------------------------------------------
+comp_pseudo_mono <- comp_pseudo_mono %>%
+  # create linear model with BA diff and Nt diff per species group
+  left_join(., comp_pseudo_mono %>% 
+              lm_table(C_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
+              select(BWI_SP_group, b0, b1, b2, Rsqr) %>% 
+              # replace NAs with 0 
+              mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
+            by = "BWI_SP_group") %>% 
+  # predict the expectable C_diff at the given basal area and tree number difference
+  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
+         # 5. calculate difference between calculated values and predicted values 
+         C_pred_vs_C_calc = C_diff - C_diff_pred) 
 
 
 
