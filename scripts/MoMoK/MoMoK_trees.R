@@ -176,7 +176,7 @@ RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
 
 # ----- 1.2.5. BWI data --------------------------------------------------------------
 #LIVINg TREES
-colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit", 
+colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit_BWI", 
                             "1", "21", "41", "1-60", 
                             "61", "81", "101", "61-120",
                             "121", "141"  ,"161", ">120", "all", "Bemerkung")
@@ -195,7 +195,7 @@ colnames(BWI_C_age_SP) <- c("BWI_SP_group", "unit",
     #           BWI_SP_group == "LÃ¤rche" ~ "LA",
     #           BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
     #           TRUE ~ "all"))
-colnames(BWI_stand_char_SP) <- c("stand_characteristic", "unit", "EI", "BU", "ALH", "ALN", "LB", "FI", "TA", "DGL", "KI", "LA", "NB", "all", "Bemerkung")
+colnames(BWI_stand_char_SP) <- c("stand_characteristic", "unit_BWI", "EI", "BU", "ALH", "ALN", "LB", "FI", "TA", "DGL", "KI", "LA", "NB", "all", "Bemerkung")
 
 # DEADWOOD
 # deadwood categories MoMoK
@@ -210,12 +210,12 @@ colnames(BWI_stand_char_SP) <- c("stand_characteristic", "unit", "EI", "BU", "AL
       # 1 = liegend, starkes totholz (lying, strong/ large deadwood without roots)
       # 1W = liegend starkes totholz mit wurzelstock (lying, strong/ large deadwood with roots)
       # later, however, they will be summarized as group 1 
-colnames(BWI_DW_V) <- c("state", "unit", 
+colnames(BWI_DW_V) <- c("state", "unit_BWI", 
                         "2",  "3", "stehend", 
                         "5", "1W", "1", "liegend", 
                         "4", "6", "all", "Bemerkung")
 
-colnames(BWI_DW_C) <- c("Zielmerkmal", "unit", 
+colnames(BWI_DW_C) <- c("Zielmerkmal", "unit_BWI", 
                         "2",  "3", "stehend", 
                         "5", "1W", "1", "liegend", 
                         "4", "6", "all", "Bemerkung")
@@ -896,6 +896,36 @@ N_bg <- function(B_compartiment, N_bg_spec){
 }
 
 
+
+
+# ----- 1.3.6.8. assigning SD class ----------------------------------------------
+SD_class <- function(spec, sd_bwi, diff_c){
+  # call it group 1 if the difference is below or equal the respective SD
+  # call it group 2 if the difference is below or equal the 2 times respective SD (SD*2)
+  # call it group 3 if the difference is below or equal the 3 times respective SD (SD*3)
+  # call it group 4 if the difference is higher the  3 times the respective SD (SD*4)
+ 
+  # transfer negative differnce in postiive ones to enable comparisson with SD with is +/- 
+ diff_c_betrag = ifelse(diff_c <0, diff_c*(-1), diff_c);  
+
+ sd_cl_1 = 1*sd_bwi ;
+ sd_cl_2 = 2*sd_bwi ;
+ sd_cl_3 = 3*sd_bwi ;
+ 
+ sd_cl_df <- ifelse(diff_c_betrag <= sd_cl_1 , "1",
+        ifelse(diff_c_betrag > sd_cl_1  & diff_c_betrag <= sd_cl_2 , "2",
+               ifelse(diff_c_betrag > sd_cl_2  & diff_c_betrag <= sd_cl_3 , "3", 
+                      ifelse(diff_c_betrag > sd_cl_3 , "4", "5"))));
+ 
+return(sd_cl_df)
+  }
+
+
+diff_c_betrag = ifelse(C_comp_domSP_BWI$C_diff <0, C_comp_domSP_BWI$C_diff*(-1), C_comp_domSP_BWI$C_diff)
+
+SD_class(1, -4)
+view( C_comp_domSP_BWI %>% mutate(SD_group = SD_class(BWI_SP_group, SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff))
+C_comp_domSP_BWI %>% mutate(SD_group = SD_class(BWI_SP_group, SD_C, C_diff)) %>% select(BWI_SP_group, SD_C, SD_group, C_diff)
 # ----- 1.4. dealing with missing info ---------------------------------------------------
 # check for variabels with NAs
 summary(trees_total)
@@ -1507,10 +1537,10 @@ BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
   # pivoting all ages into one column 
   pivot_longer(c("1", "21", "41", "61", "81", "101", "121", "141"  ,"161",  "all"), names_to = "age_class", values_to = "C_t_BWI") %>% 
   # pivoting SD next to carbon values
-  pivot_wider(names_from = unit, values_from = C_t_BWI, values_fill = 0) %>% 
+  pivot_wider(names_from = unit_BWI, values_from = C_t_BWI, values_fill = 0) %>% 
   # rename(new_column_name = old_column_name) https://sparkbyexamples.com/r-programming/dplyr-rename-column/
   rename("C_t_ha_BWI" = "[kg/ha]") %>% 
-  rename("SD_BWI" = "SE95 Â±") %>% 
+  rename("SD_C_BWI" = "SE95 Â±") %>% 
   # introducing BWI species abbreviations 
   mutate(BWI_SP_group = case_when(BWI_SP_group == "Eiche" ~ "EI", 
                                   BWI_SP_group == "Buche" ~ "BU",
@@ -1529,19 +1559,39 @@ BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
 # STAND CHARACTERISTICS LIVING TREES
 #zielmerkmale_SP_2017
 BWI_stand_char_SP <- na.omit(BWI_stand_char_SP) %>%
-  filter(unit != "SE95 ±") %>% 
-  dplyr::select(-c("Bemerkung", "unit")) %>% 
-  pivot_longer(c(EI:all), names_to = "BWI_SP_group", values_to = "values") %>% 
+    dplyr::select(-c("Bemerkung")) %>% 
+    filter(stand_characteristic %in% c(#"BWI_SP_group", 
+                                       "Grundfläche [m²/ha]", "Stammzahl [1/ha]",  
+                                        "Biomasse [kg/ha]", "oberirdische Biomasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
+                                        "Kohlenstoffmasse [kg/ha]", "oberirdische Kohlenstoffmasse [kg/ha]", "unterirdische Kohlenstoffmasse [kg/ha]", 
+                                        "Vorrat [m³/ha]", "Waldfläche (gemäß Standflächenanteil) [ha]", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") & unit_BWI == "SE95 ±" |
+             stand_characteristic %in% c(#"BWI_SP_group", 
+                                         "Grundfläche [m²/ha]", "Stammzahl [1/ha]",  
+                                         "Biomasse [kg/ha]", "oberirdische Biomasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
+                                         "Kohlenstoffmasse [kg/ha]", "oberirdische Kohlenstoffmasse [kg/ha]", "unterirdische Kohlenstoffmasse [kg/ha]", 
+                                         "Vorrat [m³/ha]", "Waldfläche (gemäß Standflächenanteil) [ha]", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") &  endsWith(unit_BWI, "ha]"))%>% 
+  #filter(unit_BWI == "SE95 ±" | endsWith(unit_BWI, "ha]")) %>% 
+  pivot_longer(c(EI:all), names_to = "BWI_SP_group", values_to = "values") %>% # 264
+  # add sufix to stand_characteristics for pivoting wider:  https://stackoverflow.com/questions/36069257/adding-a-suffix-to-all-values-of-a-column-in-r
+    mutate(stand_characteristic = ifelse(unit_BWI == "SE95 ±", paste0(stand_characteristic, "_SD"), stand_characteristic)) %>% 
+    dplyr::select(- "unit_BWI") %>%                                          # have to deselect it otherwise the pivot wider wont work
   pivot_wider(names_from = stand_characteristic, values_from = values) %>% 
-  dplyr::select(BWI_SP_group, ends_with("ha]")) %>% 
+  #dplyr::select(BWI_SP_group, ends_with("ha]"), ends_with("ha]_SD")) %>% 
   # this is just to reorder to then pivot all compartiments into one column
   select("BWI_SP_group", "Grundfläche [m²/ha]", "Stammzahl [1/ha]",  
          "Biomasse [kg/ha]", "oberirdische Biomasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
-         "Kohlenstoffmasse [kg/ha]", "oberirdische Kohlenstoffmasse [kg/ha]", "unterirdische Biomasse [kg/ha]", 
-         "Vorrat [m³/ha]", "Waldfläche (gemäß Standflächenanteil) [ha]", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") %>%  
+         "Kohlenstoffmasse [kg/ha]", "oberirdische Kohlenstoffmasse [kg/ha]", "unterirdische Kohlenstoffmasse [kg/ha]", #9
+         "Vorrat [m³/ha]",  
+         "Waldfläche (gemäß Standflächenanteil) [ha]", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]",
+         # standart deviation columns
+         "Grundfläche [m²/ha]_SD", "Stammzahl [1/ha]_SD",  #14
+         "Biomasse [kg/ha]_SD", "oberirdische Biomasse [kg/ha]_SD", "unterirdische Biomasse [kg/ha]_SD", #17
+         "Kohlenstoffmasse [kg/ha]_SD", "oberirdische Kohlenstoffmasse [kg/ha]_SD", "unterirdische Kohlenstoffmasse [kg/ha]_SD", 
+         "Vorrat [m³/ha]_SD",  
+         "Waldfläche (gemäß Standflächenanteil) [ha]_SD", "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]_SD") %>%  # ,
 # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-to_long(keys = c("B_compartiment",  "C_compartiment"), 
-        values = c( "B_kg", "C_kg"),  names(.)[4:6], names(.)[7:9]) %>% 
+to_long(keys = c("B_compartiment",  "C_compartiment", "B_SD_compartiment", "C_SD_compartiment"), 
+        values = c( "B_kg", "C_kg", "SD_B", "SD_C"),  names(.)[4:6], names(.)[7:9], names(.)[15:17], names(.)[18:20]) %>% 
   # hanging the compartiments names and deselct the other compartiment columns: https://stackoverflow.com/questions/61425318/using-mutate-and-starts-with
   mutate(B_compartiment = case_when(startsWith(B_compartiment, "unterirdische") ~ "bg", 
                                     startsWith(B_compartiment, "oberirdische") ~ "ag",
@@ -1551,7 +1601,16 @@ to_long(keys = c("B_compartiment",  "C_compartiment"),
   rename("Nt_ha" = "Stammzahl [1/ha]") %>% 
   rename("SP_A_ha" = "Waldfläche (gemäß Standflächenanteil) [ha]") %>% 
   rename("total_A_ha" = "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]") %>% 
-  select(- "C_compartiment")
+    rename("SD_BA" = "Grundfläche [m²/ha]_SD") %>% 
+    rename("SD_Nt" = "Stammzahl [1/ha]_SD") %>% 
+    rename("SD_SP_A" = "Waldfläche (gemäß Standflächenanteil) [ha]_SD") %>% 
+    rename("SD_total_A" = "Zugehörige Holzbodenfläche des Auswertungsgebietes [ha]_SD") %>% 
+  select(- c("C_compartiment", "B_SD_compartiment", "C_SD_compartiment")) %>% 
+  # changing unit from kg to tons
+  mutate(across(c("B_kg", "C_kg", "SD_B", "SD_C"), ~ tons(.x))) %>% 
+  rename("B_t_ha_BWI" = "B_kg") %>% 
+  rename("C_t_ha_BWI" = "C_kg")
+
 
 
 # VOLUME DEADWOOD
@@ -1582,17 +1641,21 @@ BWI_DW_V <- BWI_DW_V %>%
 
 # CARBON DEADWOOD
 BWI_DW_C <- BWI_DW_C %>% 
-    filter(unit != "SE95 Â±") %>% 
+    filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% 
     filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
              Zielmerkmal == "Totholzmasse [t/ha]" |
              Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
-    select(-c("Bemerkung", "unit")) %>% 
+    select(-c("Bemerkung")) %>% 
     select("2",  "3", "stehend", "5", "1W", "1", "liegend", "4", "6","all",
-         "Zielmerkmal") %>%   
-    mutate(Zielmerkmal = case_when(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" ~ "V_m3_ha", 
-                                 Zielmerkmal == "Totholzmasse [t/ha]" ~ "B_t_ha", 
-                                 Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" ~ "C_t_ha", 
-                                 TRUE ~ NA)) %>% 
+         "Zielmerkmal", "unit_BWI") %>%   
+    mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "V_m3_ha",
+                                    Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "B_t_ha",
+                                    Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "C_t_ha",
+                                    Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI == "SE95 Â±"  ~ "SD_V",
+                                    Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_B", 
+                                    Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
+                                   TRUE ~ NA)) %>%  
+    select(- "unit_BWI") %>% 
     pivot_longer(c("2",  "3", "stehend", 
                  "5", "1W", "1", "liegend", 
                  "4", "6","all"), 
@@ -1602,6 +1665,10 @@ BWI_DW_C <- BWI_DW_C %>%
     distinct() %>% 
     pivot_wider(values_from = values, 
                 names_from = Zielmerkmal)
+  
+  
+  # to_long(keys = c("B_compartiment",  "C_compartiment"), 
+  #         values = c( "B_kg", "C_kg"),  names(.)[4:6], names(.)[7:9]) %>%
 
 
 # ----- 1.4.4. Nitrogen content dataset ----------------------------------------
@@ -3558,10 +3625,9 @@ C_comp_domSP_BWI<- trees_P %>%
               by = c("dom_SP" = "Chr_code_ger")) %>% 
     left_join(., BWI_stand_char_SP %>%
                 filter(compartiment == "ag") %>% 
-                mutate(C_t_ha_BWI = C_kg/1000) %>% 
                 rename("Nt_ha_BWI" = "Nt_ha") %>% 
                 rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
-                select(BWI_SP_group, Nt_ha_BWI, BA_m2ha_BWI) %>% 
+                select(BWI_SP_group, C_t_ha_BWI, Nt_ha_BWI, BA_m2ha_BWI, SD_C) %>% 
                 distinct(), 
               by = "BWI_SP_group") %>% 
     left_join(., DW_V_com %>% 
@@ -3576,7 +3642,7 @@ C_comp_domSP_BWI<- trees_P %>%
            dom_SP = as.factor(dom_SP))
 
 
- 
+ C_comp_domSP_BWI %>% mutate(SD_group = SD_class(SD_C, C_diff)) 
 
 
 
@@ -3672,7 +3738,6 @@ cor.df <- trees_P %>%
             by = c("dom_SP" = "Chr_code_ger")) %>% 
   left_join(., BWI_stand_char_SP %>%
               filter(compartiment == "ag") %>% 
-              mutate(C_t_ha_BWI = C_kg/1000) %>% 
               rename("Nt_ha_BWI" = "Nt_ha") %>% 
               rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
               select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, BA_m2ha_BWI) %>% 
@@ -3728,8 +3793,7 @@ C_comp_domSP_BWI_A <- trees_P %>%
             by = c("BWI_SP_group", "age_class")) %>% 
   # join in stand specific data (number of stems per ha, basal area m2ha) from the BWI 
   left_join(., BWI_stand_char_SP %>%
-              filter(compartiment == "ag") %>% 
-              #mutate(C_t_ha_BWI = C_kg/1000) %>% 
+              filter(compartiment == "ag") %>%
               rename("Nt_ha_BWI" = "Nt_ha") %>% 
               rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
               select(BWI_SP_group, Nt_ha_BWI, BA_m2ha_BWI) %>% 
@@ -3775,7 +3839,6 @@ comp_pseudo_mono <- trees_P_SP %>%
   # BWI stand characteristics dataset to compare N, C, BA by species group
   left_join(., BWI_stand_char_SP %>%
               filter(compartiment == "ag") %>% 
-              mutate(C_t_ha_BWI = C_kg/1000) %>% 
               rename("Nt_ha_BWI" = "Nt_ha") %>% 
               rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
               select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, BA_m2ha_BWI) %>% 
