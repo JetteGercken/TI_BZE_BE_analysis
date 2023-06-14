@@ -130,8 +130,10 @@ BWI_C_age_SP <- read.delim(file = here("data/input/General/BWI_C_age_SP.csv"), s
 BWI_stand_char_SP <- read.delim(file = here("data/input/General/zielmerkmale_SP_2017.csv"), sep = ";", dec = ",")
 # National forest inventory (BWI) volume of deadwood by deadwood type and federal state
 BWI_DW_V <- read.delim(file = here("data/input/General/DW_BWI.csv"), sep = ";", dec = ",")
-# National forest inventory (BWI) carbon stock of deadwood by deadwood type
+# National forest inventory (BWI) carbon stock of deadwood by deadwood type from "Kohlenstoffinventur 2017"
 BWI_DW_C <- read.delim(file = here("data/input/General/DW_C_TY_2017.csv"), sep = ";", dec = ",")
+# National forest inventory (BWI) carbon, volume and biomass per deadwood biomass class "Kohlenstoffinventur 2017"
+BWI_DW_iB <- read.delim(file = here("data/input/General/BWI_DW_iB.csv"), sep = ";", dec = ",")  # iB = item Biomass --> biomass per deadwood item
 
 
 
@@ -164,7 +166,7 @@ DW_total$D_cm <- as.numeric(DW_total$D_cm)
 DW_total %>% filter(is.na(D_cm))
 DW_total <- DW_total %>% filter(!is.na(D_cm))
 # SP_group = Baumartengruppe totholz
-# DW_type = standing, lying
+# DW_type = standing, lying, etc. 
 # dec_type = decay type / Zersetzungsgrad
 
 
@@ -210,16 +212,18 @@ colnames(BWI_stand_char_SP) <- c("stand_characteristic", "unit_BWI", "EI", "BU",
       # 1 = liegend, starkes totholz (lying, strong/ large deadwood without roots)
       # 1W = liegend starkes totholz mit wurzelstock (lying, strong/ large deadwood with roots)
       # later, however, they will be summarized as group 1 
+# volume/ ha by federal state and deadwood type
 colnames(BWI_DW_V) <- c("state", "unit_BWI", 
-                        "2",  "3", "stehend", 
-                        "5", "1W", "1", "liegend", 
+                        "2",  "3", "S", 
+                        "5", "1W", "1", "L", 
                         "4", "6", "all", "Bemerkung")
-
+# V, C, etc. per hectar by deadwood type
 colnames(BWI_DW_C) <- c("Zielmerkmal", "unit_BWI", 
-                        "2",  "3", "stehend", 
-                        "5", "1W", "1", "liegend", 
+                        "2",  "3", "S", 
+                        "5", "1W", "1", "L", 
                         "4", "6", "all", "Bemerkung")
-
+# Volume, carbon etc. per hecktar by item-mass-class
+colnames(BWI_DW_iB) <- c("Zielmerkmal", "unit_BWI", "0.05", "0.1", "0.2", "0.5", "0.6", "all", "Bemerkung")
 
 
 # ----- 1.2.6. MoMoK plot info --------------------------------------------------------------
@@ -229,6 +233,9 @@ colnames(site_info) <- c("plot_ID", "BZE", "state", "peat_type", "hydro_status",
                          "SP_name", 
                          "Bemerkung", "Beschrit", 
                          "kat_momok", "GK4_re", "GK4_ho") 
+
+
+
 
 # ---- 1.3 functions ------------------------------------------------------
 # ---- 1.3.1. circle ------------------------------------------------------
@@ -445,10 +452,8 @@ tapes_swB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  sw <- tprBiomass(obj.tbio, component="sw");
-  stw <- tprBiomass(obj.tbio, component="stw");
-  coarse.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(coarse.df$sw) # solid wwood without bark
+  sw.df <- tprBiomass(obj.tbio, component="sw");
+  return(sw.df$sw) # solid wwood without bark
 }
 
 # ---- 1.3.3.3. coarsewood bark -------------------------------------------------
@@ -470,12 +475,9 @@ tapes_swbB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  sb <- tprBiomass(obj.tbio, component="sb");
-  stb <- tprBiomass(obj.tbio, component="stb");
-  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
-  return(bark.df$sb)
+  sb.df <- as.data.frame(tprBiomass(obj.tbio, component="sb"));
+  return(sb.df$sb) # only select solid wood bark value and don´t print the header too: sd$sb
 }
-
 
 
 # ----- 1.3.4.4. stumpwood bark  ------------------------------------
@@ -486,10 +488,8 @@ tapes_stwbB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  sb <- tprBiomass(obj.tbio, component="sb");
-  stb <- tprBiomass(obj.tbio, component="stb");
-  bark.df <- cbind(sb, stb) %>% mutate(bark_tapes = sb + stb); # bark stemwood + stumbwood
-  return(bark.df$stb)
+  stb.df <- as.data.frame(tprBiomass(obj.tbio, component="stb"));
+  return(stb.df$stb)
 }
 
 # ----- 1.3.4.4. stumwood   ------------------------------------
@@ -500,10 +500,8 @@ tapes_stwB <- function(spec_tpS, d, dh, h){
   Hm = na.omit(as.list(dh));
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  sw <- tprBiomass(obj.tbio, component="sw");
-  stw <- tprBiomass(obj.tbio, component="stw");
-  coarsebark.df <- cbind(sw, stw) %>% mutate(tapes_St = sw+stw); # most likely the GHGI does not inlude stump wood, so we cannot include it in the coarsewood calculation
-  return(coarsebark.df$stw) # solid wwood without bark
+  stw.df <- as.data.frame(tprBiomass(obj.tbio, component="stw"));
+  return(stw.df$stw) # solid wwood without bark
 }
 
 
@@ -523,7 +521,7 @@ Vondr_crWbB <- function(spec, d, h){  # I´ll use the secies groups assigned for
   return((b0[spec] + b1[spec]* d^b2[spec] * h^b3[spec]) + (b4[spec] + b5[spec]* d^b6[spec] * h^b7[spec]))
 }
 
-# ---- 1.3.4.6.4. TapeS coarsewood biomass with bark - sw+sb+stw+stb -----------------------------------------
+# ---- 1.3.4.6.4. TapeS total solid wood biomass with bark - sw+sb -----------------------------------------
 tapes_crsWbB <- function(spec_tpS, d, dh, h){         
   spp = na.omit(spec_tpS);
   Dm = na.omit(as.list(d));
@@ -1522,7 +1520,7 @@ summary(RG_total)
 
 
 # ----- 1.4.3. BWI comparisson datasets ---------------------------------------------------------
-
+# ----- 1.4.3.1. carbon living trees by age class and species group BWI comparisson datasets ---------------------------------------------------------
 # CARBON LIVING TREES
 # carbon stock in t per ha separeted by age and species groups
 BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
@@ -1551,7 +1549,7 @@ BWI_C_age_SP <- na.omit(BWI_C_age_SP) %>%
                                   BWI_SP_group == "alle NadelbÃ¤ume" ~ "NB", 
                                   TRUE ~ "all"))
 
-
+# ----- 1.4.3.2. carbon and stand characteristics like number of stems for living trees by species group BWI comparisson datasets ---------------------------------------------------------
 # STAND CHARACTERISTICS LIVING TREES
 #zielmerkmale_SP_2017
 BWI_stand_char_SP <- na.omit(BWI_stand_char_SP) %>%
@@ -1608,12 +1606,12 @@ to_long(keys = c("B_compartiment",  "C_compartiment", "B_SD_compartiment", "C_SD
   rename("C_t_ha_BWI" = "C_kg")
 
 
-
+# ----- 1.4.3.3. volume dead trees byfederal state BWI comparisson datasets ---------------------------------------------------------
 # VOLUME DEADWOOD
 BWI_DW_V <- BWI_DW_V %>% 
   select(-c("Bemerkung")) %>% 
-   pivot_longer(c("2",  "3", "stehend", 
-                  "5", "1W", "1", "liegend", 
+   pivot_longer(c("2",  "3", "S", 
+                  "5", "1W", "1", "L", 
                   "4", "6","all"), 
                 names_to = "DW_type", 
                 values_to = "V_m3_ha_BWI", 
@@ -1635,6 +1633,7 @@ BWI_DW_V <- BWI_DW_V %>%
                            state == "Deutschland (alle LÃ¤nder)" ~ "all", 
                            TRUE ~ "NA")) 
 
+# ----- 1.4.3.4. carbon dead trees by deadwood type BWI comparisson datasets ---------------------------------------------------------
 # CARBON DEADWOOD
 BWI_DW_C <- BWI_DW_C %>% 
     filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% 
@@ -1642,7 +1641,7 @@ BWI_DW_C <- BWI_DW_C %>%
              Zielmerkmal == "Totholzmasse [t/ha]" |
              Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
     select(-c("Bemerkung")) %>% 
-    select("2",  "3", "stehend", "5", "1W", "1", "liegend", "4", "6","all",
+    select("2",  "3", "S", "5", "1W", "1", "L", "4", "6","all",
          "Zielmerkmal", "unit_BWI") %>%   
     mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "V_m3_ha",
                                     Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "B_t_ha",
@@ -1652,8 +1651,8 @@ BWI_DW_C <- BWI_DW_C %>%
                                     Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
                                    TRUE ~ NA)) %>%  
     select(- "unit_BWI") %>% 
-    pivot_longer(c("2",  "3", "stehend", 
-                 "5", "1W", "1", "liegend", 
+    pivot_longer(c("2",  "3", "S", 
+                 "5", "1W", "1", "L", 
                  "4", "6","all"), 
                names_to = "DW_type", 
                values_to = "values", 
@@ -1663,8 +1662,95 @@ BWI_DW_C <- BWI_DW_C %>%
                 names_from = Zielmerkmal)
   
   
-  # to_long(keys = c("B_compartiment",  "C_compartiment"), 
-  #         values = c( "B_kg", "C_kg"),  names(.)[4:6], names(.)[7:9]) %>%
+# ----- 1.4.3.4. carbon dead trees by item mass class BWI comparisson datasets ---------------------------------------------------------
+rbind(
+  # dataset with picoted IB classes and ziemlermalnen
+  BWI_DW_iB %>% 
+    filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
+    filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
+             Zielmerkmal == "Totholzmasse [t/ha]" |
+             Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
+    select(-c("Bemerkung")) %>%   
+    mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_V_m3_ha",
+                                    Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_B_t_ha",
+                                    Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "BWI_C_t_ha",
+                                    Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI == "SE95 Â±"  ~ "SD_V",
+                                    Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_B", 
+                                    Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
+                                    TRUE ~ NA)) %>%
+    select(- "unit_BWI") %>% 
+    pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
+                 names_to = "iB_class", 
+                 values_to = "values", 
+                 names_repair = "unique") %>% 
+    select(-c("all")),
+  # dataset with picoted iB classes, ziemlerkmalen and shares
+  BWI_DW_iB %>% 
+  filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
+  filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
+           Zielmerkmal == "Totholzmasse [t/ha]" |
+           Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
+  select(-c("Bemerkung")) %>%   
+  mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_V_m3_ha",
+                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_B_t_ha",
+                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "BWI_C_t_ha",
+                                  Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI == "SE95 Â±"  ~ "SD_V",
+                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_B", 
+                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
+                                  TRUE ~ NA)) %>%
+  select(- "unit_BWI") %>% 
+  pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
+               names_to = "iB_class", 
+               values_to = "values", 
+               names_repair = "unique") %>% 
+  mutate(share = values/all) %>%
+  select(-c("all", "values")),
+  
+  
+  # datasets with DW_type == "all" data pivot longer
+ BWI_DW_iB %>% 
+  filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
+  filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
+           Zielmerkmal == "Totholzmasse [t/ha]" |
+           Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
+  select(-c("Bemerkung")) %>%   
+  mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_V_m3_ha",
+                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_B_t_ha",
+                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "BWI_C_t_ha",
+                                  Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI == "SE95 Â±"  ~ "SD_V",
+                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_B", 
+                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
+                                  TRUE ~ NA)) %>%
+  select(- "unit_BWI") %>% 
+  pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
+               names_to = "iB_class", 
+               values_to = "values", 
+               names_repair = "unique") %>% 
+  mutate(share = values/all) %>% 
+  pivot_longer(c( "all"), 
+               names_to = "iB_class_all", 
+               values_to = "values_all", 
+               names_repair = "unique") %>% 
+  select(c("Zielmerkmal", "iB_class_all", "values_all")) %>% 
+  # crating a column with share 100% and renaming "_all" columns to rbind correctly
+    mutate(share = 1) %>% 
+  rename("iB_class" = "iB_class_all") %>% 
+  rename("values" = "values_all")) %>%
+  distinct() %>% 
+  arrange(Zielmerkmal) %>% 
+  pivot_wider(values_from = values, 
+              names_from = Zielmerkmal)
+  
+ 
+ 
+ 
+# pivot the iB classes
+# calcualte the V share of each iB class in terms of total volume in all classes per hektar
+
+
+# Totholzvorrat [mÂ³/ha]
+# Totholzmasse [t/ha]
+#  Totholz-Kohlenstoff [t/ha]
 
 
 # ----- 1.4.4. Nitrogen content dataset ----------------------------------------
@@ -2365,7 +2451,12 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                TRUE ~ NA), 
          S_L_DW_type = case_when(DW_type %in% c(4, 2, 3) ~ "S",  # if the deadwood type is 2, 3 (stehend; ganzer Baum und Bruchstück) or 4 (Wurzelstock) --> standing deadwood (S)
                                  DW_type %in% c(6, 1, 5) ~ "L", # if the deadwood type is 6 (im Haufen vorkommendes Totholz), 1 (leigend, starkes Totholz), 5 (liegend ganzer Baum) --> lying deadwood (L)
-                                 TRUE ~ NA)) %>% 
+                                 TRUE ~ NA),
+         iB_class = case_when(V_dw_m3 < 0.05 ~ "0.05",  # Stückmasse Klasse --> class categorizing volume per deadwood item
+                                     V_dw_m3 >= 0.05 & V_dw_m3 < 0.1 ~ "0.1", 
+                                     V_dw_m3 >= 0.1 & V_dw_m3 <0.2 ~ "0.2", 
+                                     V_dw_m3 >= 0.2 & V_dw_m3 <0.5 ~ "0.5", 
+                                     TRUE ~ "0.6")) %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)
 
 
@@ -2674,7 +2765,7 @@ RG_total_comparisson <- RG_total %>%
 
 
 
-
+# pivoting RG total s that biomass, carbon etc. of all compartiments is in one column
 RG_total<- RG_total %>% 
   # assigning numeric diameters to size classes through mean per class 
   mutate(D_cm = case_when(D_class_cm == 0 ~ 0, 
@@ -3820,12 +3911,7 @@ DW_C_V_comp <- DW_P_TY %>%
          V_pseu_mono = V_tot_m3_ha*(V_share/100), 
          C_pseu_mono = C_tot_t_ha*(C_share/100)) %>% 
   select(plot_ID, DW_type, C_tot_t_ha, V_tot_m3_ha, V_pseu_mono, C_pseu_mono) %>% 
-  # left_join(., trees_total %>% 
-  #             select(plot_ID, state) %>% 
-  #             distinct(), 
-  #           by = "plot_ID") %>% 
   left_join(., BWI_DW_C %>% 
-              #filter(DW_type == "all") %>% 
               mutate(DW_type = ifelse(DW_type != "1W", DW_type, "1")) %>% 
               group_by(DW_type) %>%  # here i am summarizing DW type "liegend stark ohne wurzlstock and liegend stark mit wurzelstock
               summarise(C_t_ha = mean(C_t_ha), 
@@ -3842,18 +3928,17 @@ summary(DW_C_V_comp)
 
 # -----2.5.2.8. deadwood comparisson by lying vs. standing plot ---------------------------------------------------
 
-DW_total %>% 
+DW_comp_SL <- DW_total %>% 
   group_by(plot_ID, S_L_DW_type) %>% 
   summarise(#plot_A_ha = mean(CCS_A_ha),
     V_m3_SL = sum(na.omit(V_dw_m3)), 
     B_t_SL = sum(na.omit(B_dw_kg)/1000),
-    # actually this should be the B_t_ha because it also includes the fine wood compartiment, 
+    # actually B_t_tapes_SL should be the main B_t_ha to calcuate with because it also includes the fine wood compartiment, 
     # which is not included in the transformation from volume to biomass performed by the BWI
     #B_t_tapes_SL = sum(na.omit(dw_ag_kg)/ 1000), 
     C_t_SL = sum(na.omit(C_dw_kg)/1000), 
-    #N_t_SL = sum(na.omit(ag_N_dw_kg)/1000), 
     Nt_SL = n()) %>%
-  # dataset with are per plot cnsidreing multpiple sampling circuits per plot
+  # dataset with area per plot considreing calcutaling sum of the area pf all sampling circuits per plot(if there are multpiple sampling circuits per plot)
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
               distinct() %>%
@@ -3862,6 +3947,7 @@ DW_total %>%
               summarize(plot_A_ha = sum(CCS_A_ha))%>% 
               mutate(MoMoK_A_ha = (50*50)/10000), 
             by = "plot_ID") %>% 
+  # total volume, Biomass, and carbon per plot to calculate the V, B, and C chare
   left_join(., DW_total %>% 
               group_by(plot_ID) %>% 
               summarise(V_m3_tot_plot = sum(na.omit(V_dw_m3)/1000), 
@@ -3871,17 +3957,40 @@ DW_total %>%
   mutate(V_share = V_m3_SL/V_m3_tot_plot, 
          B_share = B_t_SL/B_t_tot_plot, 
          C_share = C_t_SL/C_t_tot_plot) %>% 
-  mutate(V_m3_ha = V_m3_plot/plot_A_ha, 
-         B_t_ha = B_t_plot/plot_A_ha, 
+  mutate(V_m3_ha = V_m3_SL/plot_A_ha, 
+         B_t_ha = B_t_SL/plot_A_ha, 
          #B_t_tapes_ha = B_t_tapes_plot/ plot_A_ha, 
-         C_t_ha = C_t_plot/plot_A_ha, 
+         C_t_ha = C_t_SL/plot_A_ha, 
          #N_t_ha = N_t_plot/plot_A_ha, 
-         Nt_ha = Nt_plot/plot_A_ha, 
+         Nt_ha = Nt_SL/plot_A_ha, 
          V_pseu_m3ha = V_m3_ha*V_share, 
          B_pseu_tha= B_t_ha*B_share, 
-         C_pseu_tha = C_t_ha*C_share) 
-# I have to join in the BWI cmparisson dataset by standing and lying dw type and
-# and then cary out the comparisson by pseudo monoculture and S/L dw type
+         C_pseu_tha = C_t_ha*C_share) %>% 
+  # I have to join in the BWI cmparisson dataset by standing and lying dw type and
+  left_join(., BWI_DW_C %>% 
+              select(DW_type, C_t_ha, SD_C, V_m3_ha, SD_V) %>% 
+              rename("C_t_ha_BWI" = "C_t_ha") %>% 
+              rename("V_m3_ha_BWI" = "V_m3_ha"), 
+            by = c("S_L_DW_type" = "DW_type")) %>% 
+  # comparisson by pseudo monoculture of the S/L dw type
+  mutate(V_pseu_diff = V_pseu_m3ha - V_m3_ha, 
+         C_pseu_diff = C_pseu_tha - C_t_ha)
+summary(DW_comp_SL)
+
+
+# create biomass item class
+DW_total  %>% 
+  group_by(plot_ID, iB_class) %>% 
+  summarise(N_iB_class = n(), 
+            V_iB_class = sum(V_dw_m3)) %>% 
+  left_join(., DW_total %>% 
+              group_by(plot_ID) %>% 
+              summarise(N_iB_class_plot = n(), 
+                        V_iB_class_plot = sum(V_dw_m3)), 
+            by = "plot_ID") %>% 
+  mutate(iB_N_share = N_iB_class/N_iB_class_plot, 
+         iB_V_share = V_iB_class/V_iB_class_plot)
+
 
 # -----4.3.correlation between stand characteristics and C stocks -----------------------------------------------------------
 # creating correlation matrix for every dominant species
