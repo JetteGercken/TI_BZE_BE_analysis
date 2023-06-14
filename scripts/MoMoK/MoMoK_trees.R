@@ -134,7 +134,8 @@ BWI_DW_V <- read.delim(file = here("data/input/General/DW_BWI.csv"), sep = ";", 
 BWI_DW_C <- read.delim(file = here("data/input/General/DW_C_TY_2017.csv"), sep = ";", dec = ",")
 # National forest inventory (BWI) carbon, volume and biomass per deadwood biomass class "Kohlenstoffinventur 2017"
 BWI_DW_iB <- read.delim(file = here("data/input/General/BWI_DW_iB.csv"), sep = ";", dec = ",")  # iB = item Biomass --> biomass per deadwood item
-
+# Natioanl Carbon inventory (Kohlenstoffinventur 2017) volume of deadwood per deadwod type and item-mass-class
+BWI_DW_V_iB_TY <-read.delim(file = here("data/input/General/BWI_DW_V_iB_DW_type.csv"), sep = ";", dec = ",")  # iB = item Biomass --> biomass per deadwood item
 
 
 # ----- 1.2. colnames, vector type --------------------------------------------------------
@@ -224,6 +225,9 @@ colnames(BWI_DW_C) <- c("Zielmerkmal", "unit_BWI",
                         "4", "6", "all", "Bemerkung")
 # Volume, carbon etc. per hecktar by item-mass-class
 colnames(BWI_DW_iB) <- c("Zielmerkmal", "unit_BWI", "0.05", "0.1", "0.2", "0.5", "0.6", "all", "Bemerkung")
+
+# Volume per hecktar by item-mass-class and deadwood type
+colnames(BWI_DW_V_iB_TY) <- c("DW_type", "unit_BWI", "0.05", "0.1", "0.2", "0.5", "0.6", "all", "Bemerkung")
 
 
 # ----- 1.2.6. MoMoK plot info --------------------------------------------------------------
@@ -1663,7 +1667,7 @@ BWI_DW_C <- BWI_DW_C %>%
   
   
 # ----- 1.4.3.4. carbon dead trees by item mass class BWI comparisson datasets ---------------------------------------------------------
-rbind(
+BWI_DW_iB<- rbind(
   # dataset with picoted IB classes and ziemlermalnen
   BWI_DW_iB %>% 
     filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
@@ -1679,24 +1683,25 @@ rbind(
                                     Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
                                     TRUE ~ NA)) %>%
     select(- "unit_BWI") %>% 
+    # pivoting iB classes into one column
+    # i cant picot "all" with the other columns because I wont be able to caculate the shares as easy, so i have to leave it out here and join it in later
     pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
                  names_to = "iB_class", 
                  values_to = "values", 
                  names_repair = "unique") %>% 
     select(-c("all")),
-  # dataset with picoted iB classes, ziemlerkmalen and shares
+  # dataset with picoted iB classes and shares of the respective ziemlerkmal (but not for the SE of the respecitive ziemlmerkmal!)
+  # --> shares are saved unser "values" Zielmerkmal is named "---"_share accordingly 
+  # to anable the pivot wider later
   BWI_DW_iB %>% 
-  filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
+  filter(endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
   filter(Zielmerkmal == "Totholzvorrat [mÂ³/ha]" |
            Zielmerkmal == "Totholzmasse [t/ha]" |
            Zielmerkmal == "Totholz-Kohlenstoff [t/ha]") %>% 
   select(-c("Bemerkung")) %>%   
-  mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_V_m3_ha",
-                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_B_t_ha",
-                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "BWI_C_t_ha",
-                                  Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI == "SE95 Â±"  ~ "SD_V",
-                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_B", 
-                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI == "SE95 Â±" ~ "SD_C",
+  mutate(Zielmerkmal = case_when( Zielmerkmal == "Totholzvorrat [mÂ³/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_V_iB_share",
+                                  Zielmerkmal == "Totholzmasse [t/ha]" & unit_BWI != "SE95 Â±" ~ "BWI_B_iB_share",
+                                  Zielmerkmal == "Totholz-Kohlenstoff [t/ha]" & unit_BWI != "SE95 Â±"~ "BWI_C_iB_share",
                                   TRUE ~ NA)) %>%
   select(- "unit_BWI") %>% 
   pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
@@ -1704,9 +1709,8 @@ rbind(
                values_to = "values", 
                names_repair = "unique") %>% 
   mutate(share = values/all) %>%
-  select(-c("all", "values")),
-  
-  
+  select(-c("all", "values")) %>% 
+    rename("values" = "share"), # remaining colls Zielmerkmal iB_class values = share per ziemlerkmal and iB_class
   # datasets with DW_type == "all" data pivot longer
  BWI_DW_iB %>% 
   filter(unit_BWI == "SE95 Â±"| endsWith(unit_BWI, "ha]")) %>% # select only hectar values and standart deviation
@@ -1726,31 +1730,69 @@ rbind(
                names_to = "iB_class", 
                values_to = "values", 
                names_repair = "unique") %>% 
-  mutate(share = values/all) %>% 
-  pivot_longer(c( "all"), 
+    pivot_longer(c( "all"), 
                names_to = "iB_class_all", 
                values_to = "values_all", 
                names_repair = "unique") %>% 
   select(c("Zielmerkmal", "iB_class_all", "values_all")) %>% 
-  # crating a column with share 100% and renaming "_all" columns to rbind correctly
-    mutate(share = 1) %>% 
   rename("iB_class" = "iB_class_all") %>% 
-  rename("values" = "values_all")) %>%
+  rename("values" = "values_all") %>% 
+   distinct()) %>%
   distinct() %>% 
   arrange(Zielmerkmal) %>% 
+  # pivoting the whole rbind wider so every Ziemlerkmal and the respective share have their own column
   pivot_wider(values_from = values, 
-              names_from = Zielmerkmal)
+              names_from = Zielmerkmal) %>% 
+  # add in share of iB_class "all" wich equals to 100% (1) 
+  mutate(BWI_B_iB_share = ifelse(iB_class == "all", 1, BWI_B_iB_share), 
+         BWI_C_iB_share = ifelse(iB_class == "all", 1, BWI_C_iB_share), 
+         BWI_V_iB_share = ifelse(iB_class == "all", 1, BWI_V_iB_share))
   
  
- 
- 
-# pivot the iB classes
-# calcualte the V share of each iB class in terms of total volume in all classes per hektar
+# ----- 1.4.3.5. carbon dead trees by item mass class and deadwood type BWI comparisson datasets ---------------------------------------------------------
+BWI_DW_V_iB_TY <- BWI_DW_V_iB_TY %>% 
+  select(- Bemerkung) %>% 
+  filter(unit_BWI != "SE95 ±") %>% 
+  mutate(DW_type = case_when(DW_type == "stehend, ganzer Baum" ~ "2", 
+                             DW_type == "stehend, Bruchstück (Höhe ab 130 cm)" ~ "3", 
+                             DW_type == "stehend" ~ "S",
+                             DW_type == "liegend, ganzer Baum mit Wurzelanlauf" ~ "5", 
+                             DW_type %in% c("liegend, Stammstück mit Wurzelanlauf", "liegend, Teilstück ohne Wurzelanlauf") ~ "1",
+                             DW_type == "liegend" ~ "L", 
+                             DW_type == "Wurzelstock (Höhe < 130 cm)" ~ "4", 
+                             DW_type == "Abfuhrrest (aufgeschichtet)"~ "6", 
+                             TRUE ~ "all")) %>% 
+  select(- "unit_BWI") %>% 
+  pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6", "all"), 
+               names_to = "iB_class", 
+               values_to = "values", 
+               names_repair = "unique") %>%
+  distinct() %>% 
+  left_join(., BWI_DW_V_iB_TY %>% 
+  select(- Bemerkung) %>% 
+  filter(unit_BWI != "SE95 ±") %>% 
+  mutate(DW_type = case_when(DW_type == "stehend, ganzer Baum" ~ "2", 
+                             DW_type == "stehend, Bruchstück (Höhe ab 130 cm)" ~ "3", 
+                             DW_type == "stehend" ~ "S",
+                             DW_type == "liegend, ganzer Baum mit Wurzelanlauf" ~ "5", 
+                             DW_type %in% c("liegend, Stammstück mit Wurzelanlauf", "liegend, Teilstück ohne Wurzelanlauf") ~ "1",
+                             DW_type == "liegend" ~ "L", 
+                             DW_type == "Wurzelstock (Höhe < 130 cm)" ~ "4", 
+                             DW_type == "Abfuhrrest (aufgeschichtet)"~ "6", 
+                             TRUE ~ "all")) %>% 
+  select(- "unit_BWI") %>% 
+  pivot_longer(c( "0.05", "0.1", "0.2", "0.5", "0.6"), 
+               names_to = "iB_class", 
+               values_to = "values", 
+               names_repair = "unique") %>% 
+  mutate(V_share_iB_TY = values/all) %>% 
+  select(-c(all, values)) %>% 
+    distinct(), 
+  by = c("DW_type", "iB_class"), 
+  multiple = "all") %>% 
+  mutate(V_share_iB_TY = ifelse(iB_class  == "all", 1, V_share_iB_TY))
 
 
-# Totholzvorrat [mÂ³/ha]
-# Totholzmasse [t/ha]
-#  Totholz-Kohlenstoff [t/ha]
 
 
 # ----- 1.4.4. Nitrogen content dataset ----------------------------------------
@@ -2451,12 +2493,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                TRUE ~ NA), 
          S_L_DW_type = case_when(DW_type %in% c(4, 2, 3) ~ "S",  # if the deadwood type is 2, 3 (stehend; ganzer Baum und Bruchstück) or 4 (Wurzelstock) --> standing deadwood (S)
                                  DW_type %in% c(6, 1, 5) ~ "L", # if the deadwood type is 6 (im Haufen vorkommendes Totholz), 1 (leigend, starkes Totholz), 5 (liegend ganzer Baum) --> lying deadwood (L)
-                                 TRUE ~ NA),
-         iB_class = case_when(V_dw_m3 < 0.05 ~ "0.05",  # Stückmasse Klasse --> class categorizing volume per deadwood item
-                                     V_dw_m3 >= 0.05 & V_dw_m3 < 0.1 ~ "0.1", 
-                                     V_dw_m3 >= 0.1 & V_dw_m3 <0.2 ~ "0.2", 
-                                     V_dw_m3 >= 0.2 & V_dw_m3 <0.5 ~ "0.5", 
-                                     TRUE ~ "0.6")) %>% 
+                                 TRUE ~ NA)) %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)
 
 
@@ -2566,7 +2603,13 @@ DW_total <- left_join(DW_total,
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
          V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
-         C_dw_kg = C_DW(V_dw_m3,SP_dec_type))%>% 
+         C_dw_kg = C_DW(V_dw_m3,SP_dec_type),
+  # assigning item-mass class (Stückmasse classe)
+         iB_class = case_when(V_dw_m3 < 0.05 ~ "0.05",  # Stückmasse Klasse --> class categorizing volume per deadwood item
+                              V_dw_m3 >= 0.05 & V_dw_m3 < 0.1 ~ "0.1", 
+                              V_dw_m3 >= 0.1 & V_dw_m3 <0.2 ~ "0.2", 
+                              V_dw_m3 >= 0.2 & V_dw_m3 <0.5 ~ "0.5", 
+                              TRUE ~ "0.6"))%>%
   # calculating TapeS compartiments 
   mutate(dw_tapes_swB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),      # yes: tapes_swB
                                   rdB_DW(tapes_swB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
@@ -3926,19 +3969,14 @@ DW_C_V_comp <- DW_P_TY %>%
 
 summary(DW_C_V_comp)
 
-# -----2.5.2.8. deadwood comparisson by lying vs. standing plot ---------------------------------------------------
 
+# -----2.5.2.8. deadwood comparisson by lying vs. standing plot ---------------------------------------------------
 DW_comp_SL <- DW_total %>% 
-  group_by(plot_ID, S_L_DW_type) %>% 
-  summarise(#plot_A_ha = mean(CCS_A_ha),
-    V_m3_SL = sum(na.omit(V_dw_m3)), 
-    B_t_SL = sum(na.omit(B_dw_kg)/1000),
-    # actually B_t_tapes_SL should be the main B_t_ha to calcuate with because it also includes the fine wood compartiment, 
-    # which is not included in the transformation from volume to biomass performed by the BWI
-    #B_t_tapes_SL = sum(na.omit(dw_ag_kg)/ 1000), 
-    C_t_SL = sum(na.omit(C_dw_kg)/1000), 
-    Nt_SL = n()) %>%
-  # dataset with area per plot considreing calcutaling sum of the area pf all sampling circuits per plot(if there are multpiple sampling circuits per plot)
+  group_by(plot_ID, S_L_DW_type) %>%
+  # calcaulte volume per deadwood type and item-mass-class
+  summarise(V_m3_SL = sum(na.omit(V_dw_m3)), 
+            C_t_SL = sum(na.omit(C_dw_kg/1000))) %>%
+  # dataset with area per plot  calcutaling sum of the area pf all sampling circuits per plot(if there are multpiple sampling circuits per plot)
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
               distinct() %>%
@@ -3947,49 +3985,52 @@ DW_comp_SL <- DW_total %>%
               summarize(plot_A_ha = sum(CCS_A_ha))%>% 
               mutate(MoMoK_A_ha = (50*50)/10000), 
             by = "plot_ID") %>% 
-  # total volume, Biomass, and carbon per plot to calculate the V, B, and C chare
-  left_join(., DW_total %>% 
-              group_by(plot_ID) %>% 
-              summarise(V_m3_tot_plot = sum(na.omit(V_dw_m3)/1000), 
-                        B_t_tot_plot = sum(na.omit(B_dw_kg)/1000), 
-                        C_t_tot_plot = sum(na.omit(C_dw_kg)/1000)), 
+  # total V and C per plot to calcaute s/L DW type shares 
+  # --> to create the pseudo mono plots of each DW S/L type
+  left_join(DW_total %>% 
+               group_by(plot_ID) %>%
+               # calcaulte volume per deadwood type and item-mass-class
+               summarise(V_m3_P = sum(na.omit(V_dw_m3)), 
+                         C_t_P = sum(na.omit(C_dw_kg/1000))), 
             by = "plot_ID") %>% 
-  mutate(V_share = V_m3_SL/V_m3_tot_plot, 
-         B_share = B_t_SL/B_t_tot_plot, 
-         C_share = C_t_SL/C_t_tot_plot) %>% 
-  mutate(V_m3_ha = V_m3_SL/plot_A_ha, 
-         B_t_ha = B_t_SL/plot_A_ha, 
-         #B_t_tapes_ha = B_t_tapes_plot/ plot_A_ha, 
-         C_t_ha = C_t_SL/plot_A_ha, 
-         #N_t_ha = N_t_plot/plot_A_ha, 
-         Nt_ha = Nt_SL/plot_A_ha, 
-         V_pseu_m3ha = V_m3_ha*V_share, 
-         B_pseu_tha= B_t_ha*B_share, 
-         C_pseu_tha = C_t_ha*C_share) %>% 
-  # I have to join in the BWI cmparisson dataset by standing and lying dw type and
-  left_join(., BWI_DW_C %>% 
-              select(DW_type, C_t_ha, SD_C, V_m3_ha, SD_V) %>% 
-              rename("C_t_ha_BWI" = "C_t_ha") %>% 
-              rename("V_m3_ha_BWI" = "V_m3_ha"), 
-            by = c("S_L_DW_type" = "DW_type")) %>% 
-  # comparisson by pseudo monoculture of the S/L dw type
-  mutate(V_pseu_diff = V_pseu_m3ha - V_m3_ha, 
-         C_pseu_diff = C_pseu_tha - C_t_ha)
-summary(DW_comp_SL)
-
-
-# create biomass item class
-DW_total  %>% 
-  group_by(plot_ID, iB_class) %>% 
-  summarise(N_iB_class = n(), 
-            V_iB_class = sum(V_dw_m3)) %>% 
+          # calculate shares of the respective DW_type S/L via Volume and carbon 
+  mutate(V_share_SL = V_m3_SL/ V_m3_P, 
+         C_share_SL = C_t_SL/ C_t_P, 
+         # calculate C and V stock per hektar and per speudo mono plot
+         V_m3_ha_SL = V_m3_SL/plot_A_ha, 
+         C_t_ha_SL = C_t_SL/ plot_A_ha, 
+         #calculate C and V stock per speudo mono plot via volume share 
+         V_m3ha_pseu_SL = V_m3_ha_SL*V_share_SL, 
+         C_tha_pseu_SL = C_t_ha_SL*V_share_SL) %>% 
+  # join in BWI dataset with C & V per S/L DW Type to calcualte differences 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+  # join in BWI dataset with IB shares
+  # DW comparisson by S/L DW type: 
+  # - calcaute difference by S/L DW type 
+#- calculate difference between the iB class ahres --> deducct multiple sets of columns by each other or calcaute differences already in the iBclass join and the picot them all together
+  # Dataset with shares of each iB-class per plot (but not DW S/L type)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
   left_join(., DW_total %>% 
-              group_by(plot_ID) %>% 
-              summarise(N_iB_class_plot = n(), 
-                        V_iB_class_plot = sum(V_dw_m3)), 
+              group_by(plot_ID, iB_class) %>% 
+              summarise(V_m3_iB_plot = sum(na.omit(V_dw_m3))) %>% 
+              left_join(., DW_total %>% 
+                          group_by(plot_ID) %>% 
+                          summarise(V_m3_tot_plot = sum(na.omit(V_dw_m3))), 
+                        by = ("plot_ID")) %>% 
+              mutate(iB_TY_V_share = V_m3_iB_plot/V_m3_tot_plot) %>% 
+              select(-c(V_m3_iB_plot, V_m3_tot_plot)) %>% 
+              pivot_wider(values_from = iB_TY_V_share, 
+                          names_from = iB_class) %>% 
+              # place a zero when the IB-class is not present in the plot and the share is NA
+              mutate(., across(c("0.05","0.1","0.5","0.2", "0.6"), ~ replace(., is.na(.), 0))) %>% 
+              # rename only iB-class columns so thy are not just numner: https://dplyr.tidyverse.org/reference/rename.html
+              rename_with(~ paste0("iB_c_", .x, recycle0 = TRUE), starts_with("0")),
             by = "plot_ID") %>% 
-  mutate(iB_N_share = N_iB_class/N_iB_class_plot, 
-         iB_V_share = V_iB_class/V_iB_class_plot)
+  mutate(diff_V_iB_share = iB_TY_V_share-BWI_V_share_iB_TY, 
+         diff_V_iB_TY = V_pseu_m3ha-values) 
+
+  
+summary(DW_comp_SL_iB)
 
 
 # -----4.3.correlation between stand characteristics and C stocks -----------------------------------------------------------
@@ -4085,11 +4126,25 @@ comp_pseudo_mono <- comp_pseudo_mono %>%
 
 
 
+# ----- 4.4.3. Linear model C plausibility by pseudo mono stand of L/S deadwood type and item-mass-class -------------------------------------------------------------
+DW_comp_SL_iB %>%
+  left_join(.,
+            DW_comp_SL_iB %>%
+              group_by(S_L_DW_type, iB_class) %>%
+              lm_table(diff_V_iB_TY ~ diff_V_iB_share, output = "table") %>%
+              select(S_L_DW_type, iB_class, b0, b1, Rsqr) %>%
+              arrange(S_L_DW_type) %>% 
+              # replace NAs with 0 
+              mutate(., across(c("b0","b1","Rsqr"), ~ replace(., is.na(.), 0))),
+            by = c("S_L_DW_type", "iB_class")) %>% 
+  # predict the expectable C_diff at the given basal area and tree number difference
+  mutate(V_diff_pred = b0 + b1*diff_V_iB_share,
+         # 5. calculate difference between calculated values and predicted values 
+         V_pred_vs_V_calc = diff_V_iB_TY - V_diff_pred)
 
+wilcox.test(DW_comp_SL_iB$V_diff_pred, DW_comp_SL_iB$V_diff_pred)
 
-
-
-
+summary(DW_comp_SL_iB)
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------

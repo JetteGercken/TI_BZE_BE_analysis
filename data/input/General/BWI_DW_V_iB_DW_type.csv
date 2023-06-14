@@ -1,0 +1,21 @@
+Totholztyp;Einheit;weniger als 0,05 m³;von 0,05 bis weniger als 0,1 m³;von 0,1 bis weniger als 0,2 m³;von 0,2 bis weniger als 0,5 m³;ab 0,5 m³;alle Stückmasse-Klassen Totholz;Bemerkung
+stehend, ganzer Baum;[m³/ha];0,079316439;0,138751051;0,240020639;0,434020155;1,001606715;1,893714997;"Totholzvorrat [m³/ha] nach Totholztyp und Stückmasseklasse Filter:Jahr=2017 ; ; Basis:Deutschland, Holzboden, begehbar, Totholz ab 10 cm am dicken Ende, Stöcke ab 10 cm Höhe o. 10 cm Schnittfläche, bestandesübergreifend, Totholzvolumen: Kegelform ohne Spitze, Raster: 64km²: SH, NI, HE, RP, BW, BY, SL, BE, BB, MV, SN, TH / 16km²: NW / 4 km²: ST (Inventurnetz für CI 2017 (Zustandsrechnungen, terrestrisch)); reeller Flächenbezug (gemäß Trakteckenanteil) (77Z1JI_L200of_2017_ab10cm/2019-2-14 12:31:1.057)"
+stehend, Bruchstück (Höhe ab 130 cm);[m³/ha];0,116268583;0,21388652;0,309074959;0,77669234;1,967818463;3,383740863;
+stehend;[m³/ha];0,195585021;0,352637571;0,549095597;1,210712496;2,969425183;5,277455865;
+liegend, ganzer Baum mit Wurzelanlauf;[m³/ha];0,03198345;0,038318066;0,077840524;0,209553146;1,191221602;1,548916796;
+liegend, Stammstück mit Wurzelanlauf;[m³/ha];0,113522927;0,180314734;0,2251567;0,424395596;1,1474762;2,090866163;
+liegend, Teilstück ohne Wurzelanlauf;[m³/ha];2,123864673;1,203816146;1,238400609;1,219543805;1,212680811;6,99830604;
+liegend;[m³/ha];2,26937105;1,422448946;1,541397833;1,853492549;3,551378616;10,638089;
+Wurzelstock (Höhe < 130 cm);[m³/ha];2,641337659;1,438449845;1,187003419;0,773710962;0,140619127;6,181121014;
+Abfuhrrest (aufgeschichtet);[m³/ha];0,035709317;0,009080686;0,1;0,015916499;0,019874458;0,080580961;
+alle Totholztypen;[m³/ha];5,142003048;3,222617046;3,27749685;3,853832507;6,681297387;22,17724684;
+stehend, ganzer Baum;SE95 ±;0,01436668;0,030047049;0,054267187;0,107720131;0,298944094;0,341714704;
+stehend, Bruchstück (Höhe ab 130 cm);SE95 ±;0,018491311;0,037104337;0,057181161;0,156702989;0,596792152;0,653513519;
+stehend;SE95 ±;0,023876984;0,049132672;0,079507897;0,194796443;0,688320676;0,766574534;
+liegend, ganzer Baum mit Wurzelanlauf;SE95 ±;0,009055644;0,01427917;0,030176877;0,068207954;0,545589076;0,560262953;
+liegend, Stammstück mit Wurzelanlauf;SE95 ±;0,016604782;0,032096665;0,048224396;0,100010493;0,410340834;0,440176019;
+liegend, Teilstück ohne Wurzelanlauf;SE95 ±;0,111454015;0,098523198;0,12650875;0,199529994;0,327021355;0,565022975;
+liegend;SE95 ±;0,115986612;0,105685606;0,141357502;0,245520418;0,830150636;1,020342831;
+Wurzelstock (Höhe < 130 cm);SE95 ±;0,10450479;0,101091407;0,118688564;0,149896255;0,08513936;0,305451478;
+Abfuhrrest (aufgeschichtet);SE95 ±;0,025367363;0,012538182;0,1;0,022044065;0,038939213;0,056678314;
+alle Totholztypen;SE95 ±;0,174828819;0,164595811;0,211915564;0,377091074;1,145488282;1,455625554;
