@@ -108,12 +108,20 @@ getwd()
 # ----- 1. data preparation ----------------------------------------------
 
 # ----- 1.2. harmonizing column names -------------------------------------
+# HBI
+colnames(HBI_trees) <- c("multi_stem", "D_mm", "stufe", "DBH_h_cm", "H_dm",
+                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_status", 
+                         "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
+HBI_trees <- HBI_trees %>% select(plot_ID,  tree_ID ,  tree_status ,  multi_stem ,
+          Dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code , stufe ,  Kraft ,  
+          C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm ,  DBH_cm )
+
+
 
 
 # ----- 1.3. binding both datasets together -------------------------------
-
-trees_total <- rbind(HBI_trees %>% mutate(inventory = "HBI"),    # adding column displaying inventory year
-                     BZE3_trees %>% mutate(inventory = "BZE3"))  # adding column displaying inventory year
+# trees_total <- rbind(HBI_trees %>% mutate(inventory = "HBI"),    # adding column displaying inventory year
+#                      BZE3_trees %>% mutate(inventory = "BZE3"))  # adding column displaying inventory year
 
 
 
