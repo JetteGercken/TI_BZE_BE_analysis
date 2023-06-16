@@ -1962,9 +1962,9 @@ trees_total %>%
 
 # ----- 2.1.1.1. coefficents dataframe per SP and plot when >= 3 heights measured --------
 # to calculate individual tree heights for trees of the samme species and plot 
-# where the height has not been sampled I will create a linear regression for the heights
-# in the following i will create a dataframe with regression coefficients per 
-# species per plot if there are more then 3 heights measured per species and plot
+# where the height has not been sampled we create a non-linear regression for the heights
+# in the following a dataframe with regression coefficients per 
+# species per plot is created if there are more then 3 heights measured per species and plot
 
 # coefficents of non-linear height model per species and plot
 # https://rdrr.io/cran/forestmangr/f/vignettes/eq_group_fit_en.Rmd
@@ -3971,7 +3971,7 @@ summary(DW_C_V_comp)
 
 
 # -----2.5.2.8. deadwood comparisson by lying vs. standing plot ---------------------------------------------------
-DW_comp_SL <- DW_total %>% 
+DW_comp_SL_iB <- DW_total %>% 
   group_by(plot_ID, S_L_DW_type) %>%
   # calcaulte volume per deadwood type and item-mass-class
   summarise(V_m3_SL = sum(na.omit(V_dw_m3)), 
@@ -4003,15 +4003,15 @@ DW_comp_SL <- DW_total %>%
          V_m3ha_pseu_SL = V_m3_ha_SL*V_share_SL, 
          C_tha_pseu_SL = C_t_ha_SL*V_share_SL) %>% 
   # join in BWI dataset with C & V per S/L DW Type to calcualte differences 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
-  # join in BWI dataset with IB shares
-  # DW comparisson by S/L DW type: 
-  # - calcaute difference by S/L DW type 
-#- calculate difference between the iB class ahres --> deducct multiple sets of columns by each other or calcaute differences already in the iBclass join and the picot them all together
-  # Dataset with shares of each iB-class per plot (but not DW S/L type)
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+ left_join(.,  BWI_DW_V_iB_TY %>% 
+  select(-values) %>% 
+  filter(DW_type %in% c("S", "L")) %>% 
+  pivot_wider(names_from = iB_class, 
+              values_from = V_share_iB_TY) %>% 
+  rename_with(~ paste0("BWI_iB_c_", .x, recycle0 = TRUE), starts_with("0") | starts_with("a")), 
+  by = c("S_L_DW_type" = "DW_type")) %>% 
   left_join(., DW_total %>% 
-              group_by(plot_ID, iB_class) %>% 
+              group_by(plot_ID, S_L_DW_type, iB_class) %>% 
               summarise(V_m3_iB_plot = sum(na.omit(V_dw_m3))) %>% 
               left_join(., DW_total %>% 
                           group_by(plot_ID) %>% 
@@ -4025,12 +4025,19 @@ DW_comp_SL <- DW_total %>%
               mutate(., across(c("0.05","0.1","0.5","0.2", "0.6"), ~ replace(., is.na(.), 0))) %>% 
               # rename only iB-class columns so thy are not just numner: https://dplyr.tidyverse.org/reference/rename.html
               rename_with(~ paste0("iB_c_", .x, recycle0 = TRUE), starts_with("0")),
-            by = "plot_ID") %>% 
-  mutate(diff_V_iB_share = iB_TY_V_share-BWI_V_share_iB_TY, 
-         diff_V_iB_TY = V_pseu_m3ha-values) 
-
-  
-summary(DW_comp_SL_iB)
+            by = c("plot_ID", "S_L_DW_type")) %>% 
+  left_join(., BWI_DW_C %>% 
+              select(DW_type, C_t_ha, SD_C, V_m3_ha, SD_V) %>% 
+              rename_with(~ paste0(.x, "_BWI", recycle0 = TRUE), c("C_t_ha", "SD_C", "V_m3_ha", "SD_V")),
+            by = c("S_L_DW_type" = "DW_type")) %>% 
+  mutate(V_diff = V_m3ha_pseu_SL - V_m3_ha_BWI, 
+         C_diff = C_tha_pseu_SL - C_t_ha_BWI, 
+         diff_iB_c_0.05 = iB_c_0.05 - BWI_iB_c_0.05, 
+         diff_iB_c_0.1 = iB_c_0.1 - BWI_iB_c_0.1, 
+         diff_iB_c_0.5 = iB_c_0.5 - BWI_iB_c_0.5, 
+         diff_iB_c_0.2 = iB_c_0.2 - BWI_iB_c_0.2, 
+         diff_iB_c_0.6 = iB_c_0.6 - BWI_iB_c_0.6)
+ 
 
 
 # -----4.3.correlation between stand characteristics and C stocks -----------------------------------------------------------
@@ -4127,24 +4134,31 @@ comp_pseudo_mono <- comp_pseudo_mono %>%
 
 
 # ----- 4.4.3. Linear model C plausibility by pseudo mono stand of L/S deadwood type and item-mass-class -------------------------------------------------------------
-DW_comp_SL_iB %>%
+DW_comp_SL_iB <- DW_comp_SL_iB %>%
   left_join(.,
             DW_comp_SL_iB %>%
-              group_by(S_L_DW_type, iB_class) %>%
-              lm_table(diff_V_iB_TY ~ diff_V_iB_share, output = "table") %>%
-              select(S_L_DW_type, iB_class, b0, b1, Rsqr) %>%
+              group_by(S_L_DW_type) %>%
+              lm_table(C_diff ~ diff_iB_c_0.05 + diff_iB_c_0.1 + diff_iB_c_0.5 + diff_iB_c_0.2 + diff_iB_c_0.6 , output = "table") %>%
+              select(S_L_DW_type, b0, b1, b2, b3, b4, b5, Rsqr) %>%
               arrange(S_L_DW_type) %>% 
               # replace NAs with 0 
-              mutate(., across(c("b0","b1","Rsqr"), ~ replace(., is.na(.), 0))),
-            by = c("S_L_DW_type", "iB_class")) %>% 
+              mutate(., across(c("b0","b1","b2", "b3", "b4", "b5", "Rsqr"), ~ replace(., is.na(.), 0))),
+            by = c("S_L_DW_type")) %>% 
   # predict the expectable C_diff at the given basal area and tree number difference
-  mutate(V_diff_pred = b0 + b1*diff_V_iB_share,
+  mutate(C_diff_pred = b0 + b1*diff_iB_c_0.05 + b2*diff_iB_c_0.1 + b3*diff_iB_c_0.5 + b4*diff_iB_c_0.2 + b5*diff_iB_c_0.6,
          # 5. calculate difference between calculated values and predicted values 
-         V_pred_vs_V_calc = diff_V_iB_TY - V_diff_pred)
+         C_pred_vs_C_calc = C_diff - C_diff_pred)
 
-wilcox.test(DW_comp_SL_iB$V_diff_pred, DW_comp_SL_iB$V_diff_pred)
+# calculating SD of C diff predicted vs. C diff osseved in the respective S/L class to assing SD_class
+DW_comp_SL_iB <- DW_comp_SL_iB %>% 
+  left_join(., DW_comp_SL_iB %>% 
+              group_by(S_L_DW_type) %>%
+              summarize(SD_SL_C_diff = sd(C_pred_vs_C_calc)),
+            by = "S_L_DW_type") %>% 
+  mutate(SD_class = SD_class(SD_SL_C_diff, C_pred_vs_C_calc)) 
 
 summary(DW_comp_SL_iB)
+
 
 
 # ----- 3. VISULAIZATION -------------------------------------------------
@@ -5259,6 +5273,7 @@ DW_C_V_comp %>%
 
 
 
+# ----- 3.4.2.2. Deadwood comparisson with BWI by dom_SP, SD_class, deadwood type -----------
 
 # Deadwood volume and carbon compared with BWI  and Kohlenstoffinventur data grouped by SD class and somiant species
 DW_V_C_com %>% 
@@ -5278,8 +5293,47 @@ DW_V_C_com %>%
   facet_wrap(~dom_SP)+
   theme_bw()
   
+# ----- 3.4.2.3. Deadwood comparisson with BWI by SL_deadwood type, lm by iB-class -----------
+DW_comp_SL_iB %>% 
+  select(plot_ID, S_L_DW_type, C_diff, C_diff_pred, SD_SL_C_diff, SD_class, 
+         diff_iB_c_0.05,  diff_iB_c_0.1, diff_iB_c_0.5, diff_iB_c_0.2, diff_iB_c_0.6 ) %>% 
+  gather("iB_class", "iB_diff_V", 7:11) %>% 
+  ggplot(., aes(x = iB_diff_V))+
+  geom_point(aes(y = C_diff, color = as.factor(plot_ID)))+
+  geom_smooth(aes(y = C_diff_pred, # method = "loess"
+                  ), se = FALSE)+
+  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
+  geom_smooth(aes(y = (C_diff_pred+SD_SL_C_diff), #method = "loess", 
+                  color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (C_diff_pred-SD_SL_C_diff), #method = "loess", 
+                  color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (C_diff_pred+2*SD_SL_C_diff), # method = "loess", 
+                  color = "SD_class 2"), se = FALSE)+
+  geom_smooth(aes(y = (C_diff_pred-2*SD_SL_C_diff), #method = "loess", 
+                  color = "SD_class 2"), se = FALSE)+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(-0.6, 0.6)+
+  ylim(max(DW_comp_SL_iB$C_diff)*(-1), max(DW_comp_SL_iB$C_diff))+
+  # geom_line()+
+  facet_wrap(~S_L_DW_type)+
+  xlab("difference volume per iB class share") +
+  ylab("difference C t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("C diff vs. iB Volume share diff")+
+  theme_light()+
+  theme(legend.position = "right")
 
+DW_comp_SL_iB %>% filter(SD_class > 2)
 
+summary(DW_comp_SL_iB)
+
+summary(DW_comp_SL_iB %>% 
+          select(plot_ID, S_L_DW_type, C_diff, C_diff_pred, SD_SL_C_diff, SD_class, 
+                 diff_iB_c_0.05,  diff_iB_c_0.1, diff_iB_c_0.5, diff_iB_c_0.2, diff_iB_c_0.6 ) %>% 
+          gather("iB_class", "iB_diff_V", 7:11))
+
+# share diff iB class : min -0.56266 max 0.59482
 
 # ----- NOTES ------------------------------------------------------------------
 # -----N. 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
