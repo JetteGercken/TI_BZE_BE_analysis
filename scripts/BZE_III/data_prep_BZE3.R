@@ -33,6 +33,7 @@
 #  install.packages("ggplot2")
 #  install.packages("reshape2") #for multiple y values
 #  install.packages("ggforce") #for zooming in parts of the plot
+# install.packages("ggforce")             # Install ggforce package
 #  options(tz="CA")
 #  install.packages("reshape2")
 #  # analysis
@@ -51,6 +52,7 @@
 # install.packages("sjmisc")
 # if(!require(devtools)) install.packages("devtools")
 # devtools::install_github("kassambara/ggcorrplot")
+#
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -95,6 +97,8 @@ require(TapeS)
 vignette("tapes", package = "TapeS")
 library(magrittr)
 library(sjmisc)
+library("ggforce")                      # Load ggforce package
+
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -232,7 +236,7 @@ x_coord <- function(Dcp, AZIcp){
   # Dcp = Distance between point and centre
   # AZIcp=  Azimute betweeen Point and centre
   Xc <- 0;
-  X = Xc + Dcp * sin(AZIcp);
+  X = Xc + Dcp * cos(AZIcp);
   return(X)
 }
   
@@ -274,7 +278,7 @@ HBI_trees %>%
 # trees_total <- rbind(HBI_trees %>% mutate(inventory = "HBI"),    # adding column displaying inventory year
 #                      BZE3_trees %>% mutate(inventory = "BZE3"))  # adding column displaying inventory year
 
-
+trees_total <- HBI_trees # + BZE trees 
 # ----- 1.1.2.2. changing units, etc.  ----------------------------
 trees_total <- trees_total %>% 
   mutate(H_m = H_dm/10,                                            # change unit of height into m insted of dm by divinding by 10 
@@ -286,12 +290,12 @@ trees_total <- trees_total %>%
          DBH_cm = tprDiameter(tprTrees(spp = tpS_ID,               # tapeS Specie code
                                        Dm = as.list(D_mm/10),      # diameter in cm
                                        Hm = as.list(DBH_h_m),      # measuring height diameter
-                                       #Ht = estHeight(d13 = dw_D_g, sp = SP_dw_tps)                  # height of the tree --> problematic, because we don´t have it yet, because we calculate if from the DBH
+                                       Ht = estHeight(d13 = D_mm/10, sp = as.numeric(trees_total$tps_ID)),                  # height of the tree --> problematic, because we don´t have it yet, because we calculate if from the DBH
                                        inv = 4),                   # use TapeR curves from NFI4 
                               Hx = 1.3, cp=FALSE),                 # calculate diameter at 1.3 m height via TapeS
-         DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm, DBH_class)), 
-         BA_m2 = c_A(DBH_cm/2)*0.0001)                             # 0.0001 to change unit from cm2 to m2
-         
+         DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm, DBH_class))#, 
+         #BA_m2 = c_A(DBH_cm/2)*0.0001)                             # 0.0001 to change unit from cm2 to m2
+  )         
 
 # ----- 1.1.2.3. non linear height model h ~ DBH per species and plot ----------------------------
 # to calculate individual tree heights for trees of the samme species and plot 
@@ -520,6 +524,7 @@ by = c("plot_ID", "e_form"))
 # via b0 and b1 and then compare the tree_y with the functions result
 # if the tree_y is higher then the function_y we have to do something with the tree...
 # etc. assing another plot iD or something. 
+trees_edges <-
 HBI_trees %>% 
   mutate(X_tree = x_coord(Dist_cm, azi_gon), 
          Y_tree = y_coord(Dist_cm, azi_gon)) %>% 
@@ -533,12 +538,12 @@ HBI_trees %>%
     # calculate the Y of the edge for the x of the tree
     mutate(Y_e_tree = case_when(e_form == "1" ~ e_b0_AB + e_b1_AB*X_tree, 
                                 # if forest edge form == 2 so there is a  turning point, 
-                                e_form == "2" & data.table::between(X_tree, x_coord(1700,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
-                                e_form == "2" & data.table::between(X_tree, x_coord(1700,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
+                                e_form == "2" & data.table::between(X_tree, x_coord(1784,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
+                                e_form == "2" & data.table::between(X_tree, x_coord(1784,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
                                 
                                 TRUE ~ NA)) %>% 
   #filter(e_type %in% c("1", "2"))   # there are 1590 trees in plots with an edge 
-  filter(Y_tree > Y_e_tree)          # out of which 312 have a y higher then the y of the edge line at the respective x coordinate of the tree 
+ #filter(Y_tree > Y_e_tree)          # out of which 312 have a y higher then the y of the edge line at the respective x coordinate of the tree 
 
 
 # apatently there are plots with 2 edges: which caused the warning when joining edge info into the trees dataset
@@ -550,8 +555,56 @@ forest_edges_HBI %>% filter(plot_ID %in% c(50042, 50057, 50075, 50102, 50122, 50
 # further i have to think about what to do in terms of the area of the plot --> 
 # i´ll have to cut the circles individually and change their area individually 
 
+ggplot()
+
+ggplot()+
+  geom_rect(aes(xmin=-1784,ymin=-1784,xmax=1784,ymax=1784), fill=NA) + coord_polar()
+
+# maybe it´ll help to plot them 
+# https://statisticsglobe.com/draw-plot-circle-r#example-2-draw-plot-with-circle-using-ggplot2-ggforce-packages
+
+for(i in unique(forest_edges_HBI$plot_ID)) {
+  # i = 50013       
+    
+  #we have to prepare a data set containing the position and the radius of our circle:
+    data_circle <- data.frame(x0 = c(0,0,0),       # Create data for circle
+                            y0 = c(0,0,0),
+                            r0 = c(x_coord(564, 0), x_coord(1262, 0), x_coord(174,0)))
+
+
+p <- ggplot() +                             # Draw ggplot2 plot with circle
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+
+  geom_point(data =  trees_edges %>% filter(plot_ID == i), 
+             aes(X_tree, Y_tree)) +
+  geom_smooth(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
+                                                                           values = c( "X_value", "Y_value"),  
+                                                                           names(.)[11:13], names(.)[14:16]), 
+              aes(X_value, Y_value), na.rm = TRUE, se = FALSE)+ 
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+ 
+  xlim(-1784, 1784)+ 
+  ylim(- 1784, 1784)
+  #geom_rect(aes(xmin=-1784,ymin=-1784,xmax=1784,ymax=1784), fill=NA)# + coord_polar()
 
   
+  print(ggplot() +                             # Draw ggplot2 plot with circle
+          geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+
+          geom_point(data =  trees_edges %>% filter(plot_ID == i), 
+                     aes(X_tree, Y_tree)) +
+          geom_point(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
+                                                                                 values = c( "X_value", "Y_value"),  
+                                                                                 names(.)[11:13], names(.)[14:16]), 
+                    aes(X_value, Y_value), na.rm=TRUE)+
+          geom_line(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
+                                                                                   values = c( "X_value", "Y_value"),  
+                                                                                   names(.)[11:13], names(.)[14:16]), 
+                      aes(X_value, Y_value), na.rm=TRUE)+ 
+          geom_vline(xintercept = 0)+
+          geom_hline(yintercept=0)+ 
+          xlim(-1784, 1784)+ 
+          ylim(- 1784, 1784))
+
+}  
 
 # ----- 1.2. REGENERATION -------------------------------------------------
 # ----- 1.3. DEADWOOD -------------------------------------------------
