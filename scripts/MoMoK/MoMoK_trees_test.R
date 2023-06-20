@@ -2420,7 +2420,7 @@ DW_total <- left_join(DW_total,
                                               # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
                                               # thus we are switching to the BWI taper formula (BWI methodikband chap.5.2.2) dz = d + 2((hd − 130)/tan α)
                                               tapeS_DBH_cm = tprDiameter(tprTrees(spp = SP_dw_tps,                                         # c) estimate diameter with TapeS
-                                                                                  Dm = as.list(((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10)),   # a) estimate DBH of the pseudotree via
+                                                                                  Dm = as.list(((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10)),   # a) estimate DBH of the pseudotree via Kublin
                                                                                   Hm = as.list(D_h_m),
                                                                                   Ht = estHeight(d13 = ((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10), 
                                                                                                  sp = SP_dw_tps), 

@@ -145,12 +145,17 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 
 
 # ----- 0.5 functions ---------------------------------------------------------------
-# ---- 0.5.1. classes -----------------------------------------------------
+# ---- 0.5.1. classes ---------------------------------------------------------------
+# area of a circle
+c_A <- function(r){
+  circle_area <- r^2*pi;
+  return(circle_area)
+  }
 # ----- 0.5.1.1. DBH class ----------------------------------------------------------
 DBH_c_function <- function(dbh){
   # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
   labs_DBH <- c(seq(5, 55, by = 5)) ; 
-  DBH_c <- cut(dbh,                               # cut the diameter
+  DBH_c <- cut(as.numeric(dbh),                               # cut the diameter
                breaks = c(seq(5, 55, by = 5), Inf),  # in sequences of 5
                labels = labs_DBH,                    # and label it according to labs (1.4.1)
                right = FALSE);
@@ -271,31 +276,57 @@ HBI_trees %>%
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
 
+# BZE3_trees <- BZE3_trees %>% 
+#   mutate(inventory = "HBI") %>% 
+#   left_join(., SP_names_com_ID_tapeS %>% 
+#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+#             by = c("SP_code" = "char_code_ger_lowcase"))
+# 
+# 
+# # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
+# BZE3_trees %>% 
+#   anti_join(., SP_names_com_ID_tapeS %>% 
+#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+#             by = c("SP_code" = "char_code_ger_lowcase"))
+
 
 # ----- 1.1.2. height coefficients  ----------------------------------------------
 
 # ------ 1.1.2.1. binding HBI & BZE3 together for heights -----------------
 # trees_total <- rbind(HBI_trees %>% mutate(inventory = "HBI"),    # adding column displaying inventory year
 #                      BZE3_trees %>% mutate(inventory = "BZE3"))  # adding column displaying inventory year
+trees_total <- HBI_trees # + BZE3_trees 
 
-trees_total <- HBI_trees # + BZE trees 
 # ----- 1.1.2.2. changing units, etc.  ----------------------------
 trees_total <- trees_total %>% 
-  mutate(H_m = H_dm/10,                                            # change unit of height into m insted of dm by divinding by 10 
-         DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assing DBH measuring height of 130cm when missing
-         DBH_h_m = DBH_h_cm/100 ,                                  # change unit of DBH measuring height from cm into m by dividing by 100         
-         # TapeS : aing diameter at 0.3 tree height to trees_total dataframe
+  #filter(H_m %in% c(0, 1)) %>%                                    # filter for correct tree status: -9, -2, -1, 2, 3, 4, 6, 7 have to be excluded from biomass calculation
+  mutate(H_m = H_dm/10,                                            # change unit of height into m instead of dm by divinding by 10 
+         DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing
+         DBH_h_m = DBH_h_cm/100,                                   # change unit of DBH measuring height from cm into m by dividing by 100  
+         # TapeS : diameter at 1.3m tree height to trees_total dataframe
          #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
-                              # create tprTrees ojekt
-         DBH_cm = tprDiameter(tprTrees(spp = tpS_ID,               # tapeS Specie code
-                                       Dm = as.list(D_mm/10),      # diameter in cm
-                                       Hm = as.list(DBH_h_m),      # measuring height diameter
-                                       Ht = estHeight(d13 = D_mm/10, sp = as.numeric(trees_total$tps_ID)),                  # height of the tree --> problematic, because we don´t have it yet, because we calculate if from the DBH
-                                       inv = 4),                   # use TapeR curves from NFI4 
-                              Hx = 1.3, cp=FALSE),                 # calculate diameter at 1.3 m height via TapeS
-         DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm, DBH_class))#, 
-         #BA_m2 = c_A(DBH_cm/2)*0.0001)                             # 0.0001 to change unit from cm2 to m2
-  )         
+               # H_m_tps = as.numeric(ifelse(is.na(H_dm) | H_dm != "-2", estHeight(d13 = D_mm/10, sp = as.numeric(tpS_ID)), H_dm/10)),
+               # DBH_cm_tps = ifelse(is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130, 
+                                                # create tprTrees ojekt
+               #                     tprDiameter(tprTrees(spp = tpS_ID[is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130],               # tapeS Specie code
+               #                                          Dm = as.list(D_mm[is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130]/10),      # diameter in cm
+               #                                          Hm = as.list(DBH_h_cm[is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130]/100),      # measuring height diameter
+               #                                          Ht = H_m_tps[is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130],               # height of the tree --> problematic, because we don´t have it yet, because we calculate if from the DBH
+               #                                          inv = 4),                   # use TapeR curves from NFI4
+               #                                 Hx = rep(1.3, nrow = trees_total %>% filter(is.na(H_dm) & DBH_h_cm != 130 | H_dm != "-2" & DBH_h_cm != 130)), cp=FALSE),
+               #                     D_mm/10),                 # calculate diameter at 1.3 m height via TapeS
+         DBH_cm = ifelse(DBH_h_cm != 130, ((D_mm*(1.0+(0.0011*(DBH_h_cm-130))))/10), D_mm/10),       # calculate diameter at 1.3m height via Regression function of BWI (formula 5.2.1.1.)
+         DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm), DBH_class),                    # assign diameter class
+         BA_m2 = c_A(DBH_cm/2)*0.0001,                                                               # 0.0001 to change unit from cm2 to m2
+         CC_no = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ "1", 
+                             DBH_cm >= 10 & DBH_cm < 30 ~ "2", 
+                             DBH_cm >= 30 ~ "3", 
+                             TRUE ~ NA), 
+         CC_A_ha = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ c_A(5.64)/10000, 
+                          DBH_cm >= 10 & DBH_cm < 30 ~ c_A(12.62)/10000, 
+                          DBH_cm >= 30 ~ c_A(17.84)/10000, 
+                          TRUE ~ NA))                      
+ 
 
 # ----- 1.1.2.3. non linear height model h ~ DBH per species and plot ----------------------------
 # to calculate individual tree heights for trees of the samme species and plot 
@@ -396,7 +427,58 @@ coeff_H_SP <- left_join(trees_total %>%
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
 
 # ---- 1.1.2.5. joining coordinates into trees datset --------------------------
+# sampling circuits: 
+# 5.64 7cm <= 10cm
+#12.62 >10cm <= 30
+# 17.84 >= 30
 
+
+
+
+
+trees_total %>% 
+unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% select(SP_code, R2),               # joing R2 from coeff_SP data set -> R2.y
+            by = "SP_code") %>% 
+  # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
+  left_join(., trees_total %>%                                 
+              group_by(plot_ID, C_layer, SP_code, CC_no) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
+              summarise(BA_CC = sum(BA_m2),                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
+                        CC_A_ha = mean(CC_A_ha),                   # mean area in ha per sampling circuit
+                        BA_CC_m2_ha = BA_CC/CC_A_ha,               # calculating the BA hectare value of each tree species per c layer to account for the different sampling circuits
+                        mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
+                        mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
+              group_by(plot_ID, C_layer, SP_code)%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
+              summarize(BA_m2_ha = sum(BA_CC_m2_ha),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
+                        mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
+                        mean_H_m = mean(mean_H_m_CC),              # calculate mean of height across all sampling circuit to account for represnation of different trees in the sampling circuits
+                        H_g = sum(mean(na.omit(mean_H_m))*BA_m2_ha)/sum(BA_m2_ha),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+                        mean_DBH_mm = mean(mean_DBH_mm),                           # mean diameter per species per canopy layer per plot
+                        D_g = ((sqrt((mean(BA_m2_ha)/pi)))*2)*100),              #  Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm    
+            by = c("plot_ID", "SP_code", "C_layer")) %>% 
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+  # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na but there is a h_g and d_G
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
+                         TRUE ~ H_m))
 
 # ---- 1.1.2.6. exporting height coefficient dataset --------------------------
 
@@ -435,18 +517,29 @@ write.csv(coeff_H_comb, "output/out_data/coeff_H_BZE.csv")
 # 3b) filter for trees with Y < Y forest edge function at given X
 
 
+# ----- 1.1.3.1. join in forest edge info per plot -----------------------------------------------
+HBI_trees <- HBI_trees %>% 
+  # calculate the coordinates of every tree
+  mutate(X_tree = x_coord(Dist_cm, azi_gon), 
+         Y_tree = y_coord(Dist_cm, azi_gon)) %>% 
+  # join in the forest edge information per plot 
+  left_join(., forest_edges_HBI %>% 
+              select(plot_ID, e_ID, e_type, e_form), 
+            by = "plot_ID", 
+            multiple = "all") # this is necesarry since there are, apperently, multiple edges per plot 
 
+
+# ----- 1.1.3.2. estimate parameters for edge coordinates -----------------------------------------------
 # coefficients for forest edges 
 forest_edges_HBI <- 
 forest_edges_HBI %>% 
-  # filter for forest edges that have a relevance for tree calculations 
-  filter(e_form %in% c("1", "2") & e_type %in% c("1", "2", "3", "4")) %>% 
-  mutate(X_A = x_coord(A_dist, A_azi), 
-         X_B = x_coord(B_dist, B_azi),
-         X_T = ifelse(e_form == "2", x_coord(T_dist, T_azi), NA), 
-         Y_A = y_coord(A_dist, A_azi), 
-         Y_B = y_coord(B_dist, B_azi), 
-         Y_T = ifelse(e_form == "2", y_coord(T_dist, T_azi), NA))%>%
+  # calculate coordinates for all 
+  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+         X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+         X_T = ifelse(T_azi != "-2", x_coord(T_dist, T_azi), NA), 
+         Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
+         Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA), 
+         Y_T = ifelse(T_azi != "-2", y_coord(T_dist, T_azi), NA))%>%
   group_by(plot_ID) %>% 
   left_join(., 
   # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
@@ -454,10 +547,10 @@ forest_edges_HBI %>%
   # filter for forest edges that have a relevance for tree calculations and dont have a turning point
   filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
     # calculate coordinates from Azimut and distance
-  mutate(X_A = x_coord(A_dist, A_azi), 
-         X_B = x_coord(B_dist, B_azi),
-         Y_A = y_coord(A_dist, A_azi), 
-         Y_B = y_coord(B_dist, B_azi),)%>%
+  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+         X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+         Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
+         Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA))%>%
   # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
   to_long(keys = c("X_name",  "Y_name"), 
           values = c( "X_value", "Y_value"),  
@@ -475,44 +568,44 @@ left_join(
   # 1.b) 1. dataset with coefficients of line from A to T
   forest_edges_HBI %>% 
   # filter for forest edges that have a relevance for tree calculations 
-  filter(e_form == "2" & e_type %in% c("1", "2", "3", "4")) %>% 
-  mutate(X_A = x_coord(A_dist, A_azi),
-         X_TA = ifelse(e_form == "2", x_coord(T_dist, T_azi), NA),
-         X_B = x_coord(B_dist, B_azi),
-         X_TB = ifelse(e_form == "2", x_coord(T_dist, T_azi), NA),
-         Y_A = y_coord(A_dist, A_azi),
-         Y_TA = ifelse(e_form == "2", y_coord(T_dist, T_azi), NA),
-         Y_B = y_coord(B_dist, B_azi),
-         Y_TB = ifelse(e_form == "2", y_coord(T_dist, T_azi), NA)) %>%
+  filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+  mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
+         X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+         X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+         X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+         Y_A =  ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA),
+         Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
+         Y_B =  ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA),
+         Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
   # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
   to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
           values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
           names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
   group_by(plot_ID, e_form) %>%
   # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-  lm_table(Y_A_T_value ~ X_A_T_value, output = "table") %>% 
+  lm_table(Y_A_T_value ~ na.omit(X_A_T_value), output = "table") %>% 
   select(plot_ID, e_form, b0, b1) %>% 
   rename("e_b0_AT" = "b0") %>% 
   rename("e_b1_AT" = "b1"), 
 # 1.b) 2. dataset with coefficients of line from B to T
   forest_edges_HBI %>% 
     # filter for forest edges that have a relevance for tree calculations 
-    filter(e_form == "2" & e_type %in% c("1", "2", "3", "4")) %>% 
+    filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
     mutate(X_A = x_coord(A_dist, A_azi),
-           X_TA = ifelse(e_form == "2", x_coord(T_dist, T_azi), NA),
+           X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
            X_B = x_coord(B_dist, B_azi),
-           X_TB = ifelse(e_form == "2", x_coord(T_dist, T_azi), NA),
+           X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
            Y_A = y_coord(A_dist, A_azi),
-           Y_TA = ifelse(e_form == "2", y_coord(T_dist, T_azi), NA),
+           Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
            Y_B = y_coord(B_dist, B_azi),
-           Y_TB = ifelse(e_form == "2", y_coord(T_dist, T_azi), NA)) %>%
+           Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
     # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
     to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
             values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
             names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
     group_by(plot_ID, e_form) %>%
     # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-   lm_table(Y_B_T_value ~ X_B_T_value, output = "table") %>% 
+   lm_table(Y_B_T_value ~ na.omit(X_B_T_value), output = "table") %>% 
     select(plot_ID, e_form, b0, b1) %>% 
     rename("e_b0_BT" = "b0") %>% 
     rename("e_b1_BT" = "b1"), 
@@ -520,29 +613,25 @@ by = c("plot_ID", "e_form")),
 by = c("plot_ID", "e_form")) 
 
 
-# next step will be to join the forest edges dataset into the trees datset , calcuate the Y of each tree_x 
-# via b0 and b1 and then compare the tree_y with the functions result
+# next step will be to join the forest edges dataset into the trees datset, 
+# via b0 and b1 and then compare the calculated tree_y with the functions result
 # if the tree_y is higher then the function_y we have to do something with the tree...
-# etc. assing another plot iD or something. 
-trees_edges <-
-HBI_trees %>% 
-  mutate(X_tree = x_coord(Dist_cm, azi_gon), 
-         Y_tree = y_coord(Dist_cm, azi_gon)) %>% 
-  # first join in forest edge type and ID
-  left_join(., forest_edges_HBI %>% select(plot_ID,e_ID, e_type, e_form), 
-            by = "plot_ID", 
-            multiple = "all") %>% 
-  # then join in parameters by forest type
-  left_join(., forest_edges_HBI %>% select(plot_ID, e_ID, e_type, e_form, A_azi,  B_azi, X_T, e_b0_AB, e_b1_AB, e_b0_AT, e_b1_AT, e_b0_BT, e_b1_BT),
-            by = c("plot_ID","e_ID", "e_type", "e_form"))%>% 
-    # calculate the Y of the edge for the x of the tree
+# etc. assiningg another plot iD or something. 
+trees_and_edges <-
+HBI_trees  %>% 
+  # calculate the Y of the edge for the x of the tree
     mutate(Y_e_tree = case_when(e_form == "1" ~ e_b0_AB + e_b1_AB*X_tree, 
                                 # if forest edge form == 2 so there is a  turning point, 
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
-                                
                                 TRUE ~ NA)) %>% 
-  #filter(e_type %in% c("1", "2"))   # there are 1590 trees in plots with an edge 
+  mutate(t_e_status = case_when(Y_tree > Y_e_tree ~ "tree_outside", 
+                                is.na(e_ID) ~ "no_edge",
+                                TRUE ~ "tree_inside"))
+ 
+
+
+ #filter(e_type %in% c("1", "2"))   # there are 1590 trees in plots with an edge 
  #filter(Y_tree > Y_e_tree)          # out of which 312 have a y higher then the y of the edge line at the respective x coordinate of the tree 
 
 
@@ -569,7 +658,7 @@ for(i in unique(forest_edges_HBI$plot_ID)) {
   #we have to prepare a data set containing the position and the radius of our circle:
     data_circle <- data.frame(x0 = c(0,0,0),       # Create data for circle
                             y0 = c(0,0,0),
-                            r0 = c(x_coord(564, 0), x_coord(1262, 0), x_coord(174,0)))
+                            r0 = c(x_coord(564, 0), x_coord(1262, 0), x_coord(1784,0)))
 
 
 p <- ggplot() +                             # Draw ggplot2 plot with circle
@@ -593,11 +682,23 @@ p <- ggplot() +                             # Draw ggplot2 plot with circle
                      aes(X_tree, Y_tree)) +
           geom_point(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
                                                                                  values = c( "X_value", "Y_value"),  
-                                                                                 names(.)[11:13], names(.)[14:16]), 
+                                                                                 names(.)[11:13], names(.)[14:16]) %>% 
+                       mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
+                                                  X_name == "X_B" ~ x_coord(1784, B_azi), 
+                                                  TRUE ~ X_value), 
+                              Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+                                                  Y_name == "Y_B" ~ y_coord(1784, B_azi), 
+                                                  TRUE ~ Y_value)), 
                     aes(X_value, Y_value), na.rm=TRUE)+
           geom_line(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
                                                                                    values = c( "X_value", "Y_value"),  
-                                                                                   names(.)[11:13], names(.)[14:16]), 
+                                                                                   names(.)[11:13], names(.)[14:16]) %>% 
+                      mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
+                                                 X_name == "X_B" ~ x_coord(1784, B_azi), 
+                                                 TRUE ~ X_value), 
+                             Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+                                                 Y_name == "Y_B" ~ y_coord(1784, B_azi), 
+                                                 TRUE ~ Y_value)), 
                       aes(X_value, Y_value), na.rm=TRUE)+ 
           geom_vline(xintercept = 0)+
           geom_hline(yintercept=0)+ 
@@ -605,6 +706,31 @@ p <- ggplot() +                             # Draw ggplot2 plot with circle
           ylim(- 1784, 1784))
 
 }  
+
+
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_point(data =  trees_edges , 
+             aes(X_tree, Y_tree)) +
+  geom_point(data = forest_edges_HBI %>%  to_long(keys = c("X_name",  "Y_name"), 
+                                                                          values = c( "X_value", "Y_value"),  
+                                                                          names(.)[11:13], names(.)[14:16]) %>% 
+               mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
+                                          X_name == "X_B" ~ x_coord(1784, B_azi), 
+                                          TRUE ~ X_value), 
+                      Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+                                          Y_name == "Y_B" ~ y_coord(1784, B_azi), 
+                                          TRUE ~ Y_value)), 
+             aes(X_value, Y_value), na.rm=TRUE)+
+  geom_line(data = forest_edges_HBI %>%  to_long(keys = c("X_name",  "Y_name"), 
+                                                                         values = c( "X_value", "Y_value"),  
+                                                                         names(.)[11:13], names(.)[14:16]), 
+            aes(X_value, Y_value), na.rm=TRUE)+ 
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+ 
+  xlim(-1784, 1784)+ 
+  ylim(- 1784, 1784)+ 
+  facet_wrap(~plot_ID)
 
 # ----- 1.2. REGENERATION -------------------------------------------------
 # ----- 1.3. DEADWOOD -------------------------------------------------
