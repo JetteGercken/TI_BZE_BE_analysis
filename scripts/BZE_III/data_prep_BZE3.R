@@ -114,7 +114,7 @@ HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # BZE3_trees <- read.delim(file = here("data/input/BZE3/BZE3_trees_total.csv"), sep = ";", dec = ",")
 
- SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 # forest_edges_BZE3 <-    
@@ -240,7 +240,7 @@ x_coord <- function(Dcp, AZIcp){
   # Xc =  x coordinate of centre = 0 
   # Dcp = Distance between point and centre
   # AZIcp=  Azimute betweeen Point and centre
-  Xc <- 0;
+  Xc <- 2000;
   X = Xc + Dcp * cos(AZIcp);
   return(X)
 }
@@ -249,7 +249,7 @@ y_coord <- function(Dcp, AZIcp){
   # Yc =  y coordinate of centre = 0 
   # Dcp = Distance between point and centre
   # AZIcp=  Azimute betweeen Point and centre
-  Yc <- 0;
+  Yc <- 2000;
   Y = Yc + Dcp * sin(AZIcp);
 return(Y)
 }
@@ -432,10 +432,7 @@ coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coe
 #12.62 >10cm <= 30
 # 17.84 >= 30
 
-
-
-
-
+trees_total <-     # this should actually be the BZE3 Datset 
 trees_total %>% 
 unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
   left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
@@ -531,8 +528,7 @@ HBI_trees <- HBI_trees %>%
 
 # ----- 1.1.3.2. estimate parameters for edge coordinates -----------------------------------------------
 # coefficients for forest edges 
-forest_edges_HBI <- 
-forest_edges_HBI %>% 
+forest_edges_HBI <- forest_edges_HBI %>% 
   # calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -545,7 +541,8 @@ forest_edges_HBI %>%
   # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
             forest_edges_HBI %>% 
   # filter for forest edges that have a relevance for tree calculations and dont have a turning point
-  filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
+  # filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
+    filter(A_azi != "-2" & B_azi != "-2" & T_azi == "-2") %>%
     # calculate coordinates from Azimut and distance
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -568,7 +565,8 @@ left_join(
   # 1.b) 1. dataset with coefficients of line from A to T
   forest_edges_HBI %>% 
   # filter for forest edges that have a relevance for tree calculations 
-  filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+  #filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+  filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
   mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
          X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
          X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -590,7 +588,8 @@ left_join(
 # 1.b) 2. dataset with coefficients of line from B to T
   forest_edges_HBI %>% 
     # filter for forest edges that have a relevance for tree calculations 
-    filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+    # filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+  filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
     mutate(X_A = x_coord(A_dist, A_azi),
            X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
            X_B = x_coord(B_dist, B_azi),
@@ -613,41 +612,32 @@ by = c("plot_ID", "e_form")),
 by = c("plot_ID", "e_form")) 
 
 
+
+# ---- combining tree and edge data ---------------------------------------
+
+
 # next step will be to join the forest edges dataset into the trees datset, 
 # via b0 and b1 and then compare the calculated tree_y with the functions result
 # if the tree_y is higher then the function_y we have to do something with the tree...
 # etc. assiningg another plot iD or something. 
 trees_and_edges <-
 HBI_trees  %>% 
+  # join in edges info per plot
+  left_join(., forest_edges_HBI, 
+            by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
     mutate(Y_e_tree = case_when(e_form == "1" ~ e_b0_AB + e_b1_AB*X_tree, 
                                 # if forest edge form == 2 so there is a  turning point, 
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
                                 TRUE ~ NA)) %>% 
+  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
   mutate(t_e_status = case_when(Y_tree > Y_e_tree ~ "tree_outside", 
                                 is.na(e_ID) ~ "no_edge",
                                 TRUE ~ "tree_inside"))
  
 
 
- #filter(e_type %in% c("1", "2"))   # there are 1590 trees in plots with an edge 
- #filter(Y_tree > Y_e_tree)          # out of which 312 have a y higher then the y of the edge line at the respective x coordinate of the tree 
-
-
-# apatently there are plots with 2 edges: which caused the warning when joining edge info into the trees dataset
-forest_edges_HBI %>% select(plot_ID) %>% distinct() %>% summarise(n = n()) # 69
-forest_edges_HBI %>% select(e_form) %>%  ungroup() %>% distinct() %>% summarise(n = n()) #75
-forest_edges_HBI %>% select(plot_ID, e_form) %>%  group_by(plot_ID) %>% distinct() %>% summarise(n = n()) %>% filter(n > 1)
-forest_edges_HBI %>% filter(plot_ID %in% c(50042, 50057, 50075, 50102, 50122, 50142))
-
-# further i have to think about what to do in terms of the area of the plot --> 
-# i´ll have to cut the circles individually and change their area individually 
-
-ggplot()
-
-ggplot()+
-  geom_rect(aes(xmin=-1784,ymin=-1784,xmax=1784,ymax=1784), fill=NA) + coord_polar()
 
 # maybe it´ll help to plot them 
 # https://statisticsglobe.com/draw-plot-circle-r#example-2-draw-plot-with-circle-using-ggplot2-ggforce-packages
@@ -656,81 +646,410 @@ for(i in unique(forest_edges_HBI$plot_ID)) {
   # i = 50013       
     
   #we have to prepare a data set containing the position and the radius of our circle:
-    data_circle <- data.frame(x0 = c(0,0,0),       # Create data for circle
+    data_circle_original <- data.frame(x0 = c(0,0,0),       # Create data for circle
                             y0 = c(0,0,0),
                             r0 = c(x_coord(564, 0), x_coord(1262, 0), x_coord(1784,0)))
+    
 
-
-p <- ggplot() +                             # Draw ggplot2 plot with circle
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+
-  geom_point(data =  trees_edges %>% filter(plot_ID == i), 
-             aes(X_tree, Y_tree)) +
-  geom_smooth(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
-                                                                           values = c( "X_value", "Y_value"),  
-                                                                           names(.)[11:13], names(.)[14:16]), 
-              aes(X_value, Y_value), na.rm = TRUE, se = FALSE)+ 
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  xlim(-1784, 1784)+ 
-  ylim(- 1784, 1784)
-  #geom_rect(aes(xmin=-1784,ymin=-1784,xmax=1784,ymax=1784), fill=NA)# + coord_polar()
-
-  
-  print(ggplot() +                             # Draw ggplot2 plot with circle
-          geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+
-          geom_point(data =  trees_edges %>% filter(plot_ID == i), 
-                     aes(X_tree, Y_tree)) +
-          geom_point(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
-                                                                                 values = c( "X_value", "Y_value"),  
-                                                                                 names(.)[11:13], names(.)[14:16]) %>% 
-                       mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
-                                                  X_name == "X_B" ~ x_coord(1784, B_azi), 
-                                                  TRUE ~ X_value), 
-                              Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
-                                                  Y_name == "Y_B" ~ y_coord(1784, B_azi), 
-                                                  TRUE ~ Y_value)), 
-                    aes(X_value, Y_value), na.rm=TRUE)+
-          geom_line(data = forest_edges_HBI%>% filter(plot_ID == i) %>%  to_long(keys = c("X_name",  "Y_name"), 
-                                                                                   values = c( "X_value", "Y_value"),  
-                                                                                   names(.)[11:13], names(.)[14:16]) %>% 
-                      mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
-                                                 X_name == "X_B" ~ x_coord(1784, B_azi), 
-                                                 TRUE ~ X_value), 
-                             Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
-                                                 Y_name == "Y_B" ~ y_coord(1784, B_azi), 
-                                                 TRUE ~ Y_value)), 
-                      aes(X_value, Y_value), na.rm=TRUE)+ 
-          geom_vline(xintercept = 0)+
-          geom_hline(yintercept=0)+ 
-          xlim(-1784, 1784)+ 
-          ylim(- 1784, 1784))
+  # plotting 
+  print(ggplot() +                             
+    geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+    geom_point(data =  trees_and_edges %>% 
+                 filter(plot_ID == i) %>% 
+                 filter(!is.na(e_form)), 
+               aes(X_tree, Y_tree, color = t_e_status)) +
+ # these are the coordinates of the forest edges if you prolong them to the edge of the plot
+    # geom_point(data = forest_edges_HBI %>%  
+    #                           filter(!is.na(e_form)) %>% 
+    #                           to_long(keys = c("X_name",  "Y_name"), 
+    #                                   values = c( "X_value", "Y_value"),  
+    #                                   names(.)[11:13], names(.)[14:16]) %>% 
+    #                           mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+    #                                                      X_name == "X_B" ~ x_coord(1784, B_azi),
+    #                                                      X_name == "X_T" ~ X_value,
+    #                                                      TRUE ~ NA), 
+    #                                  Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+    #                                                      Y_name == "Y_B" ~ y_coord(1784, B_azi),
+  #                                                      X_name == "Y_T" ~ Y_value,
+  #                                                      TRUE ~ NA)),  
+  #            aes(X_value, Y_value, color = "edges_prolonged"))+
+  # geom_line(data = forest_edges_HBI %>%  
+  #              filter(!is.na(e_form)) %>% 
+  #              to_long(keys = c("X_name",  "Y_name"), 
+  #                      values = c( "X_value", "Y_value"),  
+  #                      names(.)[11:13], names(.)[14:16]) %>% 
+  #              mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+  #                                         X_name == "X_B" ~ x_coord(1784, B_azi),
+  #                                         X_name == "X_T" ~ X_value,
+  #                                         TRUE ~ NA), 
+  #                     Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+  #                                         Y_name == "Y_B" ~ y_coord(1784, B_azi),
+  #                                         X_name == "Y_T" ~ Y_value,
+  #                                         TRUE ~ NA)),  
+  #            aes(X_value, Y_value, color = "edges_prolonged"))+
+  geom_point(data = forest_edges_HBI %>% 
+               filter(plot_ID == i) %>% 
+               filter(!is.na(e_form)) %>% 
+               to_long(keys = c("X_name",  "Y_name"), 
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[11:13], names(.)[14:16]), 
+             aes(X_value, Y_value, color = "edges"))+
+  # these are lines through AB for forest types with only 2 edges
+  geom_smooth(data = forest_edges_HBI %>%
+                filter(plot_ID == i) %>%
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
+              aes(X_value, Y_value, color = "edges_f1_AB"), method='lm', se=FALSE)+
+   # these are lines through AT for forest types with turning point
+    geom_smooth(data = forest_edges_HBI %>%
+                  filter(plot_ID == i) %>%
+                  to_long(keys = c("X_name",  "Y_name"),
+                          values = c( "X_value", "Y_value"),
+                          names(.)[11:13], names(.)[14:16]) %>% 
+                  filter(X_name %in% c("X_A", "X_T")), 
+                aes(X_value, Y_value, color = "edges_f2_AT"), method='lm', se=FALSE)+
+   # these are lines through BT for forest types with turning point 
+    geom_smooth(data = forest_edges_HBI %>%  
+                  filter(plot_ID == i) %>%
+                  to_long(keys = c("X_name",  "Y_name"),
+                          values = c( "X_value", "Y_value"),
+                          names(.)[11:13], names(.)[14:16]) %>% 
+                  filter(X_name %in% c("X_B", "X_T")), 
+                aes(X_value, Y_value, color = "edges_f2_BT"), method='lm', se=FALSE)+
+   # these are lines through the function of the edges reagrding to the tree coorsinates
+    geom_smooth(data = trees_and_edges %>%  
+                  filter(plot_ID == i) %>%
+                  filter(!is.na(e_form)), 
+                aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
+    geom_vline(xintercept = 0)+
+    geom_hline(yintercept=0)+ 
+    #xlim(-1784, 1784)+ 
+    #ylim(- 1784, 1784)+ 
+    facet_wrap(~plot_ID))
 
 }  
 
 
+
+
+# ----- 1.2. REGENERATION -------------------------------------------------
+# ----- 1.3. DEADWOOD -------------------------------------------------
+
+
+
+
+
+# ----- 3. visulaization  -------------------------------------------------
+
+
+# ----- 3.1. Visualisation forest edges -----------------------------------
+# maybe it´ll help to plot them 
+# https://statisticsglobe.com/draw-plot-circle-r#example-2-draw-plot-with-circle-using-ggplot2-ggforce-packages
+
+for(i in unique(forest_edges_HBI$plot_ID)) {
+  # i = 50013       
+  
+  #we have to prepare a data set containing the position and the radius of our circle:
+  data_circle <- data.frame(x0 = c(2000,2000,2000),       # Create data for circle
+                            y0 = c(2000,2000,2000),
+                            r0 = c( (0 + 564 * cos(0)), (0 + 1262 * cos(0)), (0 + 1784 * cos(0))))
+  
+  
+  # plotting 
+  print(ggplot() +                             
+          geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+          geom_point(data =  trees_and_edges %>% 
+                       filter(plot_ID == i) %>% 
+                       filter(!is.na(e_form)), 
+                     aes(X_tree, Y_tree, color = t_e_status)) +
+          # these are the coordinates of the forest edges if you prolong them to the edge of the plot
+          # geom_point(data = forest_edges_HBI %>%  
+          #                           filter(!is.na(e_form)) %>% 
+          #                           to_long(keys = c("X_name",  "Y_name"), 
+          #                                   values = c( "X_value", "Y_value"),  
+          #                                   names(.)[11:13], names(.)[14:16]) %>% 
+          #                           mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+          #                                                      X_name == "X_B" ~ x_coord(1784, B_azi),
+          #                                                      X_name == "X_T" ~ X_value,
+          #                                                      TRUE ~ NA), 
+          #                                  Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+        #                                                      Y_name == "Y_B" ~ y_coord(1784, B_azi),
+        #                                                      X_name == "Y_T" ~ Y_value,
+        #                                                      TRUE ~ NA)),  
+        #            aes(X_value, Y_value, color = "edges_prolonged"))+
+        # geom_line(data = forest_edges_HBI %>%  
+        #              filter(!is.na(e_form)) %>% 
+        #              to_long(keys = c("X_name",  "Y_name"), 
+        #                      values = c( "X_value", "Y_value"),  
+        #                      names(.)[11:13], names(.)[14:16]) %>% 
+        #              mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+        #                                         X_name == "X_B" ~ x_coord(1784, B_azi),
+        #                                         X_name == "X_T" ~ X_value,
+        #                                         TRUE ~ NA), 
+        #                     Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+        #                                         Y_name == "Y_B" ~ y_coord(1784, B_azi),
+        #                                         X_name == "Y_T" ~ Y_value,
+        #                                         TRUE ~ NA)),  
+        #            aes(X_value, Y_value, color = "edges_prolonged"))+
+        geom_point(data = forest_edges_HBI %>% 
+                     filter(plot_ID == i) %>% 
+                     filter(!is.na(e_form)) %>% 
+                     to_long(keys = c("X_name",  "Y_name"), 
+                             values = c( "X_value", "Y_value"),  
+                             names(.)[11:13], names(.)[14:16]), 
+                   aes(X_value, Y_value, color = "edges"))+
+          # these are lines through AB for forest types with only 2 edges
+          geom_smooth(data = forest_edges_HBI %>%
+                        filter(plot_ID == i) %>%
+                        to_long(keys = c("X_name",  "Y_name"),
+                                values = c( "X_value", "Y_value"),  
+                                names(.)[11:13], names(.)[14:16]) %>% 
+                        filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
+                      aes(X_value, Y_value, color = "edges_f1_AB"), method='lm', se=FALSE)+
+          # these are lines through AT for forest types with turning point
+          geom_smooth(data = forest_edges_HBI %>%
+                        filter(plot_ID == i) %>%
+                        to_long(keys = c("X_name",  "Y_name"),
+                                values = c( "X_value", "Y_value"),
+                                names(.)[11:13], names(.)[14:16]) %>% 
+                        filter(X_name %in% c("X_A", "X_T")), 
+                      aes(X_value, Y_value, color = "edges_f2_AT"), method='lm', se=FALSE)+
+          # these are lines through BT for forest types with turning point 
+          geom_smooth(data = forest_edges_HBI %>%  
+                        filter(plot_ID == i) %>%
+                        to_long(keys = c("X_name",  "Y_name"),
+                                values = c( "X_value", "Y_value"),
+                                names(.)[11:13], names(.)[14:16]) %>% 
+                        filter(X_name %in% c("X_B", "X_T")), 
+                      aes(X_value, Y_value, color = "edges_f2_BT"), method='lm', se=FALSE)+
+          # these are lines through the function of 
+          geom_smooth(data = trees_and_edges %>%  
+                        filter(plot_ID == i) %>%
+                        filter(!is.na(e_form)), 
+                      aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
+          geom_vline(xintercept = 0)+
+          geom_hline(yintercept=0)+ 
+          #xlim(-1784, 1784)+ 
+          #ylim(- 1784, 1784)+ 
+          facet_wrap(~plot_ID))
+}
+
 ggplot() +                             
   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_edges , 
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_tree, color = t_e_status)) +
+  # these are the coordinates of the forest edges if you prolong them to the edge of the plot
+  # geom_point(data = forest_edges_HBI %>%  
+  #                           filter(!is.na(e_form)) %>% 
+  #                           to_long(keys = c("X_name",  "Y_name"), 
+  #                                   values = c( "X_value", "Y_value"),  
+  #                                   names(.)[11:13], names(.)[14:16]) %>% 
+  #                           mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+  #                                                      X_name == "X_B" ~ x_coord(1784, B_azi),
+  #                                                      X_name == "X_T" ~ X_value,
+  #                                                      TRUE ~ NA), 
+  #                                  Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+#                                                      Y_name == "Y_B" ~ y_coord(1784, B_azi),
+#                                                      X_name == "Y_T" ~ Y_value,
+#                                                      TRUE ~ NA)),  
+#            aes(X_value, Y_value, color = "edges_prolonged"))+
+# geom_line(data = forest_edges_HBI %>%  
+#              filter(!is.na(e_form)) %>% 
+#              to_long(keys = c("X_name",  "Y_name"), 
+#                      values = c( "X_value", "Y_value"),  
+#                      names(.)[11:13], names(.)[14:16]) %>% 
+#              mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+#                                         X_name == "X_B" ~ x_coord(1784, B_azi),
+#                                         X_name == "X_T" ~ X_value,
+#                                         TRUE ~ NA), 
+#                     Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+#                                         Y_name == "Y_B" ~ y_coord(1784, B_azi),
+#                                         X_name == "Y_T" ~ Y_value,
+#                                         TRUE ~ NA)),  
+#            aes(X_value, Y_value, color = "edges_prolonged"))+
+geom_point(data = forest_edges_HBI %>%
+             filter(!is.na(e_form)) %>% 
+             to_long(keys = c("X_name",  "Y_name"), 
+                     values = c( "X_value", "Y_value"),  
+                     names(.)[11:13], names(.)[14:16]), 
+           aes(X_value, Y_value, color = "edges"))+
+  # these are lines through AB for forest types with only 2 edges
+  geom_smooth(data = forest_edges_HBI %>%
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
+              aes(X_value, Y_value, color = "edges_f1_AB"), method='lm', se=FALSE)+
+  # these are lines through AT for forest types with turning point
+  geom_smooth(data = forest_edges_HBI %>%
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(X_name %in% c("X_A", "X_T")), 
+              aes(X_value, Y_value, color = "edges_f2_AT"), method='lm', se=FALSE)+
+  # these are lines through BT for forest types with turning point 
+  geom_smooth(data = forest_edges_HBI %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(X_name %in% c("X_B", "X_T")), 
+              aes(X_value, Y_value, color = "edges_f2_BT"), method='lm', se=FALSE)+
+  # these are lines through the function of 
+  geom_smooth(data = trees_and_edges %>%
+                filter(!is.na(e_form)), 
+              aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+ 
+  #xlim(-1784, 1784)+ 
+  #ylim(- 1784, 1784)+ 
+  facet_wrap(~plot_ID)
+
+
+# plotting 
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_tree, color = t_e_status)) +
+  # geom_point(data = forest_edges_HBI %>%  
+  #                           filter(!is.na(e_form)) %>% 
+  #                           to_long(keys = c("X_name",  "Y_name"), 
+  #                                   values = c( "X_value", "Y_value"),  
+  #                                   names(.)[11:13], names(.)[14:16]) %>% 
+  #                           mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+  #                                                      X_name == "X_B" ~ x_coord(1784, B_azi),
+  #                                                      X_name == "X_T" ~ X_value,
+  #                                                      TRUE ~ NA), 
+  #                                  Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+  #                                                      Y_name == "Y_B" ~ y_coord(1784, B_azi),
+#                                                      X_name == "Y_T" ~ Y_value,
+#                                                      TRUE ~ NA)),  
+#            aes(X_value, Y_value, color = "edges_prolonged"))+
+geom_point(data = forest_edges_HBI %>%  
+             filter(!is.na(e_form)) %>% 
+             to_long(keys = c("X_name",  "Y_name"), 
+                     values = c( "X_value", "Y_value"),  
+                     names(.)[11:13], names(.)[14:16]), 
+           aes(X_value, Y_value, color = "edges"))+
+  # geom_line(data = forest_edges_HBI %>%  
+  #              filter(!is.na(e_form)) %>% 
+  #              to_long(keys = c("X_name",  "Y_name"), 
+  #                      values = c( "X_value", "Y_value"),  
+  #                      names(.)[11:13], names(.)[14:16]) %>% 
+  #              mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
+  #                                         X_name == "X_B" ~ x_coord(1784, B_azi),
+  #                                         X_name == "X_T" ~ X_value,
+  #                                         TRUE ~ NA), 
+  #                     Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
+  #                                         Y_name == "Y_B" ~ y_coord(1784, B_azi),
+#                                         X_name == "Y_T" ~ Y_value,
+#                                         TRUE ~ NA)),  
+#            aes(X_value, Y_value, color = "edges_prolonged"))+
+# geom_smooth(data = forest_edges_HBI %>%  
+#                 filter(!is.na(e_form)) %>% 
+#                 to_long(keys = c("X_name",  "Y_name"), 
+#                         values = c( "X_value", "Y_value"),  
+#                         names(.)[11:13], names(.)[14:16]), 
+#               aes(X_value, Y_value, color = "edges"), method='lm', se=FALSE)+
+geom_smooth(data = forest_edges_HBI %>%
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[11:13], names(.)[14:16]) %>% 
+              filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
+            aes(X_value, Y_value, color = "edges_f1_AB"), method='lm', se=FALSE)+
+  geom_smooth(data = forest_edges_HBI %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(X_name %in% c("X_A", "X_T")), 
+              aes(X_value, Y_value, color = "edges_f2_AT"), method='lm', se=FALSE)+
+  geom_smooth(data = forest_edges_HBI %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),
+                        names(.)[11:13], names(.)[14:16]) %>% 
+                filter(X_name %in% c("X_B", "X_T")), 
+              aes(X_value, Y_value, color = "edges_f2_BT"), method='lm', se=FALSE)+
+  # geom_smooth(data = trees_and_edges %>% 
+  #               filter(!is.na(e_form)), 
+  #             aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
+  geom_vline(xintercept = 2000)+
+  geom_hline(yintercept=2000)+ 
+  geom_vline(xintercept = 0, color = "yellow")+
+  geom_hline(yintercept=0, color = "yellow")+ 
+  #xlim(-1784, 1784)+ 
+  #ylim(- 1784, 1784)+ 
+  facet_wrap(~plot_ID)
+
+
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
              aes(X_tree, Y_tree)) +
-  geom_point(data = forest_edges_HBI %>%  to_long(keys = c("X_name",  "Y_name"), 
-                                                                          values = c( "X_value", "Y_value"),  
-                                                                          names(.)[11:13], names(.)[14:16]) %>% 
-               mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi), 
-                                          X_name == "X_B" ~ x_coord(1784, B_azi), 
-                                          TRUE ~ X_value), 
-                      Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
-                                          Y_name == "Y_B" ~ y_coord(1784, B_azi), 
-                                          TRUE ~ Y_value)), 
-             aes(X_value, Y_value), na.rm=TRUE)+
-  geom_line(data = forest_edges_HBI %>%  to_long(keys = c("X_name",  "Y_name"), 
-                                                                         values = c( "X_value", "Y_value"),  
-                                                                         names(.)[11:13], names(.)[14:16]), 
-            aes(X_value, Y_value), na.rm=TRUE)+ 
+  geom_point(data =  forest_edges_HBI %>%  
+               filter(!is.na(e_form)) %>% 
+               to_long(keys = c("X_name",  "Y_name"), 
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[11:13], names(.)[14:16]), 
+             aes(X_value, Y_value, color = "edges"))+
+  geom_line(data = forest_edges_HBI %>% 
+              filter(!is.na(e_form)) %>%
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[11:13], names(.)[14:16]), 
+            aes(X_value, Y_value, color = "edges"))+ 
   geom_vline(xintercept = 0)+
   geom_hline(yintercept=0)+ 
   xlim(-1784, 1784)+ 
   ylim(- 1784, 1784)+ 
   facet_wrap(~plot_ID)
 
-# ----- 1.2. REGENERATION -------------------------------------------------
-# ----- 1.3. DEADWOOD -------------------------------------------------
+
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_tree, color = t_e_status)) +
+  geom_point(data =  forest_edges_HBI %>%  
+               filter(!is.na(e_form)) %>% 
+               to_long(keys = c("X_name",  "Y_name"), 
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[11:13], names(.)[14:16]), 
+             aes(X_value, Y_value, color = "edges"))+
+  geom_line(data =  forest_edges_HBI %>%  
+              filter(!is.na(e_form)) %>% 
+              to_long(keys = c("X_name",  "Y_name"), 
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[11:13], names(.)[14:16]), 
+            aes(X_value, Y_value, color = "edges"))+
+  geom_point(data = trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_e_tree, color = "edges_trees"))+ 
+  geom_line(data = trees_and_edges %>% 
+              filter(!is.na(e_form)), 
+            aes(X_tree, Y_e_tree, color = "edges_trees"))+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+ 
+  xlim(-1784, 1784)+ 
+  ylim(- 1784, 1784)+ 
+  facet_wrap(~plot_ID)
+
+
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_tree, color = t_e_status)) +
+  # these are lines through the function of the edges reagrding to the tree coorsinates
+  geom_smooth(data = trees_and_edges %>% 
+              filter(!is.na(e_form)), 
+            aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+ 
+  xlim(-1784, 1784)+ 
+  ylim(- 1784, 1784)+ 
+  facet_wrap(~plot_ID)
+
