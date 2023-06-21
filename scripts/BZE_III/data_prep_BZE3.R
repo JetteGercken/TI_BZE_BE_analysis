@@ -631,11 +631,11 @@ HBI_trees  %>%
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
                                 e_form == "2" & data.table::between(X_tree, x_coord(1784,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
                                 TRUE ~ NA)) %>% 
-  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-  mutate(t_e_status = case_when(Y_tree > Y_e_tree ~ "tree_outside", 
-                                is.na(e_ID) ~ "no_edge",
-                                TRUE ~ "tree_inside"))
- 
+ # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
+   mutate(t_e_status = case_when(Y_tree > Y_e_tree ~ "tree_outside", 
+                                 is.na(e_ID) ~ "no_edge",
+                                 TRUE ~ "tree_inside"))
+   
 
 
 
@@ -1053,3 +1053,18 @@ ggplot() +
   ylim(- 1784, 1784)+ 
   facet_wrap(~plot_ID)
 
+
+
+
+# ----- NOTES -------------------------------------------------------------
+
+
+# ----- assinging tree status depending on position to edge line ----------
+
+# assign trees status depending on position of line through edges points
+mutate(t_e_status = case_when(Y_e_tree < 2000 & X_tree < 2000 &  Y_tree < Y_e_tree ~ "tree_outside",   # x negative, y negative (below 2000)
+                              Y_e_tree > 2000 & X_tree < 2000 &  Y_tree > Y_e_tree ~ "tree_outside",   # x negative, y positive 
+                              Y_e_tree < 2000 & X_tree > 2000 &  Y_tree < Y_e_tree ~ "tree_outside",   # x positive, y negative
+                              Y_e_tree > 2000 & X_tree > 2000 &  Y_tree > Y_e_tree ~ "tree_outside",   # x positive, y positive
+                              is.na(e_ID) ~ "no_edge",
+                              TRUE ~ "tree_inside"))
