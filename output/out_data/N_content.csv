@@ -1,0 +1,58 @@
+SP_BWI,compartiment,N_mean_gkg,reference,N_con_per
+BU,stw,"1,335",Rumpf et al. 2018,"0,001335"
+BU,stwb,"7,227",Rumpf et al. 2018,"0,007227"
+BU,sw,"1,335",Rumpf et al. 2018,"0,001335"
+BU,swb,"7,227",Rumpf et al. 2018,"0,007227"
+BU,fw,"4,601",Rumpf et al. 2018,"0,004601"
+BU,f,NA,NA,NA
+EI,stw,"1,752",Rumpf et al. 2018,"0,001752"
+EI,stwb,"6,507",Rumpf et al. 2018,"0,006507"
+EI,sw,"1,752",Rumpf et al. 2018,"0,001752"
+EI,swb,"6,507",Rumpf et al. 2018,"0,006507"
+EI,fw,"6,209",Rumpf et al. 2018,"0,006209"
+EI,f,NA,NA,NA
+ES,stw,"1,438",Rumpf et al. 2018,"0,001438"
+ES,stwb,"5,348",Rumpf et al. 2018,"0,005348"
+ES,sw,"1,438",Rumpf et al. 2018,"0,001438"
+ES,swb,"5,348",Rumpf et al. 2018,"0,005348"
+ES,fw,"3,721",Rumpf et al. 2018,"0,003721"
+ES,f,NA,NA,NA
+AH,stw,"1,465",Rumpf et al. 2018,"0,001465"
+AH,stwb,"7,729",Rumpf et al. 2018,"0,007729"
+AH,sw,"1,465",Rumpf et al. 2018,"0,001465"
+AH,swb,"7,729",Rumpf et al. 2018,"0,007729"
+AH,fw,"4,278",Rumpf et al. 2018,"0,004278"
+AH,f,NA,NA,NA
+BI,stw,"1,828",Rumpf et al. 2018,"0,001828"
+BI,stwb,"6,131",Rumpf et al. 2018,"0,006131"
+BI,sw,"1,828",Rumpf et al. 2018,"0,001828"
+BI,swb,"6,131",Rumpf et al. 2018,"0,006131"
+BI,fw,"6,057",Rumpf et al. 2018,"0,006057"
+BI,f,NA,NA,NA
+ERL,stw,"2,475",Rumpf et al. 2018,"0,002475"
+ERL,stwb,"11,028",Rumpf et al. 2018,"0,011028"
+ERL,sw,"2,475",Rumpf et al. 2018,"0,002475"
+ERL,swb,"11,028",Rumpf et al. 2018,"0,011028"
+ERL,fw,"7,214",Rumpf et al. 2018,"0,007214"
+ERL,f,NA,NA,NA
+FI,stw,"0,812",Rumpf et al. 2018,"0,000812"
+FI,stwb,"4,84",Rumpf et al. 2018,"0,00484"
+FI,sw,"0,812",Rumpf et al. 2018,"0,000812"
+FI,swb,"4,84",Rumpf et al. 2018,"0,00484"
+FI,fw,"4,343",Rumpf et al. 2018,"0,004343"
+FI,f,"12,978",Rumpf et al. 2018,"0,012978"
+FI,f,NA,NA,NA
+KI,stw,"0,794",Rumpf et al. 2018,"0,000794"
+KI,stwb,"4,339",Rumpf et al. 2018,"0,004339"
+KI,sw,"0,794",Rumpf et al. 2018,"0,000794"
+KI,swb,"4,339",Rumpf et al. 2018,"0,004339"
+KI,fw,"4,058",Rumpf et al. 2018,"0,004058"
+KI,f,"15,201",Rumpf et al. 2018,"0,015201"
+KI,f,NA,NA,NA
+DGL,stw,"0,701",Rumpf et al. 2018,"0,000701"
+DGL,stwb,"3,91",Rumpf et al. 2018,"0,00391"
+DGL,sw,"0,701",Rumpf et al. 2018,"0,000701"
+DGL,swb,"3,91",Rumpf et al. 2018,"0,00391"
+DGL,fw,"4,203",Rumpf et al. 2018,"0,004203"
+DGL,f,"15,166",Rumpf et al. 2018,"0,015166"
+DGL,f,NA,NA,NA

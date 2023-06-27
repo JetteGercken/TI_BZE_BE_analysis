@@ -3541,6 +3541,24 @@ trees_tot_piv_wider %>%
                                TRUE ~ "FINE")) %>% 
   filter(HD_status == "ERROR" & H_method == "sampled")
 
+# trees with HD status "warning" and estimated or sampled height
+trees_tot_piv_wider %>% 
+  filter(C_layer == 1) %>% 
+  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                               TRUE ~ "FINE")) %>% 
+  filter(HD_status == "WARNING")
+
+# trees with HD status "error" and estimated or sampled height
+trees_tot_piv_wider %>% 
+  filter(C_layer == 1) %>% 
+  mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
+                               HD_value <= 4.9 | HD_value > 140 ~ "ERROR", 
+                               TRUE ~ "FINE")) %>% 
+  filter(HD_status == "ERROR")
+
+
+
 summary(trees_tot_piv_wider %>% 
           filter(C_layer == 1) %>% 
           mutate(HD_status = case_when(HD_value >= 5 & HD_value <= 65 | HD_value >= 85  & HD_value <= 139.9 ~ "WARNING", 
@@ -3561,11 +3579,11 @@ trees_total_5 %>%
          HD_tps_status = case_when(HD_tps >= 5 & HD_tps <= 65 | HD_tps >= 85  & HD_tps <= 139.9 ~ "WARNING", 
                                    HD_tps <= 4.9 | HD_tps > 140 ~ "ERROR", 
                                    TRUE ~ "FINE")) %>% 
-  select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status) #%>% 
-  #filter(HD_tps_status == "WARNING" & H_method == "sampled") # 174
+  select(plot_ID, t_ID, SP_code, DBH_cm, H_method, H_m, H_tapes, HD_value, HD_tps, HD_diff, HD_status, HD_tps_status) %>% 
+  # filter(HD_tps_status == "WARNING" & H_method == "sampled") # 174
   # filter(HD_status == "WARNING" & H_method == "sampled") # 175 
   # filter(HD_status == "ERROR" & H_method == "sampled") # 5
-  # filter(HD_tps_status == "ERROR" & H_method == "sampled") # 0
+   filter(HD_tps_status == "ERROR" & H_method == "sampled") # 0
 
 
 
@@ -3696,12 +3714,12 @@ summary(c_comp_Momok_BWI_P)
 # comparing C by dom SP without age with respective C stock per species group from BWI
 C_comp_domSP_BWI<- trees_P %>%                  
     filter(compartiment == "total") %>%
-    select(-c(C_t_ha, compartiment)) %>% 
+    select(-c(C_t_ha, B_t_ha, compartiment)) %>% 
     distinct() %>% 
     # just use aboveground carbon stock to enable proper comparisson with BWI data which do not include total C stock
     left_join(., trees_P %>%  
                 filter(compartiment == "ag") %>%
-                select(plot_ID, compartiment, C_t_ha) %>% 
+                select(plot_ID, compartiment, C_t_ha, B_t_ha) %>% 
                 distinct(), 
               by = "plot_ID") %>%
     # assign BWI SP names to the dominant species of each plot so we can join in BWI Speices specific data
@@ -3714,7 +3732,7 @@ C_comp_domSP_BWI<- trees_P %>%
                 filter(compartiment == "ag") %>% 
                 rename("Nt_ha_BWI" = "Nt_ha") %>% 
                 rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
-                select(BWI_SP_group, C_t_ha_BWI, Nt_ha_BWI, BA_m2ha_BWI, SD_C) %>% 
+                select(BWI_SP_group, C_t_ha_BWI, B_t_ha_BWI,  Nt_ha_BWI, BA_m2ha_BWI, SD_C) %>% 
                 distinct(), 
               by = "BWI_SP_group") %>% 
     left_join(., DW_V_com %>% 
@@ -3724,24 +3742,25 @@ C_comp_domSP_BWI<- trees_P %>%
                 dplyr::select(plot_ID, growth), 
               by = "plot_ID") %>% 
     mutate(C_diff = C_t_ha - C_t_ha_BWI,
+           B_diff = B_t_ha - B_t_ha_BWI,
            Nt_diff = Nt_ha - Nt_ha_BWI, 
            BA_diff = BA_m2ha - BA_m2ha_BWI, 
            dom_SP = as.factor(dom_SP))
 
 
-
+summary(C_comp_domSP_BWI)
 
 # ----- 4.1.3. comparission MoMoK vs. BWI C, N, BA by dom SP ---------------------------------------------
 # select stand characteristics/ plot characteristics saved under compartiment "total"
 cor.df <- trees_P %>% 
   filter(compartiment == "total") %>%
   # have to remove carbon because if i filter for "total" which includes all the stand characteristics and join it in under "ag" again
-  select(-c(C_t_ha, compartiment)) %>% 
+  select(-c(C_t_ha, B_t_ha, compartiment)) %>% 
   distinct() %>% 
   # just use aboveground carbon stock to enable proper comparisson with BWI data which do not include total C stock
   left_join(., trees_P %>%  
               filter(compartiment == "ag") %>%
-              select(plot_ID, compartiment, C_t_ha) %>% 
+              select(plot_ID, compartiment, C_t_ha, B_t_ha) %>% 
               distinct(), 
             by = "plot_ID") %>%
   # assign BWI SP names to the dominant species of each plot so we can join in BWI Speices specific data
@@ -3754,7 +3773,7 @@ cor.df <- trees_P %>%
               filter(compartiment == "ag") %>% 
               rename("Nt_ha_BWI" = "Nt_ha") %>% 
               rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
-              select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, BA_m2ha_BWI) %>% 
+              select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, SD_C, B_t_ha_BWI, SD_B, BA_m2ha_BWI) %>% 
               distinct(), 
             by = "BWI_SP_group") %>% 
   left_join(., DW_V_com %>% 
@@ -3764,9 +3783,15 @@ cor.df <- trees_P %>%
               dplyr::select(plot_ID, growth), 
             by = "plot_ID") %>% 
   mutate(C_diff = C_t_ha - C_t_ha_BWI,
+         B_diff = B_t_ha - B_t_ha_BWI, 
          Nt_diff = Nt_ha - Nt_ha_BWI, 
          BA_diff = BA_m2ha - BA_m2ha_BWI, 
-         dom_SP = as.factor(dom_SP)) 
+         dom_SP = as.factor(dom_SP), 
+         SD_class_C = SD_class(SD_C, C_diff), 
+         SD_class_B = SD_class(SD_B, B_diff))  
+
+
+
 
 summary(cor.df)
 
@@ -3796,6 +3821,25 @@ C_comp_domSP_BWI_A <- trees_P %>%
               select(plot_ID, compartiment, C_t_ha) %>% 
               distinct(), 
             by = "plot_ID") %>%
+  # join in dataset that summarises TapeS heihgt based Biomass per plot 
+  left_join(., trees_total_5 %>% 
+              filter(compartiment == "ag") %>%
+              mutate(H_tapes = ifelse(H_method == "sampled", H_m, estHeight(d13 = (DBH_cm), sp = tpS_ID)),
+                     B_kg_tapes = tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                                      Dm = as.list(DBH_cm),
+                                                      Hm = as.list(DBH_h_m ),
+                                                      Ht = H_tapes,
+                                                      inv = 4), component = "agb"), 
+                     C_t_tps_H_tps = (B_kg_tapes/1000)*0.5) %>% 
+              group_by(plot_ID) %>% 
+              summarise(C_t_tapes = sum(C_t_tapes), 
+                        C_t_tps_H = sum(C_t_tps_H_tps), 
+                        C_t_GHG = sum(C_aB_t_GHG),
+                        plot_A_ha = mean(plot_A_ha)) %>% 
+              mutate(C_t_ha_tapes = C_t_tapes/plot_A_ha, 
+                     C_t_ha_tps_H = C_t_tps_H/ plot_A_ha, 
+                     C_t_ha_GHG = C_t_GHG/ plot_A_ha) , 
+            by = "plot_ID") %>% 
   # assign BWI SP names to the dominant species of each plot so we can join in BWI species-specific data
   left_join(., SP_names_com_ID_tapeS %>%       
               select(Chr_code_ger, BWI_SP_group) %>% 
@@ -3823,6 +3867,9 @@ C_comp_domSP_BWI_A <- trees_P %>%
               dplyr::select(plot_ID, growth), 
             by = "plot_ID") %>% 
   mutate(C_diff = C_t_ha - C_t_ha_BWI,
+         C_diff_GHG_BWI = C_t_ha_GHG - C_t_ha_BWI, 
+         C_diff_tapes_tapsesH_BWI = C_t_ha_tps_H - C_t_ha_BWI, 
+         C_diff_tapes_sampH_BWI = C_t_ha_tapes - C_t_ha_BWI,
          Nt_diff = Nt_ha - Nt_ha_BWI, 
          BA_diff = BA_m2ha - BA_m2ha_BWI, 
          dom_SP = as.factor(dom_SP))
@@ -3832,17 +3879,18 @@ summary(C_comp_domSP_BWI_A)
 
 
 
+# -----4.1.4. comaprisson MoMoK vs. BWI C, B, Nt, BA by pseudo mon --------
 # comparing stand characterstics between pseudo monocultures of the respective mixed species 
 # and BWI by pseudo mono species per plot 
 comp_pseudo_mono <- trees_P_SP %>%   
   # dataset with trees_total stand characteristics apart from C stock
   filter(compartiment == "total") %>%
-  select(-c(C_t_P_SP_ha, C_t_P_SP, compartiment)) %>% 
+  select(-c(C_t_P_SP_ha, C_t_P_SP, B_t_P_SP_ha, B_t_P_SP, compartiment)) %>% 
   distinct() %>% 
   # just use aboveground carbon stock to enable proper comparisson with BWI data which do not include total C stock
   left_join(., trees_P_SP %>%  
               filter(compartiment == "ag") %>%
-              select(plot_ID, compartiment, SP_code, C_t_P_SP, C_t_P_SP_ha) %>% 
+              select(plot_ID, compartiment, SP_code, C_t_P_SP, C_t_P_SP_ha, B_t_P_SP_ha, B_t_P_SP) %>% 
               distinct(), 
             by = c("plot_ID", "SP_code")) %>%
   # assign BWI SP names to the  species so we can join in BWI Speices specific data
@@ -3865,12 +3913,37 @@ comp_pseudo_mono <- trees_P_SP %>%
                                            TRUE ~ 'all')) %>% 
               select(-age) , 
             by = "plot_ID") %>% 
+  # join in dataset that summarises TapeS heihgt based Biomass per plot 
+  left_join(., trees_total_5 %>% 
+              filter(compartiment == "ag") %>%
+              mutate(H_tapes = ifelse(H_method == "sampled", H_m, estHeight(d13 = (DBH_cm), sp = tpS_ID)),
+                     B_t_tapes_H_tps = (tprBiomass(tprTrees(spp = tpS_ID,                                         
+                                                      Dm = as.list(DBH_cm),
+                                                      Hm = as.list(DBH_h_m ),
+                                                      Ht = H_tapes,
+                                                      inv = 4), component = "agb"))/1000, 
+                     C_t_tps_H_tps = (B_t_tapes_H_tps*0.5)) %>% 
+              group_by(plot_ID, SP_code) %>% 
+              summarise(B_t_tapes = sum(B_t_tapes),
+                        B_t_tps_H = sum(B_t_tapes_H_tps),
+                        B_t_GHG = sum(aB_kg_GHG/1000),
+                        C_t_tapes = sum(C_t_tapes), 
+                        C_t_tps_H = sum(C_t_tps_H_tps),
+                        C_t_GHG = sum(C_aB_t_GHG),
+                        plot_A_ha = mean(plot_A_ha)) %>% 
+              mutate(B_t_ha_tapes = B_t_tapes/ plot_A_ha,
+                     B_t_ha_tps_H = B_t_tps_H/ plot_A_ha,
+                     B_t_ha_GHG = B_t_GHG/ plot_A_ha,
+                     C_t_ha_tapes = C_t_tapes/plot_A_ha, 
+                     C_t_ha_tps_H = C_t_tps_H/ plot_A_ha, 
+                     C_t_ha_GHG = C_t_GHG/ plot_A_ha) , 
+            by =c("plot_ID", "SP_code")) %>% 
   # BWI stand characteristics dataset to compare N, C, BA by species group
   left_join(., BWI_stand_char_SP %>%
               filter(compartiment == "ag") %>% 
               rename("Nt_ha_BWI" = "Nt_ha") %>% 
               rename("BA_m2ha_BWI" = "BA_m2_ha") %>% 
-              select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, SD_C, BA_m2ha_BWI) %>% 
+              select(BWI_SP_group, Nt_ha_BWI, B_t_ha_BWI , SD_B, C_t_ha_BWI, SD_C, BA_m2ha_BWI) %>% 
               distinct(), 
             by = "BWI_SP_group") %>% 
   # dataset with deadwood volume
@@ -3884,19 +3957,27 @@ comp_pseudo_mono <- trees_P_SP %>%
   # create pseudo monocultures:
   # carbon stock of species per hectar divided by 1 Hektar mulitplied with the actual area covered by the species according to basal area 
   mutate(C_t_ha_mono = C_t_P_SP_ha/(1*(SP_BA_m2ha/tot_BA_m2ha)),
-         #C_t_ha_P_mono =  C_t_P_SP/(plot_A_ha*(SP_BA_m2ha/tot_BA_m2ha)), 
+         B_t_ha_mono = B_t_P_SP_ha/(1*(SP_BA_m2ha/tot_BA_m2ha)),
+         B_t_ha_tapes_mono = B_t_ha_tapes/ (1*(SP_BA_m2ha/tot_BA_m2ha)),
+         B_t_ha_tps_H_mono = B_t_ha_tps_H/ (1*(SP_BA_m2ha/tot_BA_m2ha)),
+         B_t_ha_GHG_mono = B_t_ha_GHG/ (1*(SP_BA_m2ha/tot_BA_m2ha)),
          Nt_ha_mono = Nt_ha/(1*(SP_BA_m2ha/tot_BA_m2ha)), 
          BA_m2_ha_mono = SP_BA_m2ha/(1*SP_BA_m2ha/tot_BA_m2ha)) %>% 
   # calculate differences in carbon, basal area and number of stems
   mutate(C_diff = C_t_ha_mono - C_t_ha_BWI,
+         B_diff = B_t_ha_mono - B_t_ha_BWI,
+         B_tapes_diff = B_t_ha_tapes_mono- B_t_ha_BWI,
+         B_tps_H_diff =B_t_ha_tps_H_mono- B_t_ha_BWI,
+         B_GHG_diff = B_t_ha_GHG_mono- B_t_ha_BWI,
          Nt_diff = Nt_ha_mono - Nt_ha_BWI, 
          BA_diff = BA_m2_ha_mono - BA_m2ha_BWI, 
          dom_SP = as.factor(dom_SP), 
-         SD_class = SD_class(SD_C, C_diff)) 
+         SD_class_C = SD_class(SD_C, C_diff), 
+         SD_class_B = SD_class(SD_C, B_diff)) 
 
 
 
-
+summary(comp_pseudo_mono)
 
 # ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
 # ----- 4.2.1. DW volume üper hectar per plot compared with BWI DW volume (not separated by deadwood type) ------------------------------------
@@ -3942,7 +4023,7 @@ DW_V_com_TY_ST <- DW_P_TY %>%
               #filter(DW_type == "all") %>% 
               mutate(DW_type = ifelse(DW_type != "1W", DW_type, "1")) %>% 
               select(state_abbreviation, DW_type, V_m3_ha_BWI), 
-            by = c("state" = "state_abbreviation", "DW_type")) %>% 
+            by = c("state" = "state_abbreviation", "DW_type"), multiple = "all") %>% 
   mutate(V_diff = V_tot_m3_ha - V_m3_ha_BWI, 
          V_diff_pseu_mono = V_pseu_mono - V_m3_ha_BWI)
 summary(DW_V_com_TY_ST)
@@ -4040,40 +4121,10 @@ DW_comp_SL_iB <- DW_total %>%
  
 
 
-# -----4.3.correlation between stand characteristics and C stocks -----------------------------------------------------------
-# creating correlation matrix for every dominant species
-for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
-   # SP= "SER"
-  cor.sp <- cor.df %>%       # select the variables that should be checked for correlation
-    filter(dom_SP == SP) %>% 
-    group_by(dom_SP) %>% 
-    ungroup() %>% 
-    select(#C_t_ha, 
-           C_diff, 
-           Nt_diff, 
-           BA_diff, 
-           Nt_ha, 
-           V_m3_ha)
-
-  print(ggcorrplot(cor.sp, 
-                   #hc.order = TRUE, 
-                   type = "lower",
-                   lab = TRUE))
-  print(SP)
-  print(cor(cor.sp))
-  print(summary(cor.sp))
-}
-
-
-# https://stackoverflow.com/questions/26202670/how-to-use-corrplot-with-simple-matrices 
-  corrplot(cor(cor.sp), is.corr = FALSE, p.mat = testRes$p, method = 'circle', type = 'lower', insig='blank',
-           order = 'AOE', diag = FALSE)$corrPos -> p1
-  text(p1$x, p1$y, round(p1$corr, 2))
-
   
 
 
-# ----- 4.4. Linear model C plausibility -------------------------------------------------------------
+# ----- 4.4. Linear model B plausibility -------------------------------------------------------------
 # 1. calualte differences in C, number of stem and BA differences between 
 #    MoMoK and BWI
 # 2. define threshold of difference 
@@ -4083,7 +4134,7 @@ for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
 # 4. filter plots that differ from the predicted C stock to a defined extend
 # 5. check if the basal area differs significantly from BWI as well to "explain" the difference in C
 
-# ----- 4.4.1. Linear model C plausibility by SP & plot -------------------------------------------------------------
+# ----- 4.4.1. Linear model C plausibility by dom_SP & plot -------------------------------------------------------------
 # coefficents of non-linear height model per species and plot
 #https://rdrr.io/cran/forestmangr/man/lm_table.html
 # 1. dataset containing C, BA and Nt differences grouped by dominant species but not by age: 
@@ -4091,22 +4142,24 @@ cor.df <- cor.df %>%
   # table with lm for C_diff = b0 + b1* BA_diff+ b2*Nt_diff
   left_join(.,cor.df %>% 
               # 3. fit linear model with 
-              lm_table(C_diff ~ BA_diff + Nt_diff, "dom_SP", output = "table") %>% 
+              lm_table(B_diff ~ BA_diff + Nt_diff, "dom_SP", output = "table") %>% 
               select(dom_SP, b0, b1, b2, Rsqr) %>% 
               # replace NAs with 0 
               mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
             by = "dom_SP") %>% 
   # 4. predict the expectable C_diff at the given basal area and tree number difference
-  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
+  mutate(B_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
-         C_pred_vs_C_calc = C_diff - C_diff_pred) 
+         B_pred_vs_B_calc = B_diff - B_diff_pred) 
   
 cor.df <- cor.df %>% 
     left_join(., cor.df %>% 
                 group_by(dom_SP) %>%
-                summarize(SD_SP_C_diff = sd(C_pred_vs_C_calc)),
+                summarize(SD_SP_B_diff = sd(B_pred_vs_B_calc)),
               by = "dom_SP") %>% 
-  mutate(SD_class = SD_class(SD_SP_C_diff, C_pred_vs_C_calc)) 
+  mutate(SD_class = SD_class(SD_SP_B_diff, B_pred_vs_B_calc)) 
+
+
 
   
 
@@ -4114,22 +4167,22 @@ cor.df <- cor.df %>%
 comp_pseudo_mono <- comp_pseudo_mono %>%
   # create linear model with BA diff and Nt diff per species group
   left_join(., comp_pseudo_mono %>% 
-              lm_table(C_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
+              lm_table(B_diff ~ BA_diff + Nt_diff, "BWI_SP_group", output = "table") %>% 
               select(BWI_SP_group, b0, b1, b2, Rsqr) %>% 
               # replace NAs with 0 
               mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
             by = "BWI_SP_group") %>% 
   # predict the expectable C_diff at the given basal area and tree number difference
-  mutate(C_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
+  mutate(B_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
-         C_pred_vs_C_calc = C_diff - C_diff_pred)
+         B_pred_vs_B_calc = B_diff - B_diff_pred)
 # calcualting SD of siffernce between calculated and predicted difference in C
 comp_pseudo_mono <- comp_pseudo_mono %>%
   left_join(., comp_pseudo_mono %>%
               group_by(BWI_SP_group) %>% 
-              summarize(SD_SP_C_diff = sd(C_pred_vs_C_calc)), 
+              summarize(SD_SP_B_diff = sd(B_pred_vs_B_calc)), 
             by = "BWI_SP_group") %>% 
-  mutate(SD_class = SD_class(SD_SP_C_diff, C_pred_vs_C_calc)) 
+  mutate(SD_class = SD_class(SD_SP_B_diff, B_pred_vs_B_calc)) 
 
 
 
@@ -4578,17 +4631,25 @@ biotest %>%
 
 
 biotest %>% 
-  select(plot_ID, SP_code, DBH_cm, GHG_aB_kg, tot_GHG_tps, tapes_ab_kg, Vondr_oiB_kg)%>% 
-  tidyr::gather("method", "biomass", 4:7) %>% 
+  select(plot_ID, SP_code, GHG_aB_kg, tot_GHG_tps, tapes_ab_kg, Vondr_oiB_kg)%>% 
+  tidyr::gather("method", "biomass", 3:6) %>% 
   group_by(method, plot_ID, SP_code) %>% 
-  summarize(mean_bio = mean(biomass)) %>% 
+  summarize(mean_bio = mean(biomass)) %>%
+  left_join(trees_P %>% filter(compartiment == "total") %>% select(plot_ID, dom_SP), 
+            by = "plot_ID") %>% 
   ggplot(., aes(method, mean_bio))+
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
+  scale_fill_discrete(labels = c("GHGI", 
+                               "GHGI & TapeS stepwise",
+                               "only TapeS", 
+                                "Vondernach"))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
-  facet_wrap(plot_ID~SP_code)
+  ggtitle("average total aboveground biomass in kg per tree per plot per species separated by calcualtion method" )+
+  facet_wrap(plot_ID~SP_code)+ 
+  theme_bw()
 
 
 # ---- 3.2.5. GHG & GHG_tapeS compartiments ----------------------------------------
@@ -4879,9 +4940,10 @@ biotest %>%
   select(plot_ID, SP_code, DBH_cm, 
         # diff_GHG_bef_af_tps, 
          diff_GHG_tps, 
-         diff_Vondr_GHG, 
-         diff_Vondr_tps) %>% 
-  tidyr::gather("method", "biomass", 4:6) %>% 
+         diff_Vondr_GHG 
+         #diff_Vondr_tps
+        ) %>% 
+  tidyr::gather("method", "biomass", 4:5) %>% 
   ggplot(., aes(method, biomass))+
   geom_boxplot(aes(colour = method))+
   #geom_line(aes(colour = method))+
@@ -5144,6 +5206,24 @@ cor.df %>%
   theme(legend.position = "right")
 
 
+# barplot per plot
+C_comp_domSP_BWI %>%
+  select(plot_ID, dom_SP,  B_t_ha, B_t_ha_BWI) %>% 
+  gather("method", "biomass", 3:4) %>% 
+  ggplot()+
+  geom_bar(aes(x = method, y = biomass, fill = reorder(method, + biomass)),
+                    stat="identity", 
+                    # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+                    position="dodge")+ 
+  facet_wrap(plot_ID~dom_SP)+
+  xlab("") +
+  ylab("biomass t/ha")+
+  #ylim(0, 50)+
+  ggtitle("biomass in t/ha compared by dominant species")+
+  theme_light()+
+  theme(legend.position = "bottom")
+  # pnki bwi
+
 
 # ----- 3.4.1.3. difference carbon MoMoK vs. BWI  by pseudo monocultures  -----------------
 comp_pseudo_mono %>% 
@@ -5164,30 +5244,58 @@ comp_pseudo_mono %>%
   theme_light()+
   theme(legend.position = "right")
 
+# barplot difference in biomass between MoMoK vs. BWI 
+comp_pseudo_mono %>%
+  select(plot_ID,  SP_code, B_t_ha_GHG_mono, B_t_ha_tps_H_mono, B_t_ha_tapes_mono, B_t_ha_BWI) %>% 
+  gather("method", "biomass", 3:6) %>% 
+  mutate(method = case_when(method == "B_t_ha_GHG_mono" ~ "GHG", 
+                             method == "B_t_ha_tps_H_mono" ~ "tps_H",
+                             method == "B_t_ha_tapes_mono" ~ "tps",
+                             method == "B_t_ha_BWI" ~ "BWI",
+                             TRUE ~ NA)) %>% 
+  ggplot()+
+  geom_bar(aes(x = method, y = biomass, fill =method),
+           stat="identity", 
+           # https://r-graph-gallery.com/48-grouped-barplot-with-ggplot2.html
+           position="dodge")+ 
+  facet_wrap(plot_ID~SP_code)+
+  geom_text(aes(x = method, y = biomass, label = method), nudge_y = 3)+
+  xlab("") +
+  ylab("biomass t/ha")+
+  #ylim(0, 50)+
+  ggtitle("biomass in t/ha compared in comparisson monocultures")+
+  theme_light()+
+  theme(legend.position = "bottom")
+# pink bwi
+
+
+# 3.4.1.4. linear model comparisson of B in pseud monocultures and B in BWI -------------------------------------------------------------------------
 comp_pseudo_mono %>% 
   ggplot(., aes(x = BA_diff))+
-  geom_point(aes(y = C_diff, color = BWI_SP_group))+
-  geom_smooth(aes(y = C_diff_pred, method = "loess"), se = FALSE)+
-  #geom_line(aes(y = C_diff_pred, color = dom_SP))+
-  geom_smooth(aes(y = (C_diff_pred+SD_SP_C_diff), method = "loess", color = "SD_class 1"), se = FALSE)+
-  geom_smooth(aes(y = (C_diff_pred-SD_SP_C_diff), method = "loess", color = "SD_class 1"), se = FALSE)+
-  geom_smooth(aes(y = (C_diff_pred+2*SD_SP_C_diff), method = "loess", color = "SD_class 2"), se = FALSE)+
-  geom_smooth(aes(y = (C_diff_pred-2*SD_SP_C_diff), method = "loess", color = "SD_class 2"), se = FALSE)+
+  geom_point(aes(y = B_diff))+
+  geom_smooth(aes(y = B_diff_pred, color = "B_diff_pred"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred+SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred-SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred+2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred-2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
   geom_vline(xintercept = 0)+
   geom_hline(yintercept=0)+
-  xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  xlim(max(comp_pseudo_mono$BA_diff)*(-1), max(comp_pseudo_mono$BA_diff))+
+  ylim(max(comp_pseudo_mono$B_diff)*(-1), max(comp_pseudo_mono$B_diff))+
   # geom_line()+
   facet_wrap(~BWI_SP_group)+
   xlab("difference BA m2 per hectar ") +
-  ylab("difference C t per hectar")+
+  ylab("difference biomass t per hectar")+
   #ylim(0, 50)+
-  ggtitle("C diff vs. BA diff")+
+  ggtitle("comparisson stands: B diff vs. BA diff by BWI species")+
   theme_light()+
   theme(legend.position = "right")
 
 
-# ----- 3.4.1.4. difference carbon MoMoK vs. BWI  by dominant species and age class  -----------------
+
+
+
+# ----- 3.4.1.5. difference carbon MoMoK vs. BWI  by dominant species and age class  -----------------
 # C COMPARISON BY DOMINANT SPECIES AND AGE CLASS
 # difference in C_t_ha per dom_SP and age vs. difference in N_ha
 ggplot(data = C_comp_domSP_BWI_A, 
@@ -5243,6 +5351,27 @@ ggplot(data = C_comp_domSP_BWI_A,
 
 
 
+# 3.4.1.4. linear model comparisson of B in pseud monocultures and B in BWI -------------------------------------------------------------------------
+cor.df %>% 
+  ggplot(., aes(x = BA_diff))+
+  geom_point(aes(y = B_diff))+
+  geom_smooth(aes(y = B_diff_pred, color = "B_diff_pred"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred+SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred-SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred+2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
+  geom_smooth(aes(y = (B_diff_pred-2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
+  geom_vline(xintercept = 0)+
+  geom_hline(yintercept=0)+
+  xlim(max(comp_pseudo_mono$BA_diff)*(-1), max(comp_pseudo_mono$BA_diff))+
+  ylim(max(comp_pseudo_mono$B_diff)*(-1), max(comp_pseudo_mono$B_diff))+
+  # geom_line()+
+  facet_wrap(~BWI_SP_group)+
+  xlab("difference BA m2 per hectar ") +
+  ylab("difference biomass t per hectar")+
+  #ylim(0, 50)+
+  ggtitle("comparisson by dominant species: B diff vs. BA diff by BWI species")+
+  theme_light()+
+  theme(legend.position = "right")
 
 
 
@@ -5334,6 +5463,17 @@ summary(DW_comp_SL_iB %>%
           gather("iB_class", "iB_diff_V", 7:11))
 
 # share diff iB class : min -0.56266 max 0.59482
+
+
+
+
+
+
+
+
+
+
+
 
 # ----- NOTES ------------------------------------------------------------------
 # -----N. 1.4.1 assign DBH class to trees where DBH_class == 'NA' -----------------
@@ -7653,7 +7793,39 @@ c_comp_Momok_BWI_SP_A <- trees_total_5 %>%
   mutate(C_diff_tps_BWI = C_t_ha_tapes-C_t_ha_BWI,
          C_diff_tpsH_BWI = C_t_ha_tps_H-C_t_ha_BWI,
          C_diff_GHG_BWI = C_t_ha_GHG-C_t_ha_BWI)
+
+# -----4.3.correlation between stand characteristics and C stocks -----------------------------------------------------------
+# creating correlation matrix for every dominant species --> doesnt work 
+for (SP in unique(cor.df$dom_SP)) {  # for each species in the cor.df dataframe
+  # SP= "SER"
+  cor.sp <- cor.df %>%       # select the variables that should be checked for correlation
+    filter(dom_SP == SP) %>% 
+    group_by(dom_SP) %>% 
+    ungroup() %>% 
+    select(#C_t_ha, 
+      C_diff, 
+      Nt_diff, 
+      BA_diff, 
+      Nt_ha, 
+      V_m3_ha)
+  
+  print(ggcorrplot(cor.sp, 
+                   #hc.order = TRUE, 
+                   type = "lower",
+                   lab = TRUE))
+  print(SP)
+  print(cor(cor.sp))
+  print(summary(cor.sp))
+}
+
+
+# https://stackoverflow.com/questions/26202670/how-to-use-corrplot-with-simple-matrices 
+corrplot(cor(cor.sp), is.corr = FALSE, p.mat = testRes$p, method = 'circle', type = 'lower', insig='blank',
+         order = 'AOE', diag = FALSE)$corrPos -> p1
+text(p1$x, p1$y, round(p1$corr, 2))
 summary(c_comp_Momok_BWI_SP_A)
+
+
 
 
 # ----- N.6 workdays ------------------------------------------------------

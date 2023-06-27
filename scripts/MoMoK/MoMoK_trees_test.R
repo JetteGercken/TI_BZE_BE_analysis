@@ -1633,46 +1633,52 @@ pivot_wider(values_from = values,
 # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
 # EI, BU, FI, KI, BI, DGL, LÄ, TA 
 
-N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", 
-                                          "EI", "EI", "EI", "EI", "EI", 
-                                          "ES", "ES","ES", "ES", "ES", 
-                                          "AH", "AH","AH", "AH", "AH", 
-                                          "BI", "BI","BI", "BI", "BI", 
-                                          "ERL", "ERL","ERL", "ERL", "ERL",
+N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", "BU", 
+                                          "EI", "EI", "EI", "EI", "EI", "EI", 
+                                          "ES", "ES","ES", "ES", "ES", "ES",
+                                          "AH", "AH","AH", "AH", "AH",  "AH",
+                                          "BI", "BI","BI", "BI", "BI", "BI",
+                                          "ERL", "ERL","ERL", "ERL", "ERL","ERL",
                                           "FI", "FI","FI", "FI", "FI", "FI", 
                                           "KI",  "KI","KI",  "KI",  "KI",  "KI", 
                                           "DGL", "DGL", "DGL", "DGL", "DGL", "DGL"),
-                                  compartiment <- c("stw", "stwb","sw", "swb", "fw",               # beech
-                                                    "stw", "stwb", "sw", "swb", "fw",               # oak
-                                                    "stw", "stwb", "sw", "swb", "fw",               # ash
-                                                    "stw", "stwb", "sw", "swb", "fw",               # maple
-                                                    "stw", "stwb", "sw", "swb", "fw",               # birch 
-                                                    "stw", "stwb", "sw", "swb", "fw",               # alder
-                                                    "stw", "stwb", "sw", "swb", "fw", "f",          # spruce
-                                                    "stw", "stwb", "sw", "swb", "fw", "f",          # pine
-                                                    "stw", "stwb", "sw", "swb", "fw", "f"),         # douglas fir
-                                  N_mean_gkg <- as.numeric(c(1.335, 7.227, 1.335, 7.227, 4.601,
-                                                             1.752, 6.507, 1.752, 6.507, 6.209, 
-                                                             1.438, 5.348, 1.438, 5.348, 3.721, 
-                                                             1.465, 7.729, 1.465, 7.729, 4.278, 
-                                                             1.828, 6.131, 1.828, 6.131, 6.057, 
-                                                             2.475, 11.028, 2.475, 11.028, 7.214, 
-                                                             0.812, 4.84, 0.812, 4.84, 4.343, 12.978, 
-                                                             0.794, 4.339, 0.794, 4.339, 4.058, 15.201, 
-                                                             0.701, 3.910, 0.701, 3.910, 4.203, 15.166)), 
-                                  data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018",
-                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
-                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
+                                  compartiment <- c("stw", "stwb","sw", "swb", "fw", "f",              # beech
+                                                    "stw", "stwb", "sw", "swb", "fw", "f",              # oak
+                                                    "stw", "stwb", "sw", "swb", "fw", "f",              # ash
+                                                    "stw", "stwb", "sw", "swb", "fw","f",               # maple
+                                                    "stw", "stwb", "sw", "swb", "fw","f",               # birch 
+                                                    "stw", "stwb", "sw", "swb", "fw", "f",              # alder
+                                                    "stw", "stwb", "sw", "swb", "fw", "f",              # spruce
+                                                    "stw", "stwb", "sw", "swb", "fw", "f",              # pine
+                                                    "stw", "stwb", "sw", "swb", "fw", "f"),             # douglas fir
+                                  N_mean_gkg <- as.numeric(c(1.335, 7.227,   1.335, 7.227,  4.601, NA,
+                                                             1.752, 6.507,   1.752, 6.507,  6.209, NA,
+                                                             1.438, 5.348,   1.438, 5.348,  3.721, NA,
+                                                             1.465, 7.729,   1.465, 7.729,  4.278, NA,
+                                                             1.828, 6.131,   1.828, 6.131,  6.057, NA,
+                                                             2.475, 11.028,  2.475, 11.028, 7.214, NA, 
+                                                             0.812, 4.84,    0.812,  4.84,  4.343, 12.978, 
+                                                             0.794, 4.339,   0.794, 4.339,  4.058, 15.201, 
+                                                             0.701, 3.910,   0.701, 3.910,  4.203, 15.166)), 
+                                  data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
+                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
+                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
+                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
+                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
+                                                   "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "BZE",
                                                    "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
                                                    "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
                                                    "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
 colnames(N_con_comp) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
+# export N content dataset
+N_con_comp.expo <- N_con_comp %>% 
+  mutate(N_con_per = as.numeric(N_mean_gkg)/1000)
+write.csv(N_con_comp.expo, "output/out_data/N_content.csv")
+
 N_con_comp <- N_con_comp %>% 
   mutate(N_con_per = as.numeric(N_mean_gkg)/1000) %>% 
   unite(SP_com, SP_BWI:compartiment, remove = FALSE)
+
 
 
 # ----- 1.4.5. MoMoK site info dataset data wrangling ----------------------------------------
@@ -7230,6 +7236,8 @@ ho_wd = tot_wd*0.5
 already_used_ho_02 = 6
 already_used_ho_03 = 7
 already_used_ho_04 = 9
+already_used_ho_05 = 7
+already_used_ho_06 = 5
 already_used_ho = already_used_ho_02 + already_used_ho_03 + already_used_ho_04
 #ho_planned_04_spain = 5 --> in used for april
 ho_planned_0809_FR_SP = 10
@@ -7238,7 +7246,7 @@ ho_planned_12_christmas = 5
 ho_planned_tot = ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
 weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
 remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
-current_KW_week <- 17 # 24.04-31.04.
+current_KW_week <- 25 # 19.06-25.04.
 rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
 
 
