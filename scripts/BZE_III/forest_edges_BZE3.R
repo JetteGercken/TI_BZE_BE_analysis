@@ -239,7 +239,7 @@ intercept <- function(x1, y1, slope){
 # q = c so the number at the end of quadratic fomula
 
 
-intersection_c_l_status <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
+intersection_c_l_status <- function(x1, x2) {
   
   # quadratic formula
   # 0 = ((1 +l.df$e_b1_AB^2)/(1 +l.df$e_b1_AB^2))*X^2  -   ((2*c.df$x0 - 2*l.df$e_b1_AB*(l.df$e_b0_AB - c.df$y0))/(1 +l.df$e_b1_AB^2))*X   +     (c.df$x0^2 + (l.df$e_b0_AB - c.df$y0)^2 - c.df$r0^2)/(1 +l.df$e_b1_AB^2)
@@ -249,21 +249,28 @@ intersection_c_l_status <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
+ 
+  # c.y0 = 0; 
+  # c.x0 = 0;
+  # c.r0 =1784;
+  # 
+  # p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
+  # q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
+  # x1 <-  (-(p/2) + sqrt( ((p*-1)/2)^2-q ));
+  # x2 <- (-(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  # i.df <- as.data.frame(cbind(p_ID, x1, x2))
   
-  p = ((2*c.x0 - 2*l.b1*(l.b0 - c.y0))/(1 + l.b1^2));
-  q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
-  x1 =  as.data.frame(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
-  x2 = as.data.frame(-(p/2) - sqrt( ((p*-1)/2)^2-q ));
   # https://community.rstudio.com/t/how-do-i-write-a-function-that-will-tell-me-if-an-equation-has-no-solution/159834/6
   # if no solutions
-  ifelse(
-    is.na(x1[1,1]) & is.na(x2[1,1]), return(" no I"), 
-    # if 1 solution
-    ifelse(x1 == x2, return("one I"), 
-           # if 2 solutions
-           ifelse(x1 != x2, return("two I"))
-    )
-  )
+ ifelse(
+      is.na(x1) & is.na(x2), return(" no I"), 
+      # if 1 solution
+      ifelse(x1 = x2, return("one I"), 
+             # if 2 solutions
+             ifelse(x1 != x2, return("two I")
+                    )
+             )
+      )
 }
 
 
@@ -278,20 +285,26 @@ intersection_c_lx1 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
   
-  p = ((2*c.x0 - 2*l.b1*(l.b0 - c.y0))/(1 + l.b1^2));
+  c.y0 = 0; 
+  c.x0 = 0;
+  c.r0 =1784;
+  
+  p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
   q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
-  x1 =  as.data.frame(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
-  x2 = as.data.frame(-(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  x1 <-  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+  x2 <- - (p/2) - sqrt( ((p*-1)/2)^2-q );
+  i.df <- as.data.frame(cbind(x1, x2));
   # https://community.rstudio.com/t/how-do-i-write-a-function-that-will-tell-me-if-an-equation-has-no-solution/159834/6
         # if no solutions
-  ifelse(
-    is.na(x1[1,1]) & is.na(x2[1,1]), return(NA), 
-    # if 1 solution
-    ifelse(x1 == x2, return(x1[1,1]), 
-          # if 2 solutions
-           ifelse(x1 != x2, return(x1[1,1]))
-          )
-    )
+  # ifelse(
+  #   is.na(x1) & is.na(x2), return(NA), 
+  #   # if 1 solution
+  #   ifelse(x1 == x2, return(x1), 
+  #         # if 2 solutions
+  #          ifelse(x1 != x2, return(x1))
+  #         )
+  #   )
+  return(x1)
 }
 
 
@@ -306,21 +319,27 @@ intersection_c_lx2 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
+  c.y0 = 0; 
+  c.x0 = 0;
+  c.r0 =1784;
   
-  p = ((2*c.x0 - 2*l.b1*(l.b0 - c.y0))/(1 + l.b1^2));
-  q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
-  x1 =  as.data.frame(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
-  x2 = as.data.frame(-(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
+  q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2); 
+  x1 <-  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+  x2 <- - (p/2) - sqrt( ((p*-1)/2)^2-q );
+  i.df <- as.data.frame(cbind(x1, x2));
+  
   # https://community.rstudio.com/t/how-do-i-write-a-function-that-will-tell-me-if-an-equation-has-no-solution/159834/6
   # if no solutions
-  ifelse(
-    is.na(x1[1,1]) & is.na(x2[1,1]), return(NA), 
-    # if 1 solution
-    ifelse(x1 == x2, return(NA), 
-           # if 2 solutions
-           ifelse(x1 != x2, return(x2[1,1]))
-    )
-  )
+  # ifelse(
+  #   is.na(i.df$x1) & is.na(i.df$x2), return(NA), 
+  #   # if 1 solution
+  #   ifelse(i.df$x1 == i.df$x2, return(NA), 
+  #          # if 2 solutions
+  #          ifelse(i.df$x1 != i.df$x2, return(i.df$x2))
+  #   )
+  # )
+  return(x2)
 }
 
 
@@ -403,9 +422,9 @@ HBI_trees <- HBI_trees %>%
             multiple = "all") # this is necesarry since there are, apperently, multiple edges per plot 
 
 
-# ----- 1.1.3.2. estimate parameters for edge coordinates -----------------------------------------------
+# ----- 1.1.3.2. estimate parameters for edge lines -----------------------------------------------
 # coefficients for forest edges 
-forest_edges_HBI <- forest_edges_HBI %>% 
+ forest_edges_HBI %>% 
   # calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -490,10 +509,10 @@ by = c("plot_ID", "e_form"))
 
 
 
-
+# 1.1.3.2 edgde coordinates,  line parameters, intersections (coor --------
 
 # set up gerade from 2 points manually
-forest_edges_HBI %>% 
+forest_edges_HBI.man <- forest_edges_HBI %>% 
   # 1. calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -501,7 +520,7 @@ forest_edges_HBI %>%
          Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
          Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA), 
          Y_T = ifelse(T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>% 
-  # 2. calcualte slope ß1 
+  # 2. calcualte slope ß1 = (y2-y1)/(x2-x1) hight/width
   mutate(b1_AB = ifelse(e_form == "1", slope(X_A, Y_A, X_B, Y_B), NA), 
          b1_AT = ifelse(e_form == "2", slope(X_T, Y_T, X_A, Y_A), NA),
          b1_BT = ifelse(e_form == "2", slope(X_T, Y_T, X_B, Y_B), NA)) %>% 
@@ -512,16 +531,20 @@ forest_edges_HBI %>%
          b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_BT), NA)) %>% 
   filter(e_form == "1") %>% 
   #  x intercept with circle: insert line equation in circle equation
-  mutate(inter_status = intersection_c_l_status(b0_AB, b1_AB, data_circle$y0, data_circle$x0, data_circle$r0[3]), 
-         X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB, data_circle$y0, data_circle$x0, data_circle$r0[3]),
-         X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0, data_circle$x0, data_circle$r0[3])) %>% 
+  mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I", 
+                               # if 1 solution
+                               ifelse(X1_inter_AB == X2_inter_AB, "one I", 
+                                      # if 2 solutions
+                                      ifelse(X1_inter_AB != X2_inter_AB, "two I"))) ) %>% 
   # y intercept wih cirlce: insert x of intercept with circle in equation of line
   mutate(Y1_inter_AB = b0_AB + b1_AB*X1_inter_AB, 
          Y2_inter_AB = b0_AB + b1_AB*X2_inter_AB) %>% 
   # azimut of intersection points
   mutate(azi1_inter_AB = atan((Y1_inter_AB - 0)/(X1_inter_AB - 0)), 
          azi2_inter_AB = atan((Y2_inter_AB - 0)/(X2_inter_AB - 0))) %>% 
-  # correcting azimutes
+  # correcting azimutes depending on quadrant they lay in 
   mutate(azi1_inter_AB = case_when(X1_inter_AB > 0 & Y1_inter_AB > 0 ~ azi1_inter_AB,       # first quadrant x + y+
                                  X1_inter_AB > 0 & Y1_inter_AB < 0 ~ azi1_inter_AB+400,   # second quadrant x + y-
                                  X1_inter_AB < 0 & Y1_inter_AB < 0 ~ azi1_inter_AB+200,   # third quadrant x - y- 
@@ -531,66 +554,13 @@ forest_edges_HBI %>%
                                  X2_inter_AB > 0 & Y2_inter_AB < 0 ~ azi2_inter_AB+400,   # second quadrant x + y-
                                  X2_inter_AB < 0 & Y2_inter_AB < 0 ~ azi2_inter_AB+200,   # third quadrant x - y- 
                                  X2_inter_AB < 0 & Y2_inter_AB > 0 ~ azi2_inter_AB+200,   # fourth quadrant x- y + 
-                                 TRUE~NA), 
-         inter_1_dist = sqrt(((Y1_inter_AB - 0)^2) + ((X1_inter_AB - 0)^2)))
-  
-  
-
-  
-#  ---- preparing calcualtion of distance to centre between y line --------
-
-
-
-# ---- calculate interception points between circle and lines ---------------------------------------
-
-forest_edges_HBI %>% 
-  filter(e_form == "1") %>% 
-  mutate(inter_status = intersection_c_l_status(e_b0_AB,e_b1_AB, data_circle$y0, data_circle$x0, data_circle$r0),
-         inter_x1 = intersection_c_lx1(e_b0_AB,e_b1_AB, data_circle$y0, data_circle$x0, data_circle$r0))
-
-view(forest_edges_HBI <- forest_edges_HBI %>% 
-       filter(e_form == "1") %>% 
-       mutate(inter_status = intersection_c_l_status(e_b0_AB,e_b1_AB, data_circle$y0, data_circle$x0, data_circle$r0),
-              # calculate intersection point 1
-              inter_x1 = intersection_c_lx1(e_b0_AB,e_b1_AB, data_circle$y0, data_circle$x0, data_circle$r0), 
-              inter_y1 = e_b0_AB + e_b1_AB*inter_x1,
-              # intersection point 2
-              inter_x2 = intersection_c_lx2(e_b0_AB,e_b1_AB, data_circle$y0, data_circle$x0, data_circle$r0),
-              inter_y2 = e_b0_AB + e_b1_AB*inter_x2, 
-              # azimut of intersection points
-              inter_1_azi = atan((inter_y1 - 0)/(inter_x1 - 0)), 
-              inter_2_azi = atan((inter_y2 - 0)/(inter_x2 - 0))) %>% 
-              # correcting azimutes
-       mutate(inter_1_azi = case_when(inter_x1 > 0 & inter_y1 > 0 ~ inter_1_azi,       # first quadrant x + y+
-                                      inter_x1 > 0 & inter_y1 < 0 ~ inter_1_azi+400,   # second quadrant x + y-
-                                      inter_x1 < 0 & inter_y1 < 0 ~ inter_1_azi+200,   # third quadrant x - y- 
-                                      inter_x1 < 0 & inter_y1 > 0 ~ inter_1_azi+200,   # fourth quadrant x- y + 
-                                      TRUE~NA), 
-              inter_2_azi = case_when(inter_x2 > 0 & inter_y2 > 0 ~ inter_2_azi,       # first quadrant x + y+
-                                      inter_x2 > 0 & inter_y2 < 0 ~ inter_2_azi+400,   # second quadrant x + y-
-                                      inter_x2 < 0 & inter_y2 < 0 ~ inter_2_azi+200,   # third quadrant x - y- 
-                                      inter_x2 < 0 & inter_y2 > 0 ~ inter_2_azi+200,   # fourth quadrant x- y + 
-                                      TRUE~NA), 
-              inter_1_dist = sqrt(((inter_y1 - 0)^2) + ((inter_x1 - 0)^2)))) 
-              #          inter_2_dist = sqrt(((inter_y2 -0)^2) + ((inter_x2 - data_circle$x0)^2))))))
-
-
-
-     # calculating distance between point and centre
-     #          inter_1_dist = sqrt(((inter_y1 - 0)^2) + ((inter_x1 - data_circle$x0)^2)), 
-     #          inter_2_dist = sqrt(((inter_y2 -0)^2) + ((inter_x2 - data_circle$x0)^2))))
-
-
-intersection_c_lx1(0,0, 2000, 20000, 5)
-intersection_c_lx1(1,2,0,0, 5)
-
-
-# -----calcualte azimut of interception points --------------------------------------------------------------------
+                                 TRUE~NA),
+    # distance interception centre --> to see if points are actually placed on the rim of the circle 
+         inter_1_dist = sqrt(((Y1_inter_AB - 0)^2) + ((X1_inter_AB - 0)^2))) # this is just to control if the whole things worked
 
 
 
 # ---- combining tree and edge data ---------------------------------------
-
 
 # next step will be to join the forest edges dataset into the trees datset, 
 # via b0 and b1 and then compare the calculated tree_y with the functions result
@@ -598,25 +568,34 @@ intersection_c_lx1(1,2,0,0, 5)
 # etc. assiningg another plot iD or something. 
 trees_and_edges <-
 HBI_trees  %>% 
+  filter(e_form == "1") %>% 
   # join in edges info per plot
-  left_join(., forest_edges_HBI, 
+  left_join(., forest_edges_HBI.man, 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
-    mutate(Y_e_tree = case_when(e_form == "1" ~ e_b0_AB + e_b1_AB*X_tree, 
-                                # if forest edge form == 2 so there is a  turning point, 
-                                e_form == "2" & data.table::between(X_tree, x_coord(1784,  A_azi), X_T)  ~ e_b0_AT + e_b1_AT*X_tree, # calculate y with AT parameters, if x of tree lies within x of A where it meets the outer sampling circuit (17m distance) and X of T  
-                                e_form == "2" & data.table::between(X_tree, x_coord(1784,  B_azi), X_T) ~ e_b0_BT + e_b1_BT*X_tree,  # calculate y with BT parameters, if x of tree lies within x of B where it meets the outer sampling circuit (17m distance) and X of T  
-                                TRUE ~ NA)) %>% 
+  mutate(Y_e_tree =  b0_AB  + b1_AB *X_tree, 
+         # distance between y_tree and centre: 
+         dist_t_centre = sqrt(((Y_tree - 0)^2) + ((X_tree - 0)^2)), 
+         dist_l_centre = sqrt(((Y_e_tree - 0)^2) + ((X_tree - 0)^2))) %>%
+  # filter for trees that lay withing the angle of the interception
+     # therefore i need to find those trees whose azimut lies over the lower and under the higher azimute of the interceptions
+     # thus i have to order the interceptions azimutes, elsewise I´ll exclude trees that lie in the "outer" angle of the interception
+              # if azimut intersection 1 is lower then azi_inter_2 keep azi_inter_1 as the lower value, else choose the value from inter_2
+              # if azimut intersection 2 is higher then azi_inter_1 keep azi_inter_2 as the upper value, else choose the value from inter_1
+  mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
+         azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
+  filter(azi_gon > azi_inter_lower & azi_gon < azi_inter_upper) %>% 
  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-   mutate(t_e_status = case_when(Y_tree > Y_e_tree ~ "tree_outside", 
-                                 is.na(e_ID) ~ "no_edge",
-                                 TRUE ~ "tree_inside"))
+   mutate(t_e_status = case_when(dist_t_centre > dist_l_centre ~ "group A",
+                                 dist_t_centre < dist_l_centre ~ "group B",
+                                 dist_t_centre == dist_l_centre ~ "unclear",
+                                 TRUE ~ "NA"))
 
 
 
 
 
-
+help("data.table::between")
 
 # ----- 3. visulaization  -------------------------------------------------
 
@@ -721,10 +700,10 @@ ggplot() +
                filter(e_form == 1), 
              aes(X_tree, Y_tree)) +
   geom_point(data = forest_edges_HBI %>% 
-               filter(e_form == "1" & inter_status != "no I"), 
+               filter(e_form == "1"), 
              aes(inter_x1, inter_y1, colour = "inter 1"))+
   geom_point(data = forest_edges_HBI %>% 
-               filter(e_form == "1" & inter_status != "no I"), 
+               filter(e_form == "1" ), 
              aes(inter_x2, inter_y2, colour = "inter 2"))+
   # these are lines through AB for forest types with only 2 edges
   geom_point(data = forest_edges_HBI %>%
@@ -737,6 +716,80 @@ ggplot() +
   theme_bw
 
 
+
+
+
+# testing if intersection calculation worked if manually calculated
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # geom_point(data =  trees_and_edges %>% 
+  #              filter(e_form == 1), 
+  #            aes(X_tree, Y_tree)) +
+  geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "1"), 
+             aes(X1_inter_AB, Y1_inter_AB, colour = "inter 1"))+
+  geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "1" ), 
+             aes(X2_inter_AB, Y2_inter_AB, colour = "inter 2"))+
+  # these are  AB for forest types with only 2 edges
+  geom_point(data = forest_edges_HBI.man %>%
+               filter(e_form == "1"),
+               aes(X_A, Y_A, color = "edges A"))+
+  geom_point(data = forest_edges_HBI.man %>%
+               filter(e_form == "1"),
+               aes(X_B, Y_B, color = "edges B"))+
+  # geom_abline(data = forest_edges_HBI.man %>% 
+  #               filter(e_form == "1"), 
+  #             intercept = forest_edges_HBI.man$b0_AB, 
+  #             slope = forest_edges_HBI.man$b1_AB)+
+  geom_point(data =  trees_and_edges %>% 
+               filter(!is.na(e_form)), 
+             aes(X_tree, Y_tree, color = t_e_status)) +
+  facet_wrap(~plot_ID)+ 
+  theme_bw()
+
+for(i in unique(forest_edges_HBI.man$plot_ID)) {
+  
+print(ggplot() +  
+        geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+        geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "1" & plot_ID == i), 
+             aes(X1_inter_AB, Y1_inter_AB, colour = "inter 1"))+
+        geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "1" & plot_ID == i), 
+             aes(X2_inter_AB, Y2_inter_AB, colour = "inter 2"))+
+        geom_abline(intercept = forest_edges_HBI.man$b0_AB[forest_edges_HBI.man$e_form == "1" & forest_edges_HBI.man$plot_ID == i], 
+              slope = forest_edges_HBI.man$b1_AB[forest_edges_HBI.man$e_form == "1" & forest_edges_HBI.man$plot_ID == i ])+
+        geom_point(data =  trees_and_edges %>% 
+                     filter(e_form == "1" & plot_ID == 1), 
+                   aes(X_tree, Y_tree, color = t_e_status))+
+        facet_wrap(~plot_ID))
+  
+}
+  
+
+
+# testing if intersection calculation worked
+ggplot() +                             
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # geom_point(data =  trees_and_edges %>% 
+  #              filter(e_form == 1), 
+  #            aes(X_tree, Y_tree)) +
+  geom_point(data = forest_edges_HBI %>% 
+               filter(e_form == "1"), 
+             aes(inter_x1, inter_y1, colour = "inter 1"))+
+  geom_point(data = forest_edges_HBI %>% 
+               filter(e_form == "1" ), 
+             aes(inter_x2, inter_y2, colour = "inter 2"))+
+  # these are lines through AB for forest types with only 2 edges
+  geom_point(data = forest_edges_HBI %>%
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[11:13], names(.)[14:16]) %>% 
+               filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
+             aes(X_value, Y_value, color = "edges"))+
+  facet_wrap(~plot_ID)+ 
+  theme_bw
 
 
 
