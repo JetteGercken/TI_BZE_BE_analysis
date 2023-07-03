@@ -513,6 +513,7 @@ by = c("plot_ID", "e_form"))
 
 # set up gerade from 2 points manually
 forest_edges_HBI.man <- forest_edges_HBI %>% 
+  filter(e_form %in% c("1", "2")) %>% 
   # 1. calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -529,22 +530,66 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
   mutate(b0_AB = ifelse(e_form == "1", intercept(X_A, Y_A, b1_AB), NA), 
          b0_AT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_AT), NA),
          b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_BT), NA)) %>% 
-  filter(e_form == "1") %>% 
   #  x intercept with circle: insert line equation in circle equation
+        # for AB line 
   mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
          X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
-         inter_status = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I", 
-                               # if 1 solution
-                               ifelse(X1_inter_AB == X2_inter_AB, "one I", 
-                                      # if 2 solutions
-                                      ifelse(X1_inter_AB != X2_inter_AB, "two I"))) ) %>% 
+         inter_status_AB = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I",      # if 0 solutions
+                                  ifelse(X1_inter_AB == X2_inter_AB, "one I",            # if 1 solution
+                                         ifelse(X1_inter_AB != X2_inter_AB, "two I"))),  # if 2 solutions
+         # for AT line
+         X1_inter_AT =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AT =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status_AT = ifelse(is.na(X1_inter_AT) & is.na(X2_inter_AT), " no I",     # if 0 solutions
+                                  ifelse(X1_inter_AT == X2_inter_AT, "one I",           # if 1 solution
+                                         ifelse(X1_inter_AT != X2_inter_AT, "two I"))), # if 2 solutions
+         # for BT line
+         X1_inter_BT =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_BT =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status_BT = ifelse(is.na(X1_inter_BT) & is.na(X2_inter_BT), " no I",            # if 0 solution
+                                  ifelse(X1_inter_BT == X2_inter_BT, "one I",                  # if 1 solution
+                                         ifelse(X1_inter_BT != X2_inter_BT, "two I"))) ) %>%   # if 2 solutions
   # y intercept wih cirlce: insert x of intercept with circle in equation of line
+         # AB line 
   mutate(Y1_inter_AB = b0_AB + b1_AB*X1_inter_AB, 
-         Y2_inter_AB = b0_AB + b1_AB*X2_inter_AB) %>% 
+         Y2_inter_AB = b0_AB + b1_AB*X2_inter_AB, 
+         # AT line 
+         Y1_inter_AT = b0_AT + b1_AT*X1_inter_AT, 
+         Y2_inter_AT = b0_AT + b1_AT*X2_inter_AT, 
+         # BT line 
+         Y1_inter_BT = b0_BT + b1_BT*X1_inter_BT, 
+         Y2_inter_BT = b0_BT + b1_BT*X2_inter_BT, 
+         # when t lies inside the circle (so both lines reach outside) direction between inter_AT and AT is equal choose this x 
+         correct_X_inter_AT = case_when(T_dist < 1784 & slope(X_T, Y_T, X1_inter_AT, Y1_inter_AT) == b0_AT ~ X1_inter_AT, 
+                                        T_dist < 1784 & slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT) == b0_AT ~ X2_inter_AT,
+                                        TRUE ~ NA), 
+         correct_X_inter_BT = case_when(T_dist < 1784 & slope(X_T, Y_T, X1_inter_BT, Y1_inter_BT) == b0_BT ~ X1_inter_BT, 
+                                        T_dist < 1784 & slope(X_T, Y_T, X2_inter_BT, Y2_inter_BT) == b0_AT ~ X2_inter_BT,
+                                        TRUE ~ NA),
+         correct_Y_inter_AT = case_when(T_dist < 1784 & slope(X_T, Y_T, X1_inter_AT, Y1_inter_AT) == b0_AT ~ Y1_inter_AT, 
+                                        T_dist < 1784 & slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT) == b0_AT ~ Y2_inter_AT,
+                                        TRUE ~ NA), 
+         correct_Y_inter_BT = case_when(T_dist < 1784 & slope(X_T, Y_T, X1_inter_BT, Y1_inter_BT) == b0_BT ~ Y1_inter_BT, 
+                                        T_dist < 1784 & slope(X_T, Y_T, X2_inter_BT, Y2_inter_BT) == b0_AT ~ Y2_inter_BT,
+                                        TRUE ~ NA),
+         # find intervall of x between T and A
+         lower_X_AT = ifelse(X_T < correct_X_inter_AT, X_T, correct_X_inter_AT),
+         upper_X_AT = ifelse(correct_X_inter_AT > X_T, correct_X_inter_AT, X_T),
+         # find intervall of x between T and B
+         lower_X_BT = ifelse(X_T < correct_X_inter_BT, X_T, correct_X_inter_BT),
+         upper_X_BT = ifelse(correct_X_inter_BT > X_T, correct_X_inter_BT, X_T)) %>% 
   # azimut of intersection points
+         # AB line 
   mutate(azi1_inter_AB = atan((Y1_inter_AB - 0)/(X1_inter_AB - 0)), 
-         azi2_inter_AB = atan((Y2_inter_AB - 0)/(X2_inter_AB - 0))) %>% 
-  # correcting azimutes depending on quadrant they lay in 
+         azi2_inter_AB = atan((Y2_inter_AB - 0)/(X2_inter_AB - 0)), 
+         # AT line
+         azi1_inter_AT = atan((Y1_inter_AT - 0)/(X1_inter_AT - 0)), 
+         azi2_inter_AT = atan((Y2_inter_AT - 0)/(X2_inter_AT - 0)), 
+         # BT line 
+         azi1_inter_BT = atan((Y1_inter_BT - 0)/(X1_inter_BT - 0)), 
+         azi2_inter_BT = atan((Y2_inter_BT - 0)/(X2_inter_BT - 0))) %>% 
+  # correcting azimutes depending on quadrant they lay in
+        # AB line 
   mutate(azi1_inter_AB = case_when(X1_inter_AB > 0 & Y1_inter_AB > 0 ~ azi1_inter_AB,       # first quadrant x + y+
                                  X1_inter_AB > 0 & Y1_inter_AB < 0 ~ azi1_inter_AB+400,   # second quadrant x + y-
                                  X1_inter_AB < 0 & Y1_inter_AB < 0 ~ azi1_inter_AB+200,   # third quadrant x - y- 
@@ -555,6 +600,28 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
                                  X2_inter_AB < 0 & Y2_inter_AB < 0 ~ azi2_inter_AB+200,   # third quadrant x - y- 
                                  X2_inter_AB < 0 & Y2_inter_AB > 0 ~ azi2_inter_AB+200,   # fourth quadrant x- y + 
                                  TRUE~NA),
+         # AT line 
+         azi1_inter_AT = case_when(X1_inter_AT > 0 & Y1_inter_AT > 0 ~ azi1_inter_AT,       # first quadrant x + y+
+                                   X1_inter_AT > 0 & Y1_inter_AT < 0 ~ azi1_inter_AT+400,   # second quadrant x + y-
+                                   X1_inter_AT < 0 & Y1_inter_AT < 0 ~ azi1_inter_AT+200,   # third quadrant x - y- 
+                                   X1_inter_AT < 0 & Y1_inter_AT > 0 ~ azi1_inter_AT+200,   # fourth quadrant x- y + 
+                                   TRUE~NA), 
+         azi2_inter_AT = case_when(X2_inter_AT > 0 & Y2_inter_AT > 0 ~ azi2_inter_AT,       # first quadrant x + y+
+                                   X2_inter_AT > 0 & Y2_inter_AT < 0 ~ azi2_inter_AT+400,   # second quadrant x + y-
+                                   X2_inter_AT < 0 & Y2_inter_AT < 0 ~ azi2_inter_AT+200,   # third quadrant x - y- 
+                                   X2_inter_AT < 0 & Y2_inter_AT > 0 ~ azi2_inter_AT+200,   # fourth quadrant x- y + 
+                                   TRUE~NA),
+         # BT line 
+         azi1_inter_BT = case_when(X1_inter_BT > 0 & Y1_inter_BT > 0 ~ azi1_inter_BT,       # first quadrant x + y+
+                                   X1_inter_BT > 0 & Y1_inter_BT < 0 ~ azi1_inter_BT+400,   # second quadrant x + y-
+                                   X1_inter_BT < 0 & Y1_inter_BT < 0 ~ azi1_inter_BT+200,   # third quadrant x - y- 
+                                   X1_inter_BT < 0 & Y1_inter_BT > 0 ~ azi1_inter_BT+200,   # fourth quadrant x- y + 
+                                   TRUE~NA), 
+         azi2_inter_BT = case_when(X2_inter_BT > 0 & Y2_inter_BT > 0 ~ azi2_inter_BT,       # first quadrant x + y+
+                                   X2_inter_BT > 0 & Y2_inter_BT < 0 ~ azi2_inter_BT+400,   # second quadrant x + y-
+                                   X2_inter_BT < 0 & Y2_inter_BT < 0 ~ azi2_inter_BT+200,   # third quadrant x - y- 
+                                   X2_inter_BT < 0 & Y2_inter_BT > 0 ~ azi2_inter_BT+200,   # fourth quadrant x- y + 
+                                   TRUE~NA),
     # distance interception centre --> to see if points are actually placed on the rim of the circle 
          inter_1_dist = sqrt(((Y1_inter_AB - 0)^2) + ((X1_inter_AB - 0)^2))) # this is just to control if the whole things worked
 
@@ -568,34 +635,64 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 # etc. assiningg another plot iD or something. 
 trees_and_edges <-
 HBI_trees  %>% 
-  filter(e_form == "1") %>% 
   # join in edges info per plot
   left_join(., forest_edges_HBI.man, 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
-  mutate(Y_e_tree =  b0_AB  + b1_AB *X_tree, 
+  mutate(Y_AB_tree =  b0_AB  + b1_AB *X_tree,
+         # new approach by Johanna Garthe
+         # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
+         Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
+         Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
+         Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree
          # distance between y_tree and centre: 
-         dist_t_centre = sqrt(((Y_tree - 0)^2) + ((X_tree - 0)^2)), 
-         dist_l_centre = sqrt(((Y_e_tree - 0)^2) + ((X_tree - 0)^2))) %>%
+          # dist_t_centre = sqrt(((Y_tree - 0)^2) + ((X_tree - 0)^2)), 
+          # dist_l_centre = sqrt(((Y_AB_tree - 0)^2) + ((Y_AB_tree - 0)^2))
+         ) %>%
   # filter for trees that lay withing the angle of the interception
      # therefore i need to find those trees whose azimut lies over the lower and under the higher azimute of the interceptions
      # thus i have to order the interceptions azimutes, elsewise I´ll exclude trees that lie in the "outer" angle of the interception
               # if azimut intersection 1 is lower then azi_inter_2 keep azi_inter_1 as the lower value, else choose the value from inter_2
               # if azimut intersection 2 is higher then azi_inter_1 keep azi_inter_2 as the upper value, else choose the value from inter_1
-  mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
-         azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
-  filter(azi_gon > azi_inter_lower & azi_gon < azi_inter_upper) %>% 
+  # mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
+  #        azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
+  # filter(azi_gon > azi_inter_lower & azi_gon < azi_inter_upper) %>% 
  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-   mutate(t_e_status = case_when(dist_t_centre > dist_l_centre ~ "group A",
-                                 dist_t_centre < dist_l_centre ~ "group B",
-                                 dist_t_centre == dist_l_centre ~ "unclear",
-                                 TRUE ~ "NA"))
+   mutate(t_AB_status = ifelse(Y_AB_t_implicit == 0, "on line", ifelse(Y_AB_t_implicit > 0, "outside", "inside")), 
+          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "outside", "inside")), 
+          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "outside", "inside")), 
+          # t_e_status = case_when(dist_t_centre > dist_l_centre ~ "group A",
+          #                        dist_t_centre < dist_l_centre ~ "group B",
+          #                        dist_t_centre == dist_l_centre ~ "unclear",
+          #                        TRUE ~ "NA")
+          # assign combined tree status per plot
+          com_l_status = case_when(t_AB_status == "inside" & is.na(t_AT_status) & is.na(t_BT_status) ~ "inside",
+                                   is.na(t_AB_status) & 
+                                     (between(X_tree, lower_X_AT, upper_X_AT) |
+                                     between(X_tree, lower_X_BT, upper_X_BT)) &
+                                     t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
+                                   t_AB_status == "inside" & 
+                                     (between(X_tree, lower_X_AT, upper_X_AT) |
+                                        between(X_tree, lower_X_BT, upper_X_BT)) &
+                                     t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
+                                   TRUE ~ "outside")
+          )
 
 
 
+forest_edges_HBI.man %>% 
+  filter(e_form == "2") %>% 
+mutate(b1_AT_inter_1 = slope(X_T, Y_T, X1_inter_AT, Y1_inter_AT), 
+       b1_AT_inter_2 = slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT), 
+       ) %>% 
+  select(plot_ID, b1_AT, b1_AT_inter_1, b1_AT_inter_2)
 
-
-help("data.table::between")
+forest_edges_HBI.man %>% 
+  filter(e_form == "1") %>% 
+  mutate(b1_AB_inter_1 = slope(X_A, Y_A, X1_inter_AB, Y1_inter_AB ), 
+         b1_AB_inter_2 = slope(X_A, Y_A, X2_inter_AB, Y2_inter_AB ), 
+  ) %>% 
+  select(plot_ID, b1_AB, b1_AB_inter_1, b1_AB_inter_2)
 
 # ----- 3. visulaization  -------------------------------------------------
 
@@ -744,7 +841,7 @@ ggplot() +
   #             slope = forest_edges_HBI.man$b1_AB)+
   geom_point(data =  trees_and_edges %>% 
                filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree, color = t_e_status)) +
+             aes(X_tree, Y_tree, color = t_line_status)) +
   facet_wrap(~plot_ID)+ 
   theme_bw()
 
@@ -766,7 +863,116 @@ print(ggplot() +
         facet_wrap(~plot_ID))
   
 }
-  
+
+# plotting trees and interception lines divided in t_line_status
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # AB line
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "1") %>% 
+              select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value, colour = "AB"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+                select(plot_ID, X1_inter_AB, X2_inter_AB, Y1_inter_AB, Y2_inter_AB) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "AB"))+
+  # AT line
+  geom_point(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, correct_X_inter_AT, X_A, X_T, correct_Y_inter_AT, Y_A, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value, colour = "AT"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, correct_X_inter_AT, X_A, X_T, correct_Y_inter_AT, Y_A, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value, colour = "AT"))+
+  # BT line 
+  geom_point(data = trees_and_edges %>%
+              filter(e_form == "2") %>% 
+              select(plot_ID, correct_X_inter_BT, X_B, X_T, correct_Y_inter_BT, Y_B, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value, colour = "BT"))+
+  geom_line(data = trees_and_edges %>%
+                filter(e_form == "2") %>% 
+                select(plot_ID, correct_X_inter_BT, X_B, X_T, correct_Y_inter_BT, Y_B, Y_T) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "BT"))+
+  # trees
+  geom_point(data =  trees_and_edges %>% 
+               filter(e_form %in% c("1", "2")),
+             aes(X_tree, Y_tree, color = com_l_status))+
+  facet_wrap(~plot_ID)  
+
+
+
+
+
+# just AT and BT line
+# AT line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits
+geom_point(data = trees_and_edges %>% 
+             filter(e_form == "2") %>% 
+             select(plot_ID, correct_X_inter_AT, X_T, correct_Y_inter_AT, Y_T) %>% 
+             to_long(keys = c("X_name",  "Y_name"),
+                     values = c( "X_value", "Y_value"),   
+                     names(.)[2:3], names(.)[4:5]),
+           aes(x= X_value, y = Y_value, colour = "AT"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, correct_X_inter_AT, X_T, correct_Y_inter_AT, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]),
+            aes(x= X_value, y = Y_value, colour = "AT"))+
+  # BT line 
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "2") %>% 
+               select(plot_ID, correct_X_inter_BT, X_T, correct_Y_inter_BT, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"), 
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "BT"))+
+  geom_line(data = trees_and_edges %>%
+              filter(e_form == "2") %>% 
+              select(plot_ID, correct_X_inter_BT, X_T, correct_Y_inter_BT, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value, colour = "BT"))+
+  # trees
+   geom_point(data =  trees_and_edges %>% 
+                filter(e_form == "2"),
+              aes(X_tree, Y_tree, color = com_l_status))+
+  facet_wrap(~plot_ID) 
+
+
+# truned line in 1 go 
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits
+geom_point(data = trees_and_edges %>%
+            filter(e_form == "2") %>% 
+            select(plot_ID, correct_X_inter_BT, X_T, correct_X_inter_AT,  correct_Y_inter_BT, Y_T, correct_Y_inter_AT) %>% 
+            to_long(keys = c("X_name",  "Y_name"),
+                    values = c( "X_value", "Y_value"),  
+                    names(.)[2:4], names(.)[5:7]), 
+          aes(x= X_value, y = Y_value, colour = "BTA"))+
+  facet_wrap(~plot_ID)
 
 
 # testing if intersection calculation worked
