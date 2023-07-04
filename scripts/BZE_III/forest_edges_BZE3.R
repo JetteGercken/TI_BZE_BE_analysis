@@ -112,7 +112,8 @@ forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.c
 # creating dataset with information about the concentric sampling circles
 data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
                           y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
-                          r0 = c( (0 + 564 * cos(0)), (0 + 1262 * cos(0)), (0 + 1784 * cos(0)))) # these are the radi of the sampling circuits 
+                          r0 = c( (0 + 564 * cos(0)), (0 + 1262 * cos(0)), (0 + 1784 * cos(0))), 
+                          rmax = c(3000, 3000, 3000)) # these are the radi of the sampling circuits 
 
 # REGENERATION 
 
@@ -357,9 +358,9 @@ azimut <- function(x2, y2, x1, y1){
 # ----0.5.8. azimut -------------------------------------------------------
 azi_correction <- function(x, y, azi){
   azi = ifelse(x > 0 & y > 0, azi,                    # first quadrant x + y+
-               ifelse(x > 0 & y < 0, azi+400,         # second quadrant x + y-
+               ifelse(x > 0 & y < 0, -1*azi+400,         # second quadrant x + y-
                       ifelse(x < 0 & y < 0,  azi+200,   # third quadrant x- y- 
-                             ifelse(x < 0 & y > 0, azi+200, NA)
+                             ifelse(x < 0 & y > 0, -1*azi+200, NA)
                              )
                       )
                );
@@ -367,15 +368,29 @@ azi_correction <- function(x, y, azi){
 }
 
 
-# ------ 0.5.9. check if point lays in triangle  --------------------------
 
-pioint.in.triangle <- function(x1, x2, x3, y1, y2, y3){
-  a = ((y2 - y3)*(x - x3) + (x3 - x2)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3));
-  b = ((y3 - y1)*(x - x3) + (x1 - x3)*(y - y3)) / ((y2 - y3)*(x1 - x3) + (x3 - x2)*(y1 - y3));
+# ----- 0.5.8. distance between two points --------------------------------
+distance <- function(x2, y2, x1, y1){
+  
+   d = sqrt(((y2 - y1)^2) + ((x2 - x1)^2))
+}
+
+# ------ 0.5.9. check if point lays in triangle  --------------------------
+# this link https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle led me to the following links: 
+# http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html
+# https://www.geogebra.org/m/c8DwbVTP
+# https://en.wikipedia.org/wiki/Barycentric_coordinate_system
+
+
+p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
+  a = ((xp - xc)*(yb - yc) + (xc - xb)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
+  b = ((xp - xc)*(yc - ya) + (xa - xc)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   c = 1 - a - b;
   
-  ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "inside", "outside")
+  in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "A", "B");
+  return(in.or.out)
 }
+
 
 
 
@@ -567,20 +582,20 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_BT), NA)) %>% 
 # find x of intercept with circle: insert line equation in circle equation
         # for AB line 
-  mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB,  rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))),
-         X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))), 
+  mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
          inter_status_AB = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I",      # if 0 solutions
                                   ifelse(X1_inter_AB == X2_inter_AB, "one I",            # if 1 solution
                                          ifelse(X1_inter_AB != X2_inter_AB, "two I"))),  # if 2 solutions
          # for AT line
-         X1_inter_AT =intersection_c_lx1(b0_AT, b1_AT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))),
-         X2_inter_AT =intersection_c_lx2(b0_AT, b1_AT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))), 
+         X1_inter_AT =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AT =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
          inter_status_AT = ifelse(is.na(X1_inter_AT) & is.na(X2_inter_AT), " no I",     # if 0 solutions
                                   ifelse(X1_inter_AT == X2_inter_AT, "one I",           # if 1 solution
                                          ifelse(X1_inter_AT != X2_inter_AT, "two I"))), # if 2 solutions
          # for BT line
-         X1_inter_BT =intersection_c_lx1(b0_BT, b1_BT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))),
-         X2_inter_BT =intersection_c_lx2(b0_BT, b1_BT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(data_circle$r0[3],nrow(forest_edges_HBI.man))), 
+         X1_inter_BT =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_BT =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
          inter_status_BT = ifelse(is.na(X1_inter_BT) & is.na(X2_inter_BT), " no I",            # if 0 solution
                                   ifelse(X1_inter_BT == X2_inter_BT, "one I",                  # if 1 solution
                                          ifelse(X1_inter_BT != X2_inter_BT, "two I"))) ) %>%   # if 2 solutions
@@ -605,7 +620,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          azi1_inter_BT = azi_correction(X1_inter_BT, Y1_inter_BT, azimut(X1_inter_BT, Y1_inter_BT, 0, 0)), 
          azi2_inter_BT = azi_correction(X2_inter_BT, Y2_inter_BT, azimut(X2_inter_BT, Y2_inter_BT, 0, 0)) ,
     # distance interception centre --> to see if points are actually placed on the rim of the circle 
-         inter_1_dist = sqrt(((Y1_inter_AB - 0)^2) + ((X1_inter_AB - 0)^2)),     # this is just to control if the whole thing worked and 
+         inter_1_dist = distance(X1_inter_AB, Y1_inter_AB, 0, 0),     # this is just to control if the whole thing worked and 
     # to calculate the triangles Barycentric coordinates we need 3 points: A, B, C = centre point
        # in case T lies within the circle, we want R to select A and B from the intersection with the circle.
        # Whereby we have to use a wider radius, to make sure that trees located the halfmoon of the circle cut by the triangle (Kreisbogen) are selected too. 
@@ -613,28 +628,36 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
     # the following statement says:  if T lies within circle check if the slope of x_inter_1  or the slope of x_inter_2 is equal to the slope of AT,
     #                                choose the x which has the same slope (x_inter_1 or x_inter_2)as the second point on the line (A or B) 
     #                                but with a buffer of + 216, which is why it has to be newly calculated 
-    
-    # !!!! to be able to use the function i have to use the filter in the function too:  forest_edges_HBI.man %>% filter(T_dist < 1784 & slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT) == b1_AT)
-    X_inter_AT_TiC = ifelse(T_dist < 1784 & slope(X_T, Y_T, X1_inter_AT, Y1_inter_AT) == b1_AT, intersection_c_lx1(b0_AT, b1_AT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(2000,nrow(forest_edges_HBI.man))),
-                            ifelse(T_dist < 1784 & slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT) == b1_AT, intersection_c_lx2(b0_AT, b1_AT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(2000,nrow(forest_edges_HBI.man))),
-                                   NA)), 
-    X_inter_BT_TiC = ifelse(T_dist < 1784 & slope(X_T, Y_T, X1_inter_BT, Y1_inter_BT) == b1_BT, intersection_c_lx1(b0_BT, b1_BT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(2000,nrow(forest_edges_HBI.man))), 
-                            ifelse(T_dist < 1784 & slope(X_T, Y_T, X2_inter_BT, Y2_inter_BT) == b1_AT ~ intersection_c_lx2(b0_BT, b1_BT, rep(data_circle$y0[3],nrow(forest_edges_HBI.man)), rep(data_circle$x0[3],nrow(forest_edges_HBI.man)), rep(2000,nrow(forest_edges_HBI.man))),
-                                   NA))) %>% 
-  # !!!!!!!
+    # find the intercept of circle and line that prolonges the line between a and t or B and T
+     # AT line 
+    azi_T_A = azi_correction(X_A, Y_A, azimut(X_A, Y_A, X_T, Y_T)),
+    azi_T_AT_inter_1 = azi_correction(X1_inter_AT, Y1_inter_AT, azimut(X1_inter_AT, Y1_inter_AT, X_T, Y_T)),
+    azi_T_AT_inter_2 = azi_correction(X2_inter_AT, Y2_inter_AT, azimut(X2_inter_AT, Y2_inter_AT, X_T, Y_T)),
+     # BT line
+    azi_T_B = azi_correction(X_B, Y_B, azimut(X_B, Y_B, X_T, Y_T)),
+    azi_T_BT_inter_1 = azi_correction(X1_inter_BT, Y1_inter_BT, azimut(X1_inter_BT, Y1_inter_BT, X_T, Y_T)),
+    azi_T_BT_inter_2 = azi_correction(X2_inter_BT, Y2_inter_BT, azimut(X2_inter_BT, Y2_inter_BT, X_T, Y_T)),
+    # for those turning points that lay outside the circle, select the intercetion point with the gratest distance to c and prolong it
+    dist_T_AT_inter_1 = distance(X1_inter_AT, Y1_inter_AT, X_T, Y_T), 
+    dist_T_AT_inter_2 = distance(X2_inter_AT, Y2_inter_AT, X_T, Y_T), 
+    dist_T_BT_inter_1 = distance(X1_inter_BT, Y1_inter_BT, X_T, Y_T), 
+    dist_T_BT_inter_2 = distance(X2_inter_BT, Y2_inter_BT, X_T, Y_T), 
+    # if azimut T to A  identical to azimut T to intercept 1 A and circle use this intercept (inter_AT_1) for the triable, if azimut T to A identical to azimute T to intercept 2 between A and  circle use this intercept (inter_AT_2)
+    X_inter_AT_triangle = case_when(T_dist < 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
+                               T_dist < 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
+                               T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                               T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                               TRUE ~ NA ), 
+    X_inter_BT_triangle = case_when(T_dist < 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
+                               T_dist < 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
+                               T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                               T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                               TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
-  mutate(Y_inter_AT_TiC = ifelse(T_dist < 1784, b0_AT + b1_AT*X_inter_AT_TiC, NA),  
-         Y_inter_BT_TiC = ifelse(T_dist < 1784, b0_BT + b1_BT*X_inter_BT_TiC, NA) ) 
+  mutate(Y_inter_AT_triangle = b0_AT + b1_AT*X_inter_AT_triangle,  
+         Y_inter_BT_triangle = b0_BT + b1_BT*X_inter_BT_triangle) 
 
-summary(forest_edges_HBI.man)
 
-forest_edges_HBI.man %>% 
-  filter(T_dist < 1784 & slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT) == b1_AT) %>% 
-  mutate(intersection_c_lx2(forest_edges_HBI.man$b0_AT[forest_edges_HBI.man$T_dist < 1784], 
-                            forest_edges_HBI.man$b1_AT[forest_edges_HBI.man$T_dist < 1784], 
-                            rep(data_circle$y0[3],nrow(forest_edges_HBI.man %>% filter(T_dist < 1784))), 
-                            rep(data_circle$x0[3],nrow(forest_edges_HBI.man %>% filter(T_dist < 1784))), 
-                            rep(data_circle$r0[3],nrow(forest_edges_HBI.man %>% filter(T_dist < 1784)))))
 
 # ---- combining tree and edge data ---------------------------------------
 
@@ -653,32 +676,27 @@ HBI_trees  %>%
          # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
          Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
          Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
-         Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree
-         # distance between y_tree and centre: 
-          # dist_t_centre = sqrt(((Y_tree - 0)^2) + ((X_tree - 0)^2)), 
-          # dist_l_centre = sqrt(((Y_AB_tree - 0)^2) + ((Y_AB_tree - 0)^2))
-         ) %>%
+         Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree         ) %>%
   # filter for trees that lay withing the angle of the interception
      # therefore i need to find those trees whose azimut lies over the lower and under the higher azimute of the interceptions
      # thus i have to order the interceptions azimutes, elsewise I´ll exclude trees that lie in the "outer" angle of the interception
               # if azimut intersection 1 is lower then azi_inter_2 keep azi_inter_1 as the lower value, else choose the value from inter_2
               # if azimut intersection 2 is higher then azi_inter_1 keep azi_inter_2 as the upper value, else choose the value from inter_1
-  # mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
-  #        azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
-  # filter(azi_gon > azi_inter_lower & azi_gon < azi_inter_upper) %>% 
- # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-   mutate(t_AB_status = ifelse(Y_AB_t_implicit == 0, "on line", ifelse(Y_AB_t_implicit > 0, "outside", "inside")), 
+  mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
+        azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
+  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
+    # if edge form == 1 choose only those trees that lie within in the azimutes of the intercepts
+   mutate(t_AB_status = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
+                               ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
+          t_ABT_status = p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
           t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "outside", "inside")), 
           t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "outside", "inside")), 
-          # t_e_status = case_when(dist_t_centre > dist_l_centre ~ "group A",
-          #                        dist_t_centre < dist_l_centre ~ "group B",
-          #                        dist_t_centre == dist_l_centre ~ "unclear",
-          #                        TRUE ~ "NA")
+
           # assign combined tree status per plot
-          com_l_status = case_when(t_AB_status == "inside" & is.na(t_AT_status) & is.na(t_BT_status) ~ "inside",
-                                   is.na(t_AB_status) & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
-                                   t_AB_status == "inside" & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
-                                   TRUE ~ "outside")
+          # com_l_status = case_when(t_AB_status == "inside" & is.na(t_AT_status) & is.na(t_BT_status) ~ "inside",
+          #                          is.na(t_AB_status) & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
+          #                          t_AB_status == "inside" & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
+          #                          TRUE ~ "outside")
           )
 
 # Maybe i have to work wit triangle ?
@@ -746,22 +764,41 @@ ggplot() +
   # AB line
   geom_point(data = trees_and_edges %>%
                filter(e_form == "1") %>% 
+               inner_join(.,   forest_edges_HBI.man %>% 
+                            filter(e_form == "1") %>% 
+                            group_by(plot_ID) %>% 
+                            summarize(n = n()) %>% 
+                            filter(n <= 1), 
+                          by = "plot_ID") %>% 
               select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "AB"))+
+                      names(.)[2:5], names(.)[6:9]), 
+            aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-                select(plot_ID, X1_inter_AB, X2_inter_AB, Y1_inter_AB, Y2_inter_AB) %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                                                     filter(e_form == "1") %>% 
+                                                     group_by(plot_ID) %>% 
+                                                     summarize(n = n()) %>% 
+                                                     filter(n <= 1), 
+                                                   by = "plot_ID") %>% 
+                select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
                 to_long(keys = c("X_name",  "Y_name"),
                         values = c( "X_value", "Y_value"),  
-                        names(.)[2:3], names(.)[4:5]), 
-              aes(x= X_value, y = Y_value, colour = "AB"))+
+                        names(.)[2:5], names(.)[6:9]), 
+              aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_point(data =  trees_and_edges %>% filter(e_form == "1") %>% 
+               inner_join(.,   forest_edges_HBI.man %>% 
+                            filter(e_form == "1") %>% 
+                            group_by(plot_ID) %>% 
+                            summarize(n = n()) %>% 
+                            filter(n <= 1), 
+                          by = "plot_ID"),
+             aes(X_tree, Y_tree, colour = t_AB_status))+
+  facet_wrap(~plot_ID)
   # trees
-  geom_point(data =  trees_and_edges %>% 
-               filter(e_form == "1"),
-             aes(X_tree, Y_tree, color = t_AB_status))+
+
   # AT line
   geom_point(data = trees_and_edges %>% 
               filter(e_form == "2") %>% 
@@ -795,6 +832,11 @@ ggplot() +
   facet_wrap(~plot_ID)  
 
 
+  forest_edges_HBI.man %>% 
+    filter(e_form == "1") %>% 
+    group_by(plot_ID) %>% 
+    summarize(n = n()) %>% 
+    filter(n <= 1)
 
 
 
