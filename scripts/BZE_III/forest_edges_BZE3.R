@@ -165,7 +165,7 @@ labs_age <- c(seq(1, 180, by = 20))
 
 # ----- 0.5.3. coordinate functions ---------------------------------------
 # http://www.markusbaumi.ch/schule/formel/azimut.pdf
-x_coord <- function(Dcp, AZIcp){ 
+y_coord <- function(Dcp, AZIcp){      # originally x_coord
   # Xc =  x coordinate of centre = 0 
   # Dcp = Distance between point and centre
   # AZIcp=  Azimute betweeen Point and centre
@@ -174,7 +174,7 @@ x_coord <- function(Dcp, AZIcp){
   return(X)
 }
 
-y_coord <- function(Dcp, AZIcp){ 
+x_coord <- function(Dcp, AZIcp){  # originally y_coord
   # Yc =  y coordinate of centre = 0 
   # Dcp = Distance between point and centre
   # AZIcp=  Azimute betweeen Point and centre
@@ -240,41 +240,6 @@ intercept <- function(x1, y1, slope){
 # q = c so the number at the end of quadratic fomula
 
 
-intersection_c_l_status <- function(x1, x2) {
-  
-  # quadratic formula
-  # 0 = ((1 +l.df$e_b1_AB^2)/(1 +l.df$e_b1_AB^2))*X^2  -   ((2*c.df$x0 - 2*l.df$e_b1_AB*(l.df$e_b0_AB - c.df$y0))/(1 +l.df$e_b1_AB^2))*X   +     (c.df$x0^2 + (l.df$e_b0_AB - c.df$y0)^2 - c.df$r0^2)/(1 +l.df$e_b1_AB^2)
-  
-  # x1 = -(p/2)+(sqrt((p/2)^2-q))
-  # x2 = -(p/2)-(sqrt((p/2)^2-q))
-  
-  # p = b so the number before x in quadratic formula
-  # q = c so the number at the end of quadratic fomula
- 
-  # c.y0 = 0; 
-  # c.x0 = 0;
-  # c.r0 =1784;
-  # 
-  # p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
-  # q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
-  # x1 <-  (-(p/2) + sqrt( ((p*-1)/2)^2-q ));
-  # x2 <- (-(p/2) - sqrt( ((p*-1)/2)^2-q ));
-  # i.df <- as.data.frame(cbind(p_ID, x1, x2))
-  
-  # https://community.rstudio.com/t/how-do-i-write-a-function-that-will-tell-me-if-an-equation-has-no-solution/159834/6
-  # if no solutions
- ifelse(
-      is.na(x1) & is.na(x2), return(" no I"), 
-      # if 1 solution
-      ifelse(x1 = x2, return("one I"), 
-             # if 2 solutions
-             ifelse(x1 != x2, return("two I")
-                    )
-             )
-      )
-}
-
-
 # x1 of intersection
 intersection_c_lx1 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   
@@ -287,9 +252,9 @@ intersection_c_lx1 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
   
-  c.y0 = 0; 
-  c.x0 = 0;
- # c.r0 =1784;
+  #c.y0 = 0; 
+  #c.x0 = 0;
+  # c.r0 =1784;
   
   p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
   q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
@@ -297,7 +262,7 @@ intersection_c_lx1 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   x2 <- - (p/2) - sqrt( ((p*-1)/2)^2-q );
   i.df <- as.data.frame(cbind(x1, x2));
   # https://community.rstudio.com/t/how-do-i-write-a-function-that-will-tell-me-if-an-equation-has-no-solution/159834/6
-        # if no solutions
+  # if no solutions
   # ifelse(
   #   is.na(x1) & is.na(x2), return(NA), 
   #   # if 1 solution
@@ -349,22 +314,26 @@ intersection_c_lx2 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
 
 # ----0.5.7. azimut -------------------------------------------------------
 azimut <- function(x2, y2, x1, y1){
-  azi = atan((y2 - y1)/(x2 - x1));
+ # azi = atan((y2 - y1)/(x2 - x1));
+  azi = atan((x2 - x1)/(y2 - y1));
   return(azi)
 }
 
 
 
 # ----0.5.8. azimut -------------------------------------------------------
-azi_correction <- function(x, y, azi){
-  azi = ifelse(x > 0 & y > 0, azi,                    # first quadrant x + y+
-               ifelse(x > 0 & y < 0, -1*azi+400,         # second quadrant x + y-
-                      ifelse(x < 0 & y < 0,  azi+200,   # third quadrant x- y- 
-                             ifelse(x < 0 & y > 0, -1*azi+200, NA)
+azi_correction <- function(x2, y2, x1, y1, azi){
+  delta_x = x2 -x1 ;
+  delta_y = y2-y1 ; 
+  azi_corrected = ifelse(delta_x >= 0 & delta_y > 0 | delta_x > 0 & delta_y >= 0, azi,                    # first quadrant x + y+
+                         ifelse(delta_x >= 0 & delta_y < 0 |delta_x > 0 & delta_y <= 0, azi+200,         # second quadrant x + y-
+                                ifelse(delta_x <= 0 & delta_y < 0 |delta_x < 0 & delta_y <= 0,  azi+200,   # third quadrant x- y-
+                             ifelse(delta_x <= 0 & delta_y > 0 | delta_x < 0 & delta_y >= 0, azi+400, NA
+                                    )
                              )
-                      )
-               );
-  return(azi)
+                             )
+                         );
+  return(azi_corrected)
 }
 
 
@@ -372,7 +341,7 @@ azi_correction <- function(x, y, azi){
 # ----- 0.5.8. distance between two points --------------------------------
 distance <- function(x2, y2, x1, y1){
   
-   d = sqrt(((y2 - y1)^2) + ((x2 - x1)^2))
+  d = sqrt(((y2 - y1)^2) + ((x2 - x1)^2))
 }
 
 # ------ 0.5.9. check if point lays in triangle  --------------------------
@@ -430,29 +399,29 @@ HBI_trees %>%
 
 # ----- 1.1.3. forest edges -----------------------------------------------
 # filter for Waldrandform that imply that we have to do something about it
-      # Edge form: 
-      # 1 =	L = 	Linie
-      # 2 =	E	 = Eck
+# Edge form: 
+# 1 =	L = 	Linie
+# 2 =	E	 = Eck
 # filter for waldrandtyp that imply that we have to do something about it 
-      # Edge type: 
-      # 1	WA	Waldaußenrand 
-         # L> there shoulnd´t be trees beyond and we have to calculate the area of the cut-out to exclude from calculating the hectar values 
-      # 2	WI	Waldinnenrand 
-         # L> there shoulnd´t be trees beyond and we have to calculate the area of the cut-out to exclude from calculating the hectar values
-      # 3	BE	Bestandesgrenze
-         # L> no idea. I think it doesn´t matter because we calculate everything per hecktar
-        # but we can also try to split the stand by calculating the area behind and before the edge and treat them as two different plots s
-      # 4	sBE	sonst. Bestandesgrenze
+# Edge type: 
+# 1	WA	Waldaußenrand 
+# L> there shoulnd´t be trees beyond and we have to calculate the area of the cut-out to exclude from calculating the hectar values 
+# 2	WI	Waldinnenrand 
+# L> there shoulnd´t be trees beyond and we have to calculate the area of the cut-out to exclude from calculating the hectar values
+# 3	BE	Bestandesgrenze
+# L> no idea. I think it doesn´t matter because we calculate everything per hecktar
+# but we can also try to split the stand by calculating the area behind and before the edge and treat them as two different plots s
+# 4	sBE	sonst. Bestandesgrenze
 
 # 1a) for waldrandfrom == 1 
-  # create 1 lm function for forest edge 
-      # through  X|Y of intersection with sampling circuit 
+# create 1 lm function for forest edge 
+# through  X|Y of intersection with sampling circuit 
 # 1b) for waldrandform == 2 we have a turning point in the graph, for WFR == 1 we don´t
 #     --> build two lin models (1) X|Y anfang, X|Y Knickpunkt, (2) (1) X|Y ende, X|Y Knickpunkt,
 
 
 # 2) calculate X|Y of each tree
-    # y tree = y centre + distance * (sin(Azimut between centre and point)
+# y tree = y centre + distance * (sin(Azimut between centre and point)
 
 # 3a) filter for trees with x between x anfang and x Knickpunkt and x ende and x knickpunkt 
 #     check if y at respeective x is higher then y andfang or y ende
@@ -473,7 +442,7 @@ HBI_trees <- HBI_trees %>%
 
 # ----- 1.1.3.2. estimate parameters for edge lines -----------------------------------------------
 # coefficients for forest edges 
- forest_edges_HBI %>% 
+forest_edges_HBI %>% 
   # calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -483,78 +452,78 @@ HBI_trees <- HBI_trees %>%
          Y_T = ifelse(T_azi != "-2", y_coord(T_dist, T_azi), NA))%>%
   group_by(plot_ID) %>% 
   left_join(., 
-  # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
+            # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
             forest_edges_HBI %>% 
-  # filter for forest edges that have a relevance for tree calculations and dont have a turning point
-  # filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
-    filter(e_form == "1"& A_azi != "-2" & B_azi != "-2" & T_azi == "-2") %>%
-    # calculate coordinates from Azimut and distance
-  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
-         X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
-         Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
-         Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA))%>%
-  # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-  to_long(keys = c("X_name",  "Y_name"), 
-          values = c( "X_value", "Y_value"),  
-          names(.)[11:12], names(.)[13:14]) %>%
-  group_by(plot_ID, e_form) %>%
-  # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-  lm_table(Y_value ~ X_value , output = "table") %>% 
-    rename("e_b0_AB" = "b0") %>% 
-    rename("e_b1_AB" = "b1") %>% 
-  select(plot_ID,e_form, e_b0_AB, e_b1_AB), 
-  by = c("plot_ID", "e_form")) %>% 
+              # filter for forest edges that have a relevance for tree calculations and dont have a turning point
+              # filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
+              filter(e_form == "1"& A_azi != "-2" & B_azi != "-2" & T_azi == "-2") %>%
+              # calculate coordinates from Azimut and distance
+              mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+                     X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+                     Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
+                     Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA))%>%
+              # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+              to_long(keys = c("X_name",  "Y_name"), 
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[11:12], names(.)[13:14]) %>%
+              group_by(plot_ID, e_form) %>%
+              # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+              lm_table(Y_value ~ X_value , output = "table") %>% 
+              rename("e_b0_AB" = "b0") %>% 
+              rename("e_b1_AB" = "b1") %>% 
+              select(plot_ID,e_form, e_b0_AB, e_b1_AB), 
+            by = c("plot_ID", "e_form")) %>% 
   left_join(., 
-# 1.b) for forest edge form 2 that has a tunring point
-left_join(
-  # 1.b) 1. dataset with coefficients of line from A to T
-  forest_edges_HBI %>% 
-  # filter for forest edges that have a relevance for tree calculations 
-  #filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
-  filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
-  mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
-         X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-         X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
-         X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-         Y_A =  ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA),
-         Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
-         Y_B =  ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA),
-         Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
-  # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-  to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
-          values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
-          names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
-  group_by(plot_ID, e_form) %>%
-  # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-  lm_table(Y_A_T_value ~ na.omit(X_A_T_value), output = "table") %>% 
-  select(plot_ID, e_form, b0, b1) %>% 
-  rename("e_b0_AT" = "b0") %>% 
-  rename("e_b1_AT" = "b1"), 
-# 1.b) 2. dataset with coefficients of line from B to T
-  forest_edges_HBI %>% 
-    # filter for forest edges that have a relevance for tree calculations 
-    # filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
-  filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
-    mutate(X_A = x_coord(A_dist, A_azi),
-           X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-           X_B = x_coord(B_dist, B_azi),
-           X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-           Y_A = y_coord(A_dist, A_azi),
-           Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
-           Y_B = y_coord(B_dist, B_azi),
-           Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
-    # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-    to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
-            values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
-            names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
-    group_by(plot_ID, e_form) %>%
-    # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-   lm_table(Y_B_T_value ~ na.omit(X_B_T_value), output = "table") %>% 
-    select(plot_ID, e_form, b0, b1) %>% 
-    rename("e_b0_BT" = "b0") %>% 
-    rename("e_b1_BT" = "b1"), 
-by = c("plot_ID", "e_form")), 
-by = c("plot_ID", "e_form")) 
+            # 1.b) for forest edge form 2 that has a tunring point
+            left_join(
+              # 1.b) 1. dataset with coefficients of line from A to T
+              forest_edges_HBI %>% 
+                # filter for forest edges that have a relevance for tree calculations 
+                #filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
+                mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
+                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       Y_A =  ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA),
+                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
+                       Y_B =  ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA),
+                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
+                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
+                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
+                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
+                group_by(plot_ID, e_form) %>%
+                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+                lm_table(Y_A_T_value ~ na.omit(X_A_T_value), output = "table") %>% 
+                select(plot_ID, e_form, b0, b1) %>% 
+                rename("e_b0_AT" = "b0") %>% 
+                rename("e_b1_AT" = "b1"), 
+              # 1.b) 2. dataset with coefficients of line from B to T
+              forest_edges_HBI %>% 
+                # filter for forest edges that have a relevance for tree calculations 
+                # filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
+                mutate(X_A = x_coord(A_dist, A_azi),
+                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       X_B = x_coord(B_dist, B_azi),
+                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       Y_A = y_coord(A_dist, A_azi),
+                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
+                       Y_B = y_coord(B_dist, B_azi),
+                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
+                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
+                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
+                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
+                group_by(plot_ID, e_form) %>%
+                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+                lm_table(Y_B_T_value ~ na.omit(X_B_T_value), output = "table") %>% 
+                select(plot_ID, e_form, b0, b1) %>% 
+                rename("e_b0_BT" = "b0") %>% 
+                rename("e_b1_BT" = "b1"), 
+              by = c("plot_ID", "e_form")), 
+            by = c("plot_ID", "e_form")) 
 
 
 
@@ -563,7 +532,7 @@ by = c("plot_ID", "e_form"))
 # set up gerade from 2 points manually
 forest_edges_HBI.man <- forest_edges_HBI %>% 
   filter(e_form %in% c("1", "2")) %>% 
-# find line parameters
+  # find line parameters
   # 1. calculate coordinates for all 
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
@@ -576,12 +545,12 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          b1_AT = ifelse(e_form == "2", slope(X_T, Y_T, X_A, Y_A), NA),
          b1_BT = ifelse(e_form == "2", slope(X_T, Y_T, X_B, Y_B), NA)) %>% 
   # 3. intercept line y axis b0 : insert known point: XA YA
-         # Y_A = b1_AB*X_A + b0_AB -- -b1_AB*X_A --> b0_AB =  Y_A - b1_AB*X_A
+  # Y_A = b1_AB*X_A + b0_AB -- -b1_AB*X_A --> b0_AB =  Y_A - b1_AB*X_A
   mutate(b0_AB = ifelse(e_form == "1", intercept(X_A, Y_A, b1_AB), NA), 
          b0_AT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_AT), NA),
          b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_BT), NA)) %>% 
-# find x of intercept with circle: insert line equation in circle equation
-        # for AB line 
+  # find x of intercept with circle: insert line equation in circle equation
+  # for AB line 
   mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
          X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
          inter_status_AB = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I",      # if 0 solutions
@@ -600,7 +569,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
                                   ifelse(X1_inter_BT == X2_inter_BT, "one I",                  # if 1 solution
                                          ifelse(X1_inter_BT != X2_inter_BT, "two I"))) ) %>%   # if 2 solutions
   # y intercept wih cirlce: insert x of intercept with circle in equation of line
-         # AB line 
+  # AB line 
   mutate(Y1_inter_AB = b0_AB + b1_AB*X1_inter_AB, 
          Y2_inter_AB = b0_AB + b1_AB*X2_inter_AB, 
          # AT line 
@@ -611,52 +580,60 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          Y2_inter_BT = b0_BT + b1_BT*X2_inter_BT) %>% 
   # azimut of intersection points (calcaulte azimute with azimute function, then correct it depending on the quadrant of x_intersection and y_intersection)
          # AB line 
-  mutate(azi1_inter_AB = azi_correction(X1_inter_AB, Y1_inter_AB, azimut(X1_inter_AB, Y1_inter_AB, 0, 0)), 
-         azi2_inter_AB = azi_correction(X2_inter_AB, Y2_inter_AB , azimut(X2_inter_AB, Y2_inter_AB, 0, 0)),
+  mutate(azi1_inter_AB = azi_correction(X1_inter_AB, Y1_inter_AB,  0, 0, azimut(X1_inter_AB, Y1_inter_AB, 0, 0)), 
+         azi2_inter_AB = azi_correction(X2_inter_AB, Y2_inter_AB,  0, 0 , azimut(X2_inter_AB, Y2_inter_AB, 0, 0)),
          # AT line
-         azi1_inter_AT = azi_correction(X1_inter_AT, Y1_inter_AT, azimut(X1_inter_AT, Y1_inter_AT, 0, 0)), 
-         azi2_inter_AT = azi_correction(X2_inter_AT, Y2_inter_AT, azimut(X2_inter_AT, Y2_inter_AT, 0, 0)), 
+         azi1_inter_AT = azi_correction(X1_inter_AT, Y1_inter_AT,  0, 0,  azimut(X1_inter_AT, Y1_inter_AT, 0, 0)), 
+         azi2_inter_AT = azi_correction(X2_inter_AT, Y2_inter_AT,  0, 0,  azimut(X2_inter_AT, Y2_inter_AT, 0, 0)), 
          # BT line 
-         azi1_inter_BT = azi_correction(X1_inter_BT, Y1_inter_BT, azimut(X1_inter_BT, Y1_inter_BT, 0, 0)), 
-         azi2_inter_BT = azi_correction(X2_inter_BT, Y2_inter_BT, azimut(X2_inter_BT, Y2_inter_BT, 0, 0)) ,
-    # distance interception centre --> to see if points are actually placed on the rim of the circle 
+         azi1_inter_BT = azi_correction(X1_inter_BT, Y1_inter_BT,  0, 0, azimut(X1_inter_BT, Y1_inter_BT, 0, 0)), 
+         azi2_inter_BT = azi_correction(X2_inter_BT, Y2_inter_BT,  0, 0, azimut(X2_inter_BT, Y2_inter_BT, 0, 0)) ,
+         # distance interception centre --> to see if points are actually placed on the rim of the circle 
          inter_1_dist = distance(X1_inter_AB, Y1_inter_AB, 0, 0),     # this is just to control if the whole thing worked and 
-    # to calculate the triangles Barycentric coordinates we need 3 points: A, B, C = centre point
-       # in case T lies within the circle, we want R to select A and B from the intersection with the circle.
-       # Whereby we have to use a wider radius, to make sure that trees located the halfmoon of the circle cut by the triangle (Kreisbogen) are selected too. 
-    # when t lies inside the circle (so both lines reach outside) ue only intersception point where direction between inter_AT and AT is equal choose this x, we need a buffer tho  
-    # the following statement says:  if T lies within circle check if the slope of x_inter_1  or the slope of x_inter_2 is equal to the slope of AT,
-    #                                choose the x which has the same slope (x_inter_1 or x_inter_2)as the second point on the line (A or B) 
-    #                                but with a buffer of + 216, which is why it has to be newly calculated 
-    # find the intercept of circle and line that prolonges the line between a and t or B and T
-     # AT line 
-    azi_T_A = azi_correction(X_A, Y_A, azimut(X_A, Y_A, X_T, Y_T)),
-    azi_T_AT_inter_1 = azi_correction(X1_inter_AT, Y1_inter_AT, azimut(X1_inter_AT, Y1_inter_AT, X_T, Y_T)),
-    azi_T_AT_inter_2 = azi_correction(X2_inter_AT, Y2_inter_AT, azimut(X2_inter_AT, Y2_inter_AT, X_T, Y_T)),
-     # BT line
-    azi_T_B = azi_correction(X_B, Y_B, azimut(X_B, Y_B, X_T, Y_T)),
-    azi_T_BT_inter_1 = azi_correction(X1_inter_BT, Y1_inter_BT, azimut(X1_inter_BT, Y1_inter_BT, X_T, Y_T)),
-    azi_T_BT_inter_2 = azi_correction(X2_inter_BT, Y2_inter_BT, azimut(X2_inter_BT, Y2_inter_BT, X_T, Y_T)),
-    # for those turning points that lay outside the circle, select the intercetion point with the gratest distance to c and prolong it
-    dist_T_AT_inter_1 = distance(X1_inter_AT, Y1_inter_AT, X_T, Y_T), 
-    dist_T_AT_inter_2 = distance(X2_inter_AT, Y2_inter_AT, X_T, Y_T), 
-    dist_T_BT_inter_1 = distance(X1_inter_BT, Y1_inter_BT, X_T, Y_T), 
-    dist_T_BT_inter_2 = distance(X2_inter_BT, Y2_inter_BT, X_T, Y_T), 
-    # if azimut T to A  identical to azimut T to intercept 1 A and circle use this intercept (inter_AT_1) for the triable, if azimut T to A identical to azimute T to intercept 2 between A and  circle use this intercept (inter_AT_2)
-    X_inter_AT_triangle = case_when(T_dist < 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
-                               T_dist < 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
-                               T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
-                               T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
-                               TRUE ~ NA ), 
-    X_inter_BT_triangle = case_when(T_dist < 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
-                               T_dist < 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
-                               T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
-                               T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
-                               TRUE ~ NA)) %>% 
+         # to calculate the triangles Barycentric coordinates we need 3 points: A, B, C = centre point
+         # in case T lies within the circle, we want R to select A and B from the intersection with the circle.
+         # Whereby we have to use a wider radius, to make sure that trees located the halfmoon of the circle cut by the triangle (Kreisbogen) are selected too. 
+         # when t lies inside the circle (so both lines reach outside) ue only intersception point where direction between inter_AT and AT is equal choose this x, we need a buffer tho  
+         # the following statement says:  if T lies within circle check if the slope of x_inter_1  or the slope of x_inter_2 is equal to the slope of AT,
+         #                                choose the x which has the same slope (x_inter_1 or x_inter_2)as the second point on the line (A or B) 
+         #                                but with a buffer of + 216, which is why it has to be newly calculated 
+         # find the intercept of circle and line that prolonges the line between a and t or B and T
+         # AT line 
+         azi_T_A = azi_correction(X_A, Y_A, X_T, Y_T, azimut(X_A, Y_A, X_T, Y_T)),
+         azi_T_AT_inter_1 = azi_correction(X1_inter_AT, Y1_inter_AT, X_T, Y_T, azimut(X1_inter_AT, Y1_inter_AT, X_T, Y_T)),
+         azi_T_AT_inter_2 = azi_correction(X2_inter_AT, Y2_inter_AT, X_T, Y_T, azimut(X2_inter_AT, Y2_inter_AT, X_T, Y_T)),
+         # BT line
+         azi_T_B = azi_correction(X_B, Y_B, X_T, Y_T, azimut(X_B, Y_B, X_T, Y_T)),
+         azi_T_BT_inter_1 = azi_correction(X1_inter_BT, Y1_inter_BT, X_T, Y_T, azimut(X1_inter_BT, Y1_inter_BT, X_T, Y_T)),
+         azi_T_BT_inter_2 = azi_correction(X2_inter_BT, Y2_inter_BT, X_T, Y_T, azimut(X2_inter_BT, Y2_inter_BT, X_T, Y_T)),
+         # for those turning points that lay outside the circle, select the intercetion point with the gratest distance to c and prolong it
+         dist_T_AT_inter_1 = distance(X1_inter_AT, Y1_inter_AT, X_T, Y_T), 
+         dist_T_AT_inter_2 = distance(X2_inter_AT, Y2_inter_AT, X_T, Y_T), 
+         dist_T_BT_inter_1 = distance(X1_inter_BT, Y1_inter_BT, X_T, Y_T), 
+         dist_T_BT_inter_2 = distance(X2_inter_BT, Y2_inter_BT, X_T, Y_T), 
+         # if azimut T to A  identical to azimut T to intercept 1 A and circle use this intercept (inter_AT_1) for the triable, if azimut T to A identical to azimute T to intercept 2 between A and  circle use this intercept (inter_AT_2)
+         X_inter_AT_triangle = case_when(T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
+                                         T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
+                                         # T_dist > 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
+                                         #  T_dist > 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
+                                          T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                                          T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                                          TRUE ~ NA ), 
+         X_inter_BT_triangle = case_when(T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
+                                         T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
+                                         # T_dist > 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
+                                         # T_dist > 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
+                                          T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                                          T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                                         TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
   mutate(Y_inter_AT_triangle = b0_AT + b1_AT*X_inter_AT_triangle,  
          Y_inter_BT_triangle = b0_BT + b1_BT*X_inter_BT_triangle) 
 
+
+
+
+forest_edges_HBI.man %>% filter(e_form == "2" & plot_ID== 50102)
 
 
 # ---- combining tree and edge data ---------------------------------------
@@ -666,99 +643,111 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 # if the tree_y is higher then the function_y we have to do something with the tree...
 # etc. assiningg another plot iD or something. 
 trees_and_edges <-
-HBI_trees  %>% 
+  HBI_trees  %>% 
   # join in edges info per plot
   left_join(., forest_edges_HBI.man, 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
-  mutate(Y_AB_tree =  b0_AB  + b1_AB *X_tree,
-         # new approach by Johanna Garthe
-         # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
-         Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
+  # new approach by Johanna Garthe
+  # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
+  mutate(Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
          Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
-         Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree         ) %>%
-  # filter for trees that lay withing the angle of the interception
-     # therefore i need to find those trees whose azimut lies over the lower and under the higher azimute of the interceptions
-     # thus i have to order the interceptions azimutes, elsewise I´ll exclude trees that lie in the "outer" angle of the interception
-              # if azimut intersection 1 is lower then azi_inter_2 keep azi_inter_1 as the lower value, else choose the value from inter_2
-              # if azimut intersection 2 is higher then azi_inter_1 keep azi_inter_2 as the upper value, else choose the value from inter_1
-  mutate(azi_inter_lower = ifelse(azi1_inter_AB < azi2_inter_AB, azi1_inter_AB, azi2_inter_AB), 
-        azi_inter_upper = ifelse (azi2_inter_AB > azi1_inter_AB, azi2_inter_AB, azi1_inter_AB)) %>% 
+         Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree) %>%
   # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-    # if edge form == 1 choose only those trees that lie within in the azimutes of the intercepts
-   mutate(t_AB_status = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
-                               ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
-          t_ABT_status = p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
-          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "outside", "inside")), 
-          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "outside", "inside")), 
-
-          # assign combined tree status per plot
-          # com_l_status = case_when(t_AB_status == "inside" & is.na(t_AT_status) & is.na(t_BT_status) ~ "inside",
-          #                          is.na(t_AB_status) & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
-          #                          t_AB_status == "inside" & t_AT_status == "inside" & t_BT_status == "inside" ~ "inside", 
-          #                          TRUE ~ "outside")
-          )
-
-# Maybe i have to work wit triangle ?
-  # https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle
-  # http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html
-
- forest_edges_HBI.man %>% 
-  filter(e_form == "2") %>% 
-mutate(b1_AT_inter_1 = slope(X_T, Y_T, X1_inter_AT, Y1_inter_AT), 
-       b1_AT_inter_2 = slope(X_T, Y_T, X2_inter_AT, Y2_inter_AT), 
-       ) %>% 
-  select(plot_ID, b1_AT, b1_AT_inter_1, b1_AT_inter_2)
-
-forest_edges_HBI.man %>% 
-  filter(e_form == "1") %>% 
-  mutate(b1_AB_inter_1 = slope(X_A, Y_A, X1_inter_AB, Y1_inter_AB ), 
-         b1_AB_inter_2 = slope(X_A, Y_A, X2_inter_AB, Y2_inter_AB ), 
-  ) %>% 
-  select(plot_ID, b1_AB, b1_AB_inter_1, b1_AB_inter_2)
+  # if edge form == 1 choose only those trees that lie within in the azimutes of the intercepts
+  mutate(t_AB_status = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
+                              ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
+         t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
+         t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
+          t_ABT_status = case_when(inter_status_AT == "two I" & inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
+                                   # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
+                                   inter_status_AT != "two I" & inter_status_BT == "two I" ~ t_BT_status, 
+                                   inter_status_AT == "two I" & inter_status_BT != "two I" ~ t_AT_status,
+                                   # if non of the arms touches the circle, assign all trees inside the circle to one group
+                                   inter_status_AT != "two I" & inter_status_BT != "two I" ~ "A", 
+                                   TRUE ~ NA), 
+         t_status_AB_ABT = case_when(e_form == "1" & Y_AB_t_implicit == 0 ~ "on line", 
+                                     e_form == "1" & Y_AB_t_implicit > 0 ~ "C",
+                                     e_form == "1" & Y_AB_t_implicit < 0 ~ "D",
+                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" &inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
+                                     # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
+                                     e_form == "2" & inter_status_AT != "two I" & e_form == "2" & inter_status_BT == "two I" ~ t_BT_status, 
+                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" & inter_status_BT != "two I" ~ t_AT_status,
+                                     # if non of the arms touches the circle, assign all trees inside the circle to one group
+                                     e_form == "2" & inter_status_AT != "two I" & e_form == "2" & inter_status_BT != "two I" ~ "A", 
+                                     TRUE ~ NA)) %>% 
+  # this jkoin holds a dataset that assignes "main" to those trees whose AB or ABT status is the most frequent at the respecitive plot and 
+  # "side" to the status category that is leaest frequent per plot so we have split out trees in main and side stand
+  left_join(., rbind( 
+  # main/ side info forest edges form 1
+  trees_and_edges %>% 
+    filter(e_form == 1) %>% 
+    group_by(plot_ID, t_AB_status) %>% 
+    summarise(N = n()) %>%
+    top_n(., 1) %>% 
+    rename("t_status" = "t_AB_status") %>% 
+    mutate(m_s_status = "main"), 
+  # lowest dataset with plots that have 2 categroeis of tree status
+  trees_and_edges %>% 
+    filter(e_form == 1) %>% 
+    group_by(plot_ID, t_AB_status) %>%
+    summarise(N = n()) %>%
+    top_n(., -1) %>%
+    # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
+    # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
+    inner_join(., trees_and_edges %>% 
+                 filter(e_form == 1) %>% 
+                 select(plot_ID, t_AB_status) %>% 
+                 distinct() %>%
+                 group_by(plot_ID) %>%
+                 summarise(N = n()) %>%  # summarize how many stati are there per plot
+                 filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
+                 select(plot_ID) %>% 
+                 distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
+               by = "plot_ID") %>% 
+    rename("t_status" = "t_AB_status") %>% 
+    mutate(m_s_status = "side"), 
+  # forest form 2
+  trees_and_edges %>% 
+    filter(e_form == 2) %>% 
+    group_by(plot_ID, t_ABT_status) %>% 
+    summarise(N = n()) %>%
+    top_n(., 1) %>% 
+    rename("t_status" = "t_ABT_status") %>% 
+    mutate(m_s_status = "main"), 
+  # lowest dataset with plots that have 2 categroeis of tree status
+  trees_and_edges %>% 
+    filter(e_form == 2) %>% 
+    group_by(plot_ID, t_ABT_status) %>%
+    summarise(N = n()) %>%
+    top_n(., -1) %>%
+    # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
+    # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
+    inner_join(., trees_and_edges %>% 
+                 filter(e_form == 2) %>% 
+                 select(plot_ID, t_ABT_status) %>% 
+                 distinct() %>%
+                 group_by(plot_ID) %>%
+                 summarise(N = n()) %>%  # summarize how many stati are there per plot
+                 filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
+                 select(plot_ID) %>% 
+                 distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
+               by = "plot_ID") %>% 
+    rename("t_status" = "t_ABT_status") %>% 
+    mutate(m_s_status = "side")) %>% 
+  arrange(plot_ID) %>% 
+  select(plot_ID, t_status, m_s_status), 
+by = c("plot_ID", "t_status_AB_ABT" = "t_status"))
+    
+  
 
 # ----- 3. visulaization  -------------------------------------------------
 
 
 # ----- 3.1. Visualisation forest edges -----------------------------------
-# maybe it´ll help to plot them 
-
-
-
-
-
-
-# testing if intersection calculation worked if manually calculated
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  # geom_point(data =  trees_and_edges %>% 
-  #              filter(e_form == 1), 
-  #            aes(X_tree, Y_tree)) +
-  geom_point(data = forest_edges_HBI.man %>% 
-               filter(e_form == "1"), 
-             aes(X1_inter_AB, Y1_inter_AB, colour = "inter 1"))+
-  geom_point(data = forest_edges_HBI.man %>% 
-               filter(e_form == "1" ), 
-             aes(X2_inter_AB, Y2_inter_AB, colour = "inter 2"))+
-  # these are  AB for forest types with only 2 edges
-  geom_point(data = forest_edges_HBI.man %>%
-               filter(e_form == "1"),
-               aes(X_A, Y_A, color = "edges A"))+
-  geom_point(data = forest_edges_HBI.man %>%
-               filter(e_form == "1"),
-               aes(X_B, Y_B, color = "edges B"))+
-  # geom_abline(data = forest_edges_HBI.man %>% 
-  #               filter(e_form == "1"), 
-  #             intercept = forest_edges_HBI.man$b0_AB, 
-  #             slope = forest_edges_HBI.man$b1_AB)+
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form) & e_form == "1"), 
-             aes(X_tree, Y_tree, color = com_l_status)) +
-  facet_wrap(~plot_ID)+ 
-  theme_bw()
-
 
 # plotting trees and interception lines divided in t_line_status
+#AB line
 ggplot() +  
   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
   # AB line
@@ -770,24 +759,77 @@ ggplot() +
                             summarize(n = n()) %>% 
                             filter(n <= 1), 
                           by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
+               select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:5], names(.)[6:9]), 
+             aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
-                      names(.)[2:5], names(.)[6:9]), 
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB, X_A, Y1_inter_AB, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
               inner_join(.,   forest_edges_HBI.man %>% 
-                                                     filter(e_form == "1") %>% 
-                                                     group_by(plot_ID) %>% 
-                                                     summarize(n = n()) %>% 
-                                                     filter(n <= 1), 
-                                                   by = "plot_ID") %>% 
-                select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),  
-                        names(.)[2:5], names(.)[6:9]), 
-              aes(x= X_value, y = Y_value, colour = X_name))+
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB, X_A, Y2_inter_AB, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB, X_B, Y1_inter_AB, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB, X_B, Y2_inter_AB, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "1") %>% 
                inner_join(.,   forest_edges_HBI.man %>% 
                             filter(e_form == "1") %>% 
@@ -795,371 +837,80 @@ ggplot() +
                             summarize(n = n()) %>% 
                             filter(n <= 1), 
                           by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = t_AB_status))+
+             aes(X_tree, Y_tree, colour = m_s_status))+
+  theme_bw()+
   facet_wrap(~plot_ID)
-  # trees
 
-  # AT line
+# plotting trees and interception lines divided in t_line_status
+# forest type 2
+# AT line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
   geom_point(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "AT"))+
+             filter(e_form == "2") %>% 
+             select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+             to_long(keys = c("X_name",  "Y_name"),
+                     values = c( "X_value", "Y_value"),  
+                     names(.)[2:3], names(.)[4:5]), 
+           aes(x= X_value, y = Y_value, colour = "T"))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "2") %>% 
               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
                       names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "AT"))+
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle AT
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_AT_triangle, X_A, Y_inter_AT_triangle, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
+  geom_line(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_AT_triangle, X_A, Y_inter_AT_triangle, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
   # BT line 
   geom_point(data = trees_and_edges %>%
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = trees_and_edges %>%
               filter(e_form == "2") %>% 
               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
                       names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "BT"))+
-  geom_line(data = trees_and_edges %>%
-                filter(e_form == "2") %>% 
-                select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),  
-                        names(.)[2:3], names(.)[4:5]), 
-              aes(x= X_value, y = Y_value, colour = "BT"))+
-  facet_wrap(~plot_ID)  
-
-
-  forest_edges_HBI.man %>% 
-    filter(e_form == "1") %>% 
-    group_by(plot_ID) %>% 
-    summarize(n = n()) %>% 
-    filter(n <= 1)
-
-
-
-# just AT and BT line
-# AT line
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits
- # AT line whne T outside cirlce
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle BT
   geom_point(data = trees_and_edges %>% 
                filter(e_form == "2") %>% 
-               select(plot_ID, X1_inter_AT, X_T, Y1_inter_AT, Y_T) %>% 
+               select(plot_ID, X_inter_BT_triangle, X_B, Y_inter_BT_triangle, Y_B) %>% 
                to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),   
-                       names(.)[2:3], names(.)[4:5]),
-             aes(x= X_value, y = Y_value, colour = "AT"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X2_inter_AT, X_T, Y2_inter_AT, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]),
-            aes(x= X_value, y = Y_value, colour = "AT"))+
-  # AT line when T inside circle
-  geom_point(data = trees_and_edges %>% 
-             filter(e_form == "2") %>% 
-             select(plot_ID, correct_X_inter_AT, X_T, correct_Y_inter_AT, Y_T) %>% 
-             to_long(keys = c("X_name",  "Y_name"),
-                     values = c( "X_value", "Y_value"),   
-                     names(.)[2:3], names(.)[4:5]),
-           aes(x= X_value, y = Y_value, colour = "AT"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, correct_X_inter_AT, X_T, correct_Y_inter_AT, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]),
-            aes(x= X_value, y = Y_value, colour = "AT"))+
-  # BT line 
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "2" ) %>% 
-               select(plot_ID, X1_inter_BT, X_T, Y1_inter_BT, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"), 
+                       values = c( "X_value", "Y_value"),  
                        names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "BT"))+
-  geom_line(data = trees_and_edges %>%
+             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
+  geom_line(data = trees_and_edges %>% 
               filter(e_form == "2") %>% 
-              select(plot_ID, X2_inter_BT, X_T, Y2_inter_BT, Y_T) %>% 
+              select(plot_ID, X_inter_BT_triangle, X_B, Y_inter_BT_triangle, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
                       names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "BT"))+
-  
-  # BT line  with T in circle 
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "2" & T_dist < 1784) %>% 
-               select(plot_ID, correct_X_inter_BT, X_T, correct_Y_inter_BT, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"), 
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "BT"))+
-  geom_line(data = trees_and_edges %>%
-              filter(e_form == "2"& T_dist < 1784) %>% 
-              select(plot_ID, correct_X_inter_BT, X_T, correct_Y_inter_BT, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value, colour = "BT"))+
+            aes(x= X_value, y = Y_value))+
   # trees
-   geom_point(data =  trees_and_edges %>% 
-                filter(e_form == "2"),
-              aes(X_tree, Y_tree, color = com_l_status))+
-  facet_wrap(~plot_ID) 
-
-
-# truned line in 1 go 
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits
-geom_point(data = trees_and_edges %>%
-            filter(e_form == "2") %>% 
-            select(plot_ID, correct_X_inter_BT, X_T, correct_X_inter_AT,  correct_Y_inter_BT, Y_T, correct_Y_inter_AT) %>% 
-            to_long(keys = c("X_name",  "Y_name"),
-                    values = c( "X_value", "Y_value"),  
-                    names(.)[2:4], names(.)[5:7]), 
-          aes(x= X_value, y = Y_value, colour = "BTA"))+
-  facet_wrap(~plot_ID)
-
-
-# testing if intersection calculation worked
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  # geom_point(data =  trees_and_edges %>% 
-  #              filter(e_form == 1), 
-  #            aes(X_tree, Y_tree)) +
-  geom_point(data = forest_edges_HBI %>% 
-               filter(e_form == "1"), 
-             aes(inter_x1, inter_y1, colour = "inter 1"))+
-  geom_point(data = forest_edges_HBI %>% 
-               filter(e_form == "1" ), 
-             aes(inter_x2, inter_y2, colour = "inter 2"))+
-  # these are lines through AB for forest types with only 2 edges
-  geom_point(data = forest_edges_HBI %>%
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[11:13], names(.)[14:16]) %>% 
-               filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
-             aes(X_value, Y_value, color = "edges"))+
-  facet_wrap(~plot_ID)+ 
-  theme_bw
-
-
-
-
-# this one displays the trees per pot, the sampling circuis and the respective forest edges measuring points and lines drawn through htem 
-# separated by forest type 
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree, color = t_e_status)) +
-# geom_point(data = forest_edges_HBI %>%
-#              filter(!is.na(e_form)) %>% 
-#              to_long(keys = c("X_name",  "Y_name"), 
-#                      values = c( "X_value", "Y_value"),  
-#                      names(.)[11:13], names(.)[14:16]), 
-          # aes(X_value, Y_value, color = "edges"))+
-  # these are lines through AB for forest types with only 2 edges
-  geom_point(data = forest_edges_HBI %>%
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),  
-                        names(.)[11:13], names(.)[14:16]) %>% 
-                filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
-              aes(X_value, Y_value, color = "edges_f1_AB"))+
-  geom_line(data = forest_edges_HBI %>%
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[11:13], names(.)[14:16]) %>% 
-               filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
-             aes(X_value, Y_value, color = "edges_f1_AB"))+
-  # these are lines through AT for forest types with turning point
-  geom_point(data = forest_edges_HBI %>%
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),
-                        names(.)[11:13], names(.)[14:16]) %>% 
-                filter(e_form != "1" & X_name %in% c("X_A", "X_T")), 
-              aes(X_value, Y_value, color = "edges_f2_AT"))+
-  geom_line(data = forest_edges_HBI %>%
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),
-                       names(.)[11:13], names(.)[14:16]) %>% 
-               filter(e_form != "1" & X_name %in% c("X_A", "X_T")), 
-             aes(X_value, Y_value, color = "edges_f2_AT"))+
-  # these are lines through BT for forest types with turning point 
-  geom_point(data = forest_edges_HBI %>% 
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),
-                        names(.)[11:13], names(.)[14:16]) %>% 
-                filter(e_form != "1" & X_name %in% c("X_B", "X_T")), 
-              aes(X_value, Y_value, color = "edges_f2_BT"))+
-  geom_line(data = forest_edges_HBI %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),
-                       names(.)[11:13], names(.)[14:16]) %>% 
-               filter(e_form != "1" & X_name %in% c("X_B", "X_T")), 
-             aes(X_value, Y_value, color = "edges_f2_BT"))+
-  # these are lines through the function of 
-  # geom_point(data = trees_and_edges %>%
-  #               filter(!is.na(e_form)), 
-  #             aes(X_tree, Y_e_tree, color = "edges_trees"))+
-  geom_vline(xintercept = 2000)+
-  geom_hline(yintercept=2000)+ 
-  #xlim(-1784, 1784)+ 
-  #ylim(- 1784, 1784)+ 
-  facet_wrap(~plot_ID)
-
-
-
-
-
-# plotting 
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree, color = t_e_status)) +
-  # geom_point(data = forest_edges_HBI %>%  
-  #                           filter(!is.na(e_form)) %>% 
-  #                           to_long(keys = c("X_name",  "Y_name"), 
-  #                                   values = c( "X_value", "Y_value"),  
-  #                                   names(.)[11:13], names(.)[14:16]) %>% 
-  #                           mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
-  #                                                      X_name == "X_B" ~ x_coord(1784, B_azi),
-  #                                                      X_name == "X_T" ~ X_value,
-  #                                                      TRUE ~ NA), 
-  #                                  Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
-  #                                                      Y_name == "Y_B" ~ y_coord(1784, B_azi),
-#                                                      X_name == "Y_T" ~ Y_value,
-#                                                      TRUE ~ NA)),  
-#            aes(X_value, Y_value, color = "edges_prolonged"))+
-geom_point(data = forest_edges_HBI %>%  
-             filter(!is.na(e_form)) %>% 
-             to_long(keys = c("X_name",  "Y_name"), 
-                     values = c( "X_value", "Y_value"),  
-                     names(.)[11:13], names(.)[14:16]), 
-           aes(X_value, Y_value, color = "edges"))+
-  # geom_line(data = forest_edges_HBI %>%  
-  #              filter(!is.na(e_form)) %>% 
-  #              to_long(keys = c("X_name",  "Y_name"), 
-  #                      values = c( "X_value", "Y_value"),  
-  #                      names(.)[11:13], names(.)[14:16]) %>% 
-  #              mutate(X_value = case_when(X_name == "X_A" ~ x_coord(1784, A_azi),   # change the coordinates to draw the line through 
-  #                                         X_name == "X_B" ~ x_coord(1784, B_azi),
-  #                                         X_name == "X_T" ~ X_value,
-  #                                         TRUE ~ NA), 
-  #                     Y_value = case_when(Y_name == "Y_A" ~ y_coord(1784, A_azi), 
-  #                                         Y_name == "Y_B" ~ y_coord(1784, B_azi),
-#                                         X_name == "Y_T" ~ Y_value,
-#                                         TRUE ~ NA)),  
-#            aes(X_value, Y_value, color = "edges_prolonged"))+
-# geom_smooth(data = forest_edges_HBI %>%  
-#                 filter(!is.na(e_form)) %>% 
-#                 to_long(keys = c("X_name",  "Y_name"), 
-#                         values = c( "X_value", "Y_value"),  
-#                         names(.)[11:13], names(.)[14:16]), 
-#               aes(X_value, Y_value, color = "edges"), method='lm', se=FALSE)+
-geom_smooth(data = forest_edges_HBI %>%
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[11:13], names(.)[14:16]) %>% 
-              filter(e_form == "1" & X_name %in% c("X_A", "X_B")), 
-            aes(X_value, Y_value, color = "edges_f1_AB"), method='lm', se=FALSE)+
-  geom_smooth(data = forest_edges_HBI %>% 
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),
-                        names(.)[11:13], names(.)[14:16]) %>% 
-                filter(X_name %in% c("X_A", "X_T")), 
-              aes(X_value, Y_value, color = "edges_f2_AT"), method='lm', se=FALSE)+
-  geom_smooth(data = forest_edges_HBI %>% 
-                to_long(keys = c("X_name",  "Y_name"),
-                        values = c( "X_value", "Y_value"),
-                        names(.)[11:13], names(.)[14:16]) %>% 
-                filter(X_name %in% c("X_B", "X_T")), 
-              aes(X_value, Y_value, color = "edges_f2_BT"), method='lm', se=FALSE)+
-  # geom_smooth(data = trees_and_edges %>% 
-  #               filter(!is.na(e_form)), 
-  #             aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  #xlim(-1784, 1784)+ 
-  #ylim(- 1784, 1784)+ 
-  facet_wrap(~plot_ID)
-
-
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree)) +
-  geom_point(data =  forest_edges_HBI %>%  
-               filter(!is.na(e_form)) %>% 
-               to_long(keys = c("X_name",  "Y_name"), 
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[11:13], names(.)[14:16]), 
-             aes(X_value, Y_value, color = "edges"))+
-  geom_line(data = forest_edges_HBI %>% 
-              filter(!is.na(e_form)) %>%
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[11:13], names(.)[14:16]), 
-            aes(X_value, Y_value, color = "edges"))+ 
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  xlim(-1784, 1784)+ 
-  ylim(- 1784, 1784)+ 
-  facet_wrap(~plot_ID)
-
-
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree, color = t_e_status)) +
-  geom_point(data =  forest_edges_HBI %>%  
-               filter(!is.na(e_form)) %>% 
-               to_long(keys = c("X_name",  "Y_name"), 
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[11:13], names(.)[14:16]), 
-             aes(X_value, Y_value, color = "edges"))+
-  geom_line(data =  forest_edges_HBI %>%  
-              filter(!is.na(e_form)) %>% 
-              to_long(keys = c("X_name",  "Y_name"), 
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[11:13], names(.)[14:16]), 
-            aes(X_value, Y_value, color = "edges"))+
-  geom_point(data = trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_e_tree, color = "edges_trees"))+ 
-  geom_line(data = trees_and_edges %>% 
-              filter(!is.na(e_form)), 
-            aes(X_tree, Y_e_tree, color = "edges_trees"))+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  xlim(-1784, 1784)+ 
-  ylim(- 1784, 1784)+ 
-  facet_wrap(~plot_ID)
-
-
-ggplot() +                             
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_point(data =  trees_and_edges %>% 
-               filter(!is.na(e_form)), 
-             aes(X_tree, Y_tree, color = t_e_status)) +
-  # these are lines through the function of the edges reagrding to the tree coorsinates
-  geom_smooth(data = trees_and_edges %>% 
-              filter(!is.na(e_form)), 
-            aes(X_tree, Y_e_tree, color = "edges_trees"), method='lm', se=FALSE)+
-  geom_vline(xintercept = 0)+
-  geom_hline(yintercept=0)+ 
-  xlim(-1784, 1784)+ 
-  ylim(- 1784, 1784)+ 
-  facet_wrap(~plot_ID)
+  geom_point(data =  trees_and_edges %>% filter(e_form == "2"),
+             aes(X_tree, Y_tree, colour = m_s_status))+
+  theme_bw()+ 
+  facet_wrap(~plot_ID)  
 
 
 
@@ -1176,3 +927,4 @@ mutate(t_e_status = case_when(Y_e_tree < 2000 & X_tree < 2000 &  Y_tree < Y_e_tr
                               Y_e_tree > 2000 & X_tree > 2000 &  Y_tree > Y_e_tree ~ "tree_outside",   # x positive, y positive
                               is.na(e_ID) ~ "no_edge",
                               TRUE ~ "tree_inside"))
+
