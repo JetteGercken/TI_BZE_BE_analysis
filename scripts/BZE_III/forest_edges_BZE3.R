@@ -362,6 +362,15 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
 
 
 
+# ------0.5.10. angle triabnle for area calculations ----------------------
+angle_triangle <- function(b1_1, b1_2){
+  # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
+  m = (b1_1 - b1_2)/(1+ b1_1*b1_2);
+  m_betrag = ifelse(m >= 0, m, m*(-1));
+  angle.between.two.lines = atan(m_betrag);
+  return(angle.between.two.lines)
+}
+
 
 # ----- 1. joining in external info  --------------------------------------
 
@@ -621,9 +630,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
                                           TRUE ~ NA ), 
          X_inter_BT_triangle = case_when(T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
                                          T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
-                                         # T_dist > 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
-                                         # T_dist > 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
-                                          T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                                         T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
                                           T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
                                          TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
@@ -635,6 +642,53 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 
 forest_edges_HBI.man %>% filter(e_form == "2" & plot_ID== 50102)
 
+
+ 
+
+
+# ----- area circle segments  ---------------------------------------------
+
+# select respective intersection x and y that lies in the same direction as the secnd point of the line if:
+# - the forest edges type == 2 
+# - the turning point is situated within the circle 
+# - so both arms have 2 intersections with the circle and we can 
+forest_edges_HBI.man %>% 
+#   mutate(X_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ X1_inter_AT,
+#                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  X2_inter_AT,
+#                                          TRUE ~ NA ), 
+#        X_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ X1_inter_BT,
+#                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  X2_inter_BT,
+#                                          TRUE ~ NA),
+#        Y_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ Y1_inter_AT,
+#                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  Y2_inter_AT,
+#                                          TRUE ~ NA ), 
+#        Y_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ Y1_inter_BT,
+#                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  Y2_inter_BT,
+#                                          TRUE ~ NA)) %>%  
+       # calcualte the angle the two lines have at point T
+       # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
+                                 # if edge type is a line calcualte the intersection angle between the lines betweeen A to the centre and 0 to the centre
+ mutate(angle_ABT_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ angle_triangle(slope(0, 0, X_A, Y_A), slope(0, 0, X_B, Y_B)),
+                                   # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the angle between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_AT, Y1_inter_AT), slope(0, 0,X2_inter_AT, Y2_inter_AT)), 
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(slope( 0, 0, X1_inter_AT, Y1_inter_AT), slope( 0, 0, X2_inter_AT, Y2_inter_AT)),
+                                  # if t lies outside and there´s no or just one intersection on each line we don´t need the angle cause all trees are inside the plot
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                  # if t lies inside the circle and both arms reach out, calculate the anlge between at point T where AT and BT meet 
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(b1_AT, b1_BT),
+                                  # if t lies inside the circle and both arm AT arms reaches out/ has two intersections  calculate the anlge between A inter 1 and A inter 2 and centre
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(slope(0, 0, X1_inter_AT, Y1_inter_AT), slope(0, 0, X2_inter_AT, Y2_inter_AT)),
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                  TRUE ~ NA),
+        angle_ABT_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0, 0, X2_inter_BT, Y2_inter_BT)), 
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0 , X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
+                                     TRUE ~ NA)) %>% 
+  select(plot_ID, e_form, T_dist, inter_status_AB, inter_status_AT, inter_status_BT, angle_ABT_ABC_AC, angle_ABT_ABC_BC)
+  
 
 # ---- combining tree and edge data ---------------------------------------
 
@@ -690,9 +744,6 @@ trees_and_edges <-
   # lowest dataset with plots that have 2 categroeis of tree status
   trees_and_edges %>% 
     filter(e_form == 1) %>% 
-    group_by(plot_ID, t_AB_status) %>%
-    summarise(N = n()) %>%
-    top_n(., -1) %>%
     # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
     # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
     inner_join(., trees_and_edges %>% 
@@ -705,8 +756,11 @@ trees_and_edges <-
                  select(plot_ID) %>% 
                  distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
                by = "plot_ID") %>% 
+    group_by(plot_ID, t_AB_status) %>%
+    summarise(N = n()) %>%
+    top_n(., -1) %>%
     rename("t_status" = "t_AB_status") %>% 
-    mutate(m_s_status = "side"), 
+    mutate(m_s_status = "side_AB"), 
   # forest form 2
   trees_and_edges %>% 
     filter(e_form == 2) %>% 
@@ -734,7 +788,7 @@ trees_and_edges <-
                  distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
                by = "plot_ID") %>% 
     rename("t_status" = "t_ABT_status") %>% 
-    mutate(m_s_status = "side")) %>% 
+    mutate(m_s_status = "side_ABT")) %>% 
   arrange(plot_ID) %>% 
   select(plot_ID, t_status, m_s_status), 
 by = c("plot_ID", "t_status_AB_ABT" = "t_status"))
@@ -750,7 +804,8 @@ by = c("plot_ID", "t_status_AB_ABT" = "t_status"))
 #AB line
 ggplot() +  
   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  # AB line
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+    # AB line
   geom_point(data = trees_and_edges %>%
                filter(e_form == "1") %>% 
                inner_join(.,   forest_edges_HBI.man %>% 
@@ -830,23 +885,23 @@ ggplot() +
                       names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "1") %>% 
-               inner_join(.,   forest_edges_HBI.man %>% 
-                            filter(e_form == "1") %>% 
-                            group_by(plot_ID) %>% 
-                            summarize(n = n()) %>% 
-                            filter(n <= 1), 
-                          by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = m_s_status))+
-  theme_bw()+
-  facet_wrap(~plot_ID)
+   geom_point(data =  trees_and_edges %>% filter(e_form == "1") %>% 
+                inner_join(.,   forest_edges_HBI.man %>% 
+                             filter(e_form == "1") %>% 
+                             group_by(plot_ID) %>% 
+                             summarize(n = n()) %>% 
+                             filter(n <= 1), 
+                           by = "plot_ID"),
+              aes(X_tree, Y_tree, colour = m_s_status))+
+  # theme_bw()+
+  # facet_wrap(~plot_ID)
 
-# plotting trees and interception lines divided in t_line_status
-# forest type 2
+# forest edge type 2 
+# if the # i removed, this part allows to plot plots with forest edges with a turning point
 # AT line
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+# ggplot() +  
+ #  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
   geom_point(data = trees_and_edges %>% 
              filter(e_form == "2") %>% 
              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
@@ -918,13 +973,4 @@ ggplot() +
 # ----- NOTES -------------------------------------------------------------
 
 
-# ----- assinging tree status depending on position to edge line ----------
-
-# assign trees status depending on position of line through edges points
-mutate(t_e_status = case_when(Y_e_tree < 2000 & X_tree < 2000 &  Y_tree < Y_e_tree ~ "tree_outside",   # x negative, y negative (below 2000)
-                              Y_e_tree > 2000 & X_tree < 2000 &  Y_tree > Y_e_tree ~ "tree_outside",   # x negative, y positive 
-                              Y_e_tree < 2000 & X_tree > 2000 &  Y_tree < Y_e_tree ~ "tree_outside",   # x positive, y negative
-                              Y_e_tree > 2000 & X_tree > 2000 &  Y_tree > Y_e_tree ~ "tree_outside",   # x positive, y positive
-                              is.na(e_ID) ~ "no_edge",
-                              TRUE ~ "tree_inside"))
 

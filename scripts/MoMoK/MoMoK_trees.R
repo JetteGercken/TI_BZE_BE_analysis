@@ -2410,7 +2410,7 @@ biotest <- trees_total_5 %>%
 summary(biotest)
 
 # export biotest
-
+write.csv(biotest, "output/out_data/LT_biomass_method_comparisson_MoMoK.csv")
 
 
 # 2.2. DEAD WOOD ---------------------------------------------------------------
@@ -2964,7 +2964,7 @@ trees_P_SP <-  trees_total_5 %>%
     mutate(MoMoK_A_ha = (50*50)/10000) %>%           # actual momok area in hectar) %>% 
              # data set with BA etc. per species per plot
   left_join(.,  trees_total_5 %>%
-              filter(compartiment == "total") %>% 
+              #filter(compartiment == "total") %>% 
               group_by(plot_ID, SP_code) %>%       # group by plot and species to calculate BA per species 
               # values per plot
               summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
@@ -2975,23 +2975,24 @@ trees_P_SP <-  trees_total_5 %>%
                         Nt_P_SP = n(), 
                         plot_A_ha = mean(plot_A_ha)) %>% 
               mutate(MoMoK_A_ha = (50*50)/10000, 
-                     compartiment = "total", 
+                     #compartiment = "total", 
                      Nt_ha = Nt_P_SP/ plot_A_ha, 
                      Nt_MA = (Nt_P_SP/ plot_A_ha)*MoMoK_A_ha, 
                      SP_BA_m2ha = SP_BA_plot/ plot_A_ha, 
                      SP_BA_m2MA = (SP_BA_plot/ plot_A_ha)*MoMoK_A_ha) %>%             # this is to only add the values to one row per plot and species and avoid repeted plot-species wise values that are not grouped by compartiment and thus keep being repeated 
               # dataset with total BA per plot to calcualte share of each species by total basal area
               left_join(.,trees_total_5 %>%
-                          filter(compartiment == "total") %>%
+                          #filter(compartiment == "total") %>%
                           group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
                           summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
                                     plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
                           mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha,   # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
-                                 compartiment = "total"),               # just to ensure the join works
-                        by=c("plot_ID", "plot_A_ha", "compartiment")) %>% 
+                                 #compartiment = "total"
+                                 ),               # just to ensure the join works
+                        by=c("plot_ID", "plot_A_ha")) %>% 
               select(- c(plot_A_ha, tot_BA_plot, MoMoK_A_ha)) %>%  # remove unnecessary variables
               mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100),  # calculate proportion of each species to total BA in percent)
-    by = c("plot_ID", "SP_code", "compartiment")) %>%   # join it to the dataset grouped by plot, species and compartiment 
+    by = c("plot_ID", "SP_code")) %>%   # join it to the dataset grouped by plot, species and compartiment 
   mutate(B_t_P_SP_ha = B_t_P_SP/plot_A_ha, 
          C_t_P_SP_ha = C_t_P_SP/plot_A_ha,
          N_t_P_SP_ha = N_t_P_SP/plot_A_ha,
@@ -3001,7 +3002,7 @@ trees_P_SP <-  trees_total_5 %>%
 
 # joining dataset with dominant species using Ana Lucia Mendez Cartins code that filters for those species where BA_SP_per is max
 trees_P_SP <- left_join(trees_P_SP,
-                        as.data.table(trees_P_SP %>% filter(compartiment== "total"))[as.data.table(trees_P_SP %>% filter(compartiment== "total"))[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
+                        as.data.table(trees_P_SP)[as.data.table(trees_P_SP)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
                           rename(., dom_SP = SP_code) %>% 
                           select(plot_ID, compartiment, dom_SP), 
                         by = c("plot_ID", "compartiment"))
@@ -3038,7 +3039,7 @@ trees_P <- trees_total_5 %>%
             plot_A_ha = mean(plot_A_ha)) %>%       # plot area in hectare to reffer data to hectar later
   mutate(MoMoK_A_ha = (50*50)/10000) %>%           # MoMoK area in hectare to reffer data to MoMoK area later
   left_join(., trees_total_5 %>%
-              filter(compartiment == "total") %>% 
+              #filter(compartiment == "total") %>% 
               group_by(plot_ID) %>%                         # group by plot only to create column with 
               summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
                         sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
@@ -3052,31 +3053,32 @@ trees_P <- trees_total_5 %>%
                      BA_m2MA = (BA_m2_plot/plot_A_ha)*MoMoK_A_ha,
                      Nt_ha = Nt_plot/plot_A_ha,
                      Nt_MA = (Nt_plot/plot_A_ha)*MoMoK_A_ha,
-                     compartiment = "total") %>% 
+                    # compartiment = "total"
+                    ) %>% 
               select(-c(plot_A_ha, MoMoK_A_ha)),            # just to ensure the join works
-            by = c("plot_ID", "compartiment")) %>%           # join it to the dataset grouped by plot, species and compartiment 
+            by = c("plot_ID")) %>%           # join it to the dataset grouped by plot, species and compartiment 
   mutate(B_t_ha = B_t_plot/plot_A_ha, 
          C_t_ha = C_t_plot/plot_A_ha,
          N_t_ha = N_t_plot/plot_A_ha,
          B_t_MA = (B_t_plot/plot_A_ha)*MoMoK_A_ha, 
          C_t_MA = (C_t_plot/plot_A_ha)*MoMoK_A_ha,
          N_t_MA = (N_t_plot/plot_A_ha)*MoMoK_A_ha) %>% 
-  # dataset with dominatn species per plot
+  # dataset with dominant species per plot
   left_join(., trees_P_SP %>% 
               ungroup() %>% # this was necesarry becaue it kept grouping the data by their species group
-              dplyr::select(plot_ID, compartiment, dom_SP) %>%
-              filter(compartiment == "total") %>%
+              dplyr::select(plot_ID, dom_SP) %>%
+              #filter(compartiment == "total") %>%
               distinct(), 
-            by = c("plot_ID", "compartiment")) %>% 
+            by = c("plot_ID")) %>% 
   #calculating number of species per plot
   left_join(., trees_total_5 %>%
-              filter(compartiment == "total") %>% 
+              #filter(compartiment == "total") %>% 
               select(plot_ID, SP_code) %>%
               group_by(plot_ID) %>% 
               distinct() %>% 
-              summarise(N_SP_plot = n())%>%
-              mutate(compartiment = "total"),
-            by = c("plot_ID", "compartiment"))
+              summarise(N_SP_plot = n()), #%>%
+             # mutate(compartiment = "total"),
+            by = c("plot_ID"))
 
 
 # preparing trees_P for 
@@ -3135,6 +3137,9 @@ DW_P_SP_TY_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
+
+write.csv(DW_P_SP_TY_DEC, "output/out_data/DW_P_SP_TY_DEC_MoMoK.csv")
+
 # ----- 2.5.2.2.grouped by plot, species, deadwood type -------------------------
 DW_P_SP_TY <- DW_total %>% 
   group_by(plot_ID, SP_group, DW_type) %>% 
@@ -3166,6 +3171,9 @@ DW_P_SP_TY <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
+
+write.csv(DW_P_SP_TY, "output/out_data/DW_P_SP_TY_MoMoK.csv")
+
 # ----- 2.5.2.3.grouped by decay type and deadwood type -------------------------
 DW_P_TY_DEC <- DW_total %>% 
   group_by(plot_ID, dec_type, DW_type) %>% 
@@ -3196,6 +3204,9 @@ DW_P_TY_DEC <- DW_total %>%
          N_share = (N_tot_t/plot_N_tot_t)*100, 
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
+
+write.csv(DW_P_TY_DEC, "output/out_data/DW_P_TY_DEC_MoMoK.csv")
+
 
 # ----- 2.5.2.4.grouped by plot, species, decay type -----------------------------
 DW_P_SP_DEC <- DW_total %>% 
@@ -3259,6 +3270,9 @@ DW_P_DEC <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
   dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
 
+
+write.csv(DW_P_DEC, "output/out_data/DW_P_DEC_MoMoK.csv")
+
 # ----- 2.5.2.6.deawood by deadwood type -----------------------------
 DW_P_TY <- DW_total %>% 
   # dataset grouped by plot and deadwood type 
@@ -3295,7 +3309,7 @@ DW_P_TY <- DW_total %>%
          B_share = (B_tot_t/plot_B_tot_t)*100, 
          V_share = (V_tot_m3/plot_V_tot_m3)*100) 
 
-
+write.csv(DW_P_TY, "output/out_data/DW_P_TY_MoMoK.csv")
 
 # -----2.5.2.7. deadwood  by plot ---------------------------------------------------
 
@@ -3351,7 +3365,7 @@ DW_P <- DW_total %>%
 summary(DW_P)
 
 
-
+write.csv(DW_P, "output/out_data/DW_P_MoMoK.csv")
 
 # ----- 2.5.4. REGENERATION plot level -------------------------------------------------------------------
 # ----- 2.5.4.1. grouped by Plot and species  ------------------------------------------------------------------
@@ -3416,6 +3430,7 @@ RG_P_SP <- RG_total %>%
          N_trees_SP_share =  (N_trees_plot)/plot_tot_N_trees)
 
 
+write.csv(RG_P_SP, "output/out_data/RG_P_SP_MoMoK.csv")
 
 
 
@@ -3466,10 +3481,9 @@ RG_P <- RG_total %>%
 
 
 
-
-
-
 summary(RG_P)
+write.csv(RG_P, "output/out_data/RG_P_MoMoK.csv")
+
 
 # ----- 2.5.5.JOINT PLOTWISE: living trees, deadwood, regeneration  -------
 
