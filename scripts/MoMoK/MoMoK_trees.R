@@ -2942,13 +2942,13 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
          Nt_plot, Nt_ha, 
          BA_SP_per, dom_SP) 
 
-colnames(trees_P_CP_SP) <- c("Plot", "Bestandesschicht", 
-                             "B_Art", 
-                             "durchsch_D1.3_cm", "SD_D1.3_cm", "D_g_cm",
-                             "durchsch_H_m", "SD_H_m" , "H_g_m",
-                             "G_m2_Art", "durchsch_G_m2", "G_m2ha_Art", "G_m2ha_ges",
-                            "Stückzahl_Nplot", "stückzahl_Nha",  
-                             "G_Anteil_Art", "Hauptbaumart_G")
+# colnames(trees_P_CP_SP) <- c("Plot", "Bestandesschicht", 
+#                              "B_Art", 
+#                              "durchsch_D1.3_cm", "SD_D1.3_cm", "D_g_cm",
+#                              "durchsch_H_m", "SD_H_m" , "H_g_m",
+#                              "G_m2_Art", "durchsch_G_m2", "G_m2ha_Art", "G_m2ha_ges",
+#                             "Stückzahl_Nplot", "stückzahl_Nha",  
+#                              "G_Anteil_Art", "Hauptbaumart_G")
 
 write.csv(trees_P_CP_SP, "output/out_data/forst_zusammenfassung_MoMoK.csv")
 
@@ -3017,13 +3017,13 @@ trees_P_SP.export <- trees_P_SP %>%
          B_t_P_SP_ha, C_t_P_SP_ha, N_t_P_SP_ha,
          B_t_P_SP_MA, C_t_P_SP_MA, N_t_P_SP_MA)
 
-colnames(trees_P_SP.export) <- c("Plot", "B_Art", "Kompartiment", 
-                                 "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
-                                 "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha", "G_Anteil_Art","Hauptbaumart_G",
-                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
-                                 "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
-                                 "B_t_ha", "C_t_ha", "N_t_ha",
-                                 "B_t_MF", "C_t_MF", "N_t_MF")
+# colnames(trees_P_SP.export) <- c("Plot", "B_Art", "Kompartiment", 
+#                                  "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+#                                  "G_m2_Art_Plot", "G_m2ha_Art", "G_m2MF_Art", "G_ges_m2ha", "G_Anteil_Art","Hauptbaumart_G",
+#                                  "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF",
+#                                  "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
+#                                  "B_t_ha", "C_t_ha", "N_t_ha",
+#                                  "B_t_MF", "C_t_MF", "N_t_MF")
 # exporting dataset
 write.csv(trees_P_SP.export, "output/out_data/LB_Art_Plot_MoMoK.csv")
 
@@ -3092,13 +3092,13 @@ trees_P.export <- trees_P %>%
          B_t_ha, C_t_ha, N_t_ha,
          B_t_MA, C_t_MA, N_t_MA)
 
-colnames(trees_P.export) <- c("Plot", "Kompartiment", 
-                                 "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
-                                 "G_m2_Plot", "G_m2ha", "G_m2MF", "Hauptbaumart_G", "Anzahl_Art_Plot",
-                                 "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF", 
-                                 "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
-                                 "B_t_ha", "C_t_ha", "N_t_ha",
-                                 "B_t_MF", "C_t_MF", "N_t_MF")
+# colnames(trees_P.export) <- c("Plot", "Kompartiment", 
+#                                  "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",
+#                                  "G_m2_Plot", "G_m2ha", "G_m2MF", "Hauptbaumart_G", "Anzahl_Art_Plot",
+#                                  "Stückzahl_n_Art_Plot", "Stückzahl_n__ha"  , "Stückzahl_n_MF", 
+#                                  "B_t_Plot_Art", "C_t_Plot_Art", "N_t_Plot_Art",
+#                                  "B_t_ha", "C_t_ha", "N_t_ha",
+#                                  "B_t_MF", "C_t_MF", "N_t_MF")
 
 write.csv(trees_P.export, "output/out_data/LB_Plot_MoMoK.csv")
 
@@ -3432,7 +3432,7 @@ RG_P_SP <- RG_total %>%
 
 write.csv(RG_P_SP, "output/out_data/RG_P_SP_MoMoK.csv")
 
-
+colnames(RG_P_SP)
 
 # ----- 2.5.4.2. grouped by Plot  ------------------------------------------------------------------
 RG_P <- RG_total %>%
@@ -3529,6 +3529,15 @@ write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
 
 
 
+# ----- legend MoMoK output -----------------------------------------------
+# here  will collect all column names of all datasets I everexportet so i can do an ultimate inner join and assign the meaning to the respective columns
+rbind(
+  # from all plots summary 
+as.data.frame(colnames(plot_total)),
+# from RG per species per plot summary 
+as.data.frame( colnames(RG_P_SP))
+
+)
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
 

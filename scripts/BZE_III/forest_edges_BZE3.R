@@ -363,12 +363,39 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
 
 
 # ------0.5.10. angle triabnle for area calculations ----------------------
-angle_triangle <- function(b1_1, b1_2){
+angle_triangle <- function(x3, y3, x1, y1, x2, y2){
+  b1_1 = (y1-y3)/(x1-x3)
+  b1_2 = (y2-y3)/(x2-x3)
   # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
-  m = (b1_1 - b1_2)/(1+ b1_1*b1_2);
+  m = (b1_1 - b1_2)/(1 + b1_1*b1_2);
   m_betrag = ifelse(m >= 0, m, m*(-1));
-  angle.between.two.lines = atan(m_betrag);
-  return(angle.between.two.lines)
+  # bogenmas in rad
+  angle.between.two.lines.rad = atan(m_betrag);
+  # transfer bogenmas in rad into Kreismaß in degrees 
+ # https://www.matheretter.de/wiki/bogenmass-umrechnen
+  angle.between.two.lines.degrees = angle.between.two.lines.rad*(180/pi);
+  # transfer degrees into gon 
+  angle.between.two.lines.gon = (angle.between.two.lines.degrees/360)*400;
+  return(angle.between.two.lines.degrees)
+}
+
+
+
+# ------0.5.11. cirlce segment area  ----------------------
+circle_seg_A <- function(r, angle){
+  A_circle_seg = (pi*r^2) * angle/400; 
+  return(A_circle_seg)
+}
+
+# ------0.5.12. triangle area  ----------------------
+A_triangle <- function(X1, x2, x3, y1, y2, y3){
+  # x1|y1 and x2|y2 should be the intersections with the circle, 
+  # x3|y3 should be the turning point or centre of the cirlce 
+  
+ # https://www.lernhelfer.de/schuelerlexikon/mathematik-abitur/artikel/flaecheninhalt-eines-dreiecks
+  A_tri =  0.5*(x1*(y2-y3) + x2*(y3-y1) + x3*(y3-y2)) ;
+    
+  return(A_tri)
 }
 
 
@@ -450,89 +477,6 @@ HBI_trees <- HBI_trees %>%
 
 
 # ----- 1.1.3.2. estimate parameters for edge lines -----------------------------------------------
-# coefficients for forest edges 
-forest_edges_HBI %>% 
-  # calculate coordinates for all 
-  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
-         X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
-         X_T = ifelse(T_azi != "-2", x_coord(T_dist, T_azi), NA), 
-         Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
-         Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA), 
-         Y_T = ifelse(T_azi != "-2", y_coord(T_dist, T_azi), NA))%>%
-  group_by(plot_ID) %>% 
-  left_join(., 
-            # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
-            forest_edges_HBI %>% 
-              # filter for forest edges that have a relevance for tree calculations and dont have a turning point
-              # filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
-              filter(e_form == "1"& A_azi != "-2" & B_azi != "-2" & T_azi == "-2") %>%
-              # calculate coordinates from Azimut and distance
-              mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
-                     X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
-                     Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
-                     Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA))%>%
-              # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-              to_long(keys = c("X_name",  "Y_name"), 
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[11:12], names(.)[13:14]) %>%
-              group_by(plot_ID, e_form) %>%
-              # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-              lm_table(Y_value ~ X_value , output = "table") %>% 
-              rename("e_b0_AB" = "b0") %>% 
-              rename("e_b1_AB" = "b1") %>% 
-              select(plot_ID,e_form, e_b0_AB, e_b1_AB), 
-            by = c("plot_ID", "e_form")) %>% 
-  left_join(., 
-            # 1.b) for forest edge form 2 that has a tunring point
-            left_join(
-              # 1.b) 1. dataset with coefficients of line from A to T
-              forest_edges_HBI %>% 
-                # filter for forest edges that have a relevance for tree calculations 
-                #filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
-                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
-                mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
-                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-                       X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
-                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-                       Y_A =  ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA),
-                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
-                       Y_B =  ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA),
-                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
-                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
-                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
-                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
-                group_by(plot_ID, e_form) %>%
-                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-                lm_table(Y_A_T_value ~ na.omit(X_A_T_value), output = "table") %>% 
-                select(plot_ID, e_form, b0, b1) %>% 
-                rename("e_b0_AT" = "b0") %>% 
-                rename("e_b1_AT" = "b1"), 
-              # 1.b) 2. dataset with coefficients of line from B to T
-              forest_edges_HBI %>% 
-                # filter for forest edges that have a relevance for tree calculations 
-                # filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
-                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
-                mutate(X_A = x_coord(A_dist, A_azi),
-                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-                       X_B = x_coord(B_dist, B_azi),
-                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
-                       Y_A = y_coord(A_dist, A_azi),
-                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
-                       Y_B = y_coord(B_dist, B_azi),
-                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
-                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
-                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
-                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
-                group_by(plot_ID, e_form) %>%
-                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
-                lm_table(Y_B_T_value ~ na.omit(X_B_T_value), output = "table") %>% 
-                select(plot_ID, e_form, b0, b1) %>% 
-                rename("e_b0_BT" = "b0") %>% 
-                rename("e_b1_BT" = "b1"), 
-              by = c("plot_ID", "e_form")), 
-            by = c("plot_ID", "e_form")) 
 
 
 
@@ -587,7 +531,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          # BT line 
          Y1_inter_BT = b0_BT + b1_BT*X1_inter_BT, 
          Y2_inter_BT = b0_BT + b1_BT*X2_inter_BT) %>% 
-  # azimut of intersection points (calcaulte azimute with azimute function, then correct it depending on the quadrant of x_intersection and y_intersection)
+  # not sure if we need this anymore as we have their coordinates: azimut of intersection points (calcaulte azimute with azimute function, then correct it depending on the quadrant of x_intersection and y_intersection)
          # AB line 
   mutate(azi1_inter_AB = azi_correction(X1_inter_AB, Y1_inter_AB,  0, 0, azimut(X1_inter_AB, Y1_inter_AB, 0, 0)), 
          azi2_inter_AB = azi_correction(X2_inter_AB, Y2_inter_AB,  0, 0 , azimut(X2_inter_AB, Y2_inter_AB, 0, 0)),
@@ -621,29 +565,23 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          dist_T_BT_inter_1 = distance(X1_inter_BT, Y1_inter_BT, X_T, Y_T), 
          dist_T_BT_inter_2 = distance(X2_inter_BT, Y2_inter_BT, X_T, Y_T), 
          # if azimut T to A  identical to azimut T to intercept 1 A and circle use this intercept (inter_AT_1) for the triable, if azimut T to A identical to azimute T to intercept 2 between A and  circle use this intercept (inter_AT_2)
-         X_inter_AT_triangle = case_when(T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
+         X_inter_AT_triangle_60 = case_when(T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
                                          T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
                                          # T_dist > 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
                                          #  T_dist > 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
                                           T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
                                           T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
                                           TRUE ~ NA ), 
-         X_inter_BT_triangle = case_when(T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
+         X_inter_BT_triangle_60 = case_when(T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
                                          T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
                                          T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
                                           T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
                                          TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
-  mutate(Y_inter_AT_triangle = b0_AT + b1_AT*X_inter_AT_triangle,  
-         Y_inter_BT_triangle = b0_BT + b1_BT*X_inter_BT_triangle) 
+  mutate(Y_inter_AT_triangle_60 = b0_AT + b1_AT*X_inter_AT_triangle_60,  
+         Y_inter_BT_triangle_60 = b0_BT + b1_BT*X_inter_BT_triangle_60) 
 
 
-
-
-forest_edges_HBI.man %>% filter(e_form == "2" & plot_ID== 50102)
-
-
- 
 
 
 # ----- area circle segments  ---------------------------------------------
@@ -653,44 +591,96 @@ forest_edges_HBI.man %>% filter(e_form == "2" & plot_ID== 50102)
 # - the turning point is situated within the circle 
 # - so both arms have 2 intersections with the circle and we can 
 forest_edges_HBI.man %>% 
-#   mutate(X_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ X1_inter_AT,
-#                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  X2_inter_AT,
-#                                          TRUE ~ NA ), 
-#        X_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ X1_inter_BT,
-#                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  X2_inter_BT,
-#                                          TRUE ~ NA),
-#        Y_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ Y1_inter_AT,
-#                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  Y2_inter_AT,
-#                                          TRUE ~ NA ), 
-#        Y_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ Y1_inter_BT,
-#                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  Y2_inter_BT,
-#                                          TRUE ~ NA)) %>%  
+   mutate(X_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ X1_inter_AT,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  X2_inter_AT,
+                                          TRUE ~ NA ), 
+        X_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ X1_inter_BT,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  X2_inter_BT,
+                                          TRUE ~ NA),
+        Y_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ Y1_inter_AT,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  Y2_inter_AT,
+                                          TRUE ~ NA ), 
+        Y_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ Y1_inter_BT,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  Y2_inter_BT,
+                                          TRUE ~ NA)) %>%  
        # calcualte the angle the two lines have at point T
        # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
                                  # if edge type is a line calcualte the intersection angle between the lines betweeen A to the centre and 0 to the centre
- mutate(angle_ABT_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ angle_triangle(slope(0, 0, X_A, Y_A), slope(0, 0, X_B, Y_B)),
+ mutate(angle_ABT_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ angle_triangle(0, 0, X_A, Y_A, X_B, Y_B),
                                    # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the angle between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_AT, Y1_inter_AT), slope(0, 0,X2_inter_AT, Y2_inter_AT)), 
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(slope( 0, 0, X1_inter_AT, Y1_inter_AT), slope( 0, 0, X2_inter_AT, Y2_inter_AT)),
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT), # BT side follows in next column
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT),
                                   # if t lies outside and there´s no or just one intersection on each line we don´t need the angle cause all trees are inside the plot
                                   T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
                                   T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
                                   # if t lies inside the circle and both arms reach out, calculate the anlge between at point T where AT and BT meet 
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(b1_AT, b1_BT),
-                                  # if t lies inside the circle and both arm AT arms reaches out/ has two intersections  calculate the anlge between A inter 1 and A inter 2 and centre
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(slope(0, 0, X1_inter_AT, Y1_inter_AT), slope(0, 0, X2_inter_AT, Y2_inter_AT)),
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X_inter_AT_17_triangle, Y_inter_AT_17_triangle, X_inter_BT_17_triangle, Y_inter_BT_17_triangle),
+                                  # if t lies inside the circle and only tha  AT arms reaches out/ has two intersections  calculate the anlge between the intersectios of A with the circle and T
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT), 
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, # no itnersechtion means every thing is inside
                                   T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
                                   TRUE ~ NA),
-        angle_ABT_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0, 0, X2_inter_BT, Y2_inter_BT)), 
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0 , X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(slope(0, 0, X1_inter_BT, Y1_inter_BT), slope(0,0, X2_inter_BT, Y2_inter_BT)), 
+        angle_ABT_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT), 
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT),
+                                     # if t lies inside the circle and only arm BT  reaches out/ has two intersections  calculate the anlge between the intersectios of B with the circle and T
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT),
                                      TRUE ~ NA)) %>% 
-  select(plot_ID, e_form, T_dist, inter_status_AB, inter_status_AT, inter_status_BT, angle_ABT_ABC_AC, angle_ABT_ABC_BC)
-  
+       # select(plot_ID, e_form, T_dist, inter_status_AB, inter_status_AT, inter_status_BT, angle_ABT_ABC_AC, angle_ABT_ABC_BC) %>% 
+  # if T lies within the circle, the area to of the forest edge is the area of the whole circle segment determined by the corrected X and Y 
+  # if T lies outside the cirlce and there are two intersections for each side of the triangle, we have to calcualte the circle segment drawn between 
+    # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT following we have to calcualte the area of the triangle drwan between 
+    # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT and withdraw it from the whole segments area
+  # if there is no T, so the e_form == 1 is we calcualte the circle segment drawn by  the circle centre, A and B and then withdraw the are aof the triangle between the circle centre, A and B
+  mutate(circle_segment_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ circle_seg_A(1784, angle_ABT_ABC_AC),
+                                      # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the circle intersection between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC), # BT side follows in next column
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC),
+                                      # if t lies outside and there´s no or just one intersection on each line we don´t need the circle intersection cause all trees are inside the plot
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                      # if t lies inside the circle and both arms reach out, calculate the circle intersection between at point T where AT and BT meet 
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC),
+                                      # if t lies inside the circle and both arm AT arms reaches out/ has two intersections  calculate the circle intersection between A inter 1 and A inter 2 and centre
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC), 
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                      TRUE ~ NA),
+                              # if t lies outside and both arms intersect the circle or only the BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre
+         circle_segment_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
+                                      # if t lies inside the cirlce and the only BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre, 
+                                      # if both arms intserct the circle, we already calcualted the segments between ABT in the previous column
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
+                                      TRUE ~ NA)) #,
 
-# ---- combining tree and edge data ---------------------------------------
+
+### doesn´t work yet 
+         triangle_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ A_triangle(X_A, X_B, 0, Y_A, Y_B, 0),
+                                     # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the triangle between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
+                                     # if T is outside the cirlce and only the AT arm intersects with the cirlce, we calcualte the triangle between centre and the intersections of A 
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  A_triangle(X1_inter_AT, X2_inter_AT, 0, Y1_inter_AT, Y2_inter_AT, 0),
+                                     # if t lies outside and there´s no or just one intersection on each line we don´t need the angle cause all trees are inside the plot
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                     # if t lies inside the circle and both arms reach out, calculate the triable between at point T where amd the correcft A and B intesctions
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X_inter_AT_17_triangle, X_inter_BT_17_triangle, X_T, Y_inter_AT_17_triangle, Y_inter_BT_17_triangle, Y_T),
+                                     # if t lies inside the circle and only arm AT arms reaches out/ has two intersections  calculate the triable between A inter 1 and A inter 2 and centre
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  A_triangle(X1_inter_AT, X2_inter_AT, 0, Y1_inter_AT, Y2_inter_AT, 0), 
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                     TRUE ~ NA),
+                                   # if T lies outside and both arms intersect, we need the triangle on the B side of the intersections between centre, B_inter1, B_inter_2
+         triangle_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0), 
+                                     # if T leis outside and only the BT side intesects the circle, we need to calculate the trianlge between the B intersections and the centre of the circle
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~   A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0),
+                                     # if t lies inside the cirlce and the only BT arm intersects the circle, we need a triangle between B1, B2 and the circle centre, 
+                                     # if both arms intserct the circle, we already calcualted the triangle between ABT in the previous column
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0), 
+                                           TRUE ~ NA))
+
+
+
+#---- combining tree and edge data ---------------------------------------
 
 # next step will be to join the forest edges dataset into the trees datset, 
 # via b0 and b1 and then compare the calculated tree_y with the functions result
@@ -713,7 +703,7 @@ trees_and_edges <-
                               ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
-          t_ABT_status = case_when(inter_status_AT == "two I" & inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
+          t_ABT_status = case_when(inter_status_AT == "two I" & inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
                                    # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
                                    inter_status_AT != "two I" & inter_status_BT == "two I" ~ t_BT_status, 
                                    inter_status_AT == "two I" & inter_status_BT != "two I" ~ t_AT_status,
@@ -723,7 +713,7 @@ trees_and_edges <-
          t_status_AB_ABT = case_when(e_form == "1" & Y_AB_t_implicit == 0 ~ "on line", 
                                      e_form == "1" & Y_AB_t_implicit > 0 ~ "C",
                                      e_form == "1" & Y_AB_t_implicit < 0 ~ "D",
-                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" &inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle, X_inter_BT_triangle, X_T, Y_inter_AT_triangle, Y_inter_BT_triangle, Y_T, X_tree, Y_tree),
+                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" &inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
                                      # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
                                      e_form == "2" & inter_status_AT != "two I" & e_form == "2" & inter_status_BT == "two I" ~ t_BT_status, 
                                      e_form == "2" & inter_status_AT == "two I" & e_form == "2" & inter_status_BT != "two I" ~ t_AT_status,
@@ -794,6 +784,9 @@ trees_and_edges <-
 by = c("plot_ID", "t_status_AB_ABT" = "t_status"))
     
   
+
+
+
 
 # ----- 3. visulaization  -------------------------------------------------
 
@@ -892,16 +885,16 @@ ggplot() +
                              summarize(n = n()) %>% 
                              filter(n <= 1), 
                            by = "plot_ID"),
-              aes(X_tree, Y_tree, colour = m_s_status))+
-  # theme_bw()+
-  # facet_wrap(~plot_ID)
+              aes(X_tree, Y_tree, colour = t_AB_status))+
+   theme_bw()+
+   facet_wrap(~plot_ID)
 
 # forest edge type 2 
 # if the # i removed, this part allows to plot plots with forest edges with a turning point
 # AT line
-# ggplot() +  
- #  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+ ggplot() +  
+   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
   geom_point(data = trees_and_edges %>% 
              filter(e_form == "2") %>% 
              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
@@ -919,14 +912,14 @@ ggplot() +
   # intersections choosen to draw the triangle AT
   geom_point(data = trees_and_edges %>% 
                filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_AT_triangle, X_A, Y_inter_AT_triangle, Y_A) %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
                to_long(keys = c("X_name",  "Y_name"),
                        values = c( "X_value", "Y_value"),  
                        names(.)[2:3], names(.)[4:5]), 
              aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
   geom_line(data = trees_and_edges %>% 
                filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_AT_triangle, X_A, Y_inter_AT_triangle, Y_A) %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
                to_long(keys = c("X_name",  "Y_name"),
                        values = c( "X_value", "Y_value"),  
                        names(.)[2:3], names(.)[4:5]), 
@@ -949,28 +942,118 @@ ggplot() +
   # intersections choosen to draw the triangle BT
   geom_point(data = trees_and_edges %>% 
                filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_BT_triangle, X_B, Y_inter_BT_triangle, Y_B) %>% 
+               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
                to_long(keys = c("X_name",  "Y_name"),
                        values = c( "X_value", "Y_value"),  
                        names(.)[2:3], names(.)[4:5]), 
              aes(x= X_value, y = Y_value, colour = "B_intercept"))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "2") %>% 
-              select(plot_ID, X_inter_BT_triangle, X_B, Y_inter_BT_triangle, Y_B) %>% 
+              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
                       names(.)[2:3], names(.)[4:5]), 
             aes(x= X_value, y = Y_value))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "2"),
-             aes(X_tree, Y_tree, colour = m_s_status))+
+             aes(X_tree, Y_tree, colour = ABT_status))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
 
 
 
+
+
+
+
+
 # ----- NOTES -------------------------------------------------------------
 
+# ----- estiamting coefficients of lines through edges via forest managemer package  -------------------------------------------------------------------
+
+# coefficients for forest edges 
+forest_edges_HBI %>% 
+  # calculate coordinates for all 
+  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+         X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+         X_T = ifelse(T_azi != "-2", x_coord(T_dist, T_azi), NA), 
+         Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
+         Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA), 
+         Y_T = ifelse(T_azi != "-2", y_coord(T_dist, T_azi), NA))%>%
+  group_by(plot_ID) %>% 
+  left_join(., 
+            # 1. a) dataset with coefficients of line going only trough A and B without Knickpunkt
+            forest_edges_HBI %>% 
+              # filter for forest edges that have a relevance for tree calculations and dont have a turning point
+              # filter(e_form == "1" & e_type %in% c("1", "2", "3", "4")) %>%
+              filter(e_form == "1"& A_azi != "-2" & B_azi != "-2" & T_azi == "-2") %>%
+              # calculate coordinates from Azimut and distance
+              mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+                     X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+                     Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
+                     Y_B = ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA))%>%
+              # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+              to_long(keys = c("X_name",  "Y_name"), 
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[11:12], names(.)[13:14]) %>%
+              group_by(plot_ID, e_form) %>%
+              # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+              lm_table(Y_value ~ X_value , output = "table") %>% 
+              rename("e_b0_AB" = "b0") %>% 
+              rename("e_b1_AB" = "b1") %>% 
+              select(plot_ID,e_form, e_b0_AB, e_b1_AB), 
+            by = c("plot_ID", "e_form")) %>% 
+  left_join(., 
+            # 1.b) for forest edge form 2 that has a tunring point
+            left_join(
+              # 1.b) 1. dataset with coefficients of line from A to T
+              forest_edges_HBI %>% 
+                # filter for forest edges that have a relevance for tree calculations 
+                #filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
+                mutate(X_A =  ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA),
+                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       X_B =  ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
+                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       Y_A =  ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA),
+                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
+                       Y_B =  ifelse(B_azi != "-2", y_coord(B_dist, B_azi), NA),
+                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
+                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
+                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
+                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
+                group_by(plot_ID, e_form) %>%
+                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+                lm_table(Y_A_T_value ~ na.omit(X_A_T_value), output = "table") %>% 
+                select(plot_ID, e_form, b0, b1) %>% 
+                rename("e_b0_AT" = "b0") %>% 
+                rename("e_b1_AT" = "b1"), 
+              # 1.b) 2. dataset with coefficients of line from B to T
+              forest_edges_HBI %>% 
+                # filter for forest edges that have a relevance for tree calculations 
+                # filter(e_form != "1" & T_azi != "-2" & e_type %in% c("1", "2", "3", "4")) %>% 
+                filter(A_azi != "-2" & B_azi != "-2" & T_azi != "-2") %>% 
+                mutate(X_A = x_coord(A_dist, A_azi),
+                       X_TA = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       X_B = x_coord(B_dist, B_azi),
+                       X_TB = ifelse(e_form != "1" & T_azi != "-2", x_coord(T_dist, T_azi), NA),
+                       Y_A = y_coord(A_dist, A_azi),
+                       Y_TA = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA),
+                       Y_B = y_coord(B_dist, B_azi),
+                       Y_TB = ifelse(e_form != "1" & T_azi != "-2", y_coord(T_dist, T_azi), NA)) %>%
+                # pivotingx and y to fit lm: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+                to_long(keys = c("X_A_T_name", "X_B_T_name", "Y_A_T_name", "Y_B_T_name"), 
+                        values = c("X_A_T_value", "X_B_T_value", "Y_A_T_value", "Y_B_T_value"),  
+                        names(.)[11:12], names(.)[13:14], names(.)[15:16], names(.)[17:18]) %>%
+                group_by(plot_ID, e_form) %>%
+                # https://quantifyinghealth.com/line-equation-from-2-points-in-r/
+                lm_table(Y_B_T_value ~ na.omit(X_B_T_value), output = "table") %>% 
+                select(plot_ID, e_form, b0, b1) %>% 
+                rename("e_b0_BT" = "b0") %>% 
+                rename("e_b1_BT" = "b1"), 
+              by = c("plot_ID", "e_form")), 
+            by = c("plot_ID", "e_form")) 
 
 
