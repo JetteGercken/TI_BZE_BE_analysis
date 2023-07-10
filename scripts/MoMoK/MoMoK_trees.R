@@ -846,8 +846,14 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 
-N_all_com <- function(B, comp, SP_com){
-  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com); 
+N_all_com <- function(B, comp, SP_com, spec_f){
+  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com);
+  # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
+  # proably I will also have to assign new species groups to acces the foliage dataset correctly
+    # n_con_w <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com);
+    # n_con_f <- N_con_foliage  %>% dplyr::pull(N_con_per, spec_f);
+    # ifelse(comp != "f", B*n_con_w[SP_com], B*n_con_f[spec_f])
+  
   return(B*n_con[SP_com])
 }
 
