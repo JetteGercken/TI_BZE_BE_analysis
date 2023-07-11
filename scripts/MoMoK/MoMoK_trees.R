@@ -2307,6 +2307,7 @@ trees_total_5 <-  trees_total_5 %>%
 
 # exporting dataset with compartiemnts in columns for summary
 trees_tot_piv_wider <- trees_total_5
+write.csv(trees_tot_piv_wider, "output/out_data/LT_biomass_compartiment_columns_MoMoK.csv")
 
 # pivoting all compartiments in 1 column
 trees_total_5 <- trees_total_5 %>% 
@@ -2319,6 +2320,8 @@ trees_total_5 <- trees_total_5 %>%
               C_aB_t_GHG = (aB_kg_GHG/1000)*0.5,
               C_t_tapes = B_t_tapes*0.5) 
 
+# export tree- and compartimentwise calculated biomass, carbon and nitrogen stocks
+write.csv(trees_total_5, "output/out_data/LT_trees_comp_B_C_N_MoMoK.csv")
 
 # ----- 2.1.2.3. estimated nitrogen in living trees -----------------------------------------------------------
 # there is a problem with the join but maybe i can solce it with join by sambling curcuit and canipy layer
@@ -3407,9 +3410,9 @@ RG_P_SP <- RG_total %>%
               summarise(mean_D_cm = mean(D_cm),                         # mean diameter per species per canopy layer per plot
                         mean_H_m = mean(H_cm/100),                      # mean height per species per canopy layer per plot
                         #SP_BA_m2_plot = sum(c_A(D_cm/2)),               # Basal area in m2 per plot and speices --> doesnt make sense bacause not all trees have a diameter 
-                        N_trees_plot = n()) %>%                          # number of individuals per plot and species
-              mutate(compartiment = "total"),                           # just to enable a clean join
-            by = c("plot_ID", "SP_code", "compartiment")) %>% 
+                        N_trees_plot = n()), # %>%                          # number of individuals per plot and species
+            #  mutate(compartiment = "total"),                           # just to enable a clean join
+            by = c("plot_ID", "SP_code")) %>% 
   # join in C, N and number of trees of whole plot to calculate shares
   left_join(., RG_total %>%
               filter(compartiment == "total") %>%
@@ -3424,9 +3427,9 @@ RG_P_SP <- RG_total %>%
                         plot_tot_C_t = sum(CCS_tot_C_t),                    # total C stock in tons per plot
                         plot_tot_N_t = sum(CCs_tot_N_t),     # total N stock in tons per plot
                         plot_tot_N_trees = sum(CCS_tot_N_trees)) %>%                 # total number of trees per plot
-              mutate(compartiment = "total") %>% 
+              #mutate(compartiment = "total") %>% 
               select(-plot_A_ha),         
-            by = c("plot_ID", "compartiment")) %>% 
+            by = c("plot_ID")) %>% 
   mutate(tot_N_trees_ha = plot_tot_N_trees/plot_A_ha,
          tot_N_trees_MA = (plot_tot_N_trees/plot_A_ha)*MoMok_A_ha,
          SP_N_trees_ha = N_trees_plot/ plot_A_ha,
@@ -3473,15 +3476,15 @@ RG_P <- RG_total %>%
               select(plot_ID, SP_code) %>%
               group_by(plot_ID) %>%
               distinct() %>% 
-              summarise(N_species_plot = n()) %>% 
-              mutate(compartiment = "total"),
-            by = c("plot_ID", "compartiment")) %>% 
+              summarise(N_species_plot = n()), #%>% 
+             # mutate(compartiment = "total"),
+            by = c("plot_ID")) %>% 
   left_join(., RG_total %>% 
               filter(compartiment == "total") %>% 
               group_by(plot_ID) %>% 
-              summarise(Nt_plot = n())%>% 
-              mutate(compartiment = "total"), 
-            by = c("plot_ID", "compartiment")) %>% 
+              summarise(Nt_plot = n()), #%>% 
+             # mutate(compartiment = "total"), 
+            by = c("plot_ID")) %>% 
   mutate(Nt_ha = Nt_plot/plot_A_ha, 
          Nt_MA = (Nt_plot/plot_A_ha)*MoMok_A_ha)
 
@@ -3527,7 +3530,21 @@ plot_total <- rbind(
   dplyr::select(plot_ID, compartiment, stand_component,
                 B_t_plot, C_t_plot, N_t_plot, Nt_plot,    # per plot
                 B_t_MA, C_t_MA, N_t_MA, Nt_MA,            # per momok area 50X50m
-                B_t_ha, C_t_ha, N_t_ha, Nt_ha))           # per hectar              
+                B_t_ha, C_t_ha, N_t_ha, Nt_ha))           # per hectar    
+
+# add sum of all stand components together by plot and compartiment to plot total dataset
+plot_total<- 
+  rbind(plot_total, 
+        plot_total %>% 
+          group_by(plot_ID, compartiment) %>%
+          summarise(across(B_t_plot:Nt_ha, ~ sum(.x, na.rm = TRUE))) %>% 
+          mutate(stand_component = "all") %>% 
+          dplyr::select(plot_ID, compartiment, stand_component,
+                        B_t_plot, C_t_plot, N_t_plot, Nt_plot,    # per plot
+                        B_t_MA, C_t_MA, N_t_MA, Nt_MA,            # per momok area 50X50m
+                        B_t_ha, C_t_ha, N_t_ha, Nt_ha)
+)
+
 
 summary(plot_total)
 
@@ -3544,6 +3561,10 @@ as.data.frame(colnames(plot_total)),
 as.data.frame( colnames(RG_P_SP))
 
 )
+
+# these are all expotet datasets: 
+# SP_names_com_ID_tapeS, trees_tot_piv_wider, biotest, trees_total_5, DW_total, trees_P_CP_SP, 
+# trees_P_SP.export, trees_P.export, DW_P_SP_TY_DEC, DW_P_SP_TY, DW_P_TY_DEC, DW_P_DEC, DW_P_TY, DW_P, RG_P_SP, RG_P, plot_total
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
 
