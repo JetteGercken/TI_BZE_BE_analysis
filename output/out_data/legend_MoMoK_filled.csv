@@ -12,29 +12,29 @@
 11;CH;canopy height;Kronenansatzhöhe;;
 12;ID;identivication;Identifikation;;
 13;b;bark;Rinde;;
-14;w;wood;Holz oder holzig;;
-15;f;foliage;Blätter oder Blattmasse;;
-16;fw;fine wood;Nichtderbholz;;
-17;sw;solid wood;;;
-18;swb;;;;
-19;stw;;;;
-20;stwb;;;;
-21;ag;;;;
-22;bg;;;;
-23;total;;;;
-24;tot;;;;
-25;Nt;;;;
-26;DW;;;;
-27;dw;;;;
-28;RG;;;;
-29;LT;;;;
-30;P;;;;
-31;SP;;;;
-32;CP;;;;
-33;A;;;;
-34;t;;;;
-35;kg;;;;
-36;m3;;;;
+14;w;wood;Holz, holzig;;
+15;f;foliage;Blätter, Blattmasse;;
+16;fw;fine wood;Nichtderbholz mit Rinde;;Holzige Baumbestandteile oberhalb Fällschnitt mit Druchmesser < 7cm, mit Rinde
+17;sw;solid wood;Derbholz ohne Rinde;;Holzige Baumbestandteile oberhalb Fällschnitt mit Druchmesser > 7cm, ohne Rinde
+18;swb;solid wood bark;Derbholzrinde;;Rinde Holziger Baumbestandteile oberhalb Fällschnitt mit Druchmesser >7cm
+19;stw;stump wood;Stockholz ohne Rinde;;Holzige Baumbestandteile unterhalb des Fällschnittes mit Druchmesser >7cm, ohne Rinde
+20;stwb;stump wood bark;Stockholzrinde;;Rinde Holziger Baumbestandteile unterhalb des Fällschnittes mit Druchmesser >7cm
+21;ag;aboveground;oberirdisch;;
+22;bg;belowground;unterirdisch;;
+23;total;total;gesamt;;
+24;tot;total;gesamt;;
+25;Nt;number of trees;Baumanzahl, Stammzahl;;
+26;DW;deadwood;Totholz;;
+27;dw;deadwood;Totholz;;
+28;RG;regeneration;Verjüngung;;
+29;LT;living trees;Altbestand oder Bestand;;
+30;P;plot;Plot, äußerster Probekreis;;
+31;SP;species;Baumart, Baumgattung, Baumartengruppe;;
+32;CP;canopy layer;Krone, Kronenschicht;;
+33;A;area;Fläche;;
+34;t;tons;Tonnen;;
+35;kg;kilo gramm;Kilogramm;;
+36;m3;qubic metres;Kubikmeter;;
 37;ha;;;;
 38;m2;;;;
 39;mm;;;;

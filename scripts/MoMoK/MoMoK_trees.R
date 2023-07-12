@@ -110,6 +110,8 @@ RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep =
 # this table displays the peatland specific conditions at the respective MoMoK plots
 site_info <- read.delim(file = here("data/input/MoMoK/momok_STO_plots.csv"), sep = ";", dec = ",")
 
+# this table contains the measured nitrogen content of the foliage samples of Alnus spp., Betula spp., Picea spp. and Pinus spp. at all national soil inventory plots 
+N_con_f <- read.delim(file = here("data/input/MoMoK/N_con_foliage_MoMoK_SP.csv"), sep = ";", dec = ",")
 
 # this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
 # \\fswo01-ew\INSTITUT\a7forum\LEVEL I\BZE\Moormonitoring\Arbeitsanleitungen\MoMoK
@@ -238,6 +240,12 @@ colnames(site_info) <- c("plot_ID", "BZE", "state", "peat_type", "hydro_status",
                          "Bemerkung", "Beschrit", 
                          "kat_momok", "GK4_re", "GK4_ho") 
 
+# ----- 1.2.7. nitrogen content foliage --------------------------------------------------------------
+colnames(N_con_f) <- c("plot_ID", "name", "N_mean_gkg", "site")
+# change comma as decimal separator to point 
+N_con_f$N_mean_gkg <- gsub(",", ".", N_con_f$N_mean_gkg)
+# there are some cells saying "NULL" those will be transformed to NA
+N_con_f$N_mean_gkg[is.null(N_con_f$N_mean_gkg)] <- NA 
 
 
 
@@ -846,48 +854,51 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 
-N_all_com <- function(B, comp, SP_com, spec_f){
-  n_con <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com);
+N_all_w_com <- function(B, comp, SP_com){
+  n_con_w <- N_con_w  %>% filter(compartiment == "f") %>% dplyr::pull(N_con, SP_com);
   # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
   # proably I will also have to assign new species groups to acces the foliage dataset correctly
-    # n_con_w <- N_con_comp  %>% dplyr::pull(N_con_per, SP_com);
-    # n_con_f <- N_con_foliage  %>% dplyr::pull(N_con_per, spec_f);
-    # ifelse(comp != "f", B*n_con_w[SP_com], B*n_con_f[spec_f])
-  
-  return(B*n_con[SP_com])
+     # n_con_w <- N_con_w  %>% dplyr::pull(N_con, SP_com);
+     # n_con_f <- N_con_f  %>% dplyr::pull(N_con, N_f_SP_group_MoMoK);
+   # N_stock <-  ifelse(comp != "f", B*n_con_w[SP_com], B*n_con_f[spec_f])
+     N_stock <-   B*n_con_w[SP_com];
+  # return(B*n_con[SP_com])
+  return(N_stock)
 }
 
 
 # ----- 1.3.6.1. NItrogen foliage -----------------------------------------
 N_f <- function(B_compartiment, spec){
-  n_con_f <- N_con_comp %>% filter(compartiment== "f") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
   return(B_compartiment*n_con_f[spec])
 }
+
+
 # ----- 1.3.6.2. Nitrogen fine wood ---------------------------------------
 N_fw <- function(B_compartiment, spec){
-  n_con_fw <- N_con_comp %>% filter(compartiment== "fw") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_fw <- N_con_w %>% filter(compartiment== "fw") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_fw[spec])
 }
 # ----- 1.3.6.3. Nitrogen solid wood without bark -------------------------
 N_sw <- function(B_compartiment, spec){
-  n_con_sw <- N_con_comp %>% filter(compartiment== "sw") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_sw <- N_con_w %>% filter(compartiment== "sw") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_sw[spec])
 }
 # ----- 1.3.6.4. Nitrogen solid wood bark ---------------------------------
 N_swb <- function(B_compartiment, spec){
-  n_con_swb <- N_con_comp %>% filter(compartiment== "swb") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_swb <- N_con_w %>% filter(compartiment== "swb") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_swb[spec])
 }
 
 # ----- 1.3.6.5. Nitrogen stump wood  ---------------------------------
 N_stw <- function(B_compartiment, spec){
-  n_con_stw <- N_con_comp %>% filter(compartiment== "stw") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_stw <- N_con_w %>% filter(compartiment== "stw") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_stw[spec])
 }
 
 # ----- 1.3.6.6. Nitrogen stump wood bark ---------------------------------
 N_stwb <- function(B_compartiment, spec){
-  n_con_stwb <- N_con_comp %>% filter(compartiment== "stwb") %>% dplyr::pull(N_con_per, SP_BWI) 
+  n_con_stwb <- N_con_w %>% filter(compartiment== "stwb") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_stwb[spec])
 }
 
@@ -969,7 +980,13 @@ SP_names_com_ID_tapeS <- left_join(rbind(
     mutate(tpS_SP_com_name = bot_name), 
   # selecting those rows in SP_names (x_bart) that do not have a match in "scientific" of TapeS 
   anti_join(SP_names, SP_TapeS_test  %>% select(scientific), by = c("bot_name" = "scientific")) %>% 
-    # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
+    # create column in SP_names that corresponds with TapeS species
+    # --> the changes are carried out according to the anti join between trees_total & TapeS species, not
+    # the join between SP_codes from BZE and TapeSP, this has to be done later
+    #tpS_com_ID = case_when(BWI == "KI" ~ 'KIE',
+    #                      BWI == "ERL" ~ 'ER',
+    #                    TRUE ~ BWI), 
+                                       # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
     mutate(tpS_SP_com_name = case_when(bot_genus == "Abies" & !(bot_species %in% c("grandis", "alba")) | bot_genus == "abies …" & !(bot_species %in% c("grandis", "alba")) ~ "Abies alba",
                                        # all Larix not kaemperi & decidua are assigned to Larix spp.
                                        bot_genus == "Larix" & !(bot_species %in% c("decidua", "kaempferi")) ~ "Larix spp.",
@@ -1013,7 +1030,13 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                        TRUE ~ "Magnoliopsida trees"))), 
   SP_TapeS_test %>% select(scientific, ID) %>% rename(tpS_ID = ID), 
   by = c("tpS_SP_com_name" = "scientific")) %>% 
-  # available groups/ species : BU, EI, ES, AH, BI, ERL, FI, KI, DGL
+  # height species groups to assing correct parameters for height functions according to species
+      # create species groups, BWI uses for their volume calculations to use curtis & sloboda functions
+      # BWI Methodikband: 
+      # für die Hoehenmessung wurde nach folgenden Baumartengruppen differenziert:
+      # Fichte, Tanne, Douglasie, Kiefer, Lärche, Buche, Eiche. 
+      # Alle anderen Nadelbäume werden der Fichte und alle anderen Laubbäume der Buche zugeordnet.
+      # available groups/ species : BU, EI, ES, AH, BI, ERL, FI, KI, DGL
   mutate( H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
                                  LH_NH == "LB" & bot_genus != "Quercus" ~ 'bu', 
                                  bot_genus == "Abies" ~ 'ta', 
@@ -1205,94 +1228,9 @@ trees_total <- left_join(trees_total %>%
                           SP_names_com_ID_tapeS %>% 
                           # creating capital lettered column with german abbreviations to join species names from SP_names into trees_total
                            # https://www.datasciencemadesimple.com/convert-to-upper-case-in-r-dataframe-column-2/
-                           mutate(Chr_ger_cap = toupper(Chr_code_ger), 
-                                  # create column in SP_names that corresponds with TapeS species
-                                  # --> the changes are carried out according to the anti join between trees_total & TapeS species, not
-                                  # the join between SP_codes from BZE and TapeSP, this has to be done later
-                                  #tpS_com_ID = case_when(BWI == "KI" ~ 'KIE',
-                                   #                      BWI == "ERL" ~ 'ER',
-                                    #                    TRUE ~ BWI), 
-                                  # create species groups, BWI uses for their volume calculations to use curtis & sloboda functions
-                                  # BWI Methodikband: 
-                                  # für die Hoehenmessung wurde nach folgenden Baumartengruppen differenziert:
-                                  # Fichte, Tanne, Douglasie, Kiefer, Lärche, Buche, Eiche. 
-                                  # Alle anderen Nadelbäume werden der Fichte und alle anderen Laubbäume der Buche zugeordnet.
-                                  H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
-                                                           LH_NH == "LB" & bot_genus != "Quercus" ~ 'bu', 
-                                                           bot_genus == "Abies" ~ 'ta', 
-                                                           bot_genus == "Pinus" ~ 'ki', 
-                                                           bot_genus == "Pseudotsuga" ~ 'dgl',
-                                                           LH_NH == "NB" & bot_genus == "Larix" ~ 'lae', 
-                                                           TRUE ~ 'fi'),
-                                  BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
-                                                           LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
-                                                           LH_NH == "LB" & bot_genus %in% c("Acer", 
-                                                                                            "Platanus", 
-                                                                                            "Fraxinus",
-                                                                                            "Tilia", 
-                                                                                            "Juglans", 
-                                                                                            "Corylus", 
-                                                                                            "Robinia", 
-                                                                                            "Castanea", 
-                                                                                            "Carpinus", 
-                                                                                            "Aesculus", 
-                                                                                            "Sorbus",
-                                                                                            "Ulmus", 
-                                                                                            "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
-                                                           LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
-                                                                                              "Fagus",
-                                                                                              "Acer", 
-                                                                                              "Platanus", 
-                                                                                              "Fraxinus",
-                                                                                              "Tilia", 
-                                                                                              "Juglans", 
-                                                                                              "Corylus", 
-                                                                                              "Robinia", 
-                                                                                              "Castanea", 
-                                                                                              "Carpinus", 
-                                                                                              "Aesculus", 
-                                                                                              "Sorbus",
-                                                                                              "Ulmus", 
-                                                                                              "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
-                                                           LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
-                                                           LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
-                                                           TRUE ~ 'other'), 
-                                  Bio_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei',
-                                                           # https://www.statology.org/not-in-r/
-                                                           LH_NH == "LB" & bot_genus %in% c("Fagus",     # all species that are labelled "aLh" in the BWI are treated as  beech 
-                                                                                            "Acer", 
-                                                                                            "Platanus", 
-                                                                                            "Fraxinus",
-                                                                                            "Tilia", 
-                                                                                            "Juglans", 
-                                                                                            "Corylus", 
-                                                                                            "Robinia", 
-                                                                                            "Castanea", 
-                                                                                            "Carpinus", 
-                                                                                            "Aesculus", 
-                                                                                            "Sorbus",
-                                                                                            "Ulmus", 
-                                                                                            "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'bu',
-                                                           LH_NH == "LB" & !(bot_genus %in% c("Quercus",  # all species that would be labelled "aLn" in the BWI species groups are allocated to soft hardwoods
-                                                                                              "Fagus",
-                                                                                              "Acer", 
-                                                                                              "Platanus", 
-                                                                                              "Fraxinus",
-                                                                                              "Tilia", 
-                                                                                              "Juglans", 
-                                                                                              "Corylus", 
-                                                                                              "Robinia", 
-                                                                                              "Castanea", 
-                                                                                              "Carpinus", 
-                                                                                              "Aesculus", 
-                                                                                              "Sorbus",
-                                                                                              "Ulmus", 
-                                                                                              "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'shw',
-                                                           LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
-                                                           LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
-                                                           TRUE ~ 'other'))%>% 
+                           mutate(Chr_ger_cap = toupper(Chr_code_ger))%>% 
     # 3. joing TapeS species codes via common SP_ID created above (SP_names_com_ID_tapeS)
-                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group, N_SP_group, N_bg_SP_group, tpS_SP_com_name, tpS_ID), 
+                           dplyr::select(Chr_ger_cap, Chr_code_ger, bot_name, H_SP_group,BWI_SP_group, LH_NH, BWI, Bio_SP_group, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, tpS_SP_com_name, tpS_ID), 
                          by = c("SP_code" = "Chr_ger_cap"))
   
 
@@ -1817,7 +1755,7 @@ BWI_DW_V_iB_TY <- BWI_DW_V_iB_TY %>%
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
 # EI, BU, FI, KI, BI, DGL, LÄ, TA 
 
-N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", 
+N_con_w <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", 
                                           "EI", "EI", "EI", "EI", "EI", 
                                           "ES", "ES","ES", "ES", "ES", 
                                           "AH", "AH","AH", "AH", "AH", 
@@ -1853,10 +1791,25 @@ N_con_comp <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU",
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
-colnames(N_con_comp) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
-N_con_comp <- N_con_comp %>% 
-  mutate(N_con_per = as.numeric(N_mean_gkg)/1000) %>% 
+colnames(N_con_w) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
+N_con_w <- N_con_w %>% 
+  mutate(N_con = as.numeric(N_mean_gkg)/1000) %>% 
   unite(SP_com, SP_BWI:compartiment, remove = FALSE)
+
+# modifying N content foliage dataset
+N_con_f <- N_con_f %>% 
+                     # calculate N content xg per 1kg = x g per 1000g --> divided by 1000 --> content of nitrogen per weight unit
+  mutate(N_mean_gkg = as.numeric(N_mean_gkg), 
+         N_con = (as.numeric(N_mean_gkg)/1000), 
+         compartiment = "f") %>% 
+  left_join(., SP_names_com_ID_tapeS %>% select(name, N_f_SP_group_MoMoK), 
+            by = "name") %>% 
+    select(plot_ID, site, name, N_f_SP_group_MoMoK, compartiment, N_mean_gkg, N_con) %>% 
+  unite(SP_com, N_f_SP_group_MoMoK:compartiment, remove = FALSE) %>% 
+  group_by(name, N_f_SP_group_MoMoK, compartiment, SP_com) %>% 
+  filter(!is.na(N_mean_gkg)) %>% 
+  summarize(N_mean_gkg = mean(as.numeric(N_mean_gkg)),
+            N_con = mean((N_con)))
 
 
 # ----- 1.4.5. MoMoK site info dataset data wrangling ----------------------------------------
@@ -2337,24 +2290,31 @@ write.csv(trees_total_5, "output/out_data/LT_trees_comp_B_C_N_MoMoK.csv")
 # there is a problem with the join but maybe i can solce it with join by sambling curcuit and canipy layer
 
 trees_total_5 <-trees_total_5 %>% 
-  # joingin nitrogen content in
+  # joingin nitrogen content into trees dataset: has to happen stepwise
   left_join(., rbind(
-    #dataset with nitrogen atock in compartiments & belowground
+    # 1. nitrogen stock in each compartiments & belowground
     trees_total_5_comb_bg <- trees_total_5 %>% 
       unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
-      mutate( N_t = ifelse(!(compartiment %in% c("bg", "ag", "total")), N_all_com(B_t_tapes[!(compartiment %in%c("bg", "ag", "total"))], SP_com), 
-                           ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], N_bg_SP_group), 0))) %>% 
-      filter(!(compartiment %in% c( "ag", "total"))) %>%                        # select only compartiment N stock and belowground N Stock
+                    # if the compartiment is woody but not belowgroun or summed up (ag, total), calcualte N stock with N_all_w_com function
+      mutate( N_t = ifelse(!(compartiment %in% c("bg", "ag", "total", "f")), N_all_w_com(B_t_tapes[!(compartiment %in%c("bg", "ag", "total", "f"))],
+                                                                                         SP_com[!(compartiment %in%c("bg", "ag", "total", "f"))]), 
+                     # if the compartiment is belowgroun but not summed up (ag, total), calcualte N stock with N_bg function
+                           ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
+                                                             N_bg_SP_group[compartiment == "bg"]), 
+                      # if the compartiment is foliage but not summed up (ag, total), calcualte N stock with N_f function
+                                  ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "bg"], 
+                                                                  N_f_SP_group_MoMoK[compartiment == "bg"]), 0)))) %>%  # the remaining compartiments (ag and total are set to 0)
+      filter(!(compartiment %in% c( "ag", "total"))) %>%                        # select only compartiment wise N stock and belowground N Stock by delselecting ag and total (which are anyways 0)
       select(ID_pt, CCS_nr, C_layer, compartiment, N_t),
-    #  N for aboveground
+    # 2. N summed up for aboveground
     trees_total_5_comb_bg %>%
-      filter(!(compartiment %in% c("bg", "ag", "total"))) %>% # filter for all compartiments and exlcude belowgroundand total from the sum
+      filter(!(compartiment %in% c("bg", "ag", "total"))) %>% # filter for all separeate compartiments but make sure to exlcude belowground and total from the sum
       group_by(ID_pt, CCS_nr, C_layer) %>%
       summarise(N_t = sum(N_t)) %>%
       mutate(compartiment = "ag"), 
-    # N total
+    # 3. N total
     trees_total_5_comb_bg %>%
-      filter(!(compartiment %in% c("ag", "total"))) %>% # filter for all compartiembnts and belowground N stock
+      filter(!(compartiment %in% c("ag", "total"))) %>% # filter for all compartiembnts and belowground N stock but exclude ag (because its already summed up)
       group_by(ID_pt,  CCS_nr, C_layer) %>%
       summarise(N_t = sum(N_t)) %>%
       mutate(compartiment = "total")),
@@ -3610,7 +3570,7 @@ rbind(
   as_tibble( colnames(RG_P)), 
   # all plots, all stand components summary 
   as_tibble(colnames(plot_total)), 
-  as_tibble(colnames(N_con_comp))) %>% 
+  as_tibble(colnames(N_con_w))) %>% 
   distinct()
 
 
