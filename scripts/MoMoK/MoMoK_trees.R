@@ -114,7 +114,7 @@ site_info <- read.delim(file = here("data/input/MoMoK/momok_STO_plots.csv"), sep
 # this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
 # \\fswo01-ew\INSTITUT\a7forum\LEVEL I\BZE\Moormonitoring\Arbeitsanleitungen\MoMoK
 # I´l use it to assign the latin names to the assessed speices to then use them in TapeR and BDAT 
-SP_names <- read.delim(file = here("data/input/BZE2_HBI/x_bart_neu.csv"), sep = ";", dec = ",") %>% 
+SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",") %>% 
   select(- c(anmerkung, beginn, ende)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
   unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
@@ -1090,6 +1090,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                    LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                    TRUE ~ 'other'), 
+  # species groups to assign the correct woody biomass nitrogen content 
           N_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'EI', 
                           # LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
                            LH_NH == "LB" & bot_genus == "Acer"~ 'AH',
@@ -1128,7 +1129,8 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                            LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'KI', 
                            LH_NH == "NB" & bot_genus %in% c("Pseudotzuga") ~ 'DGL',
                            LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix", "Pseudotzuga"))  ~ 'FI', # all species not Pinus, Larix or DOuglas fir are treated as Spruce 
-                           TRUE ~ 'other'), 
+                           TRUE ~ 'other'),
+  # species groups to select the correct belowground nitrogen content
   N_bg_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'EI', 
                            LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
                            LH_NH == "LB" & bot_genus %in% c("Acer", 
@@ -1163,7 +1165,15 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                            LH_NH == "NB" & bot_genus == "Pinus" & bot_name == "Pinus nigra" ~ 'KIN',
                            LH_NH == "NB" & bot_genus == "Larix" ~ 'LA',
                            LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'FI', 
-                           TRUE ~ 'other'))
+                           TRUE ~ 'other'), 
+  # specie group to assing the correct foliage biomass nitrogen content
+  N_f_SP_group_MoMoK = case_when(LH_NH == "LB" & bot_genus == "Alnus" ~ 'ERL',
+                                 LH_NH == "LB" & bot_genus == "Betula" ~ 'BI',
+                                 LH_NH == "LB" & !(bot_genus %in% c("Alnus", "Betula")) ~ 'aLB', # other broadleafed tree (anderer Laubbaum)
+                                 LH_NH == "NB" & bot_genus == "Pinus" ~ 'KI', 
+                                 LH_NH == "NB" & bot_genus == "Picea" ~ 'FI', 
+                                 LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Picea")) ~ 'aNB',   # # other coniferous tree (anderer Nadelbaum)
+                                 ))
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
@@ -2402,15 +2412,15 @@ biotest <- trees_total_5 %>%
          Vondr_GHG_brB_kg = GHG_aB_kg - (Vondr_fB_kg + Vondr_crsWbB_kg)) %>%           # fine branches by withdrawing coarsewood and foliage 
          # stepwise
   mutate(# GHG-TapeS-stepwise
-          swB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
-          swbB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
-          stwB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg +tapes_stwbB_kg),     # stump wood biomass
-          stwbB_kg = GHG_aB_kg - (swB_kg + tapes_fB_kg + tapes_brB_kg +swbB_kg + stwB_kg),          # stum wood bark biomass
-          fwB_kg = GHG_aB_kg - (swB_kg + swbB_kg + tapes_fB_kg + stwbB_kg + stwB_kg),               # fine wood bionmass
-          fB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (swB_kg + swbB_kg +  stwbB_kg + stwB_kg+ fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
-          tot_aB_kg = ifelse(LH_NH == "NB", GHG_aB_kg, GHG_aB_kg+fB_kg),                                # total aboveground biomass
-          tot_waB_kg = ifelse(LH_NH == "NB", GHG_aB_kg-fB_kg, GHG_aB_kg), 
-          tot_GHG_tps = swB_kg+ swbB_kg + stwB_kg+ stwbB_kg + fwB_kg + fB_kg) %>% 
+          GHG_tps_swB_kg = ifelse(LH_NH == "NB", (GHG_aB_kg - (tapes_fB_kg +tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg)),(GHG_aB_kg - (tapes_brB_kg+tapes_DhbB_kg+tapes_stwB_kg+tapes_stwbB_kg))), 
+          GHG_tps_swbB_kg = GHG_aB_kg - (GHG_tps_swB_kg + tapes_fB_kg + tapes_brB_kg+tapes_stwB_kg+tapes_stwbB_kg), # solid wood bark 
+          GHG_tps_stwB_kg = GHG_aB_kg - (GHG_tps_swB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_swbB_kg +tapes_stwbB_kg),     # stump wood biomass
+          GHG_tps_stwbB_kg = GHG_aB_kg - (GHG_tps_swB_kg + tapes_fB_kg + tapes_brB_kg +GHG_tps_swbB_kg + GHG_tps_stwB_kg),          # stum wood bark biomass
+          GHG_tps_fwB_kg = GHG_aB_kg - (GHG_tps_swB_kg + GHG_tps_swbB_kg + tapes_fB_kg + GHG_tps_stwbB_kg + GHG_tps_stwB_kg),               # fine wood bionmass
+          GHG_tps_fB_kg = ifelse(LH_NH == "NB", GHG_aB_kg - (GHG_tps_swB_kg + GHG_tps_swbB_kg +  GHG_tps_stwbB_kg + GHG_tps_stwB_kg+ GHG_tps_fwB_kg),  Wutzler_fB_L1(DBH_cm, H_m)),  # foliage biomass
+          tot_aB_kg = ifelse(LH_NH == "NB", GHG_aB_kg, GHG_aB_kg+GHG_tps_fB_kg),                                # total aboveground biomass
+          tot_waB_kg = ifelse(LH_NH == "NB", GHG_aB_kg-GHG_tps_fB_kg, GHG_aB_kg), 
+          tot_GHG_tps = GHG_tps_swB_kg+ GHG_tps_swbB_kg + GHG_tps_stwB_kg+ GHG_tps_stwbB_kg + GHG_tps_fwB_kg + GHG_tps_fB_kg) %>% 
   mutate(diff_GHG_bef_af_tps = GHG_aB_kg - tot_GHG_tps, 
          diff_GHG_tps = GHG_aB_kg - tapes_ab_kg, 
          diff_Vondr_GHG = GHG_aB_kg - Vondr_oiB_kg, 
@@ -3537,6 +3547,7 @@ plot_total<-
   rbind(plot_total, 
         plot_total %>% 
           group_by(plot_ID, compartiment) %>%
+          # https://dplyr.tidyverse.org/reference/across.html
           summarise(across(B_t_plot:Nt_ha, ~ sum(.x, na.rm = TRUE))) %>% 
           mutate(stand_component = "all") %>% 
           dplyr::select(plot_ID, compartiment, stand_component,
@@ -3554,17 +3565,57 @@ write.csv(plot_total, "output/out_data/LB_RG_DW_Plot_MoMoK.csv")
 
 # ----- legend MoMoK output -----------------------------------------------
 # here  will collect all column names of all datasets I everexportet so i can do an ultimate inner join and assign the meaning to the respective columns
+legend_col_names <- 
 rbind(
-  # from all plots summary 
-as.data.frame(colnames(plot_total)),
-# from RG per species per plot summary 
-as.data.frame( colnames(RG_P_SP))
+  as_tibble(c("B", "C", "N", "V", "BA", "D" ,"DBH", "D_h", "h", "H", "CH", "ID",
+              "b", "w", "f", "fw", "sw", "swb", "stw", "stwb", "ag", "bg", "total", "tot",
+              "Nt", 
+              "DW", "dw", "RG", "LT", 
+              "P", "SP", "CP", 
+               "A", "t", "kg", "m3",
+              "ha", "m2", 
+              "mm", "cm", "dm", 
+              "BWI", "group","tapes", "tps", "tpS", "WuWi", "GHG", "Vondr")),
+  # keys between x bart and TapeS, Biomass species groups, Nitrogen species groups, height species groups
+  as_tibble( colnames(SP_names_com_ID_tapeS)),
+  # from trees_total_5 which contains all tree- and compartiment data of biomass and dendrometric parameters of living trees in picot longer
+  as_tibble( colnames(trees_tot_piv_wider)),
+  # from trees_total_5 which contains all tree- and compartiment data (B, C, N) of living trees in picot longer
+  as_tibble( colnames(trees_total_5)),
+  # from biotest which contains biomasse calculated by different calculation methods
+  as_tibble( colnames(biotest)),
+  # living tree data per species per plot per canopy layer summary --> forstliche zusammenfassung
+  as_tibble( colnames(trees_P_CP_SP)), 
+  # living tree data per species per plot per compartiment summary 
+  as_tibble( colnames(trees_P_SP.export)), 
+  # living tree data per species per plot per compartiment summary, not groupped by species anymore
+  as_tibble( colnames(trees_P.export)),
+  # DW all deadwood item wise data  
+  as_tibble( colnames(DW_total)),
+  # DW per species group, deadwood type, decay stage per plot summary 
+  as_tibble( colnames(DW_P_SP_TY_DEC)),
+  # DW per species group, deadwood type, per plot summary 
+  as_tibble( colnames(DW_P_SP_TY)),
+  # DW per deadwood type and decay stage per plot summary 
+  as_tibble( colnames(DW_P_TY_DEC)),
+  # DW perdecay stage per plot summary 
+  as_tibble( colnames(DW_P_DEC)),
+  # DW per deadwood type per plot summary 
+  as_tibble( colnames(DW_P_TY)),
+  # DW per plot summary 
+  as_tibble( colnames(DW_P)),
+  # RG per species per plot summary 
+  as_tibble( colnames(RG_P_SP)), 
+  # RG per plot
+  as_tibble( colnames(RG_P)), 
+  # all plots, all stand components summary 
+  as_tibble(colnames(plot_total)), 
+  as_tibble(colnames(N_con_comp))) %>% 
+  distinct()
 
-)
 
-# these are all expotet datasets: 
-# SP_names_com_ID_tapeS, trees_tot_piv_wider, biotest, trees_total_5, DW_total, trees_P_CP_SP, 
-# trees_P_SP.export, trees_P.export, DW_P_SP_TY_DEC, DW_P_SP_TY, DW_P_TY_DEC, DW_P_DEC, DW_P_TY, DW_P, RG_P_SP, RG_P, plot_total
+
+write.csv(legend_col_names, "output/out_data/legend_MoMoK.csv")
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
 
@@ -4706,7 +4757,7 @@ biotest %>%
 # bar
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, fwB_kg, tapes_fB_kg) %>% 
+         GHG_aB_kg, tps_GHG_waB,tps_GHG_crsWbB_kg, tapes_DhB_kg, tapes_DhbB_kg, GHG_tps_fwB_kg, tapes_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:10) %>% 
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
@@ -4764,22 +4815,22 @@ biotest %>%
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
          #GHG_aB_kg, tapes_ab_kg, Vondr_oiB_kg,
-         swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
-         stwB_kg,tapes_stwB_kg, 
-         stwbB_kg, tapes_stwbB_kg,
-         swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
-         fwB_kg, tapes_brB_kg, Vondr_brB_kg,
-         fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+         GHG_tps_swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         GHG_tps_stwB_kg,tapes_stwB_kg, 
+         GHG_tps_stwbB_kg, tapes_stwbB_kg,
+         GHG_tps_swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         GHG_tps_fwB_kg, tapes_brB_kg, Vondr_brB_kg,
+         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'V')~ "Vondernach", 
                                 TRUE~"stepwise GHGI"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-           method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
-           method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
-           method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
-           method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           method %in% c("GHG_tps_stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
+           method %in% c("GHG_tps_stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
+           method %in% c("GHG_tps_swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "GHG_tps_swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("GHG_tps_fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>%
   group_by(method, gen_method, compartiment, plot_ID, SP_code) %>% 
   summarize(mean_bio = mean(biomass)) %>%
@@ -4800,22 +4851,22 @@ biotest %>%
 # all compartiments
 biotest %>% 
   select(plot_ID, SP_code, DBH_cm, 
-         swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
-         stwB_kg,tapes_stwB_kg, 
-         stwbB_kg, tapes_stwbB_kg,
-         swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
-         fwB_kg, tapes_brB_kg, Vondr_brB_kg,
-         fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
+         GHG_tps_swB_kg, tapes_DhB_kg, Vondr_DhB_kg,
+         GHG_tps_stwB_kg,tapes_stwB_kg, 
+         GHG_tps_stwbB_kg, tapes_stwbB_kg,
+         GHG_tps_swbB_kg, tapes_DhbB_kg, Vondr_DhRB_kg,
+         GHG_tps_fwB_kg, tapes_brB_kg, Vondr_brB_kg,
+         GHG_tps_fB_kg, tapes_fB_kg, Vondr_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:19) %>% 
   mutate(gen_method = case_when(startsWith(method,'t') ~ "TapeS", 
                                 startsWith(method, 'V')~ "Vondernach", 
                                 TRUE~"GHGI"), 
          compartiment = case_when(#method %in% c("GHG_aB_kg", "tapes_ab_kg", "Vondr_oiB_kg") ~ "tot_aB",
-           method %in% c("stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
-           method %in% c("stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
-           method %in% c("swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
-           method %in% c( "swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
-           method %in% c("fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
+           method %in% c("GHG_tps_stwB_kg", "tapes_stwB_kg") ~ "stump wood (>7cm DBH, below cut)",
+           method %in% c("GHG_tps_stwbB_kg", "tapes_stwbB_kg") ~ "stump wood bark (>7cm DBH, below cut)",
+           method %in% c("GHG_tps_swB_kg", "tapes_DhB_kg", "Vondr_DhB_kg") ~ "solid wood (>7cm DBH)",
+           method %in% c( "GHG_tps_swbB_kg", "tapes_DhbB_kg", "Vondr_DhRB_kg") ~ "solid wood bark",
+           method %in% c("GHG_tps_fwB_kg", "tapes_brB_kg", "Vondr_brB_kg") ~ "fine wood (<7cm DBH, inkl. bark)", 
            TRUE~"foliage")) %>%
   group_by(plot_ID, SP_code, gen_method, compartiment, biomass) %>% 
   summarize(mean_bio = mean(biomass)) %>%
