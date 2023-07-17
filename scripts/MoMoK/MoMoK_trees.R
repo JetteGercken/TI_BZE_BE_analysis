@@ -168,6 +168,7 @@ DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
 DW_total %>% filter(is.na(D_cm))
 DW_total <- DW_total %>% filter(!is.na(D_cm))
+DW_total_NA <- DW_total %>% filter(is.na(D_cm))
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying, etc. 
 # dec_type = decay type / Zersetzungsgrad
@@ -307,7 +308,7 @@ h_curtis <- function(spec, d) {
   return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
-# ---- 1.3.2.3. self-fitted nls models ------------------------------------------------------
+# ---- 1.3.2.3. self-fitted nls height models ------------------------------------------------------
 # ---- 1.3.2.3.1. species- & plot-wise self-fitted nls models ------------------------------------------------------
 # self made nls models for heights per species across all plots
 h_nls_SP <- function(spec, d){
@@ -333,14 +334,19 @@ h_nls_SP_P <- function(plot_spec, d) {
 ## Total ABOVEGROUND = Stemmwood+bark + finewood+bark + foliage
 
 # ---- 1.3.3.1.1.  GHG inventory (Dunger et al.) total above biomass --------------------------------------
-# https://www.umweltbundesamt.de/sites/default/files/medien/1410/publikationen/2020-04-15-climate-change_23-2020_nir_2020_en_0.pdf
+# Reference: 
+# Röhling, S., Dunger, K., Kändler, G. et al. Comparison of calculation methods for estimating annual 
+# carbon stock change in German forests under forest management in the German greenhouse gas inventory. 
+# Carbon Balance Manage 11, 12 (2016). https://doi.org/10.1186/s13021-016-0053-x
+# equation: 1, coefficient table: 2
 ## aboveground biomass in kg per tree, for trees DBH > 10cm & DHB < species speficic threshold GHGI
     # where B = above-ground phytomass in kg per individual tree,
     # b0,1,2,3 and k1,2 = coefficients of the эarklund function,
     # DBH = Diameter at breast height in cm,
     # D03 = Diameter in cm at 30% of tree height,
     # H = tree height in m
-Dunger_aB_DBHa10 <- function(spec, d, d03, h){
+
+GHGI_aB_DBHa10 <- function(spec, d, d03, h){
   b0 <- c(fi = 0.75285, ki = 0.33778, bu = 0.16787, ei= 0.09428, shw =0.27278);
   b1 <- c(fi = 2.84985, ki = 2.84055 , bu = 6.25452, ei= 10.26998, shw =4.19240);
   b2 <- c(fi = 6.03036, ki = 6.34964, bu = 6.64752, ei= 8.13894, shw = 5.96298);
@@ -349,28 +355,28 @@ Dunger_aB_DBHa10 <- function(spec, d, d03, h){
   k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
   return(b0[spec]*exp(b1[spec]*(d/(d+k1[spec])))*exp(b2[spec]*(d03/(d03+k2[spec])))*h^b3[spec])
 }
-## above ground biomass for trees >1.3m height and < 10cm DBH GHGI
+## above ground biomass for trees >1.3m height and < 10cm DBH GHGI (equation: 5, coefficients table: 3)
     # B_H1.3_DBHb10 = above-ground phytomass in kg per individual tree,
     # b0, bs, b3 = coefficients of the function,
     # DBH = Diameter at breast height in cm,
     # ds = Diameter-validity boundary for this function = 10 cm/
-Dunger_aB_H1.3_DBHb10 <- function(spec, d){
+GHGI_aB_H1.3_DBHb10 <- function(spec, d){
   b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
   bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
   b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
   ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
   return(b0[spec]+((bs[spec] - b0[spec])/ds[spec]^2 + b3[spec]*(d-ds[spec]))*d^2)
 }
-## above ground biomass for trees <1.3m GHGI
-Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+## above ground biomass for trees <1.3m GHGI (equation: 6, coefficient table: 4)
+GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
 }
 
-##aboveground biomass for trees <10cm DBH and < species specific threshold
+##aboveground biomass for trees <10cm DBH and < species specific threshold (equation: 7, coefficient table: )
 # BAB= BS∗[1+ b1k1/(DBHs+ k1)^2]∗(DBH − DBHs)+b2k2/(D03s+ k2)2∗(D03− D03s)+b3/Hs∗(H − Hs)
-# Bs = the biomass at the tree species-specific DBH threshold DBHs --> does that mean the "normal biomass according to Dunger_aB_DBHa10?
+# Bs = the biomass at the tree species-specific DBH threshold DBHs --> does that mean the "normal biomass according to GHGI_aB_DBHa10?
 # species specific thresholds: 
     # Spruce = 	69.0
     # Pine = 59.0
@@ -380,7 +386,9 @@ Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll lin
 # DBH1.3s = DHB threshold
 # D03s = D03+ c0*DBHs^c1−c0*DBHs^c1
 # Hs = H +(a + b / DBHs)^−3−(a + b / DBH)^−3
-Dunger_aB_DBHath <- function(spec, d, d03, h){
+# Bs equation: 2, table: 2 ; D03s equation: 3, table: 1; Hs equation: 4, HS coefficients table : 1
+GHGI_aB_DBHath <- function(spec, d, d03, h){
+  # biomass
   b0 <- c(fi = 0.75285, ki = 0.33778, bu = 0.16787, ei= 0.09428, shw =0.27278);
   b1 <- c(fi = 2.84985, ki = 2.84055 , bu = 6.25452, ei= 10.26998, shw =4.19240);
   b2 <- c(fi = 6.03036, ki = 6.34964, bu = 6.64752, ei= 8.13894, shw = 5.96298);
@@ -388,15 +396,19 @@ Dunger_aB_DBHath <- function(spec, d, d03, h){
   k1 <- c(fi = 42.0, ki = 18.0, bu = 11.0, ei= 400.0, shw =13.7);
   k2 <- c(fi = 24.0, ki = 23.0, bu = 135.0, ei= 8.0, shw =66.8);
   Bs <- b0[spec]*exp(b1[spec]*(d/(d+k1[spec])))*exp(b2[spec]*(d03/(d03+k2[spec])))*h^b3[spec];
+  # diameter threshold
   DBHs <- c(fi = 69.0, ki = 59.0, bu = 86.0, ei = 94.0, shw = 113.0);
+  # D03s, eq. 3
   c0 <- c(fi = 1.07843, ki = 0.89009, bu = 0.84014, ei = 0.87633, shw = 0.86720);
   c1 <- c(fi = 0.91204, ki = 0.95747, bu = 0.98970, ei = 0.98279, shw = 0.96154);
   d03s <- d03 + c0[spec]*DBHs[spec]^c1[spec] - c0[spec]*DBHs[spec]^c1[spec];
+  # Hs, eq. 4
   a <- c(fi = 0.27407, ki = 0.29722, bu = 0.29397, ei = 0.31567, shw = 0.28064);
   b <- c(fi = 2.22031, ki = 1.98688, bu = 1.76894, ei = 1.63335, shw = 2.40288);
   Hs <-  h + ((a[spec] + b[spec] / DBHs[spec])^(-3)) - ((a[spec] + b[spec] / d)^(-3));
-  return(Bs*(1 + (b1[spec]*k1[spec]/((DBHs[spec]+ k1[spec])^2))*(d-DBHs[spec]) + 
-               (b2[spec]*k2[spec]/(d03s+ k2[spec])^2)*(d03-d03s) + 
+  
+  return(Bs *(1 + (b1[spec]*k1[spec]/((DBHs[spec]+ k1[spec])^2))*(d-DBHs[spec]) + 
+               (b2[spec]*k2[spec]/((d03s+ k2[spec])^2))*(d03-d03s) + 
                (b3[spec]/Hs)*(h-Hs)))
 }
 
@@ -492,18 +504,6 @@ tapes_swbB <- function(spec_tpS, d, dh, h){
 }
 
 
-# ----- 1.3.4.4. stumpwood bark  ------------------------------------
-# ----- 1.3.4.4.1. Tapes stumpwood "stb" ------------------------------------
-tapes_stwbB <- function(spec_tpS, d, dh, h){         
-  spp = na.omit(spec_tpS);
-  Dm = na.omit(as.list(d));
-  Hm = na.omit(as.list(dh));
-  Ht = na.omit(h);
-  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
-  stb.df <- as.data.frame(tprBiomass(obj.tbio, component="stb"));
-  return(stb.df$stb)
-}
-
 # ----- 1.3.4.4. stumwood   ------------------------------------
 # ----- 1.3.4.4.1. Tapes stumpwood "st" ------------------------------------
 tapes_stwB <- function(spec_tpS, d, dh, h){         
@@ -513,9 +513,20 @@ tapes_stwB <- function(spec_tpS, d, dh, h){
   Ht = na.omit(h);
   obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
   stw.df <- as.data.frame(tprBiomass(obj.tbio, component="stw"));
-  return(stw.df$stw) # solid wwood without bark
+  return(stw.df$stw) # stump wwood without bark
 }
 
+# ----- 1.3.4.4. stumpwood bark  ------------------------------------
+# ----- 1.3.4.4.2. Tapes stumpwood "stb" ------------------------------------
+tapes_stwbB <- function(spec_tpS, d, dh, h){         
+  spp = na.omit(spec_tpS);
+  Dm = na.omit(as.list(d));
+  Hm = na.omit(as.list(dh));
+  Ht = na.omit(h);
+  obj.tbio <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  stb.df <- as.data.frame(tprBiomass(obj.tbio, component="stb"));
+  return(stb.df$stb) # stump wood bark
+}
 
 # ---- 1.3.4.6. coarsewood biomass with bark ----------------------------------------------
 # ---- 1.3.4.6.1. Wirth coarsewood biomass with bark-----------------------------------------
@@ -584,6 +595,13 @@ Wirth_fB_N <- function(d, h, a){   # this is one of the lower ranked models, cal
 }
 
 # ---- 1.3.3.5.2. Wutzler foliage (broadleafed)-------------------------------
+# reference: 
+# Wutzler, Thomas & Wirth, Christian & Schumacher, Jens. (2008). 
+# Generic biomass functions for Common beech (Fagus sylvatica) in Central Europe: 
+# Predictions and components of uncertainty. 
+# Canadian Journal of Forest Research - Journal Canadien de la Recherche Forestiere, 
+# v.38, 1661-1675 (2008). 38. 10.1139/X07-194. 
+
 ### foliage of broadleaved trees according to Wutzler et al. 2008
   # to aply this function the Oberhoehe and the elevation above sea level are required
 
@@ -603,7 +621,7 @@ Wutzler_fB_L <- function(d, h, alt, si){   # DHC 4c model
          (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
 }
 
-#DH3 4a Model   
+#DH3, 4a Model, table: 4   
 Wutzler_fB_L1 <- function(d, h){  #DH3 4a Model 
   b0 = 0.0377;
   b1 = 2.43;
@@ -651,6 +669,9 @@ Wirth_brB_N <- function(d, h, a){  # DHA
 
 # ---- 1.3.3.6.2. Wutzler fine branches (broadleafed) -------------------------------------------
 ### branches broadleafed trees
+ # b0, b1, b3 are the coefficients calculated by 4a
+ # d = diameter (cm)
+ # h = height (m)
 Wutzler_brB_L1 <- function(d, h){  #DH3 4a Model 
   b0 = 0.123;
   b1 = 3.09;
@@ -686,10 +707,15 @@ Vondr_NhdB <- function(spec, d, h){                                             
 # ---- 1.3.3.7. total bellowground biomass --------------------------------------
 # ---- 1.3.3.7.1. according to GHG inventory --------------------------------------
 ## belowground phytomass GHGI
-Dunger_bB <- function(spec, d){
+GHGI_bB <- function(spec, d){
+  # function for soft hard woods requires DBH in mm, 
+  # thus we have to transform input DBH in cm into DBH in mm by dividing by 10
+  dbh <- ifelse(spec != "shw", d, d*10);
   b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shw = 0.000010);#shwr =0.000010, shwrs = 0.000116);
-  b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw =2.529000); #shwr =2.529000, shwrs = 2.290300);
-  return(ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))) 
+  b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw = 2.529000); #shwr =2.529000, shwrs = 2.290300);
+   # this would return the root + stump biomas for soft hardwoods but only the root biomass for all other species groups
+    # ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))
+  return(b0[spec]*d^b1[spec]) 
 }
 
 # ---- 1.3.4. DEADWOOD BIOMASS ----------------------------------------------------------
@@ -720,7 +746,11 @@ return (tprVolume(obj.dw[obj.dw@monotone == TRUE]))
 
 # ---- 1.3.4.2. Biomass Deadwood according to BWI ----------------------------------------------------------
 B_DW <- function(V, dec_SP){     # dec_SP = a column that holds the degree of decay and the species type has to be created (united)
-  # *1000 to transform density in g/cm3 into kg/m3
+  # *1000 to transform density in g/cm3 into kg/m3: https://www.translatorscafe.com/unit-converter/de-DE/density/4-1/Gramm/Kubikzentimeter-Kilogramm/Kubikmeter/
+  # spec_ 
+  # 2_ = coniferous tree
+  # 1_ = broadleafed tree
+  # 3_ = oak
   BEF <- c("2_1" = 0.372*1000, "2_2" = 0.308*1000, "2_3" = 0.141*1000, "2_4" = 0.123*1000,   # conferous trees according to Faver
            "1_1" = 0.58*1000, "1_2" = 0.37*1000, "1_3" = 0.21*1000, "1_4" = 0.26*1000,       # broadleaved trees according to Müller-Ursing
            "3_1" = 0.58*1000, "3_2" = 0.37*1000, "3_3" = 0.21*1000, "3_4" = 0.26*1000);      # oak
@@ -730,7 +760,6 @@ B_DW <- function(V, dec_SP){     # dec_SP = a column that holds the degree of de
 # relative density for tapeS deadwood compartiments
 # Biomasse unzersetzt * (100% - relative Veränderung der Dichte) = 
 # B * (1-(D1 - D2/ D1))
-
 rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
   rd <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
            "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
@@ -803,14 +832,14 @@ annighoefer_rg_aB_bH1.3 <- function(h, spec){ # spec = Annig_SP_group
 
 # Roehling/ Dunger/ GHGI/ BWI
 # below 1.3 --> no diameter
-Dunger_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
   b1 <- c(NB = 2.20101, LB = 2.54946);
   return(b0[spec]*h^b1[spec])
 }
 
 # above 1.3m, but below 10cm DBH --> DBH availlable 
-Dunger_aB_H1.3_DBHb10 <- function(spec, d){         # spec = Bio_SP_group
+GHGI_aB_H1.3_DBHb10 <- function(spec, d){         # spec = Bio_SP_group
   b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
   bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
   b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
@@ -822,40 +851,59 @@ Dunger_aB_H1.3_DBHb10 <- function(spec, d){         # spec = Bio_SP_group
 # the compartitioning according to Poorter requires knowledge of the root mas of the trees. Which we do not have at this point (11.04.2023)
 # https://nph.onlinelibrary.wiley.com/doi/10.1111/j.1469-8137.2011.03952.x
 
-# ----- 1.3.5.3.1. stem vs. root -----------------------------------------------
-  # angiosperm = broad leafed
-  # gymnosperm = coniferous
-  #  y=a+b1*x+b2*x^2
- # The top part of the table gives data for a stepwise regression with quadratic polynomials 
- # of the form y=a+b1*x+b2*x^2, where y is the log10-transformed leaf or stem mass and 
- # x is the log10-transformed root mass. The bottom part shows the results of a reduced 
- # major axis (linear) regression with slope αRMA and intercept logβRMA
-# RSR means root to shoot (root biomass ration to stem biomass)
-Poorter_rg_RSR <- function(bB, spec){ # instead of the species I have to put NH_LH here
-a <- c(NH = -0.070, LH = -0.097);
-b1 <- c(NH = 1.236, LH = 1.071);
-b2 <- c(NH = -0.0186, LH = 0.01794);
-return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
-}
+# angiosperm = broad leafed
+# gymnosperm = coniferous
+
+#  y=a+b1*x+b2*x^2
+# Data were calculated from log10-transformed leaf biomass or stem biomass vs.
+# log10-transformed root biomass, 
+# with masses expressed in grams.
+# The top part of the table gives data for a stepwise regression with quadratic polynomials 
+# of the form y=a+b1*x+b2*x^2, where:
+    # y is the log10-transformed leaf or stem mass and 
+    # x is the log10-transformed root mass. 
+# The bottom part shows the results of a reduced major axis (linear) regression with slope αRMA and intercept logβRMA
 
 # RSR = Shoot to root ratio  = (leaf + stem dry mass) ⁄ root dry mass
 #  LAR = Leaf area ratio = Leaf area ⁄ total plant dry mass
 #  LMF = Leaf mass fraction =  Leaf dry mass⁄ total plant dry mass
 
+# ----- 1.3.5.3.1. stem vs. root -----------------------------------------------
+# RSR means root to shoot (root biomass ration to stem biomass)
+Poorter_rg_RSR <- function(bB, spec){ # instead of the species I have to put NH_LH here
+  bB_g <- log10(bB*1000);             # 10-log of belowground biomass in g (*1000)
+  a <- c(NH = -0.070, LH = -0.097);
+  b1 <- c(NH = 1.236, LH = 1.071);
+  b2 <- c(NH = -0.0186, LH = 0.01794);
+  log.10.shoot_m <- a[spec]+ b1[spec]* bB_g+ b2[spec]*(bB_g)^2;
+# a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+    # log_a(b) = c ---> b = a^c
+# b) transform leaf biomass in g into kg
+ shoot_m <- (10^log.10.shoot_m)/1000;
+ 
+return(shoot_m)
+}
+
 # ----- 1.3.5.3.2. leaf vs. root -----------------------------------------------
 # RLR means roots leafes ratio
 Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_LH here
+  bB_g <- log10(bB*1000);             # 10-log of belowground biomass in g (*1000)
   a <- c(NB = 0.243, LB = 0.090);
   b1 <- c(NB = 0.924, LB = 0.889);
   b2 <- c(NB = -0.0282, LB = -0.0254);
-  return(a[spec]+ b1[spec]*bB+ b2[spec]*bB^2)
+  log.10.leaf_m <- a[spec]+ b1[spec]* bB_g+ b2[spec]*(bB_g)^2;
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+      # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  leaf_m <- (10^log.10.shoot_m)/1000;
+  return(leaf_m)
 }
 
 
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
-
+# nitrogen stock for woody compartiments
 N_all_w_com <- function(B, comp, SP_com){
-  n_con_w <- N_con_w  %>% filter(compartiment == "f") %>% dplyr::pull(N_con, SP_com);
+  n_con_w <- N_con_w  %>% filter(compartiment != "f") %>% dplyr::pull(N_con, SP_com);
   # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
   # proably I will also have to assign new species groups to acces the foliage dataset correctly
      # n_con_w <- N_con_w  %>% dplyr::pull(N_con, SP_com);
@@ -867,7 +915,7 @@ N_all_w_com <- function(B, comp, SP_com){
 }
 
 
-# ----- 1.3.6.1. NItrogen foliage -----------------------------------------
+# ----- 1.3.6.1. NItrogen stock foliage -----------------------------------------
 N_f <- function(B_compartiment, spec){
   n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
   return(B_compartiment*n_con_f[spec])
@@ -889,13 +937,11 @@ N_swb <- function(B_compartiment, spec){
   n_con_swb <- N_con_w %>% filter(compartiment== "swb") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_swb[spec])
 }
-
 # ----- 1.3.6.5. Nitrogen stump wood  ---------------------------------
 N_stw <- function(B_compartiment, spec){
   n_con_stw <- N_con_w %>% filter(compartiment== "stw") %>% dplyr::pull(N_con, SP_BWI) 
   return(B_compartiment*n_con_stw[spec])
 }
-
 # ----- 1.3.6.6. Nitrogen stump wood bark ---------------------------------
 N_stwb <- function(B_compartiment, spec){
   n_con_stwb <- N_con_w %>% filter(compartiment== "stwb") %>% dplyr::pull(N_con, SP_BWI) 
@@ -908,12 +954,15 @@ N_stwb <- function(B_compartiment, spec){
 # Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
 # Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
 # Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
-# Niedersächsische Forstliche Versuchsanstalt
+# Niedersächsische Forstliche Versuchsanstalt;
+# N Gehalte Grobwurzeln (D > 2mm), Tab. 7
 N_bg <- function(B_compartiment, N_bg_spec){
-  n_con_bg <- c(EI = 0.00371, BU = 0.00303, FI = 0.00414, KI = 0.00177, KIN = 0.00176, BI = 0.0037, LA = 0.0028);
+  n_con_bg_mgg <- c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, 
+                KIN = 1.76, BI = 3.7, LA = 2.8);
+  # divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
+  n_con_bg <- n_con_bg_mgg/1000;
   return(B_compartiment*n_con_bg[N_bg_spec])
 }
-
 
 
 
@@ -935,7 +984,6 @@ SD_class <- function(sd_bwi, diff_c){
         ifelse(diff_c_betrag > sd_cl_1  & diff_c_betrag <= sd_cl_2 , "2",
                ifelse(diff_c_betrag > sd_cl_2  & diff_c_betrag <= sd_cl_3 , "3", 
                       ifelse(diff_c_betrag > sd_cl_3 , "4", "5"))));
- 
 return(sd_cl_df)
   }
 
@@ -983,10 +1031,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
     # create column in SP_names that corresponds with TapeS species
     # --> the changes are carried out according to the anti join between trees_total & TapeS species, not
     # the join between SP_codes from BZE and TapeSP, this has to be done later
-    #tpS_com_ID = case_when(BWI == "KI" ~ 'KIE',
-    #                      BWI == "ERL" ~ 'ER',
-    #                    TRUE ~ BWI), 
-                                       # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
+                                      # every acer not campestre, etc. is assigned to Acer spp. (the other species do have a match in TapeS_SP)
     mutate(tpS_SP_com_name = case_when(bot_genus == "Abies" & !(bot_species %in% c("grandis", "alba")) | bot_genus == "abies …" & !(bot_species %in% c("grandis", "alba")) ~ "Abies alba",
                                        # all Larix not kaemperi & decidua are assigned to Larix spp.
                                        bot_genus == "Larix" & !(bot_species %in% c("decidua", "kaempferi")) ~ "Larix spp.",
@@ -1036,8 +1081,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
       # für die Hoehenmessung wurde nach folgenden Baumartengruppen differenziert:
       # Fichte, Tanne, Douglasie, Kiefer, Lärche, Buche, Eiche. 
       # Alle anderen Nadelbäume werden der Fichte und alle anderen Laubbäume der Buche zugeordnet.
-      # available groups/ species : BU, EI, ES, AH, BI, ERL, FI, KI, DGL
-  mutate( H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
+  mutate(H_SP_group = case_when(bot_genus == "Quercus"~ 'ei', 
                                  LH_NH == "LB" & bot_genus != "Quercus" ~ 'bu', 
                                  bot_genus == "Abies" ~ 'ta', 
                                  bot_genus == "Pinus" ~ 'ki', 
@@ -1114,8 +1158,9 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
                                    TRUE ~ 'other'), 
   # species groups to assign the correct woody biomass nitrogen content 
+    # available groups/ species : BU, EI, ES, AH, BI, ERL, FI, KI, DGL
           N_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'EI', 
-                          # LH_NH == "LB" & bot_genus == "Fagus"~ 'BU',
+                          # LH_NH == "LB" & bot_genus == "Fagus" ~ 'BU',
                            LH_NH == "LB" & bot_genus == "Acer"~ 'AH',
                            LH_NH == "LB" & bot_genus == "Fraxinus"~ 'ES',
                            LH_NH == "LB" & bot_genus == "Betula"~ 'BI',
@@ -1305,7 +1350,7 @@ anti_join(trees_total %>% left_join(.,
 # which is aparently only the both pine specise: 
 # KI    Pinus mugo      
 # KI    Pinus sylvestris
-# thus, I will create a column in the SP_dataset or the trees_total dataset that 
+# thus, I will create a column in the SP_dataset  (x_bart) or the trees_total dataset that 
 # contains the BWI codes that TapeS can read to then join the column from tapeS that is readable to the tapeS package, 
 # because for now I am joinin g based on the german abbreviations in tapeS in capital letters, which are not 
 # part of the original TapeS dataframe ( as I added them with the mutate toupper)
@@ -1354,75 +1399,8 @@ RG_total <- RG_total %>%
                               TRUE ~ SP_code)) %>% 
   # 1. joining in general species dataset with botanical names, TapeS species groups, etc. 
   left_join(., SP_names_com_ID_tapeS %>% 
-              mutate(Chr_ger_cap = toupper(Chr_code_ger), 
-                     BWI_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei', 
-                                              LH_NH == "LB" & bot_genus == "Fagus"~ 'bu',
-                                              LH_NH == "LB" & bot_genus %in% c("Acer", 
-                                                                               "Platanus", 
-                                                                               "Fraxinus",
-                                                                               "Tilia", 
-                                                                               "Juglans", 
-                                                                               "Corylus", 
-                                                                               "Robinia", 
-                                                                               "Castanea", 
-                                                                               "Carpinus", 
-                                                                               "Aesculus", 
-                                                                               "Sorbus",
-                                                                               "Ulmus", 
-                                                                               "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'aLh',
-                                              LH_NH == "LB" & !(bot_genus %in% c("Quercus", 
-                                                                                 "Fagus",
-                                                                                 "Acer", 
-                                                                                 "Platanus", 
-                                                                                 "Fraxinus",
-                                                                                 "Tilia", 
-                                                                                 "Juglans", 
-                                                                                 "Corylus", 
-                                                                                 "Robinia", 
-                                                                                 "Castanea", 
-                                                                                 "Carpinus", 
-                                                                                 "Aesculus", 
-                                                                                 "Sorbus",
-                                                                                 "Ulmus", 
-                                                                                 "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'aLn',
-                                              LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
-                                              LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', 
-                                              TRUE ~ 'other'), 
-                     Bio_SP_group = case_when(LH_NH == "LB" & bot_genus == "Quercus"~ 'ei',
-                                              # https://www.statology.org/not-in-r/
-                                              LH_NH == "LB" & bot_genus %in% c("Fagus",     # all species that are labelled "aLh" in the BWI are treated as  beech 
-                                                                               "Acer", 
-                                                                               "Platanus", 
-                                                                               "Fraxinus",
-                                                                               "Tilia", 
-                                                                               "Juglans", 
-                                                                               "Corylus", 
-                                                                               "Robinia", 
-                                                                               "Castanea", 
-                                                                               "Carpinus", 
-                                                                               "Aesculus", 
-                                                                               "Sorbus",
-                                                                               "Ulmus", 
-                                                                               "Rhamnus") | LH_NH == "LB" & bot_name == "Prunus dulcis" ~ 'bu',
-                                              LH_NH == "LB" & !(bot_genus %in% c("Quercus",  # all species that would be labelled "aLn" in the BWI species groups are allocated to soft hardwoods
-                                                                                 "Fagus",
-                                                                                 "Acer", 
-                                                                                 "Platanus", 
-                                                                                 "Fraxinus",
-                                                                                 "Tilia", 
-                                                                                 "Juglans", 
-                                                                                 "Corylus", 
-                                                                                 "Robinia", 
-                                                                                 "Castanea", 
-                                                                                 "Carpinus", 
-                                                                                 "Aesculus", 
-                                                                                 "Sorbus",
-                                                                                 "Ulmus", 
-                                                                                 "Rhamnus")) | LH_NH == "LB" & bot_name != "Prunus dulcis" ~ 'shw',
-                                              LH_NH == "NB" & bot_genus %in% c("Pinus", "Larix") ~ 'ki', 
-                                              LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Larix"))  ~ 'fi', # all coniferous species that are not Pine or larch are treated as spruce
-                                              TRUE ~ 'other')) %>% 
-              dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, tpS_ID), 
+              mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
+              dplyr::select(Chr_code_ger, Chr_ger_cap, bot_name, bot_genus, bot_species, LH_NH, BWI, BWI_SP_group, Bio_SP_group, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, tpS_ID), 
             by = c("SP_code" = "Chr_ger_cap"))  %>%
   # creating Species groups to assign the corect coefficients of the Annighöfer biomass functions based on BWI species groups
   mutate(Annig_SP_group = case_when(bot_genus == "Abies" ~  'WTA', 
@@ -1752,7 +1730,7 @@ BWI_DW_V_iB_TY <- BWI_DW_V_iB_TY %>%
 # ----- 1.4.4. Nitrogen content dataset ----------------------------------------
 # Reference: 
   # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
-  # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten
+  # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, Tab.: 3.2 - 3.6, S. 10
 # EI, BU, FI, KI, BI, DGL, LÄ, TA 
 
 N_con_w <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU", 
@@ -1764,7 +1742,7 @@ N_con_w <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU",
                                           "FI", "FI","FI", "FI", "FI", "FI", 
                                           "KI",  "KI","KI",  "KI",  "KI",  "KI", 
                                           "DGL", "DGL", "DGL", "DGL", "DGL", "DGL"),
-                    compartiment <- c("stw", "stwb","sw", "swb", "fw",               # beech
+                    compartiment <- c("stw", "stwb","sw", "swb", "fw",                # beech
                                       "stw", "stwb", "sw", "swb", "fw",               # oak
                                       "stw", "stwb", "sw", "swb", "fw",               # ash
                                       "stw", "stwb", "sw", "swb", "fw",               # maple
@@ -1773,15 +1751,15 @@ N_con_w <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU",
                                       "stw", "stwb", "sw", "swb", "fw", "f",          # spruce
                                       "stw", "stwb", "sw", "swb", "fw", "f",          # pine
                                       "stw", "stwb", "sw", "swb", "fw", "f"),         # douglas fir
-                    N_mean_gkg <- as.numeric(c(1.335, 7.227, 1.335, 7.227, 4.601,
-                                               1.752, 6.507, 1.752, 6.507, 6.209, 
-                                               1.438, 5.348, 1.438, 5.348, 3.721, 
-                                               1.465, 7.729, 1.465, 7.729, 4.278, 
-                                               1.828, 6.131, 1.828, 6.131, 6.057, 
-                                               2.475, 11.028, 2.475, 11.028, 7.214, 
-                                               0.812, 4.84, 0.812, 4.84, 4.343, 12.978, 
-                                               0.794, 4.339, 0.794, 4.339, 4.058, 15.201, 
-                                               0.701, 3.910, 0.701, 3.910, 4.203, 15.166)), 
+                    N_mean_gkg <- as.numeric(c(1.335, 7.227, 1.335, 7.227, 4.601,           # BU
+                                               1.752, 6.507, 1.752, 6.507, 6.209,           # EI
+                                               1.438, 5.348, 1.438, 5.348, 3.721,           # ES
+                                               1.465, 7.729, 1.465, 7.729, 4.278,           # AH  
+                                               1.828, 6.131, 1.828, 6.131, 6.057,           # BI
+                                               2.475, 11.028, 2.475, 11.028, 7.214,         # ERL
+                                               0.812, 4.84, 0.812, 4.84, 4.343, 12.978,     # FI
+                                               0.794, 4.339, 0.794, 4.339, 4.058, 15.201,   # KI
+                                               0.701, 3.910, 0.701, 3.910, 4.203, 15.166)), # DGL  
                     data_source <- c("Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018",
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", 
@@ -1793,6 +1771,7 @@ N_con_w <- as.data.frame(cbind(sp <- c("BU", "BU", "BU", "BU", "BU",
                                      "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018", "Rumpf et al. 2018")))
 colnames(N_con_w) <- c("SP_BWI", "compartiment", "N_mean_gkg", "reference")
 N_con_w <- N_con_w %>% 
+  # transforming concentration of N in g/kg = g/1000g into percent or decimal numberby dividing by 1000
   mutate(N_con = as.numeric(N_mean_gkg)/1000) %>% 
   unite(SP_com, SP_BWI:compartiment, remove = FALSE)
 
@@ -1888,8 +1867,6 @@ site_info <- site_info %>%
                             TRUE ~ NA))
 
   
-        
-
 # these are the species names and the SP_code i selected for them
   # if theres´s mixed species stand i assing the first mentioned species as the domiannt species
 site_info %>% select(SP_name) %>% distinct()
@@ -1912,9 +1889,10 @@ site_info %>% select(SP_name) %>% distinct()
 # 16                                       k.A.   NA
 # 17           Fichte, größtenteils abgestorben   FI
 # 18                     diverse, Erle, Birke,…   SER
+
+
+
 # ----- 2. CALCULATIONS --------------------------------------------------------
-
-
 # ----- 2.1. LIVING TREES -----------------------------------------------------------------
 # ----- 2.1.1. heights: regression models for missing tree heights ---------------------------------
 # find the plots and species that won´t have a height regression model because 
@@ -2245,28 +2223,28 @@ trees_total_5 <-  trees_total_5 %>%
                                  Bio_SP_group == "ki" & DBH_cm >= 59.0 |
                                  Bio_SP_group == "bu" & DBH_cm >= 86.0 |
                                  Bio_SP_group == "ei" & DBH_cm >= 94.0 |
-                                 Bio_SP_group == "shw" & DBH_cm >= 113.0 ~ Dunger_aB_DBHath(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+                                 Bio_SP_group == "shw" & DBH_cm >= 113.0 ~ GHGI_aB_DBHath(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
                                # trees >10cm DHB below species specific DBH threshold
                                Bio_SP_group == "fi" & DBH_cm >= 10 & DBH_cm < 69.0 |
                                  Bio_SP_group == "ki" & DBH_cm >= 10 & DBH_cm < 59.0 |
                                  Bio_SP_group == "bu" & DBH_cm >= 10 & DBH_cm < 86.0 |
                                  Bio_SP_group == "ei" & DBH_cm >= 10 & DBH_cm < 94.0 |
-                                 Bio_SP_group == "shw" & DBH_cm >= 10 & DBH_cm < 113.0 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
+                                 Bio_SP_group == "shw" & DBH_cm >= 10 & DBH_cm < 113.0 ~ GHGI_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), 
                                # trees < 10cm DBH & H < 1.3m 
-                               DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
-                               H_m <= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
+                               DBH_cm < 10 & H_m >= 1.3 ~ GHGI_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
+                               H_m <= 1.3 ~ GHGI_aB_Hb1.3(LH_NH, DBH_cm)),
         # belowground biomass
-             bg = Dunger_bB(Bio_SP_group, DBH_cm)) %>% 
+             bg = GHGI_bB(Bio_SP_group, DBH_cm)) %>% 
       #  # compartiments TapeS
-      mutate(ag = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                        # total aboveground biomass
-             f = ifelse(LH_NH == "NB", tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),  # foliage conifers 
-                                  Wutzler_fB_L1(DBH_cm, H_m)),                            # foliage broadleaves
+      mutate(ag = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                       # total aboveground biomass
+             f = ifelse(LH_NH == "NB", tapes_fB(tpS_ID, DBH_cm, DBH_h_m, H_m),  # foliage conifers:via TapeS
+                                  Wutzler_fB_L1(DBH_cm, H_m)),                  # foliage broadleaves: wutzler
              fw = tapes_brB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # Nichtderbholz, finebranches
-             sw = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      #coarsewood without bark, Derbholz                    
-             swb = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),
+             sw = tapes_swB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # solid wood without bark, Derbholz                    
+             swb = tapes_swbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # solid wood bark 
              stw = tapes_stwB(tpS_ID, DBH_cm, DBH_h_m, H_m),                    # stump wood 
              stwb = tapes_stwbB(tpS_ID, DBH_cm, DBH_h_m, H_m),                  # stumbwood bark
-             total = ag + bg) 
+             total = ifelse(LH_NH == "NB", ag + bg, ag + bg + f))                                                   # aboveground + belowground biomass
 
 # exporting dataset with compartiemnts in columns for summary
 trees_tot_piv_wider <- trees_total_5
@@ -2295,15 +2273,15 @@ trees_total_5 <-trees_total_5 %>%
     # 1. nitrogen stock in each compartiments & belowground
     trees_total_5_comb_bg <- trees_total_5 %>% 
       unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
-                    # if the compartiment is woody but not belowgroun or summed up (ag, total), calcualte N stock with N_all_w_com function
+                    # if the compartiment is woody but not belowground or summed up (ag, total), calcualte N stock with N_all_w_com function
       mutate( N_t = ifelse(!(compartiment %in% c("bg", "ag", "total", "f")), N_all_w_com(B_t_tapes[!(compartiment %in%c("bg", "ag", "total", "f"))],
                                                                                          SP_com[!(compartiment %in%c("bg", "ag", "total", "f"))]), 
                      # if the compartiment is belowgroun but not summed up (ag, total), calcualte N stock with N_bg function
                            ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
                                                              N_bg_SP_group[compartiment == "bg"]), 
                       # if the compartiment is foliage but not summed up (ag, total), calcualte N stock with N_f function
-                                  ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "bg"], 
-                                                                  N_f_SP_group_MoMoK[compartiment == "bg"]), 0)))) %>%  # the remaining compartiments (ag and total are set to 0)
+                                  ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "f"], 
+                                                                  N_f_SP_group_MoMoK[compartiment == "f"]), 0)))) %>%  # the remaining compartiments (ag and total are set to 0)
       filter(!(compartiment %in% c( "ag", "total"))) %>%                        # select only compartiment wise N stock and belowground N Stock by delselecting ag and total (which are anyways 0)
       select(ID_pt, CCS_nr, C_layer, compartiment, N_t),
     # 2. N summed up for aboveground
@@ -2330,15 +2308,15 @@ biotest <- trees_total_5 %>%
          DBH_h_m = DBH_h_cm/100) %>% 
   # biomass
         # GHG Dunger aboveground biomass (all woody compartments inkluding bark without leafes for broadleafed trees)
-  mutate(GHG_aB_kg = case_when(DBH_cm >= 10 ~ Dunger_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), # total aboveground biomass
-                           DBH_cm < 10 & H_m >= 1.3 ~ Dunger_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
-                           H_m >= 1.3 ~ Dunger_aB_Hb1.3(LH_NH, DBH_cm)),
+  mutate(GHG_aB_kg = case_when(DBH_cm >= 10 ~ GHGI_aB_DBHa10(Bio_SP_group, DBH_cm, D_03_cm, H_m), # total aboveground biomass
+                           DBH_cm < 10 & H_m >= 1.3 ~ GHGI_aB_H1.3_DBHb10(Bio_SP_group, DBH_cm), 
+                           H_m >= 1.3 ~ GHGI_aB_Hb1.3(LH_NH, DBH_cm)),
          # TapeS comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
          tapes_ab_kg = tapes_aB(tpS_ID, DBH_cm, DBH_h_m, H_m),                      # total aboveground biomass
          # vondernach comparable to GHG aB (all woody compartments inkluding bark without leafes for broadleafed trees)
          Vondr_oiB_kg = Vondr_oiB(H_SP_group, DBH_cm, H_m),                          # total aboveground biomass
          # GHG Dunger
-         GHG__bB_kg = Dunger_bB(Bio_SP_group, DBH_cm)) %>%                           # total belowground biomass
+         GHG__bB_kg = GHGI_bB(Bio_SP_group, DBH_cm)) %>%                           # total belowground biomass
          # WUtzler, Wirth
   mutate(WuWi_fB_kg = ifelse(LH_NH == "NB", Wirth_fB_N(DBH_cm, H_m, age), Wutzler_fB_L1(DBH_cm, H_m)), # foliage
          WuWi_fB_t_ha = WuWi_fB_kg/1000*plot_A_ha,                                              # total foliage abiomass in tons per hectare per tree 
@@ -2736,15 +2714,15 @@ RG_total_comparisson <- RG_total %>%
   # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
    mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
   # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
-          RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)),
-          RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
+          RG_GHG_aB_kg = ifelse(H_cm >= 130, GHGI_aB_H1.3_DBHb10(Bio_SP_group, D_cm), GHGI_aB_Hb1.3(LH_NH, H_cm/100)),
+          RG_GHG_bB_kg = ifelse (H_cm >= 130, GHGI_bB(Bio_SP_group, D_cm), 0), 
           RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
                                    tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), 
                                             RG_total %>%  mutate(D_cm = case_when(D_class_cm == 0 ~ 0, D_class_cm == 1 ~ (4.9+0)/2, D_class_cm == 2 ~ (5.9+5)/2,TRUE ~ (6.9+6)/2)) %>% 
                                               filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(D_cm), 
                                             dh = rep(1.3, nrow(RG_total %>% filter(H_cm > 130 & D_class_cm > 0))), 
                                            RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>% mutate (H_m = H_cm/100) %>% dplyr::pull(H_m)), 
-                                   Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
+                                   GHGI_aB_Hb1.3(LH_NH, H_cm/100))) %>% 
   # belated compartitioning via Poorter: calautaing foliage biomass to deduct it from total biomass
           # root to  leaf  ratio
   mutate(Poorter_fB_kg = Poorter_rg_RLR(RG_GHG_bB_kg, LH_NH),             
@@ -2796,7 +2774,7 @@ RG_total<- RG_total %>%
                           TRUE ~ (6.9+6)/2)) %>% 
   # total biomass
   # beloeground biomass for trees aith DBH according to GHGI --> TapeS cannot calculate belowground. 
-  mutate(RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0), 
+  mutate(RG_GHG_bB_kg = ifelse (H_cm >= 130, GHGI_bB(Bio_SP_group, D_cm), 0), 
          # if there is a DBH use tapeS aboveground biomass, if not use GHGI function
          RG_tapeS_ab_kg = ifelse( H_cm > 130 & D_class_cm > 0, 
                                   tapes_aB(RG_total %>%filter(H_cm > 130 & D_class_cm > 0) %>% dplyr::pull(tpS_ID), # spp
@@ -2809,7 +2787,7 @@ RG_total<- RG_total %>%
                                            RG_total %>% filter(H_cm > 130 & D_class_cm > 0) %>%                     # H_m, Hm 
                                              mutate (H_m = H_cm/100) %>% 
                                              dplyr::pull(H_m)), 
-                                  Dunger_aB_Hb1.3(LH_NH, H_cm/100))) %>%                  # if there´s no DBH use the GHGI formula for trees below 1.3m 
+                                  GHGI_aB_Hb1.3(LH_NH, H_cm/100))) %>%                  # if there´s no DBH use the GHGI formula for trees below 1.3m 
   # belated compartitioning via Poorter: calautaing foliage biomass to deduct it from total biomass
   # root to  leaf  ratio
   # tapeS foliage when possible (coniferous trees above 1.3m heihgt and DBH > 0), if not possible foliage via Poorter or 0 
@@ -5037,8 +5015,8 @@ RG_total.test <- RG_total %>%
   # Annighoefer biomass: if there is a DBH: Function including RCD, if H < 1.3m (so no diameter taken) use the Annighoefer equation that relies on height only
   mutate(Annig_aB_kg = ifelse(H_cm >= 130, annighoefer_rg_aB_H1.3_DBHb10(Annig_RCD_mm, H_cm, Annig_SP_group), annighoefer_rg_aB_bH1.3(H_cm, Annig_SP_group)),
          # GHGI biomass: if there is a DBH: function for trees above 1.3m but below 10cm DBH, for trees below 1.3m formula that relies on height
-         RG_GHG_aB_kg = ifelse(H_cm >= 130, Dunger_aB_H1.3_DBHb10(Bio_SP_group, D_cm), Dunger_aB_Hb1.3(LH_NH, H_cm/100)), 
-         RG_GHG_bB_kg = ifelse (H_cm >= 130, Dunger_bB(Bio_SP_group, D_cm), 0)) %>% 
+         RG_GHG_aB_kg = ifelse(H_cm >= 130, GHGI_aB_H1.3_DBHb10(Bio_SP_group, D_cm), GHGI_aB_Hb1.3(LH_NH, H_cm/100)), 
+         RG_GHG_bB_kg = ifelse (H_cm >= 130, GHGI_bB(Bio_SP_group, D_cm), 0)) %>% 
   # belated compartitioning via Poorter
   mutate(#Poorter_swB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH),           # root to leaf ratio
     Poorter_fB_kg = Poorter_rg_RSR(RG_GHG_bB_kg, LH_NH))%>%       # root to shoot ratio
