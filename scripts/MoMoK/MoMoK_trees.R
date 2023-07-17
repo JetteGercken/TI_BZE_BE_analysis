@@ -903,7 +903,8 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 # nitrogen stock for woody compartiments
 N_all_w_com <- function(B, comp, SP_com){
-  n_con_w <- N_con_w  %>% filter(compartiment != "f") %>% dplyr::pull(N_con, SP_com);
+  n_con_w <- N_con_w  %>%# filter(compartiment != "f") 
+    dplyr::pull(N_con, SP_com);
   # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
   # proably I will also have to assign new species groups to acces the foliage dataset correctly
      # n_con_w <- N_con_w  %>% dplyr::pull(N_con, SP_com);
@@ -2274,8 +2275,8 @@ trees_total_5 <-trees_total_5 %>%
     trees_total_5_comb_bg <- trees_total_5 %>% 
       unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
                     # if the compartiment is woody but not belowground or summed up (ag, total), calcualte N stock with N_all_w_com function
-      mutate( N_t = ifelse(!(compartiment %in% c("bg", "ag", "total", "f")), N_all_w_com(B_t_tapes[!(compartiment %in%c("bg", "ag", "total", "f"))],
-                                                                                         SP_com[!(compartiment %in%c("bg", "ag", "total", "f"))]), 
+      mutate(N_t = ifelse(!(compartiment %in% c("bg", "ag", "total", "f")), N_all_w_com(B_t_tapes[!(compartiment %in% c("bg", "ag", "total", "f"))],
+                                                                                         SP_com[!(compartiment %in% c("bg", "ag", "total", "f"))]), 
                      # if the compartiment is belowgroun but not summed up (ag, total), calcualte N stock with N_bg function
                            ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
                                                              N_bg_SP_group[compartiment == "bg"]), 
@@ -2298,6 +2299,12 @@ trees_total_5 <-trees_total_5 %>%
       mutate(compartiment = "total")),
     by = c("ID_pt",  "CCS_nr", "C_layer", "compartiment")) 
           
+
+trees_total_5 %>% 
+  filter(!compartiment %in% c("bg", "ag", "total", "f")) %>% 
+  mutate(N_all_w_com(B_t_tapes[!(compartiment %in% c("bg", "ag", "total", "f"))],
+                     SP_com[!(compartiment %in% c("bg", "ag", "total", "f"))]))
+
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -2444,9 +2451,9 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                                    SP_group == 3 ~ "EI", 
                                    TRUE ~ NA), 
          # translating Species groups into TapeS codes
-         SP_dw_tps = case_when(SP_group == 1 | (SP_group == 4 & LH_NH == "NB") ~ 1,
-                               SP_group == 2 | (SP_group == 4 & LH_NH == "LB") ~ 15,
-                               SP_group == 3 ~ 17,
+         SP_dw_tps = case_when(SP_group == 1 | (SP_group == 4 & LH_NH == "NB") ~ 1,  # Fi
+                               SP_group == 2 | (SP_group == 4 & LH_NH == "LB") ~ 15, # BU
+                               SP_group == 3 ~ 17,                                   # EI   
                                TRUE ~ NA), 
          S_L_DW_type = case_when(DW_type %in% c(4, 2, 3) ~ "S",  # if the deadwood type is 2, 3 (stehend; ganzer Baum und Bruchstück) or 4 (Wurzelstock) --> standing deadwood (S)
                                  DW_type %in% c(6, 1, 5) ~ "L", # if the deadwood type is 6 (im Haufen vorkommendes Totholz), 1 (leigend, starkes Totholz), 5 (liegend ganzer Baum) --> lying deadwood (L)
@@ -2508,12 +2515,12 @@ DW_total <- left_join(DW_total,
                            # calculating biomass in compartiments via TapeS
                            mutate(tapeS_wood = tapes_swB(SP_dw_tps, dw_D_g, D_h_m,  dw_H_dg_tapes),                               # solid wood
                                   tapeS_bark = tapes_swbB(SP_dw_tps, dw_D_g, D_h_m,  estHeight(d13 = dw_D_g, sp = SP_dw_tps)),      # solid wood bark 
-                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%      # ratio between solid wood bark vs. solid wood
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/(rdB_DW(tapeS_wood, SP_dec_type) + rdB_DW(tapeS_bark, SP_dec_type))) %>%      # ratio between solid wood bark vs. solid wood
                            dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark, dw_tapes_b_ratio)), 
                   # 2. dataset with bark ratio for stump wood for deadwood type 4 in decay state 1 & 2
                         (DW_total %>% 
                            # filter for the respective deadwood type and decay state
-                           filter(DW_type == 4 & dec_type_BWI < 3  & L_m  > 1.3) %>%
+                           filter(DW_type == 4 & dec_type_BWI < 3) %>%   #& L_m  > 1.3) %>%
                            mutate(SP_code = dom_SP,
                                   D_mm = D_cm*10, 
                                   DBH_h_m = 1.3) %>% 
@@ -2524,7 +2531,7 @@ DW_total <- left_join(DW_total,
                            # --> calculate D_g grouped by plot_ID and SP_dw_char and dec_type
                            # --> estimate height based on the tapes_D_g
                            left_join(., DW_total %>%
-                                       filter(DW_type == 4 & dec_type_BWI < 3  & L_m > 1.3) %>%
+                                       filter(DW_type == 4 & dec_type_BWI < 3) %>% #  & L_m > 1.3) %>%
                                        mutate(D_mm = D_cm*10,
                                               # estimating diameter via TapeS dirctly doesn´t work because on of the input variables is the tree height which is below 1.3m so it keeps returning 0 
                                               # https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
@@ -2535,7 +2542,7 @@ DW_total <- left_join(DW_total,
                                                                                   Ht = estHeight(d13 = ((D_mm*(1.0+(0.0011*(D_h_cm-130))))/10), 
                                                                                                  sp = SP_dw_tps), 
                                                                                   inv = 4), 
-                                                                              Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3 & L_m > 1.3))), cp=FALSE), 
+                                                                              Hx = rep(1.3, nrow(DW_total %>% filter(DW_type == 4 & dec_type_BWI < 3))), cp=FALSE),  # & L_m > 1.3))), cp=FALSE), 
                                               BA_m2 = ((tapeS_DBH_cm/100)/2)^2*pi) %>%                    # calcualting basal area with tapeS diameter /100 to get from cm to m 
                                        group_by(plot_ID, SP_group_char, dec_type_BWI) %>% 
                                        summarise(dw_D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100,                # Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm -> 1000mm
@@ -2552,7 +2559,7 @@ DW_total <- left_join(DW_total,
                            filter(DBH_h_m < dw_H_dg_tapes) %>% 
                            mutate(tapeS_wood = tapes_stwB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
                                   tapeS_bark = tapes_stwbB(SP_dw_tps, dw_D_g, DBH_h_m, dw_H_dg_tapes), 
-                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/rdB_DW(tapeS_wood, SP_dec_type)) %>%  
+                                  dw_tapes_b_ratio = rdB_DW(tapeS_bark, SP_dec_type)/(rdB_DW(tapeS_wood, SP_dec_type)+rdB_DW(tapeS_bark, SP_dec_type))) %>%  
                            # L> transforming tapeS biomass (for living trees)into tapeS biomass for dead trees via relative density (rdB_DW)
                            dplyr::select(plot_ID, t_ID, DW_type, dec_type_BWI, CCS_nr, tapeS_wood, tapeS_bark,  dw_tapes_b_ratio))), 
                       by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
@@ -2605,9 +2612,10 @@ DW_total <- left_join(DW_total,
                                                        L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
                                            SP_dec_type[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
                                     ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),     # st_tapeS_bark
-                                           rdB_DW(tapeS_bark[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]),  
+                                           rdB_DW(tapeS_bark[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)], 
+                                                  SP_dec_type[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]),  
                                            0)),                                                           # no
-         dw_tapes_fwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),     # yes: "tapes_foliage"
+         dw_tapes_fwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),     # yes: "tapes_fine wood"
                                   # I have to add fine wood for BWI_dec_type 2 too,
                                   # but to be able to calculate the whole biomass stepwise, 
                                   # but I will not add it to the final dw_kg column
@@ -2631,31 +2639,32 @@ DW_total <- left_join(DW_total,
   # stepwise cacluation of compartiemnt biomass via bio - tapeS 
         # solid wood
   mutate(dw_swB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m), 
-                            (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
+                            (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) - (dw_tapes_swbB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg),
                             ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
-                                   B_dw_kg-(B_dw_kg*(dw_tapes_swbB_kg/dw_tapes_swB_kg)),
+                                   B_dw_kg-(B_dw_kg*(dw_tapes_swbB_kg/(dw_tapes_swB_kg+dw_tapes_swbB_kg))),
                                    B_dw_kg)), 
          # solid wood bark
          dw_swbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),
-                             (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg),
+                             (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_tapes_stwB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg),
                              ifelse(DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
                                     B_dw_kg - dw_swB_kg,
                                     0)),
          # stump wood
          dw_stwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),
-                             (B_dw_kg +dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg),
+                             (B_dw_kg +dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_tapes_stwbB_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg),
                              ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio), 
-                                    B_dw_kg- (B_dw_kg*(dw_tapes_stwbB_kg/dw_tapes_stwB_kg)),
+                                    B_dw_kg - (B_dw_kg*(dw_tapes_stwbB_kg/(dw_tapes_stwB_kg+dw_tapes_stwbB_kg))),
                                     0)), 
          # stump wood bark
          dw_stwbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m), 
-                              (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg),
+                              (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) -(dw_swB_kg + dw_swbB_kg + dw_stwB_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg),
                               ifelse(DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio),
                                      B_dw_kg - dw_stwB_kg,
                                      0)),
          # fine wood
          dw_fwB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI == 1  & L_m  > 1.3 & !is.na(D_h_m), 
-                            dw_tapes_fwB_kg, 
+                            (B_dw_kg + dw_tapes_fwB_kg + dw_tapes_fB_kg) - (dw_swB_kg + dw_swbB_kg + dw_stwB_kg + dw_stwbB_kg + dw_tapes_fB_kg),
+                            #dw_tapes_fwB_kg, 
                             0),
          # aboveground 
          dw_ag_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI == 1 & L_m  > 1.3 & !is.na(D_h_m),
@@ -2669,7 +2678,7 @@ DW_total <- left_join(DW_total,
          N_dw_stwb_kg = N_swb(dw_stwbB_kg, N_SP_group))%>% 
   mutate(ag_N_dw_kg = N_dw_fw_kg + N_dw_sw_kg + N_dw_swb_kg + N_dw_stw_kg + N_dw_stwb_kg)
   
-
+dw_tapes_stwbB_kg 
 
 # checking summary
 summary(DW_total)
