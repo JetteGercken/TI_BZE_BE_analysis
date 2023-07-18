@@ -902,15 +902,14 @@ Poorter_rg_RLR <- function(bB, spec){ # instead of the species I have to put NH_
 
 # ----- 1.3.6. Nitrogen stock  --------------------------------------------
 # nitrogen stock for woody compartiments
-N_all_w_com <- function(B, comp, SP_com){
-  n_con_w <- N_con_w  %>%# filter(compartiment != "f") 
-    dplyr::pull(N_con, SP_com);
+N_all_w_com <- function(B, comp, SP_compart){
+  n_con_w <- N_con_w  %>% filter(compartiment != "f") %>% dplyr::pull(N_con, SP_com);
   # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
   # proably I will also have to assign new species groups to acces the foliage dataset correctly
      # n_con_w <- N_con_w  %>% dplyr::pull(N_con, SP_com);
      # n_con_f <- N_con_f  %>% dplyr::pull(N_con, N_f_SP_group_MoMoK);
    # N_stock <-  ifelse(comp != "f", B*n_con_w[SP_com], B*n_con_f[spec_f])
-     N_stock <-   B*n_con_w[SP_com];
+     N_stock <-   B*n_con_w[SP_compart];
   # return(B*n_con[SP_com])
   return(N_stock)
 }
@@ -1778,18 +1777,31 @@ N_con_w <- N_con_w %>%
 
 # modifying N content foliage dataset
 N_con_f <- N_con_f %>% 
-                     # calculate N content xg per 1kg = x g per 1000g --> divided by 1000 --> content of nitrogen per weight unit
-  mutate(N_mean_gkg = as.numeric(N_mean_gkg), 
-         N_con = (as.numeric(N_mean_gkg)/1000), 
-         compartiment = "f") %>% 
-  left_join(., SP_names_com_ID_tapeS %>% select(name, N_f_SP_group_MoMoK), 
+  mutate(N_mean_gkg = as.numeric(N_mean_gkg),                             # transfor N content in numeric values --> creates NAs where N content == NULL in original dataset
+         N_con = (as.numeric(N_mean_gkg)/1000),                                   # calculate N content xg per 1kg = x g per 1000g --> divided by 1000 --> content of nitrogen per weight unit
+         compartiment = "f") %>%                                                  # assign compartiment "f"
+  left_join(., SP_names_com_ID_tapeS %>% select(name, N_f_SP_group_MoMoK, LH_NH), # join in NH_LH category to build groups 
             by = "name") %>% 
-    select(plot_ID, site, name, N_f_SP_group_MoMoK, compartiment, N_mean_gkg, N_con) %>% 
+    select(plot_ID, site, name, LH_NH, N_f_SP_group_MoMoK, compartiment, N_mean_gkg, N_con) %>% 
   unite(SP_com, N_f_SP_group_MoMoK:compartiment, remove = FALSE) %>% 
-  group_by(name, N_f_SP_group_MoMoK, compartiment, SP_com) %>% 
+  group_by(name, N_f_SP_group_MoMoK, compartiment, SP_com, LH_NH) %>%                    # group by species group and compartiment
   filter(!is.na(N_mean_gkg)) %>% 
   summarize(N_mean_gkg = mean(as.numeric(N_mean_gkg)),
             N_con = mean((N_con)))
+
+# mean N content of all coniferous and broadleafed trees 
+N_con_f <- rbind(N_con_f,
+N_con_f %>% 
+  group_by(LH_NH) %>%                                    # group by broadleafed vs. coniferous
+  summarise(N_mean_gkg = mean(N_mean_gkg), 
+            N_con = mean(N_con)) %>% 
+  mutate(name = ifelse(LH_NH == "NB", "NB", "LB"), 
+         N_f_SP_group_MoMoK = ifelse(LH_NH == "NB", "aNB", "aLB"),
+         compartiment = "f") %>% 
+  unite(SP_com, N_f_SP_group_MoMoK:compartiment, remove = FALSE) %>%    
+  select(name, N_f_SP_group_MoMoK, compartiment, SP_com, LH_NH, N_mean_gkg, N_con)) # establish correct order for rbind
+  
+  
 
 
 # ----- 1.4.5. MoMoK site info dataset data wrangling ----------------------------------------
@@ -2258,8 +2270,8 @@ trees_total_5 <- trees_total_5 %>%
                 values_to = "B_kg_tapes", 
                 names_repair = "unique") %>% 
       # Carbon stock
-    mutate(B_t_tapes = B_kg_tapes/1000, 
-              C_aB_t_GHG = (aB_kg_GHG/1000)*0.5,
+    mutate(B_t_tapes = tons(B_kg_tapes), 
+              C_aB_t_GHG = tons(aB_kg_GHG)*0.5,
               C_t_tapes = B_t_tapes*0.5) 
 
 # export tree- and compartimentwise calculated biomass, carbon and nitrogen stocks
@@ -2274,15 +2286,16 @@ trees_total_5 <-trees_total_5 %>%
     # 1. nitrogen stock in each compartiments & belowground
     trees_total_5_comb_bg <- trees_total_5 %>% 
       unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
-                    # if the compartiment is woody but not belowground or summed up (ag, total), calcualte N stock with N_all_w_com function
-      mutate(N_t = ifelse(!(compartiment %in% c("bg", "ag", "total", "f")), N_all_w_com(B_t_tapes[!(compartiment %in% c("bg", "ag", "total", "f"))],
-                                                                                         SP_com[!(compartiment %in% c("bg", "ag", "total", "f"))]), 
-                     # if the compartiment is belowgroun but not summed up (ag, total), calcualte N stock with N_bg function
-                           ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
-                                                             N_bg_SP_group[compartiment == "bg"]), 
-                      # if the compartiment is foliage but not summed up (ag, total), calcualte N stock with N_f function
-                                  ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "f"], 
-                                                                  N_f_SP_group_MoMoK[compartiment == "f"]), 0)))) %>%  # the remaining compartiments (ag and total are set to 0)
+                  # if the compartiment is woody but not belowground or summed up (ag, total), calcualte N stock with N_all_w_com function
+      mutate(N_t = ifelse(compartiment %in% c("sw", "swb", "stw", "stwb", "fw"), 
+                          N_all_w_com(B = B_t_tapes[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")],
+                                      SP_compart = SP_com[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")]),
+                          # if the compartiment is foliage but not summed up (ag, total), calcualte N stock with N_f function
+                          ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "f"], 
+                                                          N_f_SP_group_MoMoK[compartiment == "f"]), 
+                                 # if the compartiment is belowgroun but not summed up (ag, total), calcualte N stock with N_bg function
+                                 ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
+                                                                    N_bg_SP_group[compartiment == "bg"]), 0)))) %>%  
       filter(!(compartiment %in% c( "ag", "total"))) %>%                        # select only compartiment wise N stock and belowground N Stock by delselecting ag and total (which are anyways 0)
       select(ID_pt, CCS_nr, C_layer, compartiment, N_t),
     # 2. N summed up for aboveground
@@ -2301,11 +2314,25 @@ trees_total_5 <-trees_total_5 %>%
           
 
 trees_total_5 %>% 
-  filter(!compartiment %in% c("bg", "ag", "total", "f")) %>% 
-  mutate(N_all_w_com(B_t_tapes[!(compartiment %in% c("bg", "ag", "total", "f"))],
-                     SP_com[!(compartiment %in% c("bg", "ag", "total", "f"))]))
+  unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>%
+ # filter(compartiment %in% c("sw", "swb", "stw", "stwb", "fw")) %>% 
+  mutate(N_t = ifelse(compartiment %in% c("sw", "swb", "stw", "stwb", "fw"), 
+                          N_all_w_com(B = B_t_tapes[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")],
+                                      SP_compart = SP_com[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")]),
+                          ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "f"], 
+                                                          N_f_SP_group_MoMoK[compartiment == "f"]), 
+                                 ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
+                                                                   N_bg_SP_group[compartiment == "bg"]), 0)))) 
+
+trees_total_5%>% 
+  unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
+  select(B_t_tapes, compartiment) %>% 
+  filter(!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f")))
 
 
+nrow(trees_total_5$SP_com[!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f"))])
+
+nrow(trees_total_5$B_t_tapes[!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f"))])
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
   select(plot_ID, SP_code, tpS_ID, Bio_SP_group, H_SP_group, LH_NH, DBH_cm, DBH_h_cm, D_03_cm, H_m, age, plot_A_ha) %>% 
