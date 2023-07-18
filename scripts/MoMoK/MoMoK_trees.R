@@ -2313,26 +2313,6 @@ trees_total_5 <-trees_total_5 %>%
     by = c("ID_pt",  "CCS_nr", "C_layer", "compartiment")) 
           
 
-trees_total_5 %>% 
-  unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>%
- # filter(compartiment %in% c("sw", "swb", "stw", "stwb", "fw")) %>% 
-  mutate(N_t = ifelse(compartiment %in% c("sw", "swb", "stw", "stwb", "fw"), 
-                          N_all_w_com(B = B_t_tapes[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")],
-                                      SP_compart = SP_com[compartiment %in% c("sw", "swb", "stw", "stwb", "fw")]),
-                          ifelse(compartiment == "f", N_f(B_t_tapes[compartiment == "f"], 
-                                                          N_f_SP_group_MoMoK[compartiment == "f"]), 
-                                 ifelse(compartiment == "bg", N_bg(B_t_tapes[compartiment == "bg"], 
-                                                                   N_bg_SP_group[compartiment == "bg"]), 0)))) 
-
-trees_total_5%>% 
-  unite(SP_com, c(N_SP_group, compartiment), remove = FALSE) %>% 
-  select(B_t_tapes, compartiment) %>% 
-  filter(!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f")))
-
-
-nrow(trees_total_5$SP_com[!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f"))])
-
-nrow(trees_total_5$B_t_tapes[!(trees_total_5$compartiment %in% c("bg", "ag", "total", "f"))])
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
   select(plot_ID, SP_code, tpS_ID, Bio_SP_group, H_SP_group, LH_NH, DBH_cm, DBH_h_cm, D_03_cm, H_m, age, plot_A_ha) %>% 
@@ -3247,12 +3227,19 @@ DW_P_DEC <- DW_total %>%
               distinct() %>%
               mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
               group_by(plot_ID) %>%
-              summarize(plot_A_ha = sum(CCS_A_ha)), 
+              summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+            mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
             by = "plot_ID") %>%
+  # hectar values
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha, 
-         V_tot_m3_ha = V_tot_m3/plot_A_ha,) %>%  
+         V_tot_m3_ha = V_tot_m3/plot_A_ha, 
+         # momok area values
+         B_tot_t_MA = (B_tot_t/plot_A_ha)*MoMoK_A_ha, 
+         C_tot_t_MA = (C_tot_t/plot_A_ha)*MoMoK_A_ha,
+         N_tot_t_MA = (N_tot_t/plot_A_ha)*MoMoK_A_ha, 
+         V_tot_m3_MA = (V_tot_m3/plot_A_ha)*MoMoK_A_ha) %>%  
   # data set with total biomass/ 
   left_join(., DW_total %>% 
               group_by(plot_ID) %>% 
@@ -3287,12 +3274,19 @@ DW_P_TY <- DW_total %>%
                 distinct() %>%
                 mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
                 group_by(plot_ID) %>%
-                summarize(plot_A_ha = sum(CCS_A_ha)), 
+                summarize(plot_A_ha = sum(CCS_A_ha)) %>% # calculate sum of area of all sampling circuits per plot to get plot area
+                mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
               by = "plot_ID") %>%
+         # hectar values
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
          N_tot_t_ha = N_tot_t/plot_A_ha, 
-         V_tot_m3_ha = V_tot_m3/plot_A_ha) %>%  
+         V_tot_m3_ha = V_tot_m3/plot_A_ha, 
+         # momok area values
+         B_tot_t_MA = (B_tot_t/plot_A_ha)*MoMoK_A_ha, 
+         C_tot_t_MA = (C_tot_t/plot_A_ha)*MoMoK_A_ha,
+         N_tot_t_MA = (N_tot_t/plot_A_ha)*MoMoK_A_ha, 
+         V_tot_m3_MA = (V_tot_m3/plot_A_ha)*MoMoK_A_ha) %>%  
   # data set with total biomass/ 
   left_join(., DW_total %>% 
               group_by(plot_ID) %>% 
@@ -3404,13 +3398,15 @@ RG_P_SP <- RG_total %>%
   left_join(., RG_total %>%
               filter(compartiment == "total") %>%
               group_by(plot_ID, CCS_nr) %>%
-              summarise(CCS_max_dist_m = mean(CCS_max_dist/100), 
+              summarise(CCS_max_dist_m = mean(CCS_max_dist/100),
+                        CCS_tot_B_t = sum(tons(B_kg)),
                         CCS_tot_C_t = sum(C_t),                    # total C stock in tons per sampling circuit
                         CCs_tot_N_t = sum(na.omit(N_kg/1000)),     # total N stock in tons per sampling circuit
                         CCS_tot_N_trees = n()) %>%                 # 10000 to transform m2 into ha, the plot radius has to be the distance of furthest plant to the RG sampling circuit
               mutate(CCS_A_ha = c_A(CCS_max_dist_m)/10000) %>% 
               group_by(plot_ID) %>% 
               summarise(plot_A_ha = sum(CCS_A_ha),                  # calcualte plot area in ha by summing up area of sampling circuits per plot
+                        plot_tot_B_t = sum(CCS_tot_B_t),     
                         plot_tot_C_t = sum(CCS_tot_C_t),                    # total C stock in tons per plot
                         plot_tot_N_t = sum(CCs_tot_N_t),     # total N stock in tons per plot
                         plot_tot_N_trees = sum(CCS_tot_N_trees)) %>%                 # total number of trees per plot
@@ -3421,6 +3417,7 @@ RG_P_SP <- RG_total %>%
          tot_N_trees_MA = (plot_tot_N_trees/plot_A_ha)*MoMok_A_ha,      # total number RG trees per MA
          SP_N_trees_ha = N_trees_plot/ plot_A_ha,                       #  number trees per species per ha
          SP_N_trees_MA =( N_trees_plot/ plot_A_ha)*MoMok_A_ha,          #  number trees per species per MA
+         B_SP_share = (B_t_plot/plot_tot_B_t)*100,
          C_SP_share = (C_t_plot/plot_tot_C_t)*100,                      # carbon share species
          N_SP_share = (N_t_plot/plot_tot_N_t)*100,                      # nitrogen share species
          N_trees_SP_share =  (N_trees_plot)/plot_tot_N_trees)           # number share species 
