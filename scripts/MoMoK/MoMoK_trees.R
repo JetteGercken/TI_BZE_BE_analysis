@@ -3212,7 +3212,8 @@ DW_P_DEC <- DW_total %>%
             L_mean = mean(L_m),
             B_tot_t = sum(tons(B_dw_kg)),
             C_tot_t = sum(tons(C_dw_kg)), 
-            N_tot_t = sum(tons(ag_N_dw_kg))) %>% 
+            N_tot_t = sum(tons(ag_N_dw_kg)),
+            V_tot_m3 = sum(na.omit(V_dw_m3))) %>% 
   # dataset with area per plot considering multipple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -3223,18 +3224,21 @@ DW_P_DEC <- DW_total %>%
             by = "plot_ID") %>%
   mutate(B_tot_t_ha = B_tot_t/plot_A_ha, 
          C_tot_t_ha = C_tot_t/plot_A_ha,
-         N_tot_t_ha = N_tot_t/plot_A_ha) %>%  
+         N_tot_t_ha = N_tot_t/plot_A_ha, 
+         V_tot_m3_ha = V_tot_m3/plot_A_ha,) %>%  
   # data set with total biomass/ 
   left_join(., DW_total %>% 
               group_by(plot_ID) %>% 
               summarise(plot_B_tot_t = sum(tons(B_dw_kg)),
                         plot_C_tot_t = sum(tons(C_dw_kg)), 
-                        plot_N_tot_t = sum(tons(ag_N_dw_kg))), 
+                        plot_N_tot_t = sum(tons(ag_N_dw_kg)), 
+                        plot_V_tot_m3 = sum(V_dw_m3)), 
             by= c("plot_ID")) %>% 
   mutate(C_share = (C_tot_t/plot_C_tot_t)*100,
          N_share = (N_tot_t/plot_N_tot_t)*100, 
-         B_share = (B_tot_t/plot_B_tot_t)*100) %>% 
-  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t"))
+         B_share = (B_tot_t/plot_B_tot_t)*100, 
+         V_share = (V_tot_m3/plot_V_tot_m3)*100) %>% 
+  dplyr::select(- c("plot_B_tot_t", "plot_C_tot_t", "plot_N_tot_t", "plot_V_tot_m3"))
 
 
 write.csv(DW_P_DEC, "output/out_data/DW_P_DEC_MoMoK.csv")
