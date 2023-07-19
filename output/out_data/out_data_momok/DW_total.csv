@@ -1,0 +1,761 @@
+"","plot_ID","loc_name","state","date","CCS_nr","t_ID","SP_group","DW_type","L_dm","D_cm","dec_type","dom_SP","tpS_SP_com_name","tpS_ID","LH_NH","L_m","D_m","D_h_m","dec_type_BWI"
+"1",32020,"Postluch/Britz","BB","15.02.2022","MB",1,1,1,120,15,4,"SER","Alnus spp.",28,"LB",12,0.15,1.3,3
+"2",32020,"Postluch/Britz","BB","15.02.2022","MB",2,1,1,169,19,4,"SER","Alnus spp.",28,"LB",16.9,0.19,1.3,3
+"3",32020,"Postluch/Britz","BB","15.02.2022","MB",3,1,1,20,15,3,"SER","Alnus spp.",28,"LB",2,0.15,1.3,2
+"4",32020,"Postluch/Britz","BB","15.02.2022","MB",4,1,1,10,11,3,"SER","Alnus spp.",28,"LB",1,0.11,1.3,2
+"5",32020,"Postluch/Britz","BB","15.02.2022","MB",5,1,1,55,25,4,"SER","Alnus spp.",28,"LB",5.5,0.25,1.3,3
+"6",32020,"Postluch/Britz","BB","15.02.2022","MB",6,1,1,74,12,4,"SER","Alnus spp.",28,"LB",7.4,0.12,1.3,3
+"7",32020,"Postluch/Britz","BB","15.02.2022","MB",7,1,4,2,40,5,"SER","Alnus spp.",28,"LB",0.2,0.4,1.3,4
+"8",32020,"Postluch/Britz","BB","15.02.2022","MB",8,1,1,1,25,5,"SER","Alnus spp.",28,"LB",0.1,0.25,1.3,4
+"9",32020,"Postluch/Britz","BB","15.02.2022","MB",9,1,1,7,14,4,"SER","Alnus spp.",28,"LB",0.7,0.14,1.3,3
+"10",32020,"Postluch/Britz","BB","15.02.2022","MB",10,1,1,64,16,5,"SER","Alnus spp.",28,"LB",6.4,0.16,1.3,4
+"11",32020,"Postluch/Britz","BB","15.02.2022","MB",11,1,4,3,16,5,"SER","Alnus spp.",28,"LB",0.3,0.16,1.3,4
+"12",32020,"Postluch/Britz","BB","15.02.2022","MB",12,1,1,69,14,4,"SER","Alnus spp.",28,"LB",6.9,0.14,1.3,3
+"13",32020,"Postluch/Britz","BB","15.02.2022","MB",13,1,1,96,17,2,"SER","Alnus spp.",28,"LB",9.6,0.17,1.3,1
+"14",32020,"Postluch/Britz","BB","15.02.2022","MB",14,1,4,3,12,4,"SER","Alnus spp.",28,"LB",0.3,0.12,1.3,3
+"15",32020,"Postluch/Britz","BB","15.02.2022","MB",15,1,4,8,17,5,"SER","Alnus spp.",28,"LB",0.8,0.17,1.3,4
+"16",32020,"Postluch/Britz","BB","15.02.2022","MB",16,1,4,3,32,3,"SER","Alnus spp.",28,"LB",0.3,0.32,1.3,2
+"17",32020,"Postluch/Britz","BB","15.02.2022","MB",17,1,4,3,23,4,"SER","Alnus spp.",28,"LB",0.3,0.23,1.3,3
+"18",32020,"Postluch/Britz","BB","15.02.2022","MB",18,1,1,50,13,2,"SER","Alnus spp.",28,"LB",5,0.13,1.3,1
+"19",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",1,2,4,2,30,4,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,3
+"20",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",2,2,4,3,19,5,"GFI","Picea abies",1,"NB",0.3,0.19,1.3,4
+"21",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",3,2,4,2.2,31,1,"GFI","Picea abies",1,"NB",0.22,0.31,1.3,1
+"22",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",4,2,4,2.3,27,4,"GFI","Picea abies",1,"NB",0.23,0.27,1.3,3
+"23",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",5,2,4,2.5,27,4,"GFI","Picea abies",1,"NB",0.25,0.27,1.3,3
+"24",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",6,2,4,2,26,3,"GFI","Picea abies",1,"NB",0.2,0.26,1.3,2
+"25",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",7,2,4,2.5,24,4,"GFI","Picea abies",1,"NB",0.25,0.24,1.3,3
+"26",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",8,2,4,3.4,26,4,"GFI","Picea abies",1,"NB",0.34,0.26,1.3,3
+"27",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",9,2,4,2.8,12,3,"GFI","Picea abies",1,"NB",0.28,0.12,1.3,2
+"28",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",10,2,4,3.3,47,5,"GFI","Picea abies",1,"NB",0.33,0.47,1.3,4
+"29",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",11,2,4,2,24,1,"GFI","Picea abies",1,"NB",0.2,0.24,1.3,1
+"30",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",12,2,4,2,14,2,"GFI","Picea abies",1,"NB",0.2,0.14,1.3,1
+"31",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",13,2,4,3,32,2,"GFI","Picea abies",1,"NB",0.3,0.32,1.3,1
+"32",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",14,2,4,3,40,4,"GFI","Picea abies",1,"NB",0.3,0.4,1.3,3
+"33",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",15,2,4,2.4,30,4,"GFI","Picea abies",1,"NB",0.24,0.3,1.3,3
+"34",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",16,2,4,2.4,32.5,3,"GFI","Picea abies",1,"NB",0.24,0.32,1.3,2
+"35",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",17,2,4,2.7,30,2,"GFI","Picea abies",1,"NB",0.27,0.3,1.3,1
+"36",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",18,2,4,2.2,51,4,"GFI","Picea abies",1,"NB",0.22,0.51,1.3,3
+"37",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",19,2,4,2.4,10.5,3,"GFI","Picea abies",1,"NB",0.24,0.1,1.3,2
+"38",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",20,2,4,2.1,26,1,"GFI","Picea abies",1,"NB",0.21,0.26,1.3,1
+"39",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",21,2,4,3.4,35,2,"GFI","Picea abies",1,"NB",0.34,0.35,1.3,1
+"40",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",22,2,4,2.5,14,1,"GFI","Picea abies",1,"NB",0.25,0.14,1.3,1
+"41",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",23,2,4,2,26.5,2,"GFI","Picea abies",1,"NB",0.2,0.26,1.3,1
+"42",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",24,2,4,3,20,3,"GFI","Picea abies",1,"NB",0.3,0.2,1.3,2
+"43",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",25,2,4,2.7,23,1,"GFI","Picea abies",1,"NB",0.27,0.23,1.3,1
+"44",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",26,2,4,2.6,28,2,"GFI","Picea abies",1,"NB",0.26,0.28,1.3,1
+"45",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",27,2,4,3,25,2,"GFI","Picea abies",1,"NB",0.3,0.25,1.3,1
+"46",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",28,2,4,2.1,45,5,"GFI","Picea abies",1,"NB",0.21,0.45,1.3,4
+"47",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",29,2,4,2,24.5,2,"GFI","Picea abies",1,"NB",0.2,0.24,1.3,1
+"48",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",30,2,4,2,11,3,"GFI","Picea abies",1,"NB",0.2,0.11,1.3,2
+"49",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",31,2,4,2,17,4,"GFI","Picea abies",1,"NB",0.2,0.17,1.3,3
+"50",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",32,2,4,3.4,48,4,"GFI","Picea abies",1,"NB",0.34,0.48,1.3,3
+"51",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",33,2,4,2,26.5,2,"GFI","Picea abies",1,"NB",0.2,0.26,1.3,1
+"52",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",34,2,4,2,13.5,3,"GFI","Picea abies",1,"NB",0.2,0.13,1.3,2
+"53",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",35,2,4,2.2,50.5,5,"GFI","Picea abies",1,"NB",0.22,0.5,1.3,4
+"54",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",36,2,4,2.7,25,2,"GFI","Picea abies",1,"NB",0.27,0.25,1.3,1
+"55",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",37,2,4,2,15.5,3,"GFI","Picea abies",1,"NB",0.2,0.15,1.3,2
+"56",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",38,2,4,4.1,51,4,"GFI","Picea abies",1,"NB",0.41,0.51,1.3,3
+"57",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",39,2,4,2.6,18.5,2,"GFI","Picea abies",1,"NB",0.26,0.18,1.3,1
+"58",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",40,2,4,2.4,24,1,"GFI","Picea abies",1,"NB",0.24,0.24,1.3,1
+"59",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",41,2,4,2.4,30,5,"GFI","Picea abies",1,"NB",0.24,0.3,1.3,4
+"60",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",42,2,4,3.2,34,4,"GFI","Picea abies",1,"NB",0.32,0.34,1.3,3
+"61",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",43,2,4,2.8,27.5,3,"GFI","Picea abies",1,"NB",0.28,0.27,1.3,2
+"62",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",44,2,2,85,16,2,"GFI","Picea abies",1,"NB",8.5,0.16,1.3,1
+"63",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",45,2,2,87,11.5,1,"GFI","Picea abies",1,"NB",8.7,0.11,1.3,1
+"64",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",46,2,2,35,10,3,"GFI","Picea abies",1,"NB",3.5,0.1,1.3,2
+"65",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",47,2,2,64,13,1,"GFI","Picea abies",1,"NB",6.4,0.13,1.3,1
+"66",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",48,2,2,97,10,1,"GFI","Picea abies",1,"NB",9.7,0.1,1.3,1
+"67",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",49,2,2,63,10,3,"GFI","Picea abies",1,"NB",6.3,0.1,1.3,2
+"68",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",50,2,2,58,11,3,"GFI","Picea abies",1,"NB",5.8,0.11,1.3,2
+"69",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",51,2,2,117,11,1,"GFI","Picea abies",1,"NB",11.7,0.11,1.3,1
+"70",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",52,2,2,86,15.5,2,"GFI","Picea abies",1,"NB",8.6,0.15,1.3,1
+"71",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",53,2,2,87,12,1,"GFI","Picea abies",1,"NB",8.7,0.12,1.3,1
+"72",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",54,2,2,20,12,3,"GFI","Picea abies",1,"NB",2,0.12,1.3,2
+"73",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",55,2,2,108,16,2,"GFI","Picea abies",1,"NB",10.8,0.16,1.3,1
+"74",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",56,2,2,98,13,2,"GFI","Picea abies",1,"NB",9.8,0.13,1.3,1
+"75",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",57,2,2,74,10,2,"GFI","Picea abies",1,"NB",7.4,0.1,1.3,1
+"76",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",58,2,2,137,16.5,1,"GFI","Picea abies",1,"NB",13.7,0.16,1.3,1
+"77",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",59,2,2,80,11,2,"GFI","Picea abies",1,"NB",8,0.11,1.3,1
+"78",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",60,2,1,65,6.5,2,"GFI","Picea abies",1,"NB",6.5,0.06,1.3,1
+"79",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",61,2,1,31,11,5,"GFI","Picea abies",1,"NB",3.1,0.11,1.3,4
+"80",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",62,2,1,70,7.5,2,"GFI","Picea abies",1,"NB",7,0.07,1.3,1
+"81",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",63,2,1,47,11.5,4,"GFI","Picea abies",1,"NB",4.7,0.11,1.3,3
+"82",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",64,2,1,51,8.5,3,"GFI","Picea abies",1,"NB",5.1,0.08,1.3,2
+"83",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",65,2,1,65,11,4,"GFI","Picea abies",1,"NB",6.5,0.11,1.3,3
+"84",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",66,2,1,52,11,5,"GFI","Picea abies",1,"NB",5.2,0.11,1.3,4
+"85",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",67,2,1,29,10,3,"GFI","Picea abies",1,"NB",2.9,0.1,1.3,2
+"86",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",68,2,1,100,12,5,"GFI","Picea abies",1,"NB",10,0.12,1.3,4
+"87",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",69,2,1,95,14,5,"GFI","Picea abies",1,"NB",9.5,0.14,1.3,4
+"88",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",70,2,1,11,13,3,"GFI","Picea abies",1,"NB",1.1,0.13,1.3,2
+"89",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",71,2,1,13,9.5,3,"GFI","Picea abies",1,"NB",1.3,0.09,1.3,2
+"90",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",72,2,1,10,11,3,"GFI","Picea abies",1,"NB",1,0.11,1.3,2
+"91",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",73,2,1,75,12.5,5,"GFI","Picea abies",1,"NB",7.5,0.12,1.3,4
+"92",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",74,2,1,51,11,5,"GFI","Picea abies",1,"NB",5.1,0.11,1.3,4
+"93",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",75,2,1,49,17,4,"GFI","Picea abies",1,"NB",4.9,0.17,1.3,3
+"94",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",76,2,1,46,9,3,"GFI","Picea abies",1,"NB",4.6,0.09,1.3,2
+"95",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",77,2,1,76,8,1,"GFI","Picea abies",1,"NB",7.6,0.08,1.3,1
+"96",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",78,2,1,113,8.5,2,"GFI","Picea abies",1,"NB",11.3,0.08,1.3,1
+"97",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",79,2,1,38,11.5,4,"GFI","Picea abies",1,"NB",3.8,0.11,1.3,3
+"98",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",80,2,1,30,15,3,"GFI","Picea abies",1,"NB",3,0.15,1.3,2
+"99",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",81,2,1,39,16,4,"GFI","Picea abies",1,"NB",3.9,0.16,1.3,3
+"100",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",82,2,1,15,13,4,"GFI","Picea abies",1,"NB",1.5,0.13,1.3,3
+"101",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",83,2,1,36,8,2,"GFI","Picea abies",1,"NB",3.6,0.08,1.3,1
+"102",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",84,2,1,61,8,2,"GFI","Picea abies",1,"NB",6.1,0.08,1.3,1
+"103",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",85,2,1,43,12,4,"GFI","Picea abies",1,"NB",4.3,0.12,1.3,3
+"104",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",86,2,1,57,9,3,"GFI","Picea abies",1,"NB",5.7,0.09,1.3,2
+"105",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",87,2,1,25,16.5,3,"GFI","Picea abies",1,"NB",2.5,0.16,1.3,2
+"106",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",88,2,1,13,11,4,"GFI","Picea abies",1,"NB",1.3,0.11,1.3,3
+"107",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",89,2,1,34,8.5,2,"GFI","Picea abies",1,"NB",3.4,0.08,1.3,1
+"108",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",90,2,1,71,7.5,2,"GFI","Picea abies",1,"NB",7.1,0.07,1.3,1
+"109",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",91,2,1,46,8,5,"GFI","Picea abies",1,"NB",4.6,0.08,1.3,4
+"110",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",92,2,1,53,14,4,"GFI","Picea abies",1,"NB",5.3,0.14,1.3,3
+"111",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",93,2,5,151,16.5,2,"GFI","Picea abies",1,"NB",15.1,0.16,1.3,1
+"112",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","1",94,2,5,134,22.5,1,"GFI","Picea abies",1,"NB",13.4,0.22,1.3,1
+"113",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",1,2,2,75,11,2,"GFI","Picea abies",1,"NB",7.5,0.11,1.3,1
+"114",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",2,2,2,141,22,1,"GFI","Picea abies",1,"NB",14.1,0.22,1.3,1
+"115",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",3,2,2,164,20.5,1,"GFI","Picea abies",1,"NB",16.4,0.2,1.3,1
+"116",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",4,1,2,107,12.5,2,"GFI","Picea abies",1,"NB",10.7,0.12,1.3,1
+"117",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",5,2,2,95,12,2,"GFI","Picea abies",1,"NB",9.5,0.12,1.3,1
+"118",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",6,2,3,46,17,2,"GFI","Picea abies",1,"NB",4.6,0.17,1.3,1
+"119",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",7,2,3,57,12,2,"GFI","Picea abies",1,"NB",5.7,0.12,1.3,1
+"120",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",8,2,3,58,11,2,"GFI","Picea abies",1,"NB",5.8,0.11,1.3,1
+"121",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",9,2,3,34,10,3,"GFI","Picea abies",1,"NB",3.4,0.1,1.3,2
+"122",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",10,2,3,81,18,1,"GFI","Picea abies",1,"NB",8.1,0.18,1.3,1
+"123",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",11,2,3,58,10,2,"GFI","Picea abies",1,"NB",5.8,0.1,1.3,1
+"124",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",12,2,4,2.6,20.5,4,"GFI","Picea abies",1,"NB",0.26,0.2,1.3,3
+"125",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",13,2,4,2.7,20,3,"GFI","Picea abies",1,"NB",0.27,0.2,1.3,2
+"126",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",14,2,4,2.3,21,4,"GFI","Picea abies",1,"NB",0.23,0.21,1.3,3
+"127",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",15,2,4,2.7,29.5,4,"GFI","Picea abies",1,"NB",0.27,0.29,1.3,3
+"128",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",16,2,4,2.6,24,1,"GFI","Picea abies",1,"NB",0.26,0.24,1.3,1
+"129",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",17,2,4,2.3,24,4,"GFI","Picea abies",1,"NB",0.23,0.24,1.3,3
+"130",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",18,2,4,3,46,2,"GFI","Picea abies",1,"NB",0.3,0.46,1.3,1
+"131",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",19,2,4,2.5,25,2,"GFI","Picea abies",1,"NB",0.25,0.25,1.3,1
+"132",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",20,2,4,2,23,2,"GFI","Picea abies",1,"NB",0.2,0.23,1.3,1
+"133",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",21,2,4,2.1,10.5,1,"GFI","Picea abies",1,"NB",0.21,0.1,1.3,1
+"134",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",22,2,4,2.2,15,3,"GFI","Picea abies",1,"NB",0.22,0.15,1.3,2
+"135",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",23,2,4,2,26.5,4,"GFI","Picea abies",1,"NB",0.2,0.26,1.3,3
+"136",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",24,2,4,2.9,27.5,5,"GFI","Picea abies",1,"NB",0.29,0.27,1.3,4
+"137",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",25,2,4,2.3,20,4,"GFI","Picea abies",1,"NB",0.23,0.2,1.3,3
+"138",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",26,2,4,2,14,3,"GFI","Picea abies",1,"NB",0.2,0.14,1.3,2
+"139",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",27,2,4,2.3,20.5,3,"GFI","Picea abies",1,"NB",0.23,0.2,1.3,2
+"140",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",28,2,4,2.3,24.5,3,"GFI","Picea abies",1,"NB",0.23,0.24,1.3,2
+"141",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",29,2,4,3.3,42,4,"GFI","Picea abies",1,"NB",0.33,0.42,1.3,3
+"142",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",30,2,4,2.2,37,5,"GFI","Picea abies",1,"NB",0.22,0.37,1.3,4
+"143",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",31,2,4,2,22,2,"GFI","Picea abies",1,"NB",0.2,0.22,1.3,1
+"144",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",32,2,4,2,24,3,"GFI","Picea abies",1,"NB",0.2,0.24,1.3,2
+"145",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",33,2,4,2,20,3,"GFI","Picea abies",1,"NB",0.2,0.2,1.3,2
+"146",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",34,2,4,2,21.5,5,"GFI","Picea abies",1,"NB",0.2,0.21,1.3,4
+"147",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",35,2,4,2.2,23,4,"GFI","Picea abies",1,"NB",0.22,0.23,1.3,3
+"148",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",36,2,4,2,28,5,"GFI","Picea abies",1,"NB",0.2,0.28,1.3,4
+"149",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",37,2,4,2.1,35,5,"GFI","Picea abies",1,"NB",0.21,0.35,1.3,4
+"150",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",38,2,4,2.9,33.5,5,"GFI","Picea abies",1,"NB",0.29,0.33,1.3,4
+"151",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",39,2,4,2.6,23,2,"GFI","Picea abies",1,"NB",0.26,0.23,1.3,1
+"152",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",40,2,4,2.3,25.5,3,"GFI","Picea abies",1,"NB",0.23,0.25,1.3,2
+"153",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",41,2,4,2.2,23,3,"GFI","Picea abies",1,"NB",0.22,0.23,1.3,2
+"154",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",42,2,4,2,21,3,"GFI","Picea abies",1,"NB",0.2,0.21,1.3,2
+"155",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",43,2,4,2.4,26,5,"GFI","Picea abies",1,"NB",0.24,0.26,1.3,4
+"156",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",44,2,4,2,19,2,"GFI","Picea abies",1,"NB",0.2,0.19,1.3,1
+"157",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",45,2,4,2.7,32,5,"GFI","Picea abies",1,"NB",0.27,0.32,1.3,4
+"158",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",46,2,4,3.2,25.5,1,"GFI","Picea abies",1,"NB",0.32,0.25,1.3,1
+"159",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",47,2,4,3.6,32.5,1,"GFI","Picea abies",1,"NB",0.36,0.32,1.3,1
+"160",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",48,2,4,2.2,18,4,"GFI","Picea abies",1,"NB",0.22,0.18,1.3,3
+"161",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",49,2,4,2.9,36.5,4,"GFI","Picea abies",1,"NB",0.29,0.36,1.3,3
+"162",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",50,2,5,111,10,2,"GFI","Picea abies",1,"NB",11.1,0.1,1.3,1
+"163",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",51,2,1,66,8,3,"GFI","Picea abies",1,"NB",6.6,0.08,1.3,2
+"164",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",52,2,1,98,13,5,"GFI","Picea abies",1,"NB",9.8,0.13,1.3,4
+"165",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",53,2,1,10,10,5,"GFI","Picea abies",1,"NB",1,0.1,1.3,4
+"166",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",54,2,1,11,10.5,2,"GFI","Picea abies",1,"NB",1.1,0.1,1.3,1
+"167",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",55,2,1,78,13,4,"GFI","Picea abies",1,"NB",7.8,0.13,1.3,3
+"168",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",56,2,1,109,9,2,"GFI","Picea abies",1,"NB",10.9,0.09,1.3,1
+"169",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",57,2,1,10,9,2,"GFI","Picea abies",1,"NB",1,0.09,1.3,1
+"170",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",58,2,1,24,8,4,"GFI","Picea abies",1,"NB",2.4,0.08,1.3,3
+"171",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",59,2,1,23,8,3,"GFI","Picea abies",1,"NB",2.3,0.08,1.3,2
+"172",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",60,2,1,62,8,3,"GFI","Picea abies",1,"NB",6.2,0.08,1.3,2
+"173",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",61,2,1,36,10,3,"GFI","Picea abies",1,"NB",3.6,0.1,1.3,2
+"174",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",62,2,1,101,9.5,5,"GFI","Picea abies",1,"NB",10.1,0.09,1.3,4
+"175",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",63,2,1,37,9,5,"GFI","Picea abies",1,"NB",3.7,0.09,1.3,4
+"176",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",64,2,1,83,9,2,"GFI","Picea abies",1,"NB",8.3,0.09,1.3,1
+"177",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",65,2,1,95,8.5,2,"GFI","Picea abies",1,"NB",9.5,0.08,1.3,1
+"178",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",66,2,1,14,11.5,3,"GFI","Picea abies",1,"NB",1.4,0.11,1.3,2
+"179",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",67,2,1,22,12,5,"GFI","Picea abies",1,"NB",2.2,0.12,1.3,4
+"180",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",68,2,1,94,17,4,"GFI","Picea abies",1,"NB",9.4,0.17,1.3,3
+"181",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",69,2,1,23,10,5,"GFI","Picea abies",1,"NB",2.3,0.1,1.3,4
+"182",34010,"Gr. Eisenstraßenmoor/Johanngeorgenstadt","SN","14.10.2021","2",70,2,1,30,8,5,"GFI","Picea abies",1,"NB",3,0.08,1.3,4
+"183",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",1,1,1,67,20,3,"SER","Alnus spp.",28,"LB",6.7,0.2,1.3,2
+"184",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",2,1,1,13,9,4,"SER","Alnus spp.",28,"LB",1.3,0.09,1.3,3
+"185",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",3,1,1,8,13,4,"SER","Alnus spp.",28,"LB",0.8,0.13,1.3,3
+"186",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",4,1,1,95,5,1,"SER","Alnus spp.",28,"LB",9.5,0.05,1.3,1
+"187",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",5,1,1,14,7,5,"SER","Alnus spp.",28,"LB",1.4,0.07,1.3,4
+"188",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",6,1,1,7,15,4,"SER","Alnus spp.",28,"LB",0.7,0.15,1.3,3
+"189",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",7,1,1,6,17,5,"SER","Alnus spp.",28,"LB",0.6,0.17,1.3,4
+"190",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",8,1,1,24,14,4,"SER","Alnus spp.",28,"LB",2.4,0.14,1.3,3
+"191",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",9,1,1,18,10,5,"SER","Alnus spp.",28,"LB",1.8,0.1,1.3,4
+"192",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",10,1,4,6,13,4,"SER","Alnus spp.",28,"LB",0.6,0.13,1.3,3
+"193",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",11,1,1,12,11,4,"SER","Alnus spp.",28,"LB",1.2,0.11,1.3,3
+"194",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",12,1,1,25,9,5,"SER","Alnus spp.",28,"LB",2.5,0.09,1.3,4
+"195",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",13,1,1,8,16,5,"SER","Alnus spp.",28,"LB",0.8,0.16,1.3,4
+"196",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",14,1,4,10,12,4,"SER","Alnus spp.",28,"LB",1,0.12,1.3,3
+"197",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",15,1,4,4,12,5,"SER","Alnus spp.",28,"LB",0.4,0.12,1.3,4
+"198",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",16,1,1,5,27,5,"SER","Alnus spp.",28,"LB",0.5,0.27,1.3,4
+"199",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",17,1,4,7,22,5,"SER","Alnus spp.",28,"LB",0.7,0.22,1.3,4
+"200",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",18,1,4,5,20,5,"SER","Alnus spp.",28,"LB",0.5,0.2,1.3,4
+"201",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",19,1,1,5,25,2,"SER","Alnus spp.",28,"LB",0.5,0.25,1.3,1
+"202",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",20,1,1,73,7,1,"SER","Alnus spp.",28,"LB",7.3,0.07,1.3,1
+"203",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",21,1,4,3,20,5,"SER","Alnus spp.",28,"LB",0.3,0.2,1.3,4
+"204",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",22,1,4,8,18,4,"SER","Alnus spp.",28,"LB",0.8,0.18,1.3,3
+"205",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",23,1,1,7,19,5,"SER","Alnus spp.",28,"LB",0.7,0.19,1.3,4
+"206",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",24,1,4,10,37,5,"SER","Alnus spp.",28,"LB",1,0.37,1.3,4
+"207",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",25,1,1,22,11,4,"SER","Alnus spp.",28,"LB",2.2,0.11,1.3,3
+"208",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",26,1,4,9,13,5,"SER","Alnus spp.",28,"LB",0.9,0.13,1.3,4
+"209",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",27,1,4,4,17,5,"SER","Alnus spp.",28,"LB",0.4,0.17,1.3,4
+"210",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",28,1,4,4,22,4,"SER","Alnus spp.",28,"LB",0.4,0.22,1.3,3
+"211",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",29,1,1,38,10,4,"SER","Alnus spp.",28,"LB",3.8,0.1,1.3,3
+"212",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",30,1,1,11,10,4,"SER","Alnus spp.",28,"LB",1.1,0.1,1.3,3
+"213",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",31,1,1,20,12,4,"SER","Alnus spp.",28,"LB",2,0.12,1.3,3
+"214",32010,"Buxpfuhl/Melchow","BB","20.04.2022","MB",32,1,5,107,11,1,"SER","Alnus spp.",28,"LB",10.7,0.11,1.3,1
+"215",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",1,1,1,61,14,5,"MBI","Betula spp.",26,"LB",6.1,0.14,1.3,4
+"216",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",2,1,1,48,15,5,"MBI","Betula spp.",26,"LB",4.8,0.15,1.3,4
+"217",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",3,1,1,65,9,5,"MBI","Betula spp.",26,"LB",6.5,0.09,1.3,4
+"218",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",4,1,1,46,11,5,"MBI","Betula spp.",26,"LB",4.6,0.11,1.3,4
+"219",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",5,1,1,50,12,5,"MBI","Betula spp.",26,"LB",5,0.12,1.3,4
+"220",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",6,1,1,35,10,5,"MBI","Betula spp.",26,"LB",3.5,0.1,1.3,4
+"221",32050,"Stromtrasse/Spechti","BB","05.05.2022","MB",7,1,1,46,9,5,"MBI","Betula spp.",26,"LB",4.6,0.09,1.3,4
+"222",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",1,1,3,28,10,4,"SER","Alnus spp.",28,"LB",2.8,0.1,1.3,3
+"223",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",2,1,1,28,12,2,"SER","Alnus spp.",28,"LB",2.8,0.12,1.3,1
+"224",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",3,1,1,66,8,1,"SER","Alnus spp.",28,"LB",6.6,0.08,1.3,1
+"225",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",4,1,1,32,11,2,"SER","Alnus spp.",28,"LB",3.2,0.11,1.3,1
+"226",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",5,1,4,7,20,3,"SER","Alnus spp.",28,"LB",0.7,0.2,1.3,2
+"227",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",6,1,1,90,16,2,"SER","Alnus spp.",28,"LB",9,0.16,1.3,1
+"228",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",7,1,1,61,11,2,"SER","Alnus spp.",28,"LB",6.1,0.11,1.3,1
+"229",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",8,1,1,30,8,2,"SER","Alnus spp.",28,"LB",3,0.08,1.3,1
+"230",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",9,1,1,23,12,2,"SER","Alnus spp.",28,"LB",2.3,0.12,1.3,1
+"231",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",10,1,1,38,14,2,"SER","Alnus spp.",28,"LB",3.8,0.14,1.3,1
+"232",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",11,1,4,11,17,1,"SER","Alnus spp.",28,"LB",1.1,0.17,1.3,1
+"233",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",12,1,1,92,9,1,"SER","Alnus spp.",28,"LB",9.2,0.09,1.3,1
+"234",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",13,1,4,10,18,4,"SER","Alnus spp.",28,"LB",1,0.18,1.3,3
+"235",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",14,1,1,88,12,2,"SER","Alnus spp.",28,"LB",8.8,0.12,1.3,1
+"236",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",15,1,4,3,15,4,"SER","Alnus spp.",28,"LB",0.3,0.15,1.3,3
+"237",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",16,1,1,30,9,3,"SER","Alnus spp.",28,"LB",3,0.09,1.3,2
+"238",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",17,1,1,54,13,3,"SER","Alnus spp.",28,"LB",5.4,0.13,1.3,2
+"239",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",18,1,1,25,10,3,"SER","Alnus spp.",28,"LB",2.5,0.1,1.3,2
+"240",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",19,1,4,9,18,3,"SER","Alnus spp.",28,"LB",0.9,0.18,1.3,2
+"241",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",20,1,1,40,12,3,"SER","Alnus spp.",28,"LB",4,0.12,1.3,2
+"242",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",21,1,1,8,14,3,"SER","Alnus spp.",28,"LB",0.8,0.14,1.3,2
+"243",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",22,1,1,7,13,3,"SER","Alnus spp.",28,"LB",0.7,0.13,1.3,2
+"244",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",23,1,1,16,14,3,"SER","Alnus spp.",28,"LB",1.6,0.14,1.3,2
+"245",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",24,1,3,18,15,4,"SER","Alnus spp.",28,"LB",1.8,0.15,1.3,3
+"246",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",25,1,1,16,14,3,"SER","Alnus spp.",28,"LB",1.6,0.14,1.3,2
+"247",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",26,1,3,35,15,4,"SER","Alnus spp.",28,"LB",3.5,0.15,1.3,3
+"248",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",27,1,1,29,15,2,"SER","Alnus spp.",28,"LB",2.9,0.15,1.3,1
+"249",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",28,1,4,7,15,5,"SER","Alnus spp.",28,"LB",0.7,0.15,1.3,4
+"250",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",29,1,4,6,17,5,"SER","Alnus spp.",28,"LB",0.6,0.17,1.3,4
+"251",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",30,1,4,9,14,5,"SER","Alnus spp.",28,"LB",0.9,0.14,1.3,4
+"252",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",31,1,4,5,17,5,"SER","Alnus spp.",28,"LB",0.5,0.17,1.3,4
+"253",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",32,1,4,7,15,5,"SER","Alnus spp.",28,"LB",0.7,0.15,1.3,4
+"254",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",33,1,1,30,10,3,"SER","Alnus spp.",28,"LB",3,0.1,1.3,2
+"255",32070,"Hellsee/Biesenthal","BB","04.07.2022","MB",34,1,3,56,20,2,"SER","Alnus spp.",28,"LB",5.6,0.2,1.3,1
+"256",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",1,1,2,137,12,1,"SER","Alnus spp.",28,"LB",13.7,0.12,1.3,1
+"257",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",2,1,2,154,11,1,"SER","Alnus spp.",28,"LB",15.4,0.11,1.3,1
+"258",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",3,1,2,137,11,1,"SER","Alnus spp.",28,"LB",13.7,0.11,1.3,1
+"259",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",4,1,3,61,10,1,"SER","Alnus spp.",28,"LB",6.1,0.1,1.3,1
+"260",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",5,1,3,113,10,1,"SER","Alnus spp.",28,"LB",11.3,0.1,1.3,1
+"261",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",6,1,2,143,12,2,"SER","Alnus spp.",28,"LB",14.3,0.12,1.3,1
+"262",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",7,1,3,152,13,2,"SER","Alnus spp.",28,"LB",15.2,0.13,1.3,1
+"263",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",8,1,2,134,10,1,"SER","Alnus spp.",28,"LB",13.4,0.1,1.3,1
+"264",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",9,1,2,138,11,1,"SER","Alnus spp.",28,"LB",13.8,0.11,1.3,1
+"265",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",10,1,2,159,14,1,"SER","Alnus spp.",28,"LB",15.9,0.14,1.3,1
+"266",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",11,1,2,153,14,1,"SER","Alnus spp.",28,"LB",15.3,0.14,1.3,1
+"267",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",12,1,3,16,11,1,"SER","Alnus spp.",28,"LB",1.6,0.11,1.3,1
+"268",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",13,1,3,120,14,2,"SER","Alnus spp.",28,"LB",12,0.14,1.3,1
+"269",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",14,1,2,152,12,1,"SER","Alnus spp.",28,"LB",15.2,0.12,1.3,1
+"270",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",15,1,3,48,10,2,"SER","Alnus spp.",28,"LB",4.8,0.1,1.3,1
+"271",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",16,1,2,146,18,1,"SER","Alnus spp.",28,"LB",14.6,0.18,1.3,1
+"272",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",17,1,2,141,14,2,"SER","Alnus spp.",28,"LB",14.1,0.14,1.3,1
+"273",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",18,1,2,128,10,2,"SER","Alnus spp.",28,"LB",12.8,0.1,1.3,1
+"274",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",19,1,2,174,11,2,"SER","Alnus spp.",28,"LB",17.4,0.11,1.3,1
+"275",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",20,1,3,139,12,2,"SER","Alnus spp.",28,"LB",13.9,0.12,1.3,1
+"276",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",21,1,2,178,15,1,"SER","Alnus spp.",28,"LB",17.8,0.15,1.3,1
+"277",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",22,1,3,27,13,1,"SER","Alnus spp.",28,"LB",2.7,0.13,1.3,1
+"278",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",23,1,3,33,11,1,"SER","Alnus spp.",28,"LB",3.3,0.11,1.3,1
+"279",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",24,1,2,185,17,1,"SER","Alnus spp.",28,"LB",18.5,0.17,1.3,1
+"280",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",25,1,3,18,16,1,"SER","Alnus spp.",28,"LB",1.8,0.16,1.3,1
+"281",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",26,1,3,12,14,2,"SER","Alnus spp.",28,"LB",1.2,0.14,1.3,1
+"282",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",27,1,3,42,18,1,"SER","Alnus spp.",28,"LB",4.2,0.18,1.3,1
+"283",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",28,1,2,173,12,1,"SER","Alnus spp.",28,"LB",17.3,0.12,1.3,1
+"284",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",29,1,2,159,16,2,"SER","Alnus spp.",28,"LB",15.9,0.16,1.3,1
+"285",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",30,1,3,40,21,1,"SER","Alnus spp.",28,"LB",4,0.21,1.3,1
+"286",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",31,1,2,189,16,2,"SER","Alnus spp.",28,"LB",18.9,0.16,1.3,1
+"287",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",32,1,2,178,19,1,"SER","Alnus spp.",28,"LB",17.8,0.19,1.3,1
+"288",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",33,1,2,172,15,1,"SER","Alnus spp.",28,"LB",17.2,0.15,1.3,1
+"289",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",34,1,2,157,10,1,"SER","Alnus spp.",28,"LB",15.7,0.1,1.3,1
+"290",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",35,1,2,172,13,1,"SER","Alnus spp.",28,"LB",17.2,0.13,1.3,1
+"291",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",36,1,2,190,22,2,"SER","Alnus spp.",28,"LB",19,0.22,1.3,1
+"292",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",37,1,4,9,10,1,"SER","Alnus spp.",28,"LB",0.9,0.1,1.3,1
+"293",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",38,1,2,153,11,1,"SER","Alnus spp.",28,"LB",15.3,0.11,1.3,1
+"294",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",39,1,3,152,11,1,"SER","Alnus spp.",28,"LB",15.2,0.11,1.3,1
+"295",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",40,1,2,151,13,2,"SER","Alnus spp.",28,"LB",15.1,0.13,1.3,1
+"296",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",41,1,3,40,11,1,"SER","Alnus spp.",28,"LB",4,0.11,1.3,1
+"297",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",42,1,4,10,10,2,"SER","Alnus spp.",28,"LB",1,0.1,1.3,1
+"298",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",43,1,2,164,10,1,"SER","Alnus spp.",28,"LB",16.4,0.1,1.3,1
+"299",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",44,1,1,71,14,2,"SER","Alnus spp.",28,"LB",7.1,0.14,1.3,1
+"300",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",45,1,1,50,11,2,"SER","Alnus spp.",28,"LB",5,0.11,1.3,1
+"301",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",46,1,1,65,12,2,"SER","Alnus spp.",28,"LB",6.5,0.12,1.3,1
+"302",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",47,1,1,61,14,2,"SER","Alnus spp.",28,"LB",6.1,0.14,1.3,1
+"303",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",48,1,1,31,11,2,"SER","Alnus spp.",28,"LB",3.1,0.11,1.3,1
+"304",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",49,1,1,27,9,2,"SER","Alnus spp.",28,"LB",2.7,0.09,1.3,1
+"305",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",50,1,1,108,11,2,"SER","Alnus spp.",28,"LB",10.8,0.11,1.3,1
+"306",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",51,1,1,70,10,2,"SER","Alnus spp.",28,"LB",7,0.1,1.3,1
+"307",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",52,1,1,37,11,2,"SER","Alnus spp.",28,"LB",3.7,0.11,1.3,1
+"308",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",53,1,4,7,11,2,"SER","Alnus spp.",28,"LB",0.7,0.11,1.3,1
+"309",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",54,1,1,46,9,2,"SER","Alnus spp.",28,"LB",4.6,0.09,1.3,1
+"310",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",55,1,4,6,10,2,"SER","Alnus spp.",28,"LB",0.6,0.1,1.3,1
+"311",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",56,1,1,41,9,2,"SER","Alnus spp.",28,"LB",4.1,0.09,1.3,1
+"312",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",57,1,4,5,10,2,"SER","Alnus spp.",28,"LB",0.5,0.1,1.3,1
+"313",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",58,1,4,5,10,2,"SER","Alnus spp.",28,"LB",0.5,0.1,1.3,1
+"314",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",59,1,1,90,10,2,"SER","Alnus spp.",28,"LB",9,0.1,1.3,1
+"315",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",60,1,1,60,8,2,"SER","Alnus spp.",28,"LB",6,0.08,1.3,1
+"316",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",61,1,2,126,10,2,"SER","Alnus spp.",28,"LB",12.6,0.1,1.3,1
+"317",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",62,1,2,150,13,2,"SER","Alnus spp.",28,"LB",15,0.13,1.3,1
+"318",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",63,1,1,50,11,2,"SER","Alnus spp.",28,"LB",5,0.11,1.3,1
+"319",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",64,1,4,6,18,2,"SER","Alnus spp.",28,"LB",0.6,0.18,1.3,1
+"320",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",65,1,1,80,13,2,"SER","Alnus spp.",28,"LB",8,0.13,1.3,1
+"321",32090,"Pfauenfließ/Biesenthal","BB","30.06.2022","MB",66,1,1,65,13,2,"SER","Alnus spp.",28,"LB",6.5,0.13,1.3,1
+"322",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",1,1,4,11,10,5,"MBI","Betula spp.",26,"LB",1.1,0.1,1.3,4
+"323",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",2,1,1,12,10,5,"MBI","Betula spp.",26,"LB",1.2,0.1,1.3,4
+"324",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",3,1,4,3,13,5,"MBI","Betula spp.",26,"LB",0.3,0.13,1.3,4
+"325",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",4,1,1,5,8,5,"MBI","Betula spp.",26,"LB",0.5,0.08,1.3,4
+"326",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",5,1,1,10,16,5,"MBI","Betula spp.",26,"LB",1,0.16,1.3,4
+"327",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",6,1,1,3,10,5,"MBI","Betula spp.",26,"LB",0.3,0.1,1.3,4
+"328",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",7,1,1,10,13,5,"MBI","Betula spp.",26,"LB",1,0.13,1.3,4
+"329",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",8,1,1,8,8,5,"MBI","Betula spp.",26,"LB",0.8,0.08,1.3,4
+"330",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",9,1,1,6,10,5,"MBI","Betula spp.",26,"LB",0.6,0.1,1.3,4
+"331",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",10,1,4,3,13,5,"MBI","Betula spp.",26,"LB",0.3,0.13,1.3,4
+"332",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",11,1,1,6,10,5,"MBI","Betula spp.",26,"LB",0.6,0.1,1.3,4
+"333",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",12,1,1,32,10,3,"MBI","Betula spp.",26,"LB",3.2,0.1,1.3,2
+"334",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",13,1,1,100,8,2,"MBI","Betula spp.",26,"LB",10,0.08,1.3,1
+"335",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",14,1,4,4,12,4,"MBI","Betula spp.",26,"LB",0.4,0.12,1.3,3
+"336",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",15,1,1,26,9,3,"MBI","Betula spp.",26,"LB",2.6,0.09,1.3,2
+"337",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",16,1,1,7,9,5,"MBI","Betula spp.",26,"LB",0.7,0.09,1.3,4
+"338",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",17,1,1,140,8,2,"MBI","Betula spp.",26,"LB",14,0.08,1.3,1
+"339",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",18,4,1,2,23,5,"MBI","Betula spp.",26,"LB",0.2,0.23,1.3,4
+"340",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",19,1,1,10,13,5,"MBI","Betula spp.",26,"LB",1,0.13,1.3,4
+"341",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",20,1,1,14,8,5,"MBI","Betula spp.",26,"LB",1.4,0.08,1.3,4
+"342",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",21,1,4,4,45,5,"MBI","Betula spp.",26,"LB",0.4,0.45,1.3,4
+"343",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",22,4,4,8,16,5,"MBI","Betula spp.",26,"LB",0.8,0.16,1.3,4
+"344",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",23,1,1,19,12,5,"MBI","Betula spp.",26,"LB",1.9,0.12,1.3,4
+"345",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",24,1,1,13,13,5,"MBI","Betula spp.",26,"LB",1.3,0.13,1.3,4
+"346",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",25,1,1,20,10,5,"MBI","Betula spp.",26,"LB",2,0.1,1.3,4
+"347",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",26,1,1,6,12,5,"MBI","Betula spp.",26,"LB",0.6,0.12,1.3,4
+"348",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",27,1,4,9,11,5,"MBI","Betula spp.",26,"LB",0.9,0.11,1.3,4
+"349",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",28,1,1,11,11,5,"MBI","Betula spp.",26,"LB",1.1,0.11,1.3,4
+"350",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",29,1,4,3,10,5,"MBI","Betula spp.",26,"LB",0.3,0.1,1.3,4
+"351",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",30,1,4,6,11,5,"MBI","Betula spp.",26,"LB",0.6,0.11,1.3,4
+"352",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",31,1,1,7,15,5,"MBI","Betula spp.",26,"LB",0.7,0.15,1.3,4
+"353",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",32,1,1,22,11,5,"MBI","Betula spp.",26,"LB",2.2,0.11,1.3,4
+"354",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",33,1,1,15,9,5,"MBI","Betula spp.",26,"LB",1.5,0.09,1.3,4
+"355",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",34,1,1,13,11,5,"MBI","Betula spp.",26,"LB",1.3,0.11,1.3,4
+"356",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",35,1,1,130,7,1,"MBI","Betula spp.",26,"LB",13,0.07,1.3,1
+"357",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",36,1,4,2,14,5,"MBI","Betula spp.",26,"LB",0.2,0.14,1.3,4
+"358",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",37,1,1,14,10,4,"MBI","Betula spp.",26,"LB",1.4,0.1,1.3,3
+"359",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",38,1,1,19,9,3,"MBI","Betula spp.",26,"LB",1.9,0.09,1.3,2
+"360",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",39,1,1,37,8,2,"MBI","Betula spp.",26,"LB",3.7,0.08,1.3,1
+"361",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",40,1,1,32,6,2,"MBI","Betula spp.",26,"LB",3.2,0.06,1.3,1
+"362",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",41,1,1,15,8,3,"MBI","Betula spp.",26,"LB",1.5,0.08,1.3,2
+"363",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",42,1,1,27,8,4,"MBI","Betula spp.",26,"LB",2.7,0.08,1.3,3
+"364",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",43,1,4,4,26,3,"MBI","Betula spp.",26,"LB",0.4,0.26,1.3,2
+"365",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",44,1,1,103,8,2,"MBI","Betula spp.",26,"LB",10.3,0.08,1.3,1
+"366",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",45,1,1,32,9,2,"MBI","Betula spp.",26,"LB",3.2,0.09,1.3,1
+"367",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",46,1,1,7,14,5,"MBI","Betula spp.",26,"LB",0.7,0.14,1.3,4
+"368",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",47,1,4,3,20,5,"MBI","Betula spp.",26,"LB",0.3,0.2,1.3,4
+"369",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",48,1,4,2,20,5,"MBI","Betula spp.",26,"LB",0.2,0.2,1.3,4
+"370",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",49,1,1,25,8,4,"MBI","Betula spp.",26,"LB",2.5,0.08,1.3,3
+"371",32080,"Plötzensee/Biesenthal","BB","03.08.2022","MB",50,1,4,9,22,5,"MBI","Betula spp.",26,"LB",0.9,0.22,1.3,4
+"372",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",1,1,1,16,12,5,"SER","Alnus spp.",28,"LB",1.6,0.12,1.3,4
+"373",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",2,1,1,9,9,2,"SER","Alnus spp.",28,"LB",0.9,0.09,1.3,1
+"374",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",3,1,1,59,10,2,"SER","Alnus spp.",28,"LB",5.9,0.1,1.3,1
+"375",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",4,1,1,20,13,2,"SER","Alnus spp.",28,"LB",2,0.13,1.3,1
+"376",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",5,1,4,9,14,4,"SER","Alnus spp.",28,"LB",0.9,0.14,1.3,3
+"377",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",6,1,3,70,18,2,"SER","Alnus spp.",28,"LB",7,0.18,1.3,1
+"378",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",7,1,3,87,17,2,"SER","Alnus spp.",28,"LB",8.7,0.17,1.3,1
+"379",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",8,2,2,91,18,2,"SER","Alnus spp.",28,"LB",9.1,0.18,1.3,1
+"380",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",9,2,2,142,20,2,"SER","Alnus spp.",28,"LB",14.2,0.2,1.3,1
+"381",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",10,2,3,73,13,2,"SER","Alnus spp.",28,"LB",7.3,0.13,1.3,1
+"382",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",11,2,2,158,18,2,"SER","Alnus spp.",28,"LB",15.8,0.18,1.3,1
+"383",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",12,2,3,35,18,3,"SER","Alnus spp.",28,"LB",3.5,0.18,1.3,2
+"384",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",13,1,1,40,13,4,"SER","Alnus spp.",28,"LB",4,0.13,1.3,3
+"385",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",14,1,4,5,12,5,"SER","Alnus spp.",28,"LB",0.5,0.12,1.3,4
+"386",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",15,1,1,60,16,5,"SER","Alnus spp.",28,"LB",6,0.16,1.3,4
+"387",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",16,1,4,12,30,5,"SER","Alnus spp.",28,"LB",1.2,0.3,1.3,4
+"388",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",17,1,1,50,18,4,"SER","Alnus spp.",28,"LB",5,0.18,1.3,3
+"389",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",18,1,1,30,28,5,"SER","Alnus spp.",28,"LB",3,0.28,1.3,4
+"390",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",19,1,1,60,11,4,"SER","Alnus spp.",28,"LB",6,0.11,1.3,3
+"391",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",20,2,4,10,32,5,"SER","Alnus spp.",28,"LB",1,0.32,1.3,4
+"392",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",21,2,1,75,10,2,"SER","Alnus spp.",28,"LB",7.5,0.1,1.3,1
+"393",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",22,2,1,54,10,2,"SER","Alnus spp.",28,"LB",5.4,0.1,1.3,1
+"394",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",23,2,2,105,18,2,"SER","Alnus spp.",28,"LB",10.5,0.18,1.3,1
+"395",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",24,2,3,18,10,4,"SER","Alnus spp.",28,"LB",1.8,0.1,1.3,3
+"396",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",25,1,1,36,10,3,"SER","Alnus spp.",28,"LB",3.6,0.1,1.3,2
+"397",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",26,1,4,6,30,5,"SER","Alnus spp.",28,"LB",0.6,0.3,1.3,4
+"398",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",27,2,3,42,16,3,"SER","Alnus spp.",28,"LB",4.2,0.16,1.3,2
+"399",33050,"Rätzsee/Fleeth","MV","08.08.2022","MB",28,1,1,25,11,3,"SER","Alnus spp.",28,"LB",2.5,0.11,1.3,2
+"400",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",1,1,1,33,10,2,"SER","Alnus spp.",28,"LB",3.3,0.1,1.3,1
+"401",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",2,1,2,72,11,2,"SER","Alnus spp.",28,"LB",7.2,0.11,1.3,1
+"402",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",3,1,2,70,12,2,"SER","Alnus spp.",28,"LB",7,0.12,1.3,1
+"403",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",4,1,2,109,13,2,"SER","Alnus spp.",28,"LB",10.9,0.13,1.3,1
+"404",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",5,1,1,33,7,2,"SER","Alnus spp.",28,"LB",3.3,0.07,1.3,1
+"405",33010,"Pälitzsee/Pelzkuhl","MV","10.08.2022","MB",6,1,1,46,6,2,"SER","Alnus spp.",28,"LB",4.6,0.06,1.3,1
+"406",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",1,2,1,48,6,1,"GFI","Picea abies",1,"NB",4.8,0.06,1.3,1
+"407",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",2,2,1,129,13,1,"GFI","Picea abies",1,"NB",12.9,0.13,1.3,1
+"408",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",3,1,2,103,13,1,"GFI","Picea abies",1,"NB",10.3,0.13,1.3,1
+"409",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",4,2,3,27,18,1,"GFI","Picea abies",1,"NB",2.7,0.18,1.3,1
+"410",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",5,2,3,15,10,1,"GFI","Picea abies",1,"NB",1.5,0.1,1.3,1
+"411",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",6,2,1,83,8,1,"GFI","Picea abies",1,"NB",8.3,0.08,1.3,1
+"412",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",7,2,4,2,28,5,"GFI","Picea abies",1,"NB",0.2,0.28,1.3,4
+"413",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",8,2,4,1,20,5,"GFI","Picea abies",1,"NB",0.1,0.2,1.3,4
+"414",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",9,2,4,3,35,5,"GFI","Picea abies",1,"NB",0.3,0.35,1.3,4
+"415",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",10,2,4,2,20,5,"GFI","Picea abies",1,"NB",0.2,0.2,1.3,4
+"416",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",11,2,4,2,20,5,"GFI","Picea abies",1,"NB",0.2,0.2,1.3,4
+"417",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",12,2,4,3,50,5,"GFI","Picea abies",1,"NB",0.3,0.5,1.3,4
+"418",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",13,2,4,3,47,5,"GFI","Picea abies",1,"NB",0.3,0.47,1.3,4
+"419",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",14,2,4,3,31,3,"GFI","Picea abies",1,"NB",0.3,0.31,1.3,2
+"420",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",15,2,4,2,20,4,"GFI","Picea abies",1,"NB",0.2,0.2,1.3,3
+"421",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",16,2,1,15,10,5,"GFI","Picea abies",1,"NB",1.5,0.1,1.3,4
+"422",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",17,2,4,2,22,5,"GFI","Picea abies",1,"NB",0.2,0.22,1.3,4
+"423",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",18,2,4,2,30,5,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,4
+"424",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",19,2,4,2,20,5,"GFI","Picea abies",1,"NB",0.2,0.2,1.3,4
+"425",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",20,2,4,2,38,5,"GFI","Picea abies",1,"NB",0.2,0.38,1.3,4
+"426",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",21,2,4,2,47,4,"GFI","Picea abies",1,"NB",0.2,0.47,1.3,3
+"427",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",22,2,3,12,10,4,"GFI","Picea abies",1,"NB",1.2,0.1,1.3,3
+"428",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",23,2,1,40,8,5,"GFI","Picea abies",1,"NB",4,0.08,1.3,4
+"429",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",24,2,4,2,51,5,"GFI","Picea abies",1,"NB",0.2,0.51,1.3,4
+"430",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",25,2,1,80,8,1,"GFI","Picea abies",1,"NB",8,0.08,1.3,1
+"431",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",26,2,4,2,30,3,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,2
+"432",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",27,2,4,3,38,4,"GFI","Picea abies",1,"NB",0.3,0.38,1.3,3
+"433",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",28,2,4,2,27,4,"GFI","Picea abies",1,"NB",0.2,0.27,1.3,3
+"434",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",29,2,4,2,27,4,"GFI","Picea abies",1,"NB",0.2,0.27,1.3,3
+"435",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",30,2,4,2,24,4,"GFI","Picea abies",1,"NB",0.2,0.24,1.3,3
+"436",34030,"Steinbach/Steinbach","SN","24.08.2022","MB",31,2,4,2,30,4,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,3
+"437",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",1,2,3,14,11,5,"GFI","Picea abies",1,"NB",1.4,0.11,1.3,4
+"438",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",2,2,3,15,15,5,"GFI","Picea abies",1,"NB",1.5,0.15,1.3,4
+"439",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",3,2,1,39,10,2,"GFI","Picea abies",1,"NB",3.9,0.1,1.3,1
+"440",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",4,2,1,16,12,5,"GFI","Picea abies",1,"NB",1.6,0.12,1.3,4
+"441",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",5,2,1,76,12,5,"GFI","Picea abies",1,"NB",7.6,0.12,1.3,4
+"442",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",6,2,1,14,12,5,"GFI","Picea abies",1,"NB",1.4,0.12,1.3,4
+"443",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",7,2,1,25,8,5,"GFI","Picea abies",1,"NB",2.5,0.08,1.3,4
+"444",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",8,2,1,12,12,5,"GFI","Picea abies",1,"NB",1.2,0.12,1.3,4
+"445",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",9,2,1,54,11,2,"GFI","Picea abies",1,"NB",5.4,0.11,1.3,1
+"446",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",10,2,1,14,15,5,"GFI","Picea abies",1,"NB",1.4,0.15,1.3,4
+"447",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",11,2,1,66,10,5,"GFI","Picea abies",1,"NB",6.6,0.1,1.3,4
+"448",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",12,2,4,3,70,5,"GFI","Picea abies",1,"NB",0.3,0.7,1.3,4
+"449",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",13,2,4,1,18,2,"GFI","Picea abies",1,"NB",0.1,0.18,1.3,1
+"450",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",14,2,4,2,35,2,"GFI","Picea abies",1,"NB",0.2,0.35,1.3,1
+"451",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",15,2,4,4,40,2,"GFI","Picea abies",1,"NB",0.4,0.4,1.3,1
+"452",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",16,2,4,2,30,2,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,1
+"453",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",17,2,1,13,11,2,"GFI","Picea abies",1,"NB",1.3,0.11,1.3,1
+"454",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",18,2,4,1,16,2,"GFI","Picea abies",1,"NB",0.1,0.16,1.3,1
+"455",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",19,2,4,3,30,2,"GFI","Picea abies",1,"NB",0.3,0.3,1.3,1
+"456",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",20,2,4,3,30,2,"GFI","Picea abies",1,"NB",0.3,0.3,1.3,1
+"457",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",21,2,4,3,31,2,"GFI","Picea abies",1,"NB",0.3,0.31,1.3,1
+"458",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",22,2,4,2,12,3,"GFI","Picea abies",1,"NB",0.2,0.12,1.3,2
+"459",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",23,2,4,2,10,3,"GFI","Picea abies",1,"NB",0.2,0.1,1.3,2
+"460",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",24,2,4,1,16,3,"GFI","Picea abies",1,"NB",0.1,0.16,1.3,2
+"461",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",25,2,4,4,32,2,"GFI","Picea abies",1,"NB",0.4,0.32,1.3,1
+"462",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",26,2,4,2,21,2,"GFI","Picea abies",1,"NB",0.2,0.21,1.3,1
+"463",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",27,2,4,1,22,4,"GFI","Picea abies",1,"NB",0.1,0.22,1.3,3
+"464",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",28,2,4,4,40,3,"GFI","Picea abies",1,"NB",0.4,0.4,1.3,2
+"465",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",29,2,4,3,32,2,"GFI","Picea abies",1,"NB",0.3,0.32,1.3,1
+"466",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",30,2,4,4,36,2,"GFI","Picea abies",1,"NB",0.4,0.36,1.3,1
+"467",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",31,2,4,2,30,4,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,3
+"468",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",32,2,4,4,33,2,"GFI","Picea abies",1,"NB",0.4,0.33,1.3,1
+"469",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",33,2,4,2,25,3,"GFI","Picea abies",1,"NB",0.2,0.25,1.3,2
+"470",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",34,2,4,4,40,2,"GFI","Picea abies",1,"NB",0.4,0.4,1.3,1
+"471",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",35,2,4,2,32,5,"GFI","Picea abies",1,"NB",0.2,0.32,1.3,4
+"472",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",36,2,4,4,40,2,"GFI","Picea abies",1,"NB",0.4,0.4,1.3,1
+"473",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",37,2,4,3,39,2,"GFI","Picea abies",1,"NB",0.3,0.39,1.3,1
+"474",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",38,2,4,5,14,3,"GFI","Picea abies",1,"NB",0.5,0.14,1.3,2
+"475",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",39,2,4,3,43,3,"GFI","Picea abies",1,"NB",0.3,0.43,1.3,2
+"476",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",40,2,4,2,30,2,"GFI","Picea abies",1,"NB",0.2,0.3,1.3,1
+"477",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",41,2,4,1,27,4,"GFI","Picea abies",1,"NB",0.1,0.27,1.3,3
+"478",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",42,2,4,4,13,5,"GFI","Picea abies",1,"NB",0.4,0.13,1.3,4
+"479",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",43,2,4,3,34,2,"GFI","Picea abies",1,"NB",0.3,0.34,1.3,1
+"480",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",44,2,4,1,22,3,"GFI","Picea abies",1,"NB",0.1,0.22,1.3,2
+"481",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",45,2,3,64,18,3,"GFI","Picea abies",1,"NB",6.4,0.18,1.3,2
+"482",34040,"Milchbach/Erlabrunn","SN","14.09.2022","MB",46,2,3,61,14,3,"GFI","Picea abies",1,"NB",6.1,0.14,1.3,2
+"483",33040,"Drewensee/Priepert","MV","07.09.2022","MB",1,1,4,3,20,5,"SER","Alnus spp.",28,"LB",0.3,0.2,1.3,4
+"484",33040,"Drewensee/Priepert","MV","07.09.2022","MB",2,1,3,14,11,3,"SER","Alnus spp.",28,"LB",1.4,0.11,1.3,2
+"485",33040,"Drewensee/Priepert","MV","07.09.2022","MB",3,1,1,80,10,2,"SER","Alnus spp.",28,"LB",8,0.1,1.3,1
+"486",33040,"Drewensee/Priepert","MV","07.09.2022","MB",4,1,1,31,9,2,"SER","Alnus spp.",28,"LB",3.1,0.09,1.3,1
+"487",33040,"Drewensee/Priepert","MV","07.09.2022","MB",5,1,1,48,9,2,"SER","Alnus spp.",28,"LB",4.8,0.09,1.3,1
+"488",33040,"Drewensee/Priepert","MV","07.09.2022","MB",6,1,3,15,12,1,"SER","Alnus spp.",28,"LB",1.5,0.12,1.3,1
+"489",33040,"Drewensee/Priepert","MV","07.09.2022","MB",7,1,1,160,10,1,"SER","Alnus spp.",28,"LB",16,0.1,1.3,1
+"490",33040,"Drewensee/Priepert","MV","07.09.2022","MB",8,1,3,18,12,2,"SER","Alnus spp.",28,"LB",1.8,0.12,1.3,1
+"491",33040,"Drewensee/Priepert","MV","07.09.2022","MB",9,1,3,38,16,2,"SER","Alnus spp.",28,"LB",3.8,0.16,1.3,1
+"492",33040,"Drewensee/Priepert","MV","07.09.2022","MB",10,1,1,24,10,2,"SER","Alnus spp.",28,"LB",2.4,0.1,1.3,1
+"493",33040,"Drewensee/Priepert","MV","07.09.2022","MB",12,1,3,38,12,2,"SER","Alnus spp.",28,"LB",3.8,0.12,1.3,1
+"494",33040,"Drewensee/Priepert","MV","07.09.2022","MB",13,1,1,60,9,2,"SER","Alnus spp.",28,"LB",6,0.09,1.3,1
+"495",33040,"Drewensee/Priepert","MV","07.09.2022","MB",14,1,4,8,10,2,"SER","Alnus spp.",28,"LB",0.8,0.1,1.3,1
+"496",33040,"Drewensee/Priepert","MV","07.09.2022","MB",15,1,1,96,12,2,"SER","Alnus spp.",28,"LB",9.6,0.12,1.3,1
+"497",33040,"Drewensee/Priepert","MV","07.09.2022","MB",16,1,1,72,9,2,"SER","Alnus spp.",28,"LB",7.2,0.09,1.3,1
+"498",33040,"Drewensee/Priepert","MV","07.09.2022","MB",17,1,3,58,19,2,"SER","Alnus spp.",28,"LB",5.8,0.19,1.3,1
+"499",33040,"Drewensee/Priepert","MV","07.09.2022","MB",18,1,2,202,17,2,"SER","Alnus spp.",28,"LB",20.2,0.17,1.3,1
+"500",33040,"Drewensee/Priepert","MV","07.09.2022","MB",19,1,3,33,10,2,"SER","Alnus spp.",28,"LB",3.3,0.1,1.3,1
+"501",33040,"Drewensee/Priepert","MV","07.09.2022","MB",20,1,3,45,18,2,"SER","Alnus spp.",28,"LB",4.5,0.18,1.3,1
+"502",33040,"Drewensee/Priepert","MV","07.09.2022","MB",21,1,3,38,11,2,"SER","Alnus spp.",28,"LB",3.8,0.11,1.3,1
+"503",33040,"Drewensee/Priepert","MV","07.09.2022","MB",22,1,3,43,15,2,"SER","Alnus spp.",28,"LB",4.3,0.15,1.3,1
+"504",33040,"Drewensee/Priepert","MV","07.09.2022","MB",23,1,1,21,9,2,"SER","Alnus spp.",28,"LB",2.1,0.09,1.3,1
+"505",33040,"Drewensee/Priepert","MV","07.09.2022","MB",24,1,1,24,9,4,"SER","Alnus spp.",28,"LB",2.4,0.09,1.3,3
+"506",33040,"Drewensee/Priepert","MV","07.09.2022","MB",25,1,1,14,14,3,"SER","Alnus spp.",28,"LB",1.4,0.14,1.3,2
+"507",33040,"Drewensee/Priepert","MV","07.09.2022","MB",26,1,1,12,12,4,"SER","Alnus spp.",28,"LB",1.2,0.12,1.3,3
+"508",33040,"Drewensee/Priepert","MV","07.09.2022","MB",27,1,4,6,12,2,"SER","Alnus spp.",28,"LB",0.6,0.12,1.3,1
+"509",33040,"Drewensee/Priepert","MV","07.09.2022","MB",28,1,1,52,11,3,"SER","Alnus spp.",28,"LB",5.2,0.11,1.3,2
+"510",33040,"Drewensee/Priepert","MV","07.09.2022","MB",29,1,1,58,8,3,"SER","Alnus spp.",28,"LB",5.8,0.08,1.3,2
+"511",33040,"Drewensee/Priepert","MV","07.09.2022","MB",30,1,1,95,12,2,"SER","Alnus spp.",28,"LB",9.5,0.12,1.3,1
+"512",33040,"Drewensee/Priepert","MV","07.09.2022","MB",31,1,1,49,14,2,"SER","Alnus spp.",28,"LB",4.9,0.14,1.3,1
+"513",33040,"Drewensee/Priepert","MV","07.09.2022","MB",32,1,1,34,15,3,"SER","Alnus spp.",28,"LB",3.4,0.15,1.3,2
+"514",33040,"Drewensee/Priepert","MV","07.09.2022","MB",33,1,1,90,11,2,"SER","Alnus spp.",28,"LB",9,0.11,1.3,1
+"515",33040,"Drewensee/Priepert","MV","07.09.2022","MB",34,1,1,42,11,2,"SER","Alnus spp.",28,"LB",4.2,0.11,1.3,1
+"516",33040,"Drewensee/Priepert","MV","07.09.2022","MB",35,1,1,71,10,3,"SER","Alnus spp.",28,"LB",7.1,0.1,1.3,2
+"517",33040,"Drewensee/Priepert","MV","07.09.2022","MB",36,1,3,60,19,2,"SER","Alnus spp.",28,"LB",6,0.19,1.3,1
+"518",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",1,2,3,95,12,1,"GFI","Picea abies",1,"NB",9.5,0.12,1.3,1
+"519",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",2,2,2,85,13,1,"GFI","Picea abies",1,"NB",8.5,0.13,1.3,1
+"520",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",3,2,3,14,21,4,"GFI","Picea abies",1,"NB",1.4,0.21,1.3,3
+"521",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",4,2,3,24,23,3,"GFI","Picea abies",1,"NB",2.4,0.23,1.3,2
+"522",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",5,2,3,25,27,3,"GFI","Picea abies",1,"NB",2.5,0.27,1.3,2
+"523",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",6,2,3,34,27,3,"GFI","Picea abies",1,"NB",3.4,0.27,1.3,2
+"524",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",7,2,4,13,15,3,"GFI","Picea abies",1,"NB",1.3,0.15,1.3,2
+"525",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",8,2,3,26,27,3,"GFI","Picea abies",1,"NB",2.6,0.27,1.3,2
+"526",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",9,2,3,20,26,4,"GFI","Picea abies",1,"NB",2,0.26,1.3,3
+"527",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",10,2,2,100,13,2,"GFI","Picea abies",1,"NB",10,0.13,1.3,1
+"528",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",11,2,3,16,19,4,"GFI","Picea abies",1,"NB",1.6,0.19,1.3,3
+"529",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",12,2,3,17,20,3,"GFI","Picea abies",1,"NB",1.7,0.2,1.3,2
+"530",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",13,2,1,110,13,2,"GFI","Picea abies",1,"NB",11,0.13,1.3,1
+"531",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",14,2,1,140,12,2,"GFI","Picea abies",1,"NB",14,0.12,1.3,1
+"532",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",15,2,3,111,17,2,"GFI","Picea abies",1,"NB",11.1,0.17,1.3,1
+"533",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",16,2,1,94,12,3,"GFI","Picea abies",1,"NB",9.4,0.12,1.3,2
+"534",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",17,2,1,210,18,2,"GFI","Picea abies",1,"NB",21,0.18,1.3,1
+"535",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",18,2,1,95,13,4,"GFI","Picea abies",1,"NB",9.5,0.13,1.3,3
+"536",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",19,2,1,56,15,3,"GFI","Picea abies",1,"NB",5.6,0.15,1.3,2
+"537",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",20,2,1,80,15,2,"GFI","Picea abies",1,"NB",8,0.15,1.3,1
+"538",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",21,2,1,148,14,4,"GFI","Picea abies",1,"NB",14.8,0.14,1.3,3
+"539",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",22,2,1,65,20,3,"GFI","Picea abies",1,"NB",6.5,0.2,1.3,2
+"540",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",23,2,1,113,18,4,"GFI","Picea abies",1,"NB",11.3,0.18,1.3,3
+"541",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",24,2,4,10,15,4,"GFI","Picea abies",1,"NB",1,0.15,1.3,3
+"542",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",25,2,4,3,13,4,"GFI","Picea abies",1,"NB",0.3,0.13,1.3,3
+"543",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",26,2,1,90,8,3,"GFI","Picea abies",1,"NB",9,0.08,1.3,2
+"544",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",27,2,4,6,13,4,"GFI","Picea abies",1,"NB",0.6,0.13,1.3,3
+"545",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",28,2,3,69,15,3,"GFI","Picea abies",1,"NB",6.9,0.15,1.3,2
+"546",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",29,2,2,69,10,1,"GFI","Picea abies",1,"NB",6.9,0.1,1.3,1
+"547",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",30,2,1,75,11,3,"GFI","Picea abies",1,"NB",7.5,0.11,1.3,2
+"548",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",31,2,1,48,20,4,"GFI","Picea abies",1,"NB",4.8,0.2,1.3,3
+"549",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",32,2,1,68,16,2,"GFI","Picea abies",1,"NB",6.8,0.16,1.3,1
+"550",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",33,2,1,20,28,3,"GFI","Picea abies",1,"NB",2,0.28,1.3,2
+"551",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",34,2,1,14,20,4,"GFI","Picea abies",1,"NB",1.4,0.2,1.3,3
+"552",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",35,2,1,9,17,4,"GFI","Picea abies",1,"NB",0.9,0.17,1.3,3
+"553",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",36,2,1,50,21,4,"GFI","Picea abies",1,"NB",5,0.21,1.3,3
+"554",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",37,2,4,5,13,5,"GFI","Picea abies",1,"NB",0.5,0.13,1.3,4
+"555",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",38,2,1,5,9,4,"GFI","Picea abies",1,"NB",0.5,0.09,1.3,3
+"556",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",39,2,1,104,12,4,"GFI","Picea abies",1,"NB",10.4,0.12,1.3,3
+"557",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",40,2,1,110,10,2,"GFI","Picea abies",1,"NB",11,0.1,1.3,1
+"558",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",41,2,4,3,10,5,"GFI","Picea abies",1,"NB",0.3,0.1,1.3,4
+"559",29080,"Filzwald/Klingbrunn Bhf","BY","12.10.2022","MB",42,2,4,4,11,4,"GFI","Picea abies",1,"NB",0.4,0.11,1.3,3
+"560",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",1,2,3,69,16,3,"BKI","Pinus sylvestris",5,"NB",6.9,0.16,1.3,2
+"561",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",2,2,3,77,13,3,"BKI","Pinus sylvestris",5,"NB",7.7,0.13,1.3,2
+"562",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",3,2,3,77,10,3,"BKI","Pinus sylvestris",5,"NB",7.7,0.1,1.3,2
+"563",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",4,2,2,84,20,1,"BKI","Pinus sylvestris",5,"NB",8.4,0.2,1.3,1
+"564",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",5,2,2,73,13,1,"BKI","Pinus sylvestris",5,"NB",7.3,0.13,1.3,1
+"565",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",6,2,2,53,10,1,"BKI","Pinus sylvestris",5,"NB",5.3,0.1,1.3,1
+"566",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",7,2,3,57,16,2,"BKI","Pinus sylvestris",5,"NB",5.7,0.16,1.3,1
+"567",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",8,2,2,80,16,1,"BKI","Pinus sylvestris",5,"NB",8,0.16,1.3,1
+"568",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",9,2,2,91,16,1,"BKI","Pinus sylvestris",5,"NB",9.1,0.16,1.3,1
+"569",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",10,2,2,71,13,1,"BKI","Pinus sylvestris",5,"NB",7.1,0.13,1.3,1
+"570",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",11,2,2,60,13,1,"BKI","Pinus sylvestris",5,"NB",6,0.13,1.3,1
+"571",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",12,2,2,82,12,1,"BKI","Pinus sylvestris",5,"NB",8.2,0.12,1.3,1
+"572",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",13,2,2,72,11,1,"BKI","Pinus sylvestris",5,"NB",7.2,0.11,1.3,1
+"573",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",14,2,2,91,17,1,"BKI","Pinus sylvestris",5,"NB",9.1,0.17,1.3,1
+"574",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",15,2,3,50,10,1,"BKI","Pinus sylvestris",5,"NB",5,0.1,1.3,1
+"575",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",16,2,3,30,12,2,"BKI","Pinus sylvestris",5,"NB",3,0.12,1.3,1
+"576",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",17,2,3,52,12,2,"BKI","Pinus sylvestris",5,"NB",5.2,0.12,1.3,1
+"577",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",18,2,1,54,8,3,"BKI","Pinus sylvestris",5,"NB",5.4,0.08,1.3,2
+"578",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",19,2,1,77,12,4,"BKI","Pinus sylvestris",5,"NB",7.7,0.12,1.3,3
+"579",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",20,2,1,27,11,4,"BKI","Pinus sylvestris",5,"NB",2.7,0.11,1.3,3
+"580",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",21,2,1,15,8,5,"BKI","Pinus sylvestris",5,"NB",1.5,0.08,1.3,4
+"581",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",22,2,3,19,11,4,"BKI","Pinus sylvestris",5,"NB",1.9,0.11,1.3,3
+"582",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",23,2,1,31,10,4,"BKI","Pinus sylvestris",5,"NB",3.1,0.1,1.3,3
+"583",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",24,2,1,61,10,4,"BKI","Pinus sylvestris",5,"NB",6.1,0.1,1.3,3
+"584",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",25,2,1,60,12,4,"BKI","Pinus sylvestris",5,"NB",6,0.12,1.3,3
+"585",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",26,2,1,37,12,4,"BKI","Pinus sylvestris",5,"NB",3.7,0.12,1.3,3
+"586",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",27,2,3,42,10,2,"BKI","Pinus sylvestris",5,"NB",4.2,0.1,1.3,1
+"587",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",28,2,1,59,9,3,"BKI","Pinus sylvestris",5,"NB",5.9,0.09,1.3,2
+"588",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",29,2,1,23,11,4,"BKI","Pinus sylvestris",5,"NB",2.3,0.11,1.3,3
+"589",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",30,2,3,60,12,2,"BKI","Pinus sylvestris",5,"NB",6,0.12,1.3,1
+"590",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",31,2,3,44,9,2,"BKI","Pinus sylvestris",5,"NB",4.4,0.09,1.3,1
+"591",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",32,2,3,37,9,2,"BKI","Pinus sylvestris",5,"NB",3.7,0.09,1.3,1
+"592",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",33,2,4,3,27,5,"BKI","Pinus sylvestris",5,"NB",0.3,0.27,1.3,4
+"593",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",34,2,1,30,10,4,"BKI","Pinus sylvestris",5,"NB",3,0.1,1.3,3
+"594",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",35,2,1,45,11,3,"BKI","Pinus sylvestris",5,"NB",4.5,0.11,1.3,2
+"595",29090,"Klosterfilz/Skt. Oswald","BY","11.10.2022","MB",36,2,1,43,9,2,"BKI","Pinus sylvestris",5,"NB",4.3,0.09,1.3,1
+"596",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",1,1,4,6,27,5,"MBI","Betula spp.",26,"LB",0.6,0.27,1.3,4
+"597",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",2,1,4,2,18,5,"MBI","Betula spp.",26,"LB",0.2,0.18,1.3,4
+"598",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",3,1,4,2,32,5,"MBI","Betula spp.",26,"LB",0.2,0.32,1.3,4
+"599",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",4,1,4,2,28,5,"MBI","Betula spp.",26,"LB",0.2,0.28,1.3,4
+"600",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",5,1,4,3,46,5,"MBI","Betula spp.",26,"LB",0.3,0.46,1.3,4
+"601",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",6,1,1,11,10,5,"MBI","Betula spp.",26,"LB",1.1,0.1,1.3,4
+"602",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",7,1,4,7,21,5,"MBI","Betula spp.",26,"LB",0.7,0.21,1.3,4
+"603",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",8,1,1,4,9,4,"MBI","Betula spp.",26,"LB",0.4,0.09,1.3,3
+"604",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",9,1,4,7,12,4,"MBI","Betula spp.",26,"LB",0.7,0.12,1.3,3
+"605",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",10,1,4,6,42,5,"MBI","Betula spp.",26,"LB",0.6,0.42,1.3,4
+"606",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",11,1,1,22,9,4,"MBI","Betula spp.",26,"LB",2.2,0.09,1.3,3
+"607",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",12,1,1,29,14,4,"MBI","Betula spp.",26,"LB",2.9,0.14,1.3,3
+"608",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",13,1,1,23,9,5,"MBI","Betula spp.",26,"LB",2.3,0.09,1.3,4
+"609",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",14,1,4,8,35,5,"MBI","Betula spp.",26,"LB",0.8,0.35,1.3,4
+"610",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",15,1,4,3,20,5,"MBI","Betula spp.",26,"LB",0.3,0.2,1.3,4
+"611",35500,"Jävenitzer Moor/Gardelegen","ST","19.10.2022","MB",16,1,4,5,26,5,"MBI","Betula spp.",26,"LB",0.5,0.26,1.3,4
+"612",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",1,1,4,2,27,5,"MBI","Betula spp.",26,"LB",0.2,0.27,1.3,4
+"613",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",2,1,4,2,17,5,"MBI","Betula spp.",26,"LB",0.2,0.17,1.3,4
+"614",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",3,1,4,2,27,5,"MBI","Betula spp.",26,"LB",0.2,0.27,1.3,4
+"615",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",4,1,4,2,30,5,"MBI","Betula spp.",26,"LB",0.2,0.3,1.3,4
+"616",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",5,1,4,2,15,5,"MBI","Betula spp.",26,"LB",0.2,0.15,1.3,4
+"617",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",6,1,4,2,40,5,"MBI","Betula spp.",26,"LB",0.2,0.4,1.3,4
+"618",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",7,1,4,7,15,5,"MBI","Betula spp.",26,"LB",0.7,0.15,1.3,4
+"619",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",8,1,4,4,75,5,"MBI","Betula spp.",26,"LB",0.4,0.75,1.3,4
+"620",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",9,1,4,2,24,5,"MBI","Betula spp.",26,"LB",0.2,0.24,1.3,4
+"621",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",10,1,4,3,30,5,"MBI","Betula spp.",26,"LB",0.3,0.3,1.3,4
+"622",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",11,1,4,3,30,5,"MBI","Betula spp.",26,"LB",0.3,0.3,1.3,4
+"623",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",12,1,4,2,23,5,"MBI","Betula spp.",26,"LB",0.2,0.23,1.3,4
+"624",27040,"Palmbruch/Morbach","RP","13.02.2023","MB",13,1,4,2,31,5,"MBI","Betula spp.",26,"LB",0.2,0.31,1.3,4
+"625",27011,"Landstuhler Bruch","RP","08.02.2023","MB",1,2,3,19,28,3,"GFI","Picea abies",1,"NB",1.9,0.28,1.3,2
+"626",27011,"Landstuhler Bruch","RP","08.02.2023","MB",2,2,4,8,20,4,"GFI","Picea abies",1,"NB",0.8,0.2,1.3,3
+"627",27011,"Landstuhler Bruch","RP","08.02.2023","MB",3,2,4,6,32,4,"GFI","Picea abies",1,"NB",0.6,0.32,1.3,3
+"628",27011,"Landstuhler Bruch","RP","08.02.2023","MB",4,2,4,11,11,4,"GFI","Picea abies",1,"NB",1.1,0.11,1.3,3
+"629",27011,"Landstuhler Bruch","RP","08.02.2023","MB",5,2,2,12,12,1,"GFI","Picea abies",1,"NB",1.2,0.12,1.3,1
+"630",27011,"Landstuhler Bruch","RP","08.02.2023","MB",6,2,3,34,25,4,"GFI","Picea abies",1,"NB",3.4,0.25,1.3,3
+"631",27011,"Landstuhler Bruch","RP","08.02.2023","MB",7,2,2,23,23,2,"GFI","Picea abies",1,"NB",2.3,0.23,1.3,1
+"632",27011,"Landstuhler Bruch","RP","08.02.2023","MB",8,2,2,10,10,1,"GFI","Picea abies",1,"NB",1,0.1,1.3,1
+"633",27011,"Landstuhler Bruch","RP","08.02.2023","MB",9,2,2,15,13,1,"GFI","Picea abies",1,"NB",1.5,0.13,1.3,1
+"634",27011,"Landstuhler Bruch","RP","08.02.2023","MB",10,2,2,16,14,1,"GFI","Picea abies",1,"NB",1.6,0.14,1.3,1
+"635",27011,"Landstuhler Bruch","RP","08.02.2023","MB",11,2,3,30,22,3,"GFI","Picea abies",1,"NB",3,0.22,1.3,2
+"636",27011,"Landstuhler Bruch","RP","08.02.2023","MB",12,2,1,110,11,2,"GFI","Picea abies",1,"NB",11,0.11,1.3,1
+"637",27011,"Landstuhler Bruch","RP","08.02.2023","MB",13,2,1,68,13,4,"GFI","Picea abies",1,"NB",6.8,0.13,1.3,3
+"638",27011,"Landstuhler Bruch","RP","08.02.2023","MB",14,2,1,70,11,2,"GFI","Picea abies",1,"NB",7,0.11,1.3,1
+"639",27011,"Landstuhler Bruch","RP","08.02.2023","MB",15,2,1,102,28,3,"GFI","Picea abies",1,"NB",10.2,0.28,1.3,2
+"640",27011,"Landstuhler Bruch","RP","08.02.2023","MB",16,2,1,180,17,3,"GFI","Picea abies",1,"NB",18,0.17,1.3,2
+"641",27011,"Landstuhler Bruch","RP","08.02.2023","MB",17,2,1,130,20,3,"GFI","Picea abies",1,"NB",13,0.2,1.3,2
+"642",27011,"Landstuhler Bruch","RP","08.02.2023","MB",18,2,4,8,30,4,"GFI","Picea abies",1,"NB",0.8,0.3,1.3,3
+"643",27011,"Landstuhler Bruch","RP","08.02.2023","MB",19,2,1,127,10,3,"GFI","Picea abies",1,"NB",12.7,0.1,1.3,2
+"644",27011,"Landstuhler Bruch","RP","08.02.2023","MB",20,2,1,130,21,4,"GFI","Picea abies",1,"NB",13,0.21,1.3,3
+"645",27011,"Landstuhler Bruch","RP","08.02.2023","MB",21,2,1,120,20,2,"GFI","Picea abies",1,"NB",12,0.2,1.3,1
+"646",27011,"Landstuhler Bruch","RP","08.02.2023","MB",22,2,4,3,15,4,"GFI","Picea abies",1,"NB",0.3,0.15,1.3,3
+"647",27011,"Landstuhler Bruch","RP","08.02.2023","MB",23,2,4,8,24,4,"GFI","Picea abies",1,"NB",0.8,0.24,1.3,3
+"648",27011,"Landstuhler Bruch","RP","08.02.2023","MB",24,2,4,6,15,4,"GFI","Picea abies",1,"NB",0.6,0.15,1.3,3
+"649",27011,"Landstuhler Bruch","RP","08.02.2023","MB",25,2,1,6,16,4,"GFI","Picea abies",1,"NB",0.6,0.16,1.3,3
+"650",27011,"Landstuhler Bruch","RP","08.02.2023","MB",26,2,1,102,16,4,"GFI","Picea abies",1,"NB",10.2,0.16,1.3,3
+"651",27011,"Landstuhler Bruch","RP","08.02.2023","MB",27,2,1,62,12,4,"GFI","Picea abies",1,"NB",6.2,0.12,1.3,3
+"652",27011,"Landstuhler Bruch","RP","08.02.2023","MB",28,2,4,4,17,4,"GFI","Picea abies",1,"NB",0.4,0.17,1.3,3
+"653",27011,"Landstuhler Bruch","RP","08.02.2023","MB",29,2,1,143,18,2,"GFI","Picea abies",1,"NB",14.3,0.18,1.3,1
+"654",27011,"Landstuhler Bruch","RP","08.02.2023","MB",30,2,1,96,11,4,"GFI","Picea abies",1,"NB",9.6,0.11,1.3,3
+"655",27011,"Landstuhler Bruch","RP","08.02.2023","MB",31,2,1,70,23,4,"GFI","Picea abies",1,"NB",7,0.23,1.3,3
+"656",27011,"Landstuhler Bruch","RP","08.02.2023","MB",32,2,1,47,15,3,"GFI","Picea abies",1,"NB",4.7,0.15,1.3,2
+"657",27011,"Landstuhler Bruch","RP","08.02.2023","MB",33,2,4,7,29,4,"GFI","Picea abies",1,"NB",0.7,0.29,1.3,3
+"658",27011,"Landstuhler Bruch","RP","08.02.2023","MB",34,2,1,9,22,4,"GFI","Picea abies",1,"NB",0.9,0.22,1.3,3
+"659",27011,"Landstuhler Bruch","RP","08.02.2023","MB",35,2,1,32,11,4,"GFI","Picea abies",1,"NB",3.2,0.11,1.3,3
+"660",27011,"Landstuhler Bruch","RP","08.02.2023","MB",36,2,1,9,27,4,"GFI","Picea abies",1,"NB",0.9,0.27,1.3,3
+"661",27011,"Landstuhler Bruch","RP","08.02.2023","MB",37,2,1,24,11,3,"GFI","Picea abies",1,"NB",2.4,0.11,1.3,2
+"662",27011,"Landstuhler Bruch","RP","08.02.2023","MB",38,2,4,5,37,4,"GFI","Picea abies",1,"NB",0.5,0.37,1.3,3
+"663",27011,"Landstuhler Bruch","RP","08.02.2023","MB",39,2,4,11,24,3,"GFI","Picea abies",1,"NB",1.1,0.24,1.3,2
+"664",27011,"Landstuhler Bruch","RP","08.02.2023","MB",40,2,1,122,9,2,"GFI","Picea abies",1,"NB",12.2,0.09,1.3,1
+"665",27011,"Landstuhler Bruch","RP","08.02.2023","MB",41,2,1,79,20,4,"GFI","Picea abies",1,"NB",7.9,0.2,1.3,3
+"666",27011,"Landstuhler Bruch","RP","08.02.2023","MB",42,2,4,8,15,4,"GFI","Picea abies",1,"NB",0.8,0.15,1.3,3
+"667",27011,"Landstuhler Bruch","RP","08.02.2023","MB",43,2,1,38,13,4,"GFI","Picea abies",1,"NB",3.8,0.13,1.3,3
+"668",27011,"Landstuhler Bruch","RP","08.02.2023","MB",44,2,1,143,29,3,"GFI","Picea abies",1,"NB",14.3,0.29,1.3,2
+"669",27011,"Landstuhler Bruch","RP","08.02.2023","MB",45,2,3,15,23,3,"GFI","Picea abies",1,"NB",1.5,0.23,1.3,2
+"670",27011,"Landstuhler Bruch","RP","08.02.2023","MB",46,2,1,60,28,3,"GFI","Picea abies",1,"NB",6,0.28,1.3,2
+"671",27011,"Landstuhler Bruch","RP","08.02.2023","MB",47,2,1,74,29,4,"GFI","Picea abies",1,"NB",7.4,0.29,1.3,3
+"672",27011,"Landstuhler Bruch","RP","08.02.2023","MB",48,2,1,50,23,2,"GFI","Picea abies",1,"NB",5,0.23,1.3,1
+"673",27011,"Landstuhler Bruch","RP","08.02.2023","MB",49,2,1,20,11,3,"GFI","Picea abies",1,"NB",2,0.11,1.3,2
+"674",27011,"Landstuhler Bruch","RP","08.02.2023","MB",50,2,1,80,9,4,"GFI","Picea abies",1,"NB",8,0.09,1.3,3
+"675",27011,"Landstuhler Bruch","RP","08.02.2023","MB",51,2,1,60,15,2,"GFI","Picea abies",1,"NB",6,0.15,1.3,1
+"676",27011,"Landstuhler Bruch","RP","08.02.2023","MB",52,2,1,150,12,2,"GFI","Picea abies",1,"NB",15,0.12,1.3,1
+"677",27011,"Landstuhler Bruch","RP","08.02.2023","MB",53,2,1,15,10,4,"GFI","Picea abies",1,"NB",1.5,0.1,1.3,3
+"678",27011,"Landstuhler Bruch","RP","08.02.2023","MB",54,2,1,40,11,4,"GFI","Picea abies",1,"NB",4,0.11,1.3,3
+"679",27011,"Landstuhler Bruch","RP","08.02.2023","MB",55,2,1,90,16,5,"GFI","Picea abies",1,"NB",9,0.16,1.3,4
+"680",27011,"Landstuhler Bruch","RP","08.02.2023","MB",56,2,4,2,42,5,"GFI","Picea abies",1,"NB",0.2,0.42,1.3,4
+"681",27011,"Landstuhler Bruch","RP","08.02.2023","MB",57,2,4,2,23,4,"GFI","Picea abies",1,"NB",0.2,0.23,1.3,3
+"682",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",1,1,3,45,13,2,"MBI","Betula spp.",26,"LB",4.5,0.13,1.3,1
+"683",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",2,1,3,46,13,2,"MBI","Betula spp.",26,"LB",4.6,0.13,1.3,1
+"684",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",3,1,3,71,16,4,"MBI","Betula spp.",26,"LB",7.1,0.16,1.3,3
+"685",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",4,1,3,54,14,4,"MBI","Betula spp.",26,"LB",5.4,0.14,1.3,3
+"686",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",5,1,4,8,11,4,"MBI","Betula spp.",26,"LB",0.8,0.11,1.3,3
+"687",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",6,1,1,18,10,3,"MBI","Betula spp.",26,"LB",1.8,0.1,1.3,2
+"688",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",7,1,1,57,7,3,"MBI","Betula spp.",26,"LB",5.7,0.07,1.3,2
+"689",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",8,1,1,39,6,3,"MBI","Betula spp.",26,"LB",3.9,0.06,1.3,2
+"690",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",9,1,4,2,11,4,"MBI","Betula spp.",26,"LB",0.2,0.11,1.3,3
+"691",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",10,1,4,2,20,5,"MBI","Betula spp.",26,"LB",0.2,0.2,1.3,4
+"692",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",11,1,1,11,7,2,"MBI","Betula spp.",26,"LB",1.1,0.07,1.3,1
+"693",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",12,1,1,42,13,4,"MBI","Betula spp.",26,"LB",4.2,0.13,1.3,3
+"694",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",13,1,4,60,21,5,"MBI","Betula spp.",26,"LB",6,0.21,1.3,4
+"695",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",14,1,1,11,19,2,"MBI","Betula spp.",26,"LB",1.1,0.19,1.3,1
+"696",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",15,1,1,21,8,3,"MBI","Betula spp.",26,"LB",2.1,0.08,1.3,2
+"697",26010,"Brander Bruch/Münden","RP","06.02.2023","MB",16,1,1,22,11,2,"MBI","Betula spp.",26,"LB",2.2,0.11,1.3,1
+"698",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",1,1,4,6,10,4,"SER","Alnus spp.",28,"LB",0.6,0.1,1.3,3
+"699",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",2,1,3,73,10,3,"SER","Alnus spp.",28,"LB",7.3,0.1,1.3,2
+"700",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",3,1,4,3,13,4,"SER","Alnus spp.",28,"LB",0.3,0.13,1.3,3
+"701",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",4,1,3,17,10,3,"SER","Alnus spp.",28,"LB",1.7,0.1,1.3,2
+"702",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",5,1,3,106,18,2,"SER","Alnus spp.",28,"LB",10.6,0.18,1.3,1
+"703",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",6,1,3,16,10,2,"SER","Alnus spp.",28,"LB",1.6,0.1,1.3,1
+"704",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",7,1,4,6,14,4,"SER","Alnus spp.",28,"LB",0.6,0.14,1.3,3
+"705",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",8,1,4,2,22,5,"SER","Alnus spp.",28,"LB",0.2,0.22,1.3,4
+"706",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",9,1,4,11,10,3,"SER","Alnus spp.",28,"LB",1.1,0.1,1.3,2
+"707",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",10,1,3,30,13,3,"SER","Alnus spp.",28,"LB",3,0.13,1.3,2
+"708",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",11,1,3,39,10,3,"SER","Alnus spp.",28,"LB",3.9,0.1,1.3,2
+"709",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",12,1,2,120,16,1,"SER","Alnus spp.",28,"LB",12,0.16,1.3,1
+"710",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",13,1,1,21,11,2,"SER","Alnus spp.",28,"LB",2.1,0.11,1.3,1
+"711",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",14,1,4,2,22,5,"SER","Alnus spp.",28,"LB",0.2,0.22,1.3,4
+"712",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",15,1,4,55,11,3,"SER","Alnus spp.",28,"LB",5.5,0.11,1.3,2
+"713",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",16,1,4,105,11,3,"SER","Alnus spp.",28,"LB",10.5,0.11,1.3,2
+"714",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",17,1,1,140,24,1,"SER","Alnus spp.",28,"LB",14,0.24,1.3,1
+"715",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",18,1,1,100,14,2,"SER","Alnus spp.",28,"LB",10,0.14,1.3,1
+"716",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",19,1,4,3,23,5,"SER","Alnus spp.",28,"LB",0.3,0.23,1.3,4
+"717",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",20,1,4,3,25,5,"SER","Alnus spp.",28,"LB",0.3,0.25,1.3,4
+"718",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",21,1,4,2,22,5,"SER","Alnus spp.",28,"LB",0.2,0.22,1.3,4
+"719",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",22,1,4,4,27,5,"SER","Alnus spp.",28,"LB",0.4,0.27,1.3,4
+"720",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",23,1,4,4,35,4,"SER","Alnus spp.",28,"LB",0.4,0.35,1.3,3
+"721",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",24,1,4,4,11,4,"SER","Alnus spp.",28,"LB",0.4,0.11,1.3,3
+"722",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",25,1,1,75,8,2,"SER","Alnus spp.",28,"LB",7.5,0.08,1.3,1
+"723",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",26,1,4,5,11,4,"SER","Alnus spp.",28,"LB",0.5,0.11,1.3,3
+"724",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",27,1,4,3,12,4,"SER","Alnus spp.",28,"LB",0.3,0.12,1.3,3
+"725",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",28,1,1,57,9,2,"SER","Alnus spp.",28,"LB",5.7,0.09,1.3,1
+"726",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",29,1,1,11,10,3,"SER","Alnus spp.",28,"LB",1.1,0.1,1.3,2
+"727",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",30,1,4,2,37,5,"SER","Alnus spp.",28,"LB",0.2,0.37,1.3,4
+"728",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",31,1,4,2,36,5,"SER","Alnus spp.",28,"LB",0.2,0.36,1.3,4
+"729",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",32,1,1,12,10,4,"SER","Alnus spp.",28,"LB",1.2,0.1,1.3,3
+"730",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",33,1,4,2,25,5,"SER","Alnus spp.",28,"LB",0.2,0.25,1.3,4
+"731",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",34,1,1,26,9,3,"SER","Alnus spp.",28,"LB",2.6,0.09,1.3,2
+"732",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",35,1,4,2,30,5,"SER","Alnus spp.",28,"LB",0.2,0.3,1.3,4
+"733",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",36,1,4,2,17,5,"SER","Alnus spp.",28,"LB",0.2,0.17,1.3,4
+"734",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",37,1,4,2,16,5,"SER","Alnus spp.",28,"LB",0.2,0.16,1.3,4
+"735",26020,"Ellerhorst/Münden","HE","06.02.2023","MB",38,1,4,42,7,3,"SER","Alnus spp.",28,"LB",4.2,0.07,1.3,2
+"736",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",1,1,3,105,14,3,"SER","Alnus spp.",28,"LB",10.5,0.14,1.3,2
+"737",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",2,1,3,110,13,3,"SER","Alnus spp.",28,"LB",11,0.13,1.3,2
+"738",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",3,1,4,2,20,5,"SER","Alnus spp.",28,"LB",0.2,0.2,1.3,4
+"739",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",4,1,4,3,31,5,"SER","Alnus spp.",28,"LB",0.3,0.31,1.3,4
+"740",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",5,1,4,1,20,5,"SER","Alnus spp.",28,"LB",0.1,0.2,1.3,4
+"741",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",6,1,4,6,11,4,"SER","Alnus spp.",28,"LB",0.6,0.11,1.3,3
+"742",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",7,1,1,63,10,4,"SER","Alnus spp.",28,"LB",6.3,0.1,1.3,3
+"743",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",8,1,4,3,10,5,"SER","Alnus spp.",28,"LB",0.3,0.1,1.3,4
+"744",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",9,1,1,31,9,4,"SER","Alnus spp.",28,"LB",3.1,0.09,1.3,3
+"745",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",10,1,4,2,15,5,"SER","Alnus spp.",28,"LB",0.2,0.15,1.3,4
+"746",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",11,1,4,2,14,5,"SER","Alnus spp.",28,"LB",0.2,0.14,1.3,4
+"747",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",12,1,4,2,26,5,"SER","Alnus spp.",28,"LB",0.2,0.26,1.3,4
+"748",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",13,1,4,2,38,5,"SER","Alnus spp.",28,"LB",0.2,0.38,1.3,4
+"749",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",14,1,4,2,27,5,"SER","Alnus spp.",28,"LB",0.2,0.27,1.3,4
+"750",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",15,1,4,2,31,5,"SER","Alnus spp.",28,"LB",0.2,0.31,1.3,4
+"751",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",16,1,4,2,25,5,"SER","Alnus spp.",28,"LB",0.2,0.25,1.3,4
+"752",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",17,1,4,2,13,5,"SER","Alnus spp.",28,"LB",0.2,0.13,1.3,4
+"753",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",18,1,4,2,32,5,"SER","Alnus spp.",28,"LB",0.2,0.32,1.3,4
+"754",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",19,1,4,2,16,5,"SER","Alnus spp.",28,"LB",0.2,0.16,1.3,4
+"755",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",20,1,4,2,20,5,"SER","Alnus spp.",28,"LB",0.2,0.2,1.3,4
+"756",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",21,1,4,2,20,5,"SER","Alnus spp.",28,"LB",0.2,0.2,1.3,4
+"757",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",22,1,1,14,10,4,"SER","Alnus spp.",28,"LB",1.4,0.1,1.3,3
+"758",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",23,1,4,4,17,4,"SER","Alnus spp.",28,"LB",0.4,0.17,1.3,3
+"759",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",24,1,4,3,14,5,"SER","Alnus spp.",28,"LB",0.3,0.14,1.3,4
+"760",26030,"Krämersgrund/Wetter","HE","14.02.2023","MB",25,1,4,2,20,4,"SER","Alnus spp.",28,"LB",0.2,0.2,1.3,3
