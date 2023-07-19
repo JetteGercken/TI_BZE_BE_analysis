@@ -1,17 +1,29 @@
-﻿MoMoK_Nr;Name;Datum_Aufnahme;Laenderverfahren;Forstliche Standortseinheit;Wasserhaushaltsstufe;Nährkraftstufe;Vor-/Nachnutzung;Eigentumsart;Schutzstatus;BA Vorbestand;Hist. Nutzungsform;Fotos;Betriebsart;Bestockungstyp;Vertikalstruktur;Mischungsform;Kronen SG1 (Hauptbestand);Kronen SG2 (Unterstand);Kronen SG3 (Oberstand);Kronen SG4 (Plenterartig)
-32020;Postluch/Britz;09.02.2022;;;;;;;;;;ja;1;;1;1;6;5;;
-34010;Gr. Eisenstraßenmoor/Johanngeorgenstadt;12.10.2021;;;;;52;2;4;;;ja;1;;1;1;3;;;
-32010;Buxpfuhl/Melchow;20.04.2022;;;;;;;;;;ja;1;8;1;1;2;;;
-32050;Stromtrasse/Spechti;05.05.2022;;;;;;;;;;nein;1;8;1;1;4;;;
-32070;Hellsee/Biesenthal;04.07.2022;;;;;;;;;;nein;1;8;1;2;2;;;
-32090;Pfauenfließ/Biesenthal;27.06.2022;;;;;;;;;;nein;1;8;1;1;5;;;
-32080;Plötzensee/Biesenthal;12.07.2022;;;;;;;;;;ja;1;8;1;1;2;;;
-33050;Rätzsee/Fleeth;08.08.2022;;;;;;;;;;ja;1;8;1;1;2;;;
-33010;Pälitzsee/Pelzkuhl;10.08.2022;;;;;;;;;;ja;1;;;;;;;
-34030;Steinbach/Steinbach;24.08.2022;;;;;;;;;;ja;1;1;1;1;6;;;
-34040;Milchbach/Erlabrunn;14.09.2022;;;;;;;;;;ja;1;1;1;1;2;;;
-34020;Friedrichsheider Hochmoor/Erlabrunn;13.09.2022;;;;;;;;;;ja;;2;1;1;6;;;
-33040;Drewensee/Priepert;06.09.2022;;;;;;;;;;ja;1;8;1;1;2;;;
-29080;Filzwald/Klingbrunn Bhf;12.10.2022;;;;;;;;;;ja;1;1;1;1;5;;;
-29090;Klosterfilz/Skt. Oswald;11.10.2022;;;;;;;;;;ja;;2;1;1;6;;;
-35500;Jävenitzer Moor/Gardelegen;19.10.2022;;;;;;;;;;ja;1;8;1;1;4;;;
+﻿MoMoK_Nr;Name;Datum_Aufnahme;Laenderverfahren;Forstliche Standortseinheit;Wasserhaushaltsstufe;Nährkraftstufe;Vor-/Nachnutzung;Eigentumsart;Schutzstatus;BA Vorbestand;Hist. Nutzungsform;Fotos;Betriebsart;Bestockungstyp;Vertikalstruktur;Kronen SG1 (Hauptbestand);Kronen SG2 (Unterstand);Kronen SG3 (Oberstand);Kronen SG4 (Plenterartig);Mischungsform
+32020;Postluch/Britz;09.02.2022;;;;;;;;;;ja;1;8;1;6;5;;;1
+34010;Gr. Eisenstraßenmoor/Johanngeorgenstadt;12.10.2021;;;;;52;2;4;;;ja;1;1;1;3;;;;1
+32010;Buxpfuhl/Melchow;20.04.2022;;;;;;;;;;ja;1;8;1;2;;;;1
+32050;Stromtrasse/Spechti;05.05.2022;;;;;;;;;;nein;1;8;1;4;;;;1
+32070;Hellsee/Biesenthal;04.07.2022;;;;;;;;;;nein;1;8;1;2;;;;2
+32090;Pfauenfließ/Biesenthal;27.06.2022;;;;;;;;;;nein;1;8;1;5;;;;1
+32080;Plötzensee/Biesenthal;12.07.2022;;;;;;;;;;ja;1;8;1;2;;;;1
+33050;Rätzsee/Fleeth;08.08.2022;;;;;;;;;;ja;1;8;1;2;;;;1
+33010;Pälitzsee/Pelzkuhl;10.08.2022;;;;;;;;;;ja;1;8;;;;;;
+34030;Steinbach/Steinbach;24.08.2022;;;;;;;;;;ja;1;1;1;6;;;;1
+34040;Milchbach/Erlabrunn;14.09.2022;;;;;;;;;;ja;1;1;1;2;;;;1
+34020;Friedrichsheider Hochmoor/Erlabrunn;13.09.2022;;;;;;;;;;ja;1;2;1;6;;;;1
+33040;Drewensee/Priepert;06.09.2022;;;;;;;;;;ja;1;8;1;2;;;;1
+29080;Filzwald/Klingbrunn Bhf;12.10.2022;;;;;;;;;;ja;1;1;1;5;;;;1
+29090;Klosterfilz/Skt. Oswald;11.10.2022;;;;;;;;;;ja;1;2;1;6;;;;1
+35500;Jävenitzer Moor/Gardelegen;19.10.2022;;;;;;;;;;ja;1;8;1;4;;;;1
+27040;Palmbruch/Morbach;13.02.2023;;;;;;;;;;ja;1;8;1;6;;;;1
+27011;Landstuhler Bruch;08.02.2023;;;;;;;;;;ja;1;1;1;2;;;;4
+26010;Brander Bruch/Münden;06.02.2023;;;;;;;;;;ja;1;8;1;2;;;;2
+26020;Ellerhorst/Münden;06.02.2023;;;;;;;;;;ja;1;8;1;2;;;;2
+26030;Krämersgrund/Wetter;14.02.2023;;;;;;;;;;ja;1;8;1;2;;;;1
+21030;Schwonau;01.05.2023;;;;;;;;;;ja;1;8;1;6;;;;1
+21020;Krummsee;04.05.2023;;;;;;;;;;ja;1;8;1;2;6;;;2
+23061;Wildenkiel 2;06.06.2023;;;;;;;;;;ja;1;8;1;1;;;;1
+23060;Wildenkiel 1;06.06.2023;;;;;;;;;;ja;1;1;1;2;;;;1
+23150;Wildenloh;29.06.2023;;;;;;;;;;ja;1;9;6;6;6;;;2
+23170;Holzurburg;28.06.2023;;;;;;;;;;ja;1;2;1;6;;;;2
+25100;Ebbemoor;04.07.2023;;;;;;;;;;ja;1;8;1;5;;;;2
