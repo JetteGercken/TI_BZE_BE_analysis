@@ -173,8 +173,15 @@ colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID"
 DW_total$D_cm <- gsub(",", ".", DW_total$D_cm)
 DW_total$D_cm <- as.numeric(DW_total$D_cm)
 DW_total %>% filter(is.na(D_cm))
+
+# store NA data in other dataframe
+DW_P_to_exclude_D <- DW_total %>% filter(is.na(D_cm))
+write.csv(DW_P_to_exclude_D, paste0(momok.out.home, "DW_P_to_exclude_D.csv"))
+
+# exclude plot with missing diameter from dataset: 
+# DW_total <- DW_total %>% anti_join(DW_P_to_exclude_D, DW_total, by = "plot_ID")
 DW_total <- DW_total %>% filter(!is.na(D_cm))
-DW_total_NA <- DW_total %>% filter(is.na(D_cm))
+
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying, etc. 
 # dec_type = decay type / Zersetzungsgrad
@@ -1299,16 +1306,19 @@ trees_total %>% filter(is.na(bot_name)) %>%  group_by(SP_code) %>%  select(SP_co
   # - Sal-Weide meaning  "SWe"
   # - WKI neaning ??? 
 # which does not have a latin name assigned, 
-
-# so I´ll do it manually. but for later analysis this has to be automatised or the source of error
+# so I´ll do it manually. but for later analysis this has tobe automatised or the source of error
 # has to be removed when the raw data are created/ assessed
 
-# excludingtrees who don´t have a species assigned yet: 
-trees_total <- trees_total %>%  filter(!is.na(bot_name))
+
+# -----1.4.2.1.1. exlcude plots with missing info -------------------------
+# this dataframe holds the trees that don´t have an assignable species name yet: 
+LT_P_to_exclude_SP <- trees_total %>% filter(is.na(bot_name)) %>% distinct()
+
+# excluding trees that don´t have a species assigned yet to continue calculations
+trees_total <- trees_total %>% anti_join(LT_P_to_exclude_SP, trees_total, by = "plot_ID")
 
 #checking if assignment of the tpS_ID assignment works
 trees_total %>% filter(is.na(tpS_ID)) %>%  select(SP_code, bot_name)%>%  group_by(SP_code) %>% distinct()
-
 # checking for trees where age is NA
 trees_total %>% select(plot_ID, age) %>% group_by(plot_ID) %>% filter(!is.na(age)) %>% distinct()
 
@@ -1465,10 +1475,18 @@ RG_total <- RG_total %>%
                                                                        "Pseudotzuga")) ~ 'FI', 
                                     TRUE ~ 'NA'))
 
+
+# ----- 1.4.2.2.1. exclude plots with missing info ------------------------
 # filter for those tree species that cannot be linked to x_bart and tapeS
 RG_total %>% filter(is.na(tpS_ID)) %>% select(SP_code) %>% distinct()
+# here we save the plots to exclude from the calculation: 
+RG_P_to_exclude_SP <- RG_total %>% filter(is.na(tpS_ID))  
+write.csv(RG_P_to_exclude_SP, paste0(momok.out.home, "RG_exclude_MOMOK.csv"))
+
 # we are going to proceede with the dataset without the species we cannot assign correctly
-RG_total <- RG_total %>% filter(!is.na(tpS_ID))
+# therefor we anti join the plots to exclude from the RG_total dataset
+RG_total <- RG_total %>% anti_join(RG_P_to_exclude, R_total, by = "plot_ID")
+
 summary(SP_names_com_ID_tapeS)
 summary(RG_total)
 
@@ -2085,6 +2103,18 @@ trees_total_5 <- trees_total %>%
                          TRUE ~ H_m), 
          HD_value = (H_m*100)/DBH_cm)     # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
 
+
+
+# ----- 2.1.2.6. exclude plots with mistaken heights ----------------------
+# there were trees where the estimated height is below the diameter measurement height:
+# those plots are going to be excluded from the calculation for now 
+LT_P_to_exclude_H <- trees_total_5 %>% filter(H_m < DBH_h_cm/100) 
+# export problematic plots
+write.csv(LT_P_to_exclude_H, paste0(momok.out.home,"LT_P_to_exclude_H.csv"))
+
+# remove whole plots with implausbible heights from the dataset by anti joining exclude dataset with trees dataset
+ trees_total_5 <- trees_total_5 %>% anti_join(LT_P_to_exclude_H, trees_total_5, by = "plot_ID")
+
 # ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
 # DBH, diameter at 1/3 of the tree height, species, tree height
@@ -2238,10 +2268,10 @@ for(id in unique(trees_total_5$plot_ID)){
 # 
 
 # ----- 2.1.2.2. estimated biomass & carbon living trees -----------------------------------------------------------
-trees_total_5 %>% filter(DBH_h_cm/100 > H_m)
+
 
 trees_total_5 <-  trees_total_5 %>%
-  # joining H_o100 in 
+# joining H_o100 in 
   left_join(., trees_total_5 %>%
               group_by(plot_ID, CCS_nr, C_layer, SP_code) %>%     # top 100 are setermined per plot, smaöing corcuit, canopy layer and species
               slice_max(DBH_cm, n = unique(floor(100/(1/trees_total_5$plot_A_ha))), with_ties = FALSE) %>%                     # select top 100 representing rows --> 5 per plot basen on dreisatz (actually per sampling circuit)
@@ -2249,11 +2279,9 @@ trees_total_5 <-  trees_total_5 %>%
             by = c("plot_ID", "CCS_nr", "C_layer", "SP_code")) %>% 
       # TapeS : aing diameter at 0.3 tree height to trees_total dataframe
         #https://gitlab.com/vochr/tapes/-/blob/master/vignettes/tapes.rmd
-  
-##### ALARM: THIS FILTER HAS TO GO IT`S JUST TO CHECK FOR FURTHER ERRORS !!!!!!!!`
-      filter(H_m > (DBH_h_cm/100))  %>% 
-      mutate(D_03_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(DBH_cm), Hm = as.list(DBH_h_cm/100), Ht = H_m, inv = 4), Hx = 1/3*H_m, cp=FALSE),
-             DBH_h_m = ifelse(is.na(DBH_h_cm), 1.3, DBH_h_cm/100)) %>% 
+      mutate(DBH_h_m = ifelse(is.na(DBH_h_cm), 1.3, DBH_h_cm/100), 
+             D_03_cm = tprDiameter(tprTrees(spp = tpS_ID, Dm = as.list(DBH_cm), Hm = as.list(DBH_h_m), Ht = H_m, inv = 4), Hx = 1/3*H_m, cp=FALSE),
+             ) %>% 
       # biomass
       # aboveground biomass   # for trees above species specific diameter threshold
       mutate(aB_kg_GHG = case_when(Bio_SP_group == "fi" & DBH_cm >= 69.0 |
@@ -2513,7 +2541,8 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
 
-DW_total <- left_join(DW_total, 
+#DW_total <- 
+left_join(DW_total, 
                       # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
                       rbind(
                 # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
@@ -2897,6 +2926,21 @@ summary(RG_total)
 
 
 # ----- 2.5.PLOT LEVEL: Basal area, species composition, DBH (m, sd), H (m, sd), numer of species carbon stock etc -------------
+
+# ----- 2.5.0. summarise plots to exclude  --------------------------------
+
+plots.to.exclude.LT.RG.DW <- rbind(
+  # LT unknown species plots
+  LT_P_to_exclude_SP %>% select(plot_ID) %>% distinct() %>% mutate(stand_component = "LT"), 
+  # LT height mistake plots
+  LT_P_to_exclude_H %>% select(plot_ID) %>% distinct() %>% mutate(stand_component = "LT"),
+  # RG unknown species plots
+  RG_P_to_exclude_SP %>% select(plot_ID) %>% distinct() %>% mutate(stand_component = "RG"),
+  # DW unknown diamter plot
+  DW_P_to_exclude_D %>% select(plot_ID) %>% distinct() %>% mutate(stand_component = "DW")) %>% 
+  distinct()
+  
+  
 # ----- 2.5.1. LIVING TREES plot level ------------------------------------------------------------
 # ----- 2.5.1.1. grouped by Plot, canopy layer, species ------------------------------
 trees_P_CP_SP <- left_join(
