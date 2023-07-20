@@ -1485,7 +1485,7 @@ write.csv(RG_P_to_exclude_SP, paste0(momok.out.home, "RG_exclude_MOMOK.csv"))
 
 # we are going to proceede with the dataset without the species we cannot assign correctly
 # therefor we anti join the plots to exclude from the RG_total dataset
-RG_total <- RG_total %>% anti_join(RG_P_to_exclude, R_total, by = "plot_ID")
+RG_total <- RG_total %>% anti_join(RG_P_to_exclude_SP, RG_total, by = "plot_ID")
 
 summary(SP_names_com_ID_tapeS)
 summary(RG_total)
@@ -2459,7 +2459,7 @@ write.csv(biotest, paste0(momok.out.home, "LT_biomass_method_comparisson_MoMoK.c
 DW_total <- left_join(         # this join reffers to the last attached dataset which is the one holding the common IDs between SP_names & TapeS
   DW_total %>% 
   left_join(.,
-            # dataset with percentage that the respective species contributes to total basal area per plot 
+            # 1. LT dataset with percentage that the respective species contributes to total basal area per plot 
             left_join( 
               dom_SP_plot <- left_join(
                 # data set with BA per species
@@ -2468,7 +2468,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                   summarise(SP_BA_plot = sum(BA_m2),             # calculate BA per species per canopy layer per plot in m2
                             plot_A_ha = mean(plot_A_ha)) %>%     # plot area in hectare to calculate BA per ha
                   mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha), # calculate BA per species per plot in m2/ ha
-                # dataset with total BA per plot
+                # 2. LT dataset with total BA per plot to calcualte percentage
                 trees_total %>%
                   group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
                   summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
@@ -2476,8 +2476,9 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
                   mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha), # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha 
                 by=c("plot_ID", "plot_A_ha")) %>% 
                 select(- c(plot_A_ha, tot_BA_plot)) %>%  # remove unnecessary variables
+                # 3. calcualting basal area of the species 
                 mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100),   # calculate proportion of each species to total BA in percent, 
-              # dataset selecting dominant species
+              # 4.  selecting dominant species
               as.data.table(dom_SP_plot)[as.data.table(dom_SP_plot)[, .I[BA_SP_per == max(BA_SP_per)], by= plot_ID]$V1] %>% 
                 rename(., dom_SP = SP_code) %>% 
                 select(plot_ID, dom_SP), 
@@ -2774,6 +2775,7 @@ summary(DW_total)
 
 # ----- 2.3. REGENERATION ------------------------------------------------------
 # ----- 2.3.1. biomass, carbon, nitrogen ---------------------------------------------------
+
 # I have to do the bimass comparisson first because after i pivot RG_total under the same name 
 RG_total_comparisson <- RG_total %>% 
   # assigning numeric diameters to size classes through mean per class 
@@ -3196,7 +3198,7 @@ DW_P_SP_TY <- DW_total %>%
             L_mean = mean(L_m),
             B_t = sum(tons(B_dw_kg)),
             C_t = sum(tons(C_dw_kg)), 
-            N_t = sum(toans(ag_N_dw_kg))) %>%
+            N_t = sum(tons(ag_N_dw_kg))) %>%
   # dataset with are per plot cnsidreing multpiple sampling circuits per plot
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
@@ -3501,7 +3503,7 @@ RG_P_SP <- RG_total %>%
 
 write.csv(RG_P_SP, paste0(momok.out.home, "RG_P_SP_MoMoK.csv"))
 
-colnames(RG_P_SP)
+
 
 # ----- 2.5.4.2. grouped by Plot  ------------------------------------------------------------------
 RG_P <- RG_total %>%
@@ -3559,7 +3561,7 @@ write.csv(RG_P, paste0(momok.out.home, "RG_P_MoMoK.csv"))
 
 plot_total <- rbind(
 # living trees
- trees_P %>% 
+ trees_P %>%
    dplyr::select(plot_ID,compartiment,
                  B_t_plot, C_t_plot, N_t_plot, Nt_plot,    # per plot
                  B_t_MA, C_t_MA, N_t_MA, Nt_MA,            # per momok area 50X50m
@@ -3607,8 +3609,8 @@ plot_total<-
                         B_t_ha, C_t_ha, N_t_ha, Nt_ha)
 )
 
+plot_total <- anti_join(plot_total, plots.to.exclude.LT.RG.DW, by = "plot_ID")
 
-summary(plot_total)
 
 write.csv(plot_total, paste0(momok.out.home, "LB_RG_DW_Plot_MoMoK.csv"))
 
