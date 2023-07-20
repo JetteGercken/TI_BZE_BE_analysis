@@ -179,8 +179,8 @@ DW_P_to_exclude_D <- DW_total %>% filter(is.na(D_cm))
 write.csv(DW_P_to_exclude_D, paste0(momok.out.home, "DW_P_to_exclude_D.csv"))
 
 # exclude plot with missing diameter from dataset: 
-# DW_total <- DW_total %>% anti_join(DW_P_to_exclude_D, DW_total, by = "plot_ID")
-DW_total <- DW_total %>% filter(!is.na(D_cm))
+ DW_total <- DW_total %>% anti_join(DW_P_to_exclude_D, DW_total, by = "plot_ID")
+#DW_total <- DW_total %>% filter(!is.na(D_cm))
 
 # SP_group = Baumartengruppe totholz
 # DW_type = standing, lying, etc. 
@@ -2108,7 +2108,7 @@ trees_total_5 <- trees_total %>%
 # ----- 2.1.2.6. exclude plots with mistaken heights ----------------------
 # there were trees where the estimated height is below the diameter measurement height:
 # those plots are going to be excluded from the calculation for now 
-LT_P_to_exclude_H <- trees_total_5 %>% filter(H_m < DBH_h_cm/100) 
+LT_P_to_exclude_H <- trees_total_5 %>% filter(H_m < (DBH_h_cm/100)) 
 # export problematic plots
 write.csv(LT_P_to_exclude_H, paste0(momok.out.home,"LT_P_to_exclude_H.csv"))
 
@@ -2486,9 +2486,11 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
               distinct(),
             by = "plot_ID"), 
   # joining the common species codes of SP_names and SP_tapeS fromSP_names_com_ID_tapeS and attaching the tpS_ID from SP_tapeS to it
+      # this provides info about the dominant species of the forest, for the calcualtions we are going to use the species assigned in
+      # dw_tps_ID which is why the Nitrogen and height group are joined in later
   SP_names_com_ID_tapeS %>% 
               mutate(Chr_ger_cap = toupper(Chr_code_ger)) %>% 
-              select(Chr_ger_cap, tpS_SP_com_name, tpS_ID, LH_NH, N_SP_group, H_SP_group), 
+              select(Chr_ger_cap, tpS_SP_com_name, tpS_ID, LH_NH), 
   by = c("dom_SP" = "Chr_ger_cap")) %>%
   mutate(L_m = L_dm/10,
          D_m = as.numeric(D_cm)/100, 
@@ -2517,6 +2519,10 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
          S_L_DW_type = case_when(DW_type %in% c(4, 2, 3) ~ "S",  # if the deadwood type is 2, 3 (stehend; ganzer Baum und Bruchstück) or 4 (Wurzelstock) --> standing deadwood (S)
                                  DW_type %in% c(6, 1, 5) ~ "L", # if the deadwood type is 6 (im Haufen vorkommendes Totholz), 1 (leigend, starkes Totholz), 5 (liegend ganzer Baum) --> lying deadwood (L)
                                  TRUE ~ NA)) %>% 
+  left_join(., SP_names_com_ID_tapeS %>% 
+              select(tpS_ID, N_SP_group, H_SP_group) %>% 
+              distinct(), 
+            by = c("SP_dw_tps" = "tpS_ID")) %>% 
   unite("SP_dec_type", SP_group, dec_type_BWI, sep = "_", remove = FALSE)
 
 
@@ -2541,8 +2547,7 @@ DW_total <- left_join(         # this join reffers to the last attached dataset 
     #           stumps (Wurzelstöcke)            --> DW_type == 4
 
 
-#DW_total <- 
-left_join(DW_total, 
+DW_total <- left_join(DW_total, 
                       # binding both datasets with bark ratio together whereby trees remain destinguishable because of the combination of tree ID and plot ID 
                       rbind(
                 # 1. pseudo-tree dataset with bark ratio for solid wood of dead trees type 3 with decay state 1 or 2
@@ -2625,7 +2630,7 @@ left_join(DW_total,
                       by = c("plot_ID", "t_ID", "CCS_nr", "DW_type", "dec_type_BWI")) %>% 
   #  volume, biomass, carbon
   mutate(V_dw_meth = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, "V_DW_T1463", "V_DW_T253"),
-         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(tpS_ID, D_cm, D_h_cm, L_m)),
+         V_dw_m3 = ifelse(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m < 3, V_DW_T1463(D_m, L_m), V_DW_T253(SP_dw_tps, D_cm, D_h_cm, L_m)),
          B_dw_kg = B_DW(V_dw_m3, SP_dec_type), 
          C_dw_kg = C_DW(V_dw_m3,SP_dec_type),
   # assigning item-mass class (Stückmasse classe)
@@ -2636,7 +2641,7 @@ left_join(DW_total,
                               TRUE ~ "0.6"))%>%
   # calculating TapeS compartiments 
   mutate(dw_tapes_swB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),      # yes: tapes_swB
-                                  rdB_DW(tapes_swB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                  rdB_DW(tapes_swB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                    D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                    D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                                    L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
@@ -2646,7 +2651,7 @@ left_join(DW_total,
                                                 SP_dec_type[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
                                          0)),                                                              # "no"
          dw_tapes_swbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),    # yes: tapes_swbB
-                                   rdB_DW(tapes_swbB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                   rdB_DW(tapes_swbB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                      D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                      D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                                      L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
@@ -2656,7 +2661,7 @@ left_join(DW_total,
                                                  SP_dec_type[DW_type == 3 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
                                           0)),                                                           # no
          dw_tapes_stwB_kg =  ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),   # yes: tapes_stwB
-                                    rdB_DW(tapes_stwB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                    rdB_DW(tapes_stwB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                       D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                       D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                                       L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
@@ -2666,7 +2671,7 @@ left_join(DW_total,
                                                   SP_dec_type[DW_type == 4 & dec_type_BWI < 3 & !is.na(dw_tapes_b_ratio)]), 
                                            0)),                                                            
          dw_tapes_stwbB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),   # yes : tapes_stwbB
-                                    rdB_DW(tapes_stwbB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                    rdB_DW(tapes_stwbB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                        D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                        D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                                        L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
@@ -2679,7 +2684,7 @@ left_join(DW_total,
                                   # I have to add fine wood for BWI_dec_type 2 too,
                                   # but to be able to calculate the whole biomass stepwise, 
                                   # but I will not add it to the final dw_kg column
-                                  rdB_DW(tapes_brB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                  rdB_DW(tapes_brB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                    D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                                    D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                                    L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
@@ -2688,7 +2693,7 @@ left_join(DW_total,
          dw_tapes_fB_kg = ifelse(DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m),     # yes: "tapes_foliage"
                                  # there is no foliage biomass for deadwood but i need it to correctly calcualte the tapeS compartiemnt stepwise,
                                  # but I will not add it to the final dw_kg column
-                                 tapes_fB(tpS_ID[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
+                                 tapes_fB(SP_dw_tps[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                           D_cm[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)],
                                           D_h_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 &!is.na(D_h_m)],
                                           L_m[DW_type %in% c(2, 5) & dec_type_BWI < 3  & L_m  > 1.3 & !is.na(D_h_m)]),
