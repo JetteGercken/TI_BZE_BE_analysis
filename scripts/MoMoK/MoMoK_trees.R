@@ -2116,7 +2116,8 @@ trees_total_5 <- trees_total %>%
          HD_value = (H_m*100)/DBH_cm,      # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
          # here we correct the estimated height if it happens to be below the height of diameter measurement
          H_m = case_when(H_method != "sampled" & is.na(H_m) | H_method != "sampled" & H_m < (DBH_h_cm/100) ~ mean_H_m, 
-                         TRUE ~ H_m))
+                        TRUE ~ H_m)
+         )
 
 
 # ----- 2.1.2.6. exclude plots with mistaken heights ----------------------
@@ -2130,12 +2131,6 @@ write.csv(LT_P_to_exclude_H, paste0(momok.out.home,"LT_P_to_exclude_H.csv"))
 # remove whole plots with implausbible heights from the dataset by anti joining exclude dataset with trees dataset
  trees_total_5 <- trees_total_5 %>% anti_join(LT_P_to_exclude_H, trees_total_5, by = "plot_ID")
 
- trees_total_5 %>% inner_join(LT_P_to_exclude_H %>% select(plot_ID), 
-                              trees_total_5, 
-                              by = "plot_ID") %>% 
-   filter(H_method == "sampled") %>% 
-   group_by(plot_ID, SP_code) %>% 
-   summarise(mean_H_sampled = mean(H_m))
  
 # ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
