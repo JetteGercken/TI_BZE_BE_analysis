@@ -29,11 +29,13 @@
 #  # analysis
 #  install.packages("corrplot")
 #  install.packages("AICcmodavg")
+#  install.packages("ggbubr")
+#  install.packages("rstatix")
 #  # forest related
-#   install.packages("forestmangr")
+#  install.packages("forestmangr")
 #  install.packages("rBDAT")
 #  install.packages("TapeR")
-# install.packages("pkgbuild")
+#  install.packages("pkgbuild")
  #  library("devtools")
  #  if (! require("remotes")) 
  #    install.packages("remotes")
@@ -42,6 +44,8 @@
 # install.packages("sjmisc")
 # if(!require(devtools)) install.packages("devtools")
 # devtools::install_github("kassambara/ggcorrplot")
+
+
 
 
 # ----- 0.2. library   ---------------------------------------------------------
@@ -72,6 +76,8 @@ library("reshape2")
 library("corrplot")
 library("AICcmodavg")
 library("ggcorrplot")
+library("ggpubr")
+library("rstatix")
 # forest related
 library("forestmangr")
 library("rBDAT")
@@ -340,6 +346,7 @@ h_nls_SP_P <- function(plot_spec, d) {
   b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
   return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
 }
+
 
 
 # ---- 1.3.3. LIVING BIOMASS ----------------------------------------------------------
@@ -2081,7 +2088,12 @@ trees_total_5 <- trees_total %>%
               summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
                         mean_DBH_mm = mean(DBH_mm),               # mean diameter per species per canopy layer per plot
                         D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
-            by = c("plot_ID", "SP_code", "C_layer")) %>% 
+            by = c("plot_ID", "SP_code", "C_layer")) %>%
+  left_join(., trees_total %>%                                 # dataset with mean sampled height per plot and species, to assign it to trees that don´t have a proper estimated height
+              filter(!is.na(H_m)) %>%                              # filter for trees with measured height, so trees where H_m != NA
+              group_by(plot_ID, SP_code) %>%                       # group by plot and species
+              summarise(mean_H_m = mean(H_m)),                     # calculate mean height in m 
+            by = c("plot_ID", "SP_code")) %>%                      # join in by plot_ID and SP_code
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
          H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
                               is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
@@ -2101,8 +2113,10 @@ trees_total_5 <- trees_total %>%
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_mm), 
                          TRUE ~ H_m), 
-         HD_value = (H_m*100)/DBH_cm)     # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
-
+         HD_value = (H_m*100)/DBH_cm,      # this is meant for a plausability check so we can filter for trees with an inplausible height/ diameter ratio
+         # here we correct the estimated height if it happens to be below the height of diameter measurement
+         H_m = case_when(H_method != "sampled" & is.na(H_m) | H_method != "sampled" & H_m < (DBH_h_cm/100) ~ mean_H_m, 
+                         TRUE ~ H_m))
 
 
 # ----- 2.1.2.6. exclude plots with mistaken heights ----------------------
@@ -2111,10 +2125,18 @@ trees_total_5 <- trees_total %>%
 LT_P_to_exclude_H <- trees_total_5 %>% filter(H_m < (DBH_h_cm/100)) 
 # export problematic plots
 write.csv(LT_P_to_exclude_H, paste0(momok.out.home,"LT_P_to_exclude_H.csv"))
+# 33010, 25100            
 
 # remove whole plots with implausbible heights from the dataset by anti joining exclude dataset with trees dataset
  trees_total_5 <- trees_total_5 %>% anti_join(LT_P_to_exclude_H, trees_total_5, by = "plot_ID")
 
+ trees_total_5 %>% inner_join(LT_P_to_exclude_H %>% select(plot_ID), 
+                              trees_total_5, 
+                              by = "plot_ID") %>% 
+   filter(H_method == "sampled") %>% 
+   group_by(plot_ID, SP_code) %>% 
+   summarise(mean_H_sampled = mean(H_m))
+ 
 # ----- 2.1.2. living tree biomass --------------------------------------------------------------
 # input vairbales for the biomass models for the trees aboveground biomass without canopy are: 
 # DBH, diameter at 1/3 of the tree height, species, tree height
@@ -3678,7 +3700,8 @@ write.csv(legend_col_names, paste0(momok.out.home, "legend_MoMoK.csv"))
    momok.out.files <- list.files(momok.out.home) 
   # copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
 file.copy(from = paste0(momok.out.home, momok.out.files),
-          to = paste0(momok.out.path, momok.out.files))
+          to = paste0(momok.out.path, momok.out.files), 
+          overwrite = TRUE)
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
 
@@ -3730,8 +3753,7 @@ summary(trees_tot_piv_wider %>%
                                        TRUE ~ "FINE")) %>% 
           filter(HD_status == "ERROR" & H_method == "sampled"))
 
-
-# comparisson of HD between measured and tapeS generated heights
+# HD status under different height calcualtion methods (tapeS only vs. sampled)
 trees_total_5 %>% 
   filter(compartiment == "ag") %>%
   mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
@@ -3747,19 +3769,119 @@ trees_total_5 %>%
   # filter(HD_tps_status == "WARNING" & H_method == "sampled") # 174
   # filter(HD_status == "WARNING" & H_method == "sampled") # 175 
   # filter(HD_status == "ERROR" & H_method == "sampled") # 5
-   filter(HD_tps_status == "ERROR" & H_method == "sampled") # 0
-
-
+  filter(HD_tps_status == "ERROR" & H_method == "sampled") # 0
 
 summary(trees_total_5 %>% 
-  filter(compartiment == "ag") %>%
-  mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
-  mutate(HD_tps = (H_tapes*100)/DBH_cm, 
-         HD_diff = HD_value - HD_tps))
+          filter(compartiment == "ag") %>%
+          mutate(H_tapes = estHeight(d13 = (DBH_cm), sp = tpS_ID)) %>% 
+          mutate(HD_tps = (H_tapes*100)/DBH_cm, 
+                 HD_diff = HD_value - HD_tps))
+
+# ----- 4.1.1. biomass difference due to height caluclation method ------------------------------------
+# comparisson of biomass between; 
+  # sampled heights & tapeS calcualted heights and tapes biomass functions
+  # only  sampled heights and tapeS biomass functions 
+  # only tapeS generated heights and tapeS biomass functions
+  # sampled and modelled heights and tapes biomass functions
+  # sampled and modelled heights and GHG biomass functions
+
+
+
+# difference in biomass depending on height calculation method
+trees_total_5 %>%
+  filter(compartiment=="ag") %>%
+  select(plot_ID, SP_code, tpS_ID, t_ID, 
+         DBH_cm, DBH_h_cm, DBH_h_m, 
+         H_m, H_method, 
+         B_t_tapes,                    # sampled and modelled heights and tapeS biomass functions
+         aB_kg_GHG) %>%                # sampled and modelled heighs and GHG biomass functions
+  # biomass calulated purely by tapeS
+  mutate(B_t_pure_tapes_height = tons(tprBiomass(tprTrees(spp = tpS_ID,    # only tapeS heights and tapes biomass funtions                                      
+                                          Dm = as.list(DBH_cm),
+                                          Hm = as.list(DBH_h_m ),
+                                          Ht = estHeight(d13 = (DBH_cm), sp = tpS_ID),
+                                          inv = 4), component = "agb")),
+         h_tapes_sampled = ifelse(H_method != "sampled", estHeight(d13 = (DBH_cm), sp = tpS_ID), H_m), 
+         B_t_sampled_and_tapes_height = tons(tprBiomass(tprTrees(spp = tpS_ID,   # sampled and tapes heights and tapes biomass functions                                      
+                                                   Dm = as.list(DBH_cm),
+                                                   Hm = as.list(DBH_h_m ),
+                                                   Ht = h_tapes_sampled,
+                                                   inv = 4), 
+                                                   component = "agb")))
 
 
 
 
+
+  B_diff_H_methods <- trees_total_5 %>%
+          filter(compartiment=="ag") %>%
+          select(plot_ID, SP_code, tpS_ID, t_ID, 
+                 DBH_cm, DBH_h_cm, DBH_h_m, 
+                 H_m, H_method, 
+                 B_t_tapes,               # sampled and modelled heights and tapeS biomass functions
+                 aB_kg_GHG) %>%           # sampled and modelled heighs and GHG biomass functions
+    # biomass calulated purely by tapeS
+          mutate(B_t_tapes_B_tapes_H = tons(tprBiomass(tprTrees(spp = tpS_ID,     # only tapes heights and tapes biomass functions                                      
+                                                                  Dm = as.list(DBH_cm),
+                                                                  Hm = as.list(DBH_h_m ),
+                                                                  Ht = estHeight(d13 = (DBH_cm), sp = tpS_ID),
+                                                                  inv = 4), component = "agb")),
+                 h_tapes_sampled = ifelse(H_method != "sampled", estHeight(d13 = (DBH_cm), sp = tpS_ID), H_m), 
+                 B_t_tapes_B_sampled_tapes_H = tons(tprBiomass(tprTrees(spp = tpS_ID,    # sampled and tapes heights and tapes biomass functions                                        
+                                                                         Dm = as.list(DBH_cm),
+                                                                         Hm = as.list(DBH_h_m ),
+                                                                         Ht = h_tapes_sampled,
+                                                                         inv = 4), 
+                                                                component = "agb")), 
+                 B_t_GHG_B_sampled_modelled_H = tons(aB_kg_GHG)) %>%                     # sampled and modelled heights and GHG biomass functions
+    select(-aB_kg_GHG) %>% 
+    rename(B_t_tapes_B_sampled_modelled_H = B_t_tapes) %>% 
+    distinct()%>% 
+  # join in biomass according to TapeS and GHG of trees with sampled height only 
+      left_join(., trees_total_5 %>% 
+                  filter(H_method == "sampled" & compartiment == "ag") %>% 
+                  mutate(B_t_GHG_B_sampled_H = tons(aB_kg_GHG)) %>% 
+                  select(plot_ID, SP_code, t_ID, H_method, B_t_tapes, B_t_GHG_B_sampled_H) %>% 
+                  rename(B_t_tapes_B_sampled_H  = B_t_tapes) %>% 
+                  distinct(), 
+              by = c("plot_ID", "t_ID", "SP_code", "H_method")) %>% 
+    pivot_longer(., c("B_t_GHG_B_sampled_modelled_H", 
+                      "B_t_tapes_B_sampled_modelled_H", 
+                      "B_t_tapes_B_sampled_tapes_H",
+                      "B_t_tapes_B_tapes_H", 
+                      "B_t_tapes_B_sampled_H", 
+                      "B_t_GHG_B_sampled_H"), names_to = "B_method", values_to = "B_t")
+
+
+# mean and SD of biomass under different heihgt calcualtion methods  
+ B_diff_H_methods %>%
+   group_by(B_method) %>%
+   get_summary_stats(c("B_t"), type = "mean_sd")
+ 
+# test for requirements of anova
+ # 1. normality / normal distribution: shapiro test
+ # The score are normally distributed if p > 0.05
+ B_diff_H_methods %>%
+   group_by(B_method) %>%
+   shapiro_test(B_t) %>% 
+   mutate(noramlity = ifelse(p > 0.05, "normal", "not normal"))
+ # The data is not normal distributed, so we have to switch from ANOVA to Kruskal-Wallis
+ 
+ 
+# Kruskal-Wallis between biomass based on different height calculation methods
+ kruskal.test(B_t ~ B_method, data = B_diff_H_methods %>% 
+                # filter only for tapes biomass calculations to avoid that differences occur between the methods to calcualte biomass (GHGI vs. tapes)
+                filter(B_method %in%  c("B_t_tapes_B_sampled_modelled_H", 
+                                        "B_t_tapes_B_sampled_tapes_H", 
+                                        "B_t_tapes_B_tapes_H",  
+                                        "B_t_tapes_B_sampled_H")))
+ # result: Kruskal-Wallis rank sum test
+          # data:  B_t by B_method
+          # Kruskal-Wallischi-squared = 24.023, df = 3, p-value = 2.47e-05
+ # As the p-value is less than the significance level 0.05, 
+ # we can conclude that there are significant differences between the treatment groups.
+ 
+ 
 # ----- 4.1.2. carbon BWI comparisson living trees plausibility test ------------------------------------
 # ----- 4.1.2.1. check if calcualtion method matters by comparing GHG, pure tapeS and tapeS+modelled heights ------------------------------------
 # by species by plot and age class
@@ -4315,7 +4437,7 @@ cor.df <- cor.df %>%
   mutate(B_diff_pred = b0 + b1*BA_diff + b2*Nt_diff,  
          # 5. calculate difference between calculated values and predicted values 
          B_pred_vs_B_calc = B_diff - B_diff_pred) 
-  
+ 
 cor.df <- cor.df %>% 
     left_join(., cor.df %>% 
                 group_by(dom_SP) %>%
