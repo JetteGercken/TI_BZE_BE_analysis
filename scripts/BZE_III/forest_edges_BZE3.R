@@ -203,7 +203,14 @@ intercept <- function(x1, y1, slope){
 }
 
 
-# ----- 0.5.6. intersection circle line -----------------------------------
+# ----- 0.5.6. intercept y axis line -------------------------------------------------
+l <- function(b0, b1, x){
+  y = b0 + b1*x;
+  return(y)
+}
+
+
+# ----- 0.5.7. intersection circle line -----------------------------------
 
 # equation circle r^2 = (x - xc)^2 + (y - yc)^2 ==>  r = sqr((x - xc)^2 + (y - yc)^2)
 # equation line: y = b1*x + b0 
@@ -252,10 +259,6 @@ intersection_c_lx1 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
   
-  #c.y0 = 0; 
-  #c.x0 = 0;
-  # c.r0 =1784;
-  
   p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
   q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
   x1 <-  -(p/2) + sqrt( ((p*-1)/2)^2-q );
@@ -286,10 +289,7 @@ intersection_c_lx2 <- function(l.b0, l.b1, c.y0, c.x0, c.r0) {
   
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
-  #c.y0 = 0; 
-  #c.x0 = 0;
-  #c.r0 =1784;
-  
+
   p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
   q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2); 
   x1 <-  -(p/2) + sqrt( ((p*-1)/2)^2-q );
@@ -340,8 +340,8 @@ azi_correction <- function(x2, y2, x1, y1, azi){
 
 # ----- 0.5.8. distance between two points --------------------------------
 distance <- function(x2, y2, x1, y1){
-  
-  d = sqrt(((y2 - y1)^2) + ((x2 - x1)^2))
+  d = sqrt(((y2 - y1)^2) + ((x2 - x1)^2));
+  return(d)
 }
 
 # ------ 0.5.9. check if point lays in triangle  --------------------------
@@ -355,7 +355,6 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
   a = ((xp - xc)*(yb - yc) + (xc - xb)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   b = ((xp - xc)*(yc - ya) + (xa - xc)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   c = 1 - a - b;
-  
   in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "A", "B");
   return(in.or.out)
 }
@@ -363,6 +362,7 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
 
 
 # ------0.5.10. angle triabnle for area calculations ----------------------
+# calculating angle between two lines at their point of intersection
 angle_triangle <- function(x3, y3, x1, y1, x2, y2){
   b1_1 = (y1-y3)/(x1-x3)
   b1_2 = (y2-y3)/(x2-x3)
@@ -382,13 +382,14 @@ angle_triangle <- function(x3, y3, x1, y1, x2, y2){
 
 
 # ------0.5.11. cirlce segment area  ----------------------
+# calculate the area of a cirlce segment by the angle between the two branches of the segment 
 circle_seg_A <- function(r, angle){
-  A_circle_seg = (pi*r^2) * angle/400; 
-  return(A_circle_seg)
+  A_c_seg = (pi*r^2) * angle/400; 
+  return(A_c_seg)
 }
 
 # ------0.5.12. triangle area  ----------------------
-A_triangle <- function(X1, x2, x3, y1, y2, y3){
+triangle_A <- function(x1, x2, x3, y1, y2, y3){
   # x1|y1 and x2|y2 should be the intersections with the circle, 
   # x3|y3 should be the turning point or centre of the cirlce 
   
@@ -399,12 +400,11 @@ A_triangle <- function(X1, x2, x3, y1, y2, y3){
 }
 
 
+
 # ----- 1. joining in external info  --------------------------------------
-
-
 # ----- 1.1. LIVING TREES -------------------------------------------------
-
 # ----- 1.1.1. species & inventory names ----------------------------------------------
+# ----- 1.1.1.1. HBI species & inventory names ----------------------------------------------
 HBI_trees <- HBI_trees %>% 
   mutate(inventory = "HBI") %>% 
   left_join(SP_names_com_ID_tapeS %>% 
@@ -418,8 +418,10 @@ HBI_trees %>%
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
 
+
+# ----- 1.1.1.2. BZE3 species & inventory names ----------------------------------------------
 # BZE3_trees <- BZE3_trees %>% 
-#   mutate(inventory = "HBI") %>% 
+#   mutate(inventory = "BZE3") %>% 
 #   left_join(., SP_names_com_ID_tapeS %>% 
 #               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
 #             by = c("SP_code" = "char_code_ger_lowcase"))
@@ -455,7 +457,6 @@ HBI_trees %>%
 # 1b) for waldrandform == 2 we have a turning point in the graph, for WFR == 1 we don´t
 #     --> build two lin models (1) X|Y anfang, X|Y Knickpunkt, (2) (1) X|Y ende, X|Y Knickpunkt,
 
-
 # 2) calculate X|Y of each tree
 # y tree = y centre + distance * (sin(Azimut between centre and point)
 
@@ -478,15 +479,13 @@ HBI_trees <- HBI_trees %>%
 
 # ----- 1.1.3.2. estimate parameters for edge lines -----------------------------------------------
 
+# ----- 1.1.3.2.1. edgde coordinates,  line parameters, intersections (coor --------
 
-
-# 1.1.3.2 edgde coordinates,  line parameters, intersections (coor --------
-
-# set up gerade from 2 points manually
+# set up line from 2 points manually
 forest_edges_HBI.man <- forest_edges_HBI %>% 
   filter(e_form %in% c("1", "2")) %>% 
   # find line parameters
-  # 1. calculate coordinates for all 
+  # 1. calculate x and y coordinates for all edge points
   mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
          X_T = ifelse(T_azi != "-2", x_coord(T_dist, T_azi), NA), 
@@ -497,53 +496,106 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
   mutate(b1_AB = ifelse(e_form == "1", slope(X_A, Y_A, X_B, Y_B), NA), 
          b1_AT = ifelse(e_form == "2", slope(X_T, Y_T, X_A, Y_A), NA),
          b1_BT = ifelse(e_form == "2", slope(X_T, Y_T, X_B, Y_B), NA)) %>% 
-  # 3. intercept line y axis b0 : insert known point: XA YA
+  # 3. intercept of line with y-axis b0 : insert known point: XA YA
   # Y_A = b1_AB*X_A + b0_AB -- -b1_AB*X_A --> b0_AB =  Y_A - b1_AB*X_A
   mutate(b0_AB = ifelse(e_form == "1", intercept(X_A, Y_A, b1_AB), NA), 
          b0_AT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_AT), NA),
          b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, b1_BT), NA)) %>% 
-  # find x of intercept with circle: insert line equation in circle equation
+### 17m circle --> used for tree status also   
+  # find x coordinate of the interception between line and 17.84m circle: insert line equation in circle equation (function: intersection_C_lx1, intersection_lx1)
   # for AB line 
-  mutate(X1_inter_AB =intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
-         X2_inter_AB =intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
-         inter_status_AB = ifelse(is.na(X1_inter_AB) & is.na(X2_inter_AB), " no I",      # if 0 solutions
-                                  ifelse(X1_inter_AB == X2_inter_AB, "one I",            # if 1 solution
-                                         ifelse(X1_inter_AB != X2_inter_AB, "two I"))),  # if 2 solutions
+  mutate(X1_inter_AB_17 = intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AB_17 = intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status_AB_17 = ifelse(is.na(X1_inter_AB_17) & is.na(X2_inter_AB_17), " no I",      # if 0 solutions
+                                  ifelse(X1_inter_AB_17 == X2_inter_AB_17, "one I",            # if 1 solution
+                                         ifelse(X1_inter_AB_17 != X2_inter_AB_17, "two I"))),  # if 2 solutions
          # for AT line
-         X1_inter_AT =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
-         X2_inter_AT =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
-         inter_status_AT = ifelse(is.na(X1_inter_AT) & is.na(X2_inter_AT), " no I",     # if 0 solutions
-                                  ifelse(X1_inter_AT == X2_inter_AT, "one I",           # if 1 solution
-                                         ifelse(X1_inter_AT != X2_inter_AT, "two I"))), # if 2 solutions
+         X1_inter_AT_17 =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_AT_17 =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status_AT_17 = ifelse(is.na(X1_inter_AT_17) & is.na(X2_inter_AT_17), " no I",     # if 0 solutions
+                                  ifelse(X1_inter_AT_17 == X2_inter_AT_17, "one I",           # if 1 solution
+                                         ifelse(X1_inter_AT_17 != X2_inter_AT_17, "two I"))), # if 2 solutions
          # for BT line
-         X1_inter_BT =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
-         X2_inter_BT =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
-         inter_status_BT = ifelse(is.na(X1_inter_BT) & is.na(X2_inter_BT), " no I",            # if 0 solution
-                                  ifelse(X1_inter_BT == X2_inter_BT, "one I",                  # if 1 solution
-                                         ifelse(X1_inter_BT != X2_inter_BT, "two I"))) ) %>%   # if 2 solutions
-  # y intercept wih cirlce: insert x of intercept with circle in equation of line
+         X1_inter_BT_17 =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),
+         X2_inter_BT_17 =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), 
+         inter_status_BT_17 = ifelse(is.na(X1_inter_BT_17) & is.na(X2_inter_BT_17), " no I",            # if 0 solution
+                                  ifelse(X1_inter_BT_17 == X2_inter_BT_17, "one I",                  # if 1 solution
+                                         ifelse(X1_inter_BT_17 != X2_inter_BT_17, "two I"))) ) %>%   # if 2 solutions
+  # y intercept with 17m circle: insert x of intercept with circle in equation of line
   # AB line 
-  mutate(Y1_inter_AB = b0_AB + b1_AB*X1_inter_AB, 
-         Y2_inter_AB = b0_AB + b1_AB*X2_inter_AB, 
+  mutate(Y1_inter_AB_17 = l(b0_AB, b1_AB, X1_inter_AB_17), 
+         Y2_inter_AB_17 = l(b0_AB, b1_AB, X2_inter_AB_17), 
          # AT line 
-         Y1_inter_AT = b0_AT + b1_AT*X1_inter_AT, 
-         Y2_inter_AT = b0_AT + b1_AT*X2_inter_AT, 
+         Y1_inter_AT_17 = l(b0_AT, b1_AT, X1_inter_AT_17), 
+         Y2_inter_AT_17 = l(b0_AT, b1_AT, X2_inter_AT_17), 
          # BT line 
-         Y1_inter_BT = b0_BT + b1_BT*X1_inter_BT, 
-         Y2_inter_BT = b0_BT + b1_BT*X2_inter_BT) %>% 
-  # not sure if we need this anymore as we have their coordinates: azimut of intersection points (calcaulte azimute with azimute function, then correct it depending on the quadrant of x_intersection and y_intersection)
-         # AB line 
-  mutate(azi1_inter_AB = azi_correction(X1_inter_AB, Y1_inter_AB,  0, 0, azimut(X1_inter_AB, Y1_inter_AB, 0, 0)), 
-         azi2_inter_AB = azi_correction(X2_inter_AB, Y2_inter_AB,  0, 0 , azimut(X2_inter_AB, Y2_inter_AB, 0, 0)),
-         # AT line
-         azi1_inter_AT = azi_correction(X1_inter_AT, Y1_inter_AT,  0, 0,  azimut(X1_inter_AT, Y1_inter_AT, 0, 0)), 
-         azi2_inter_AT = azi_correction(X2_inter_AT, Y2_inter_AT,  0, 0,  azimut(X2_inter_AT, Y2_inter_AT, 0, 0)), 
+         Y1_inter_BT_17 = l(b0_BT, b1_BT, X1_inter_BT_17), 
+         Y2_inter_BT_17 = l(b0_BT, b1_BT, X2_inter_BT_17)) %>%
+  
+### for 12m circle   
+  # x coordinate interception between line and 12.68m circle: insert line equation in circle equation (function: intersection_C_lx1, intersection_lx1)
+  # for AB line 
+  mutate(X1_inter_AB_12 = intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]),
+         X2_inter_AB_12 = intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]), 
+         inter_status_AB_12 = ifelse(is.na(X1_inter_AB_12) & is.na(X2_inter_AB_12), " no I",      # if 0 solutions
+                                     ifelse(X1_inter_AB_12 == X2_inter_AB_12, "one I",            # if 1 solution
+                                            ifelse(X1_inter_AB_12 != X2_inter_AB_12, "two I"))),  # if 2 solutions
+         # for AT line
+         X1_inter_AT_12 =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]),
+         X2_inter_AT_12 =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]), 
+         inter_status_AT_12 = ifelse(is.na(X1_inter_AT_12) & is.na(X2_inter_AT_12), " no I",     # if 0 solutions
+                                     ifelse(X1_inter_AT_12 == X2_inter_AT_12, "one I",           # if 1 solution
+                                            ifelse(X1_inter_AT_12 != X2_inter_AT_12, "two I"))), # if 2 solutions
+         # for BT line
+         X1_inter_BT_12 =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]),
+         X2_inter_BT_12 =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[2]), 
+         inter_status_BT_12 = ifelse(is.na(X1_inter_BT_12) & is.na(X2_inter_BT_12), " no I",            # if 0 solution
+                                     ifelse(X1_inter_BT_12 == X2_inter_BT_12, "one I",                  # if 1 solution
+                                            ifelse(X1_inter_BT_12 != X2_inter_BT_12, "two I"))) ) %>%   # if 2 solutions
+  # y intercept with 12m circle: insert x of intercept with circle in equation of line
+  # AB line 
+  mutate(Y1_inter_AB_12 = l(b0_AB, b1_AB, X1_inter_AB_12), 
+         Y2_inter_AB_12 = l(b0_AB, b1_AB, X2_inter_AB_12), 
+         # AT line 
+         Y1_inter_AT_12 = l(b0_AT, b1_AT, X1_inter_AT_12), 
+         Y2_inter_AT_12 = l(b0_AT, b1_AT, X2_inter_AT_12), 
          # BT line 
-         azi1_inter_BT = azi_correction(X1_inter_BT, Y1_inter_BT,  0, 0, azimut(X1_inter_BT, Y1_inter_BT, 0, 0)), 
-         azi2_inter_BT = azi_correction(X2_inter_BT, Y2_inter_BT,  0, 0, azimut(X2_inter_BT, Y2_inter_BT, 0, 0)) ,
+         Y1_inter_BT_12 = l(b0_BT, b1_BT, X1_inter_BT_12), 
+         Y2_inter_BT_12 = l(b0_BT, b1_BT, X2_inter_BT_12)) %>%
+  
+  ### for 5m circle   
+  # x coordinate interception between line and 5.64 m circle: insert line equation in circle equation (function: intersection_C_lx1, intersection_lx1)
+  # for AB line 
+  mutate(X1_inter_AB_5 = intersection_c_lx1(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]),
+         X2_inter_AB_5 = intersection_c_lx2(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]), 
+         inter_status_AB_5 = ifelse(is.na(X1_inter_AB_5) & is.na(X2_inter_AB_5), " no I",      # if 0 solutions
+                                     ifelse(X1_inter_AB_5 == X2_inter_AB_5, "one I",            # if 1 solution
+                                            ifelse(X1_inter_AB_5 != X2_inter_AB_5, "two I"))),  # if 2 solutions
+         # for AT line
+         X1_inter_AT_5 =intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]),
+         X2_inter_AT_5 =intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]), 
+         inter_status_AT_5 = ifelse(is.na(X1_inter_AT_5) & is.na(X2_inter_AT_5), " no I",     # if 0 solutions
+                                     ifelse(X1_inter_AT_5 == X2_inter_AT_5, "one I",           # if 1 solution
+                                            ifelse(X1_inter_AT_5 != X2_inter_AT_5, "two I"))), # if 2 solutions
+         # for BT line
+         X1_inter_BT_5 =intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]),
+         X2_inter_BT_5 =intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[1]), 
+         inter_status_BT_5 = ifelse(is.na(X1_inter_BT_5) & is.na(X2_inter_BT_5), " no I",            # if 0 solution
+                                     ifelse(X1_inter_BT_5 == X2_inter_BT_5, "one I",                  # if 1 solution
+                                            ifelse(X1_inter_BT_5 != X2_inter_BT_5, "two I"))) ) %>%   # if 2 solutions
+  # y intercept with 12m circle: insert x of intercept with circle in equation of line
+  # AB line 
+  mutate(Y1_inter_AB_5 = l(b0_AB, b1_AB, X1_inter_AB_5), 
+         Y2_inter_AB_5 = l(b0_AB, b1_AB, X2_inter_AB_5), 
+         # AT line 
+         Y1_inter_AT_5 = l(b0_AT, b1_AT, X1_inter_AT_5), 
+         Y2_inter_AT_5 = l(b0_AT, b1_AT, X2_inter_AT_5), 
+         # BT line 
+         Y1_inter_BT_5 = l(b0_BT, b1_BT, X1_inter_BT_5), 
+         Y2_inter_BT_5 = l(b0_BT, b1_BT, X2_inter_BT_5)) %>%
          # distance interception centre --> to see if points are actually placed on the rim of the circle 
-         inter_1_dist = distance(X1_inter_AB, Y1_inter_AB, 0, 0),     # this is just to control if the whole thing worked and 
-         # to calculate the triangles Barycentric coordinates we need 3 points: A, B, C = centre point
+  mutate(inter_1_dist = distance(X1_inter_AB_17, Y1_inter_AB_17, 0, 0),     # this is just to control if the whole thing worked and 
+      #  to calculate the triangles Barycentric coordinates we need 3 points: A, B, C = centre point
          # in case T lies within the circle, we want R to select A and B from the intersection with the circle.
          # Whereby we have to use a wider radius, to make sure that trees located the halfmoon of the circle cut by the triangle (Kreisbogen) are selected too. 
          # when t lies inside the circle (so both lines reach outside) ue only intersception point where direction between inter_AT and AT is equal choose this x, we need a buffer tho  
@@ -553,33 +605,31 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          # find the intercept of circle and line that prolonges the line between a and t or B and T
          # AT line 
          azi_T_A = azi_correction(X_A, Y_A, X_T, Y_T, azimut(X_A, Y_A, X_T, Y_T)),
-         azi_T_AT_inter_1 = azi_correction(X1_inter_AT, Y1_inter_AT, X_T, Y_T, azimut(X1_inter_AT, Y1_inter_AT, X_T, Y_T)),
-         azi_T_AT_inter_2 = azi_correction(X2_inter_AT, Y2_inter_AT, X_T, Y_T, azimut(X2_inter_AT, Y2_inter_AT, X_T, Y_T)),
+         azi_T_AT_inter_1 = azi_correction(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T, azimut(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T)),
+         azi_T_AT_inter_2 = azi_correction(X2_inter_AT_17, Y2_inter_AT_17, X_T, Y_T, azimut(X2_inter_AT_17, Y2_inter_AT_17, X_T, Y_T)),
          # BT line
          azi_T_B = azi_correction(X_B, Y_B, X_T, Y_T, azimut(X_B, Y_B, X_T, Y_T)),
-         azi_T_BT_inter_1 = azi_correction(X1_inter_BT, Y1_inter_BT, X_T, Y_T, azimut(X1_inter_BT, Y1_inter_BT, X_T, Y_T)),
-         azi_T_BT_inter_2 = azi_correction(X2_inter_BT, Y2_inter_BT, X_T, Y_T, azimut(X2_inter_BT, Y2_inter_BT, X_T, Y_T)),
+         azi_T_BT_inter_1 = azi_correction(X1_inter_BT_17, Y1_inter_BT_17, X_T, Y_T, azimut(X1_inter_BT_17, Y1_inter_BT_17, X_T, Y_T)),
+         azi_T_BT_inter_2 = azi_correction(X2_inter_BT_17, Y2_inter_BT_17, X_T, Y_T, azimut(X2_inter_BT_17, Y2_inter_BT_17, X_T, Y_T)),
          # for those turning points that lay outside the circle, select the intercetion point with the gratest distance to c and prolong it
-         dist_T_AT_inter_1 = distance(X1_inter_AT, Y1_inter_AT, X_T, Y_T), 
-         dist_T_AT_inter_2 = distance(X2_inter_AT, Y2_inter_AT, X_T, Y_T), 
-         dist_T_BT_inter_1 = distance(X1_inter_BT, Y1_inter_BT, X_T, Y_T), 
-         dist_T_BT_inter_2 = distance(X2_inter_BT, Y2_inter_BT, X_T, Y_T), 
+         dist_T_AT_inter_1 = distance(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T), 
+         dist_T_AT_inter_2 = distance(X2_inter_AT_17, Y2_inter_AT_17, X_T, Y_T), 
+         dist_T_BT_inter_1 = distance(X1_inter_BT_17, Y1_inter_BT_17, X_T, Y_T), 
+         dist_T_BT_inter_2 = distance(X2_inter_BT_17, Y2_inter_BT_17, X_T, Y_T), 
          # if azimut T to A  identical to azimut T to intercept 1 A and circle use this intercept (inter_AT_1) for the triable, if azimut T to A identical to azimute T to intercept 2 between A and  circle use this intercept (inter_AT_2)
          X_inter_AT_triangle_60 = case_when(T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
-                                         T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
-                                         # T_dist > 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2),
-                                         #  T_dist > 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
-                                          T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
-                                          T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
-                                          TRUE ~ NA ), 
+                                            T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, 0, 0,  data_circle$rmax[3]*2),
+                                            T_dist > 1784 & dist_T_AT_inter_1 > dist_T_AT_inter_2 ~ intersection_c_lx1(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                                            T_dist > 1784 & dist_T_AT_inter_2 > dist_T_AT_inter_1 ~ intersection_c_lx2(b0_AT,b1_AT,0,0, data_circle$rmax[3]*2), 
+                                            TRUE ~ NA ), 
          X_inter_BT_triangle_60 = case_when(T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT,b1_BT, 0, 0, data_circle$rmax[3]*2),
-                                         T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
-                                         T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
-                                          T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
-                                         TRUE ~ NA)) %>% 
+                                            T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  intersection_c_lx2(b0_BT, b1_BT, 0, 0, data_circle$rmax[3]*2),
+                                            T_dist > 1784 & dist_T_BT_inter_1 > dist_T_BT_inter_2 ~ intersection_c_lx1(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                                            T_dist > 1784 & dist_T_BT_inter_2 > dist_T_BT_inter_1 ~ intersection_c_lx2(b0_BT,b1_BT,0,0, data_circle$rmax[3]*2), 
+                                            TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
-  mutate(Y_inter_AT_triangle_60 = b0_AT + b1_AT*X_inter_AT_triangle_60,  
-         Y_inter_BT_triangle_60 = b0_BT + b1_BT*X_inter_BT_triangle_60) 
+  mutate(Y_inter_AT_triangle_60 = l(b0_AT, b1_AT, X_inter_AT_triangle_60),  
+         Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) 
 
 
 
@@ -590,95 +640,144 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 # - the forest edges type == 2 
 # - the turning point is situated within the circle 
 # - so both arms have 2 intersections with the circle and we can 
-forest_edges_HBI.man %>% 
-   mutate(X_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ X1_inter_AT,
-                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  X2_inter_AT,
+forest_edges_HBI.man <- 
+  forest_edges_HBI.man %>% 
+         # X coordinate of intersection with 17m circle that corresponds with the azimute between from T to A to be sure we select the intersection on the "ricght side"
+   mutate(X_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]), # X1
+                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),    # X2 
                                           TRUE ~ NA ), 
-        X_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ X1_inter_BT,
-                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  X2_inter_BT,
+        X_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),    # X1
+                                           e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~ intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3]),    # X2
                                           TRUE ~ NA),
-        Y_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ Y1_inter_AT,
-                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~  Y2_inter_AT,
+        Y_inter_AT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 &  azi_T_AT_inter_1 == azi_T_A ~ l(b0_AT, b1_AT, intersection_c_lx1(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3])), #  Y1_inter_AT_17,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_AT_inter_2 == azi_T_A ~ l(b0_AT, b1_AT, intersection_c_lx2(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3])), # Y2_inter_AT_17,
                                           TRUE ~ NA ), 
-        Y_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~ Y1_inter_BT,
-                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  Y2_inter_BT,
+        Y_inter_BT_17_triangle = case_when(e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_1 == azi_T_B ~  l(b0_BT, b1_BT, intersection_c_lx1(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3])), # Y1_inter_BT_17,
+                                          e_form == 2 & T_dist <= 1784 & azi_T_BT_inter_2 == azi_T_B ~  l(b0_BT, b1_BT, intersection_c_lx2(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3])),
                                           TRUE ~ NA)) %>%  
        # calcualte the angle the two lines have at point T
        # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
                                  # if edge type is a line calcualte the intersection angle between the lines betweeen A to the centre and 0 to the centre
- mutate(angle_ABT_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ angle_triangle(0, 0, X_A, Y_A, X_B, Y_B),
+ mutate(angle_ABT_ABC_AC = case_when(e_form == "1" & inter_status_AB_17 == "two I" ~ angle_triangle(0, 0, X_A, Y_A, X_B, Y_B),
                                    # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the angle between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT), # BT side follows in next column
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT),
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  angle_triangle(0, 0, X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17), # BT side follows in next column
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  angle_triangle(0, 0, X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17),
                                   # if t lies outside and there´s no or just one intersection on each line we don´t need the angle cause all trees are inside the plot
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
-                                  T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                  T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
                                   # if t lies inside the circle and both arms reach out, calculate the anlge between at point T where AT and BT meet 
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X_inter_AT_17_triangle, Y_inter_AT_17_triangle, X_inter_BT_17_triangle, Y_inter_BT_17_triangle),
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  angle_triangle(0, 0, X_inter_AT_17_triangle, Y_inter_AT_17_triangle, X_inter_BT_17_triangle, Y_inter_BT_17_triangle),
                                   # if t lies inside the circle and only tha  AT arms reaches out/ has two intersections  calculate the anlge between the intersectios of A with the circle and T
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  angle_triangle(0, 0, X1_inter_AT, Y1_inter_AT, X2_inter_AT, Y2_inter_AT), 
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, # no itnersechtion means every thing is inside
-                                  T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  angle_triangle(0, 0, X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17), 
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, # no itnersechtion means every thing is inside
+                                  T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
                                   TRUE ~ NA),
-        angle_ABT_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT), 
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT),
+                                    # turning point outside the cirle and there are two intersections of AT and BT calcuale angle between at the intersections of the lines from the respectivce intersections to centre of the plot
+        angle_ABT_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  angle_triangle(0, 0, X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17), 
+                                     # turning point outside the circle and there are no or one intersection on the AT branch but 2 intersections on the BT line calculate the angle between the lines of the intersections where they meet in the centre of the plot
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  angle_triangle(0, 0, X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17),
                                      # if t lies inside the circle and only arm BT  reaches out/ has two intersections  calculate the anlge between the intersectios of B with the circle and T
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  angle_triangle(0, 0, X1_inter_BT, Y1_inter_BT, X2_inter_BT, Y2_inter_BT),
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  angle_triangle(0, 0, X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17),
                                      TRUE ~ NA)) %>% 
-       # select(plot_ID, e_form, T_dist, inter_status_AB, inter_status_AT, inter_status_BT, angle_ABT_ABC_AC, angle_ABT_ABC_BC) %>% 
-  # if T lies within the circle, the area to of the forest edge is the area of the whole circle segment determined by the corrected X and Y 
-  # if T lies outside the cirlce and there are two intersections for each side of the triangle, we have to calcualte the circle segment drawn between 
-    # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT following we have to calcualte the area of the triangle drwan between 
-    # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT and withdraw it from the whole segments area
-  # if there is no T, so the e_form == 1 is we calcualte the circle segment drawn by  the circle centre, A and B and then withdraw the are aof the triangle between the circle centre, A and B
-  mutate(circle_segment_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ circle_seg_A(1784, angle_ABT_ABC_AC),
-                                      # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the circle intersection between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
-                                      T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC), # BT side follows in next column
-                                      T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC),
+#### if ever i build a loop for this, it should start here I think: 
+  # calculating the area affected by the forest edge for 17.74m circuit: 
+        # if T lies within the circle, the area to of the forest edge is the area of the whole circle segment determined by the corrected X and Y 
+        # if T lies outside the cirlce and there are two intersections for each side of the triangle, we have to calcualte the circle segment drawn between 
+          # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT following we have to calcualte the area of the triangle drwan between 
+          # (1) the cirlce centre, inter1_AT and inter2_AT and (2) the cirlce centre, inter1_BT and inter2_BT and withdraw it from the whole segments area
+        # if there is no T, so the e_form == 1 is we calcualte the circle segment drawn by  the circle centre, A and B and then withdraw the are aof the triangle between the circle centre, A and B
+                                # for edges without T --> no turning point and 2 intersections of the line 
+   mutate(circle_segment_ABC_AC_cm2 = case_when(e_form == "1" & inter_status_AB_17 == "two I" ~ circle_seg_A(data_circle$r0[3], angle_ABT_ABC_AC),
+                                # for T outside circle
+                                       # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the circle intersection between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_AC), # BT side follows in next column
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_AC),
                                       # if t lies outside and there´s no or just one intersection on each line we don´t need the circle intersection cause all trees are inside the plot
-                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
-                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
+                                 # for T inside cirlce 
                                       # if t lies inside the circle and both arms reach out, calculate the circle intersection between at point T where AT and BT meet 
-                                      T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC),
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_AC),
                                       # if t lies inside the circle and both arm AT arms reaches out/ has two intersections  calculate the circle intersection between A inter 1 and A inter 2 and centre
-                                      T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_AC), 
-                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
-                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_AC), 
+                                      # if T lies inside the cirlce but there are no intersections whatsoever, we don´t calcualte any areas
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
                                       TRUE ~ NA),
-                              # if t lies outside and both arms intersect the circle or only the BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre
-         circle_segment_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
-                                      T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
+                                # for T outside circle 
+                                     # if t lies outside and both arms intersect the circle or only the BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre
+         circle_segment_ABC_BC_cm2 = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_BC), 
+                                      T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_BC), 
+                                # for T inside circle     
                                       # if t lies inside the cirlce and the only BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre, 
-                                      # if both arms intserct the circle, we already calcualted the segments between ABT in the previous column
-                                      T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  circle_seg_A(1784, angle_ABT_ABC_BC), 
-                                      TRUE ~ NA)) #,
-
-
-### doesn´t work yet 
-         triangle_ABC_AC = case_when(e_form == "1" & inter_status_AB == "two I" ~ A_triangle(X_A, X_B, 0, Y_A, Y_B, 0),
+                                      # if t lise inside the cirlce and both arms intersepct the circle, we already calcualted the whoke circle segment area of A-B-T in the previous column
+                                      T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_seg_A(data_circle$r0[3], angle_ABT_ABC_BC), 
+                                      TRUE ~ NA),
+                                # for edges without T
+         triangle_ABC_AC_cm2 = case_when(e_form == "1" & inter_status_AB_17 == "two I" ~ triangle_A(X_A, X_B, 0, Y_A, Y_B, 0),
+                                # for T outside circle   
                                      # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the triangle between interception linbes from interception point 1 and 2 of the line AT with the circle to the 
+                                     # if T lies outside and both arms reach into the circle we have to calculate the triangle between AT_inter_1, AT_inter_2 and the centre of the circle on both sides, whereby we start with the AT line
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  triangle_A(X1_inter_AT_17, X2_inter_AT_17, 0, Y1_inter_AT_17, Y2_inter_AT_17, 0), # the triangle on the BT side follows in the next column
                                      # if T is outside the cirlce and only the AT arm intersects with the cirlce, we calcualte the triangle between centre and the intersections of A 
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  A_triangle(X1_inter_AT, X2_inter_AT, 0, Y1_inter_AT, Y2_inter_AT, 0),
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  triangle_A(X1_inter_AT_17, X2_inter_AT_17, 0, Y1_inter_AT_17, Y2_inter_AT_17, 0),
                                      # if t lies outside and there´s no or just one intersection on each line we don´t need the angle cause all trees are inside the plot
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                     # if T lies outside the circle and there is an intersection of the BT but not of the AT line, well calcualte the area of the triangle between BT_inter_1, BT_inter_2 and the centre of the plot in the next column
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
+                                 # for T inside circle  
                                      # if t lies inside the circle and both arms reach out, calculate the triable between at point T where amd the correcft A and B intesctions
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X_inter_AT_17_triangle, X_inter_BT_17_triangle, X_T, Y_inter_AT_17_triangle, Y_inter_BT_17_triangle, Y_T),
-                                     # if t lies inside the circle and only arm AT arms reaches out/ has two intersections  calculate the triable between A inter 1 and A inter 2 and centre
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  A_triangle(X1_inter_AT, X2_inter_AT, 0, Y1_inter_AT, Y2_inter_AT, 0), 
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT != "two I"  ~  NA, 
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT == "two I"  ~  NA, # follows in next column
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  triangle_A(X_inter_AT_17_triangle, X_inter_BT_17_triangle, X_T, Y_inter_AT_17_triangle, Y_inter_BT_17_triangle, Y_T),
+                                     # if t lies inside the circle and only arm AT arms reaches out/ has two intersections  calculate the triable between AT_inter_1, A_inter_2 and centre of the plot
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  triangle_A(X1_inter_AT_17, X2_inter_AT_17, 0, Y1_inter_AT_17, Y2_inter_AT_17, 0), 
+                                     # if T lies inside the cirle and there are no intersections we dont calcualte anything
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
                                      TRUE ~ NA),
                                    # if T lies outside and both arms intersect, we need the triangle on the B side of the intersections between centre, B_inter1, B_inter_2
-         triangle_ABC_BC = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0), 
+         triangle_ABC_BC_cm2 = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  triangle_A(X1_inter_BT_17, X2_inter_BT_17, 0, Y1_inter_BT_17, Y2_inter_BT_17, 0), 
                                      # if T leis outside and only the BT side intesects the circle, we need to calculate the trianlge between the B intersections and the centre of the circle
-                                     T_dist > 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT == "two I"  ~   A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0),
+                                     T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~   triangle_A(X1_inter_BT_17, X2_inter_BT_17, 0, Y1_inter_BT_17, Y2_inter_BT_17, 0),
                                      # if t lies inside the cirlce and the only BT arm intersects the circle, we need a triangle between B1, B2 and the circle centre, 
                                      # if both arms intserct the circle, we already calcualted the triangle between ABT in the previous column
-                                     T_dist <= 1784 & e_form == "2" & inter_status_AT != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT == "two I"  ~  A_triangle(X1_inter_BT, X2_inter_BT, 0, Y1_inter_BT, Y2_inter_BT, 0), 
-                                           TRUE ~ NA))
+                                     T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  triangle_A(X1_inter_BT_17, X2_inter_BT_17, 0, Y1_inter_BT_17, Y2_inter_BT_17, 0), 
+                                           TRUE ~ NA), 
+         # calculatint the edge area:
+                               # for 17m plot without trunign poinz
+         edge_area_ABC_AC_cm2 = case_when(e_form == "1" & inter_status_AB_17 == "two I" ~ circle_segment_ABC_AC_cm2 - triangle_ABC_AC_cm2,
+                                # for T outside circle
+                                         # with turning point and outiside of circle and both or at least 1 arms reaches in calcualte the circle - triangle for both lines AT and BT whereby we start with AT  
+                                          T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_segment_ABC_AC_cm2 - triangle_ABC_AC_cm2, # BT side follows in next column
+                                          T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  circle_segment_ABC_AC_cm2 - triangle_ABC_AC_cm2,
+                                          # if t lies outside and there´s no or just one intersection on each line we don´t need the circle intersection cause all trees are inside the plot
+                                          T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                          T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
+                                  # for T inside cirlce 
+                                          # if t lies inside the circle and both arms reach out, calculate the area of the edge area is going to be the circle intersection of the lines AT and BT in point T 
+                                          T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_segment_ABC_AC_cm2,
+                                          # if t lies inside the circle and both arm AT arms reaches out/ has two intersections  calculate the circle intersection between A inter 1 and A inter 2 and centre
+                                          T_dist <= 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  circle_segment_ABC_AC_cm2 - triangle_ABC_AC_cm2, 
+                                          # if T lies inside the cirlce but there are no intersections whatsoever, we don´t calcualte any areas
+                                          T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 != "two I"  ~  NA, 
+                                          T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <=1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  NA, # follows in next column
+                                          TRUE ~ NA),
+                             # for T outside circle 
+                                           # if t lies outside and both arms intersect the circle or only the BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre
+         edge_area_ABC_BC_cm2 = case_when(T_dist > 1784 & e_form == "2" & inter_status_AT_17 == "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_segment_ABC_BC_cm2 - triangle_ABC_BC_cm2,   
+                                          T_dist > 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist > 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_segment_ABC_BC_cm2 - triangle_ABC_BC_cm2, 
+                              # for T inside circle     
+                                          # if t lies inside the cirlce and the only BT arm intersects the circle, we need a circle segment between B1, B2 and the circle centre, 
+                                          # if t lise inside the cirlce and both arms intersepct the circle, we already calcualted the whole circle segment area of A-B-T in the previous column
+                                          T_dist <= 1784 & e_form == "2" & inter_status_AT_17 != "two I" &  T_dist <= 1784 &  e_form == "2" & inter_status_BT_17 == "two I"  ~  circle_segment_ABC_BC_cm2 - triangle_ABC_BC_cm2, 
+                                           TRUE ~ NA), 
+         edge_area_ABC_AC_ha = (edge_area_ABC_AC_cm2/10000)/10000,   # transfor area in cm2 into area in ha /10000 for m2, /10000 for ha --> afterwards check if results are plausible 
+         edge_area_ABC_BC_ha = (edge_area_ABC_BC_cm2/10000)/10000)
 
 
+# there will always occur the following error as for some lines there are no intersections, so the intersection function returns NaNs
+    # In argument: `X_inter_AT_17_triangle = case_when(...)`.
+    # Caused by warning in `sqrt()`:
+    #   ! NaNs wurden erzeugt
 
 #---- combining tree and edge data ---------------------------------------
 
@@ -703,35 +802,46 @@ trees_and_edges <-
                               ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
-          t_ABT_status = case_when(inter_status_AT == "two I" & inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
+         t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
                                    # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
-                                   inter_status_AT != "two I" & inter_status_BT == "two I" ~ t_BT_status, 
-                                   inter_status_AT == "two I" & inter_status_BT != "two I" ~ t_AT_status,
+                                   inter_status_AT_17 != "two I" & inter_status_BT_17 == "two I" ~ t_BT_status, 
+                                   inter_status_AT_17 == "two I" & inter_status_BT_17 != "two I" ~ t_AT_status,
                                    # if non of the arms touches the circle, assign all trees inside the circle to one group
-                                   inter_status_AT != "two I" & inter_status_BT != "two I" ~ "A", 
-                                   TRUE ~ NA), 
-         t_status_AB_ABT = case_when(e_form == "1" & Y_AB_t_implicit == 0 ~ "on line", 
-                                     e_form == "1" & Y_AB_t_implicit > 0 ~ "C",
-                                     e_form == "1" & Y_AB_t_implicit < 0 ~ "D",
-                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" &inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
-                                     # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
-                                     e_form == "2" & inter_status_AT != "two I" & e_form == "2" & inter_status_BT == "two I" ~ t_BT_status, 
-                                     e_form == "2" & inter_status_AT == "two I" & e_form == "2" & inter_status_BT != "two I" ~ t_AT_status,
-                                     # if non of the arms touches the circle, assign all trees inside the circle to one group
-                                     e_form == "2" & inter_status_AT != "two I" & e_form == "2" & inter_status_BT != "two I" ~ "A", 
-                                     TRUE ~ NA)) %>% 
-  # this jkoin holds a dataset that assignes "main" to those trees whose AB or ABT status is the most frequent at the respecitive plot and 
-  # "side" to the status category that is leaest frequent per plot so we have split out trees in main and side stand
-  left_join(., rbind( 
-  # main/ side info forest edges form 1
+                                   inter_status_AT_17 != "two I" & inter_status_BT_17 != "two I" ~ "A", 
+                                   TRUE ~ NA), # ,
+          t_status_AB_ABT = case_when(e_form == "1" & Y_AB_t_implicit == 0 ~ "on line", 
+                                      e_form == "1" & Y_AB_t_implicit > 0 ~ "C",
+                                      e_form == "1" & Y_AB_t_implicit < 0 ~ "D",
+                                      e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" &inter_status_BT == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
+                                      # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
+                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ t_BT_status, 
+                                      e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ t_AT_status,
+                                      # if non of the arms touches the circle, assign all trees inside the circle to one group
+                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "A", 
+                                      TRUE ~ NA)
+         ) 
+
+# assigning tree status according to frequency of the groups per plot
+   # (1) identify if there is more then 1 tree status per plot (A vs. B, C vs. D)
+   # (2) identify there are more then two identify the group that has includes the most trees
+   # (3) assign the group "main" int the column m_s_status to the most frequent t_status_AB_ABT status per plot 
+   # (4) assing the group "side" in the column m_s_status to the lest frequent group per plot
+trees_and_edges <- 
+trees_and_edges %>% 
+  # this join holds a dataset that assignes "main" to those trees whose AB or ABT status is the most frequent at the respecitive plot and 
+  # "side" to the status category that is least frequent per plot so we can split out trees in main and side stand
+  left_join(.,
+            rbind( 
+# for edge form = 1
+  # main info forest edges form 1
   trees_and_edges %>% 
     filter(e_form == 1) %>% 
     group_by(plot_ID, t_AB_status) %>% 
-    summarise(N = n()) %>%
-    top_n(., 1) %>% 
-    rename("t_status" = "t_AB_status") %>% 
-    mutate(m_s_status = "main"), 
-  # lowest dataset with plots that have 2 categroeis of tree status
+    summarise(N = n()) %>%                    # count the status groups per plot 
+    top_n(., 1) %>%                           # select the highest value per plot (to the status with the highest count)
+    rename("t_status" = "t_AB_status") %>%    # give the t_AB_status with the highest count/ frequency the m_s_status == "main"
+    mutate(m_s_status = "main_AB"), 
+  # dataset with plots that have 2 categroeis of tree status
   trees_and_edges %>% 
     filter(e_form == 1) %>% 
     # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
@@ -747,24 +857,22 @@ trees_and_edges <-
                  distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
                by = "plot_ID") %>% 
     group_by(plot_ID, t_AB_status) %>%
-    summarise(N = n()) %>%
-    top_n(., -1) %>%
+    summarise(N = n()) %>%                # count the oobservations for the t_AB_stati 
+    top_n(., -1) %>%                      # select the status group with the lowest frequency per plot
     rename("t_status" = "t_AB_status") %>% 
-    mutate(m_s_status = "side_AB"), 
-  # forest form 2
+    mutate(m_s_status = "side_AB"),       # assign the category "side_AB" to the lest frequent tree status group per plot
+
+  # for forest egde form = 2
   trees_and_edges %>% 
     filter(e_form == 2) %>% 
     group_by(plot_ID, t_ABT_status) %>% 
     summarise(N = n()) %>%
     top_n(., 1) %>% 
     rename("t_status" = "t_ABT_status") %>% 
-    mutate(m_s_status = "main"), 
-  # lowest dataset with plots that have 2 categroeis of tree status
+    mutate(m_s_status = "main_ABT"),
+  # dataset with plots that have 2 categroeis of tree status
   trees_and_edges %>% 
     filter(e_form == 2) %>% 
-    group_by(plot_ID, t_ABT_status) %>%
-    summarise(N = n()) %>%
-    top_n(., -1) %>%
     # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
     # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
     inner_join(., trees_and_edges %>% 
@@ -775,13 +883,16 @@ trees_and_edges <-
                  summarise(N = n()) %>%  # summarize how many stati are there per plot
                  filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
                  select(plot_ID) %>% 
-                 distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
+                 distinct(),    # pick only plot IDs of those plots that have more then 1 status, so they require a side and a main plot
                by = "plot_ID") %>% 
+    group_by(plot_ID, t_ABT_status) %>%
+    summarise(N = n()) %>%
+    top_n(., -1) %>%
     rename("t_status" = "t_ABT_status") %>% 
-    mutate(m_s_status = "side_ABT")) %>% 
+    mutate(m_s_status = "side_ABT") %>% 
   arrange(plot_ID) %>% 
-  select(plot_ID, t_status, m_s_status), 
-by = c("plot_ID", "t_status_AB_ABT" = "t_status"))
+  select(plot_ID, t_status, m_s_status)),            # closing rbind
+by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join  
     
   
 
@@ -807,7 +918,7 @@ ggplot() +
                             summarize(n = n()) %>% 
                             filter(n <= 1), 
                           by = "plot_ID") %>% 
-               select(plot_ID, X1_inter_AB, X2_inter_AB, X_A, X_B, Y1_inter_AB, Y2_inter_AB, Y_A, Y_B) %>% 
+               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
                to_long(keys = c("X_name",  "Y_name"),
                        values = c( "X_value", "Y_value"),  
                        names(.)[2:5], names(.)[6:9]), 
@@ -833,7 +944,7 @@ ggplot() +
                            summarize(n = n()) %>% 
                            filter(n <= 1), 
                          by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB, X_A, Y1_inter_AB, Y_A) %>% 
+              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
@@ -846,7 +957,7 @@ ggplot() +
                            summarize(n = n()) %>% 
                            filter(n <= 1), 
                          by = "plot_ID") %>% 
-              select(plot_ID, X2_inter_AB, X_A, Y2_inter_AB, Y_A) %>% 
+              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
@@ -859,7 +970,7 @@ ggplot() +
                            summarize(n = n()) %>% 
                            filter(n <= 1), 
                          by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB, X_B, Y1_inter_AB, Y_B) %>% 
+              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
@@ -872,7 +983,7 @@ ggplot() +
                            summarize(n = n()) %>% 
                            filter(n <= 1), 
                          by = "plot_ID") %>% 
-              select(plot_ID, X2_inter_AB, X_B, Y2_inter_AB, Y_B) %>% 
+              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
@@ -955,14 +1066,183 @@ ggplot() +
                       names(.)[2:3], names(.)[4:5]), 
             aes(x= X_value, y = Y_value))+
   # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "2"),
-             aes(X_tree, Y_tree, colour = ABT_status))+
+  geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
+             aes(X_tree, Y_tree, colour = t_ABT_status))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
 
+ # for plot 50080 there are two many edges measured
+ # for plot 50102 there is no intersection between the line BT and the 60m radius but I don´t know why. 
 
+# ----- visulaliszing forest edge_form 1 and edge_form 2 together  --------
 
+ # plotting trees and interception lines divided in t_line_status
+ #AB line
+ ggplot() +  
+   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+   ### AB line
+   geom_point(data = trees_and_edges %>%
+                filter(e_form == "1") %>% 
+                # inner_join(.,   forest_edges_HBI.man %>% 
+                #              filter(e_form == "1") %>% 
+                #              group_by(plot_ID) %>% 
+                #              summarize(n = n()) %>% 
+                #              filter(n <= 1), 
+                #            by = "plot_ID") %>% 
+                select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:5], names(.)[6:9]), 
+              aes(x= X_value, y = Y_value, colour = X_name))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "1") %>% 
+               # inner_join(.,   forest_edges_HBI.man %>% 
+               #              filter(e_form == "1") %>% 
+               #              group_by(plot_ID) %>% 
+               #              summarize(n = n()) %>% 
+               #              filter(n <= 1), 
+               #            by = "plot_ID") %>% 
+               select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "1") %>% 
+               # inner_join(.,   forest_edges_HBI.man %>% 
+               #              filter(e_form == "1") %>% 
+               #              group_by(plot_ID) %>% 
+               #              summarize(n = n()) %>% 
+               #              filter(n <= 1), 
+               #            by = "plot_ID") %>% 
+               select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),
+                       names(.)[2:3], names(.)[4:5]),  
+             aes(x= X_value, y = Y_value, colour = X_name))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "1") %>% 
+               # inner_join(.,   forest_edges_HBI.man %>% 
+               #              filter(e_form == "1") %>% 
+               #              group_by(plot_ID) %>% 
+               #              summarize(n = n()) %>% 
+               #              filter(n <= 1), 
+               #            by = "plot_ID") %>% 
+               select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),
+                       names(.)[2:3], names(.)[4:5]),  
+             aes(x= X_value, y = Y_value, colour = X_name))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "1") %>% 
+               # inner_join(.,   forest_edges_HBI.man %>% 
+               #              filter(e_form == "1") %>% 
+               #              group_by(plot_ID) %>% 
+               #              summarize(n = n()) %>% 
+               #              filter(n <= 1), 
+               #            by = "plot_ID") %>% 
+               select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),
+                       names(.)[2:3], names(.)[4:5]),  
+             aes(x= X_value, y = Y_value, colour = X_name))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "1") %>% 
+               # inner_join(.,   forest_edges_HBI.man %>% 
+               #              filter(e_form == "1") %>% 
+               #              group_by(plot_ID) %>% 
+               #              summarize(n = n()) %>% 
+               #              filter(n <= 1), 
+               #            by = "plot_ID") %>% 
+               select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),
+                       names(.)[2:3], names(.)[4:5]),  
+             aes(x= X_value, y = Y_value, colour = X_name))+
+   # trees
+    geom_point(data =  trees_and_edges %>% filter(e_form == "1"), #%>% 
+   #              inner_join(.,   forest_edges_HBI.man %>% 
+   #                           filter(e_form == "1") %>% 
+   #                           group_by(plot_ID) %>% 
+   #                           summarize(n = n()) %>% 
+   #                           filter(n <= 1), 
+   #                         by = "plot_ID"),
+               aes(X_tree, Y_tree, colour = m_s_status))+
+   #theme_bw()+
+   #facet_wrap(~plot_ID)
+ 
+# forest edge type 2 
+ # if the # i removed, this part allows to plot plots with forest edges with a turning point
+### AT line
+ # ggplot() +  
+   # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+   # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+   geom_point(data = trees_and_edges %>% 
+                filter(e_form == "2") %>% 
+                select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "T"))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
+   # intersections choosen to draw the triangle AT
+   geom_point(data = trees_and_edges %>% 
+                filter(e_form == "2") %>% 
+                select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
+   # BT line 
+   geom_point(data = trees_and_edges %>%
+                filter(e_form == "2") %>% 
+                select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "T"))+
+   geom_line(data = trees_and_edges %>%
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
+   # intersections choosen to draw the triangle BT
+   geom_point(data = trees_and_edges %>% 
+                filter(e_form == "2") %>% 
+                select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+                to_long(keys = c("X_name",  "Y_name"),
+                        values = c( "X_value", "Y_value"),  
+                        names(.)[2:3], names(.)[4:5]), 
+              aes(x= X_value, y = Y_value, colour = "B_intercept"))+
+   geom_line(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value))+
+   # trees
+   geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
+              aes(X_tree, Y_tree, colour = m_s_status))+
+   theme_bw()+ 
+   facet_wrap(~plot_ID) 
 
 
 
