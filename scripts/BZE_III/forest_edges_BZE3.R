@@ -94,7 +94,7 @@ library("ggforce")                      # Load ggforce package
 here::here()
 getwd()
 
-out.path.BZE3 <- "/output/out_data/" 
+out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 # ----- 0.4 data import -------------------------------------------------------
 # LIVING TREES
@@ -401,16 +401,29 @@ triangle_A <- function(x1, x2, x3, y1, y2, y3){
 }
 
 
+# ----- 0.5.13. selecting/ calculating total edge area per plot  ----------
+
+tot.edge.A <- function(area_AT_AB_side, area_BT_side){
+  A <- ifelse(!is.na(area_AT_AB_side) & !is.na(area_BT_side), area_AT_AB_side + area_BT_side,
+              ifelse(!is.na(area_AT_AB_side) & is.na(area_BT_side), area_AT_AB_side, 
+                     ifelse(is.na(area_AT_AB_side) & !is.na(area_BT_side), area_BT_side, 
+                            0
+                            )
+                     ) 
+              );
+  return(A)
+} 
 
 # ----- 1. joining in external info  --------------------------------------
 # ----- 1.1. LIVING TREES -------------------------------------------------
 # ----- 1.1.1. species & inventory names ----------------------------------------------
-# ----- 1.1.1.1. HBI species & inventory names ----------------------------------------------
+# ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>% 
   mutate(inventory = "HBI") %>% 
   left_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase"))
+            by = c("SP_code" = "char_code_ger_lowcase")) %>% 
+  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, ))
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
@@ -966,7 +979,10 @@ forest_edges_HBI.man <-
                                              T_dist <=  data_circle$r0[1] & e_form == "2" & inter_status_AT_5 != "two I" &  T_dist <=  data_circle$r0[1] &  e_form == "2" & inter_status_BT_5 == "two I"  ~  circle_segment_ABC_BC_5_cm2 - triangle_ABC_BC_5_cm2, 
                                              TRUE ~ NA), 
          edge_area_ABC_AC_5_ha = (edge_area_ABC_AC_5_cm2/10000)/10000,   # transfor area in cm2 into area in ha /10000 for m2, /10000 for ha --> afterwards check if results are plausible 
-         edge_area_ABC_BC_5_ha = (edge_area_ABC_BC_5_cm2/10000)/10000) %>% 
+         edge_area_ABC_BC_5_ha = (edge_area_ABC_BC_5_cm2/10000)/10000, 
+         edge_area_total_5_ha = tot.edge.A(edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha), 
+         edge_area_total_12_ha = tot.edge.A(edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha),
+         edge_area_total_17_ha = tot.edge.A(edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha)) %>% 
   mutate(plot_A_17_ha = (c_A(data_circle$r0[3])/10000)/10000, 
          plot_A_12_ha = (c_A(data_circle$r0[2])/10000)/10000, 
          plot_A_5_ha = (c_A(data_circle$r0[1])/10000)/10000 )
@@ -1008,7 +1024,8 @@ trees_and_edges <-
                      inter_status_AB_17, inter_status_AT_17, inter_status_BT_17, 
                      edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
-                     edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha), 
+                     edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
+                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
@@ -1040,7 +1057,6 @@ trees_and_edges <-
                                       # if non of the arms touches the circle, assign all trees inside the circle to one group
                                       e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "A", 
                                       TRUE ~ NA)) 
-
 # assigning tree status according to frequency of the groups per plot
    # (1) identify if there is more then 1 tree status per plot (A vs. B, C vs. D)
    # (2) identify there are more then two identify the group that has includes the most trees
@@ -1111,17 +1127,38 @@ trees_and_edges <- trees_and_edges %>%
   select(plot_ID, t_status, m_s_status)),            # closing rbind
 by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join  
     
-  
-
-# ----- 1.1.2.5. exporting tree & edge data & edge areas -------------------------------------------------------------------
 
 
 
+# ---- 1.1.2.5. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
+trees_and_edges %>% 
+  mutate(plot_A_ha = case_when(DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form) ~ (c_A(data_circle$r0[1])/10000)/10000,
+                               DBH_cm >= 10 & DBH_cm < 30 & is.na(e_form) ~ (c_A(data_circle$r0[2])/10000)/10000,
+                               DBH_cm >= 30 & is.na(e_form) ~ (c_A(data_circle$r0[3])/10000)/10000,
+                               # for trees that are in a circle that has an edge
+                               # here i am facing a problem because i actually don´t know if the tree is positioned in the "edge part" or the "inner part" 
+                               # as i assing the catagory mai/ side_stand to those trees who have a less frequent category, assuming that the category with the most 
+                              # if the tree is from the inner circle, and the trees category is main, and there is an edge area calculated for that plot and circuit, 
+                              # use the area of the inner cirlce minus the edge area
+                               DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & 
+                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_5_ha) |
+                                DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & 
+                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_5_ha) & !is.na(edge_area_ABC_BC_5_ha) ~ ((c_A(data_circle$r0[1])/10000)/10000) - edge_area_total_5_ha, 
+                              DBH_cm >= 10 & DBH_cm < 30 & !is.na(e_form) & 
+                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_12_ha) | !is.na(edge_area_ABC_BC_12_ha) ~ ((c_A(data_circle$r0[2])/10000)/10000) - edge_area_total_12_ha,
+                              DBH_cm >= 30 & !is.na(e_form) & 
+                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_17_ha) | !is.na(edge_area_ABC_BC_17_ha) ~ ((c_A(data_circle$r0[3])/10000)/10000) - edge_area_total_17_ha, 
+                              TRUE ~ NA))
+         
+
+# ----- 1.1.2.6. exporting tree & edge data & edge areas -------------------------------------------------------------------
+write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
 
 
-# ----- 2. visulaization  -------------------------------------------------
-# ----- 2.1.Living trees Visualisation forest edges -----------------------------------
-# ----- 2.1.1. AB lines, edge form 1, Visualisation forest edges -----------------------------------
+
+# ----- 2. visualization  -------------------------------------------------
+# ----- 2.1.   Living trees visualization forest edges -----------------------------------
+# ----- 2.1.1. AB lines, edge form 1, visualization forest edges -----------------------------------
 # plotting trees and interception lines divided in t_line_status
 #AB line
 ggplot() +  
