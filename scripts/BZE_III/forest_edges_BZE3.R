@@ -1113,12 +1113,15 @@ by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join
     
   
 
+# ----- 1.1.2.5. exporting tree & edge data & edge areas -------------------------------------------------------------------
 
 
 
-# ----- 3. visulaization  -------------------------------------------------
-# ----- 3.1. Visualisation forest edges -----------------------------------
-# ----- 3.1. AB lines, edge form 1, Visualisation forest edges -----------------------------------
+
+
+# ----- 2. visulaization  -------------------------------------------------
+# ----- 2.1.Living trees Visualisation forest edges -----------------------------------
+# ----- 2.1.1. AB lines, edge form 1, Visualisation forest edges -----------------------------------
 # plotting trees and interception lines divided in t_line_status
 #AB line
 ggplot() +  
@@ -1215,7 +1218,7 @@ ggplot() +
    theme_bw()+
    facet_wrap(~plot_ID)
 
-# ----- 3.1. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
+# ----- 2.1.2. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
 # forest edge type 2 
 # if the # i removed, this part allows to plot plots with forest edges with a turning point
 # AT line
@@ -1291,8 +1294,7 @@ ggplot() +
  # for plot 50080 there are two many edges measured
  # for plot 50102 there is no intersection between the line BT and the 60m radius but I don´t know why. 
 
-# ----- visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
-
+# ----- 2.1.3. visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
  # plotting trees and interception lines divided in t_line_status
  #AB line
  ggplot() +  
