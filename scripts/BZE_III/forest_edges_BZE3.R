@@ -423,7 +423,7 @@ HBI_trees <- HBI_trees %>%
   left_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase")) %>% 
-  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, ))
+  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, (D_mm*(1.0+(0.0011*(DBH_h_cm -130))))/10))
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
@@ -614,6 +614,8 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          #                                choose the x which has the same slope (x_inter_1 or x_inter_2)as the second point on the line (A or B) 
          #                                but with a buffer of + 216, which is why it has to be newly calculated 
          # find the intercept of circle and line that prolonges the line between a and t or B and T
+         azi_C_AB_inter_1 = azi_correction(X1_inter_AB_17, Y1_inter_AB_17, 0, 0, azimut(X1_inter_AB_17, Y1_inter_AB_17, 0, 0)),
+         azi_C_AB_inter_2 = azi_correction(X2_inter_AB_17, Y2_inter_AB_17, 0, 0, azimut(X2_inter_AB_17, Y2_inter_AB_17, 0, 0)),
          # AT line 
          azi_T_A = azi_correction(X_A, Y_A, X_T, Y_T, azimut(X_A, Y_A, X_T, Y_T)),
          azi_T_AT_inter_1 = azi_correction(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T, azimut(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T)),
@@ -641,6 +643,9 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
   mutate(Y_inter_AT_triangle_60 = l(b0_AT, b1_AT, X_inter_AT_triangle_60),  
          Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) 
+
+# new approach to localise points when edge is a line: 
+# https://math.stackexchange.com/questions/1577062/how-to-know-if-a-given-point-is-inside-a-2d-circles-segment
 
 
 
@@ -1008,7 +1013,7 @@ trees_and_edges <-
                      A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
                      X_A, X_B, X_T, Y_A, Y_B, Y_T,
                      b1_AB, b1_AT, b1_BT, b0_AB, b0_AT, b0_BT, 
-                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17,
+                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, azi_C_AB_inter_1, azi_C_AB_inter_2, 
                      X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17,
                      X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
                      X1_inter_AB_12, X2_inter_AB_12, Y1_inter_AB_12, Y2_inter_AB_12, inter_status_AB_12,
@@ -1025,18 +1030,38 @@ trees_and_edges <-
                      edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
-                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha), 
+                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
+              mutate(lower_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
+                     upper_azi_AB_inter = ifelse(azi_C_AB_inter_1 > azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
+                     angle_AB_inter_17 = angle_triangle(0,0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17)), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
   # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
-  mutate(Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
+  mutate(Y_AB_t = l(b0_AB, b1_AB, X_tree),    # calcualte y of function at the x of the tree 
+         dist_y_Xtree = distance(X_tree, Y_AB_t, 0, 0),
+         angle_AB_inter_1_tree =  angle_triangle(0, 0, X1_inter_AB_17, Y1_inter_AB_17, X_tree, Y_tree),
+         azi_AB_inter_1_2 = azi_correction( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17, azimut( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17)),
+         azi_AB_inter_1_tree = azi_correction(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17, azimut(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17)),
+         Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
          Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
          Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree) %>%
   # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
   # if edge form == 1 choose only those trees that lie within in the azimutes of the intercepts
   mutate(t_AB_status = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
-                              ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")), 
+                              ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")),
+         # new approach to localise points when edge is a line: 
+         # https://math.stackexchange.com/questions/1577062/how-to-know-if-a-given-point-is-inside-a-2d-circles-segment
+         # t_AB_status_test = ifelse(e_form == 1 &
+         #                             Dist_cm <= 1784 & 
+         #                             Dist_cm >= dist_y_Xtree & 
+         #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
+         t_AB_status_test = ifelse(e_form == 1 &
+                                     Dist_cm <= 1784 &
+                                     Dist_cm >= dist_y_Xtree &
+                                     (azi_C_AB_inter_1*azi_gon) >= 0 &
+                                     (azi_AB_inter_1_2*azi_AB_inter_1_tree) <= 0 &
+                                     (azi_C_AB_inter_2*azi_gon) <= 0, "C", "D"), 
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
@@ -1244,14 +1269,15 @@ ggplot() +
                       names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   # trees
-   geom_point(data =  trees_and_edges %>% filter(e_form == "1") %>% 
+   geom_point(data =  trees_and_edges %>% 
+                filter(e_form == "1") %>% 
                 inner_join(.,   forest_edges_HBI.man %>% 
-                             filter(e_form == "1") %>% 
+                             filter(e_form == "1" ) %>% 
                              group_by(plot_ID) %>% 
                              summarize(n = n()) %>% 
                              filter(n <= 1), 
                            by = "plot_ID"),
-              aes(X_tree, Y_tree, colour = t_AB_status))+
+              aes(X_tree, Y_tree, colour =  t_AB_status_test))+
    theme_bw()+
    facet_wrap(~plot_ID)
 
