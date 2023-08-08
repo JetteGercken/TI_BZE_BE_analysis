@@ -357,6 +357,8 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
   b = ((xp - xc)*(yc - ya) + (xa - xc)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   c = 1 - a - b;
   in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "A", "B");
+  # A = inside triangle
+  # B = outside triangle
   return(in.or.out)
 }
 
@@ -616,7 +618,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
          # find the intercept of circle and line that prolonges the line between a and t or B and T
          azi_C_AB_inter_1 = azi_correction(X1_inter_AB_17, Y1_inter_AB_17, 0, 0, azimut(X1_inter_AB_17, Y1_inter_AB_17, 0, 0)),
          azi_C_AB_inter_2 = azi_correction(X2_inter_AB_17, Y2_inter_AB_17, 0, 0, azimut(X2_inter_AB_17, Y2_inter_AB_17, 0, 0)),
-         # AT line 
+        # AT line 
          azi_T_A = azi_correction(X_A, Y_A, X_T, Y_T, azimut(X_A, Y_A, X_T, Y_T)),
          azi_T_AT_inter_1 = azi_correction(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T, azimut(X1_inter_AT_17, Y1_inter_AT_17, X_T, Y_T)),
          azi_T_AT_inter_2 = azi_correction(X2_inter_AT_17, Y2_inter_AT_17, X_T, Y_T, azimut(X2_inter_AT_17, Y2_inter_AT_17, X_T, Y_T)),
@@ -646,8 +648,6 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 
 # new approach to localise points when edge is a line: 
 # https://math.stackexchange.com/questions/1577062/how-to-know-if-a-given-point-is-inside-a-2d-circles-segment
-
-
 
 
 # ----- 1.1.2.3. edge area: circle segments, triangles  ---------------------------------------------
@@ -1031,9 +1031,15 @@ trees_and_edges <-
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
                      edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
-              mutate(lower_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
-                     upper_azi_AB_inter = ifelse(azi_C_AB_inter_1 > azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
-                     angle_AB_inter_17 = angle_triangle(0,0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17)), 
+              mutate(alpha_AB_x1_x2 = azi_C_AB_inter_1 -azi_C_AB_inter_2 ,
+                     beta_AB_x1_x2 = azi_C_AB_inter_2 -azi_C_AB_inter_1 ,
+                     lower_azi_AB_inter = ifelse(alpha_AB_x1_x2 < beta_AB_x1_x2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
+                     upper_azi_AB_inter = ifelse(alpha_AB_x1_x2 < beta_AB_x1_x2, azi_C_AB_inter_2, azi_C_AB_inter_1),
+                     angle_AB_inter_17 = angle_triangle(0,0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17), 
+                     x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
+                     x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
+                     y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
+                     y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
@@ -1057,11 +1063,9 @@ trees_and_edges <-
          #                             Dist_cm >= dist_y_Xtree & 
          #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
          t_AB_status_test = ifelse(e_form == 1 &
-                                     Dist_cm <= 1784 &
-                                     Dist_cm >= dist_y_Xtree &
-                                     (azi_C_AB_inter_1*azi_gon) >= 0 &
-                                     (azi_AB_inter_1_2*azi_AB_inter_1_tree) <= 0 &
-                                     (azi_C_AB_inter_2*azi_gon) <= 0, "C", "D"), 
+                                     azi_gon >= lower_azi_AB_inter & azi_gon <= upper_azi_AB_inter&
+                                     Dist_cm >= dist_y_Xtree ,
+                                     "out", "in"), 
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
@@ -1269,17 +1273,30 @@ ggplot() +
                       names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   # trees
-   geom_point(data =  trees_and_edges %>% 
-                filter(e_form == "1") %>% 
-                inner_join(.,   forest_edges_HBI.man %>% 
-                             filter(e_form == "1" ) %>% 
-                             group_by(plot_ID) %>% 
-                             summarize(n = n()) %>% 
-                             filter(n <= 1), 
-                           by = "plot_ID"),
-              aes(X_tree, Y_tree, colour =  t_AB_status_test))+
+   geom_point(data =  trees_and_edges %>% filter(e_form == "1"), 
+              # %>% 
+              #   inner_join(.,   forest_edges_HBI.man %>% 
+              #                filter(e_form == "1" ) %>% 
+              #                group_by(plot_ID) %>% 
+              #                summarize(n = n()) %>% 
+              #                filter(n <= 1), 
+              #              by = "plot_ID"),
+              aes(X_tree, Y_tree, colour = t_AB_status_test ))+
    theme_bw()+
    facet_wrap(~plot_ID)
+
+
+
+
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_point(data =  trees_and_edges %>% filter(e_form == "1" & azi_gon <= 50 & azi_gon >=0),
+             aes(X_tree, Y_tree))+
+  theme_bw()+
+  facet_wrap(~plot_ID)
+  
+summary(trees_and_edges)
 
 # ----- 2.1.2. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
 # forest edge type 2 
