@@ -321,6 +321,8 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
 # --> this one is only applied when there is literally not information to calculate the height, 
 # except of the diameter
 h_curtis <- function(spec, d) {
+  # spec = species group
+  # diameter in mm 
   b0 <- c(fi = 434.1235, bu = 382.0202, ta = 453.5538, ki = 359.7162, lae = 421.4473, dgl = 481.5531, ei = 348.3262);
   b1 <- c(fi = -65586.6915, bu = -51800.9382, ta = -81132.5221, ki = -42967.9947, lae = -60241.2948, dgl = -81754.2523, ei = -46547.3645);
   b2 <- c(fi = 3074967.1738, bu = 2374368.3254, ta = 4285801.5636, ki = 1763359.9972, lae = 2895409.6245, dgl = 4193121.2406, ei = 2119420.9444);
@@ -2087,7 +2089,7 @@ trees_total_5 <- trees_total %>%
               group_by(plot_ID, C_layer, SP_code) %>%             # group by plot and species and canopy layer to calcualte dg, hg 
               summarise(H_g = sum(mean(na.omit(H_m))*BA_m2)/sum(BA_m2),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
                         mean_DBH_mm = mean(DBH_mm),               # mean diameter per species per canopy layer per plot
-                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *1000 to get from 1m -> 100cm -> 1000mm
+                        D_g = ((sqrt((mean(BA_m2)/pi)))*2)*100),   # Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm 
             by = c("plot_ID", "SP_code", "C_layer")) %>%
   left_join(., trees_total %>%                                 # dataset with mean sampled height per plot and species, to assign it to trees that don´t have a proper estimated height
               filter(!is.na(H_m)) %>%                              # filter for trees with measured height, so trees where H_m != NA
@@ -8109,22 +8111,23 @@ summary(c_comp_Momok_BWI_SP_A)
 
 
 
-# ----- N.6 workdays ------------------------------------------------------
+# ----- N.6 wd ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
 tot_wd = 229
 ho_wd = tot_wd*0.5
-already_used_ho_02 = 6
-already_used_ho_03 = 7
-already_used_ho_04 = 9
-already_used_ho = already_used_ho_02 + already_used_ho_03 + already_used_ho_04
+month <-      c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+wd_ho_used <- c(6, 7, 9, 7, 8, 8, 2, 0, 0,  0,  0)
+alread_used_ho <- as.data.frame(cbind(month, wd_ho_used))
+already_used_ho_sum = as.numeric(alread_used_ho %>% summarize(sum_ho_wd_used = sum(wd_ho_used)) %>% pull(sum_ho_wd_used))
 #ho_planned_04_spain = 5 --> in used for april
-ho_planned_0809_FR_SP = 10
+#ho_planned_0809_FR_SP = 10 --> in used for july
 ho_planned_12_warm = 10
 ho_planned_12_christmas = 5
-ho_planned_tot = ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
+ho_planned_tot = ho_planned_12_warm + ho_planned_12_christmas
 weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
-remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
-current_KW_week <- 17 # 24.04-31.04.
+
+remainung_ho_days <- ho_wd - (already_used_ho_sum + ho_planned_tot)
+current_KW_week <- 32 # 06.08-13.08.
 rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
 
 

@@ -1031,22 +1031,83 @@ trees_and_edges <-
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
                      edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
-              mutate(alpha_AB_x1_x2 = azi_C_AB_inter_1 -azi_C_AB_inter_2 ,
-                     beta_AB_x1_x2 = azi_C_AB_inter_2 -azi_C_AB_inter_1 ,
-                     lower_azi_AB_inter = ifelse(alpha_AB_x1_x2 < beta_AB_x1_x2, azi_C_AB_inter_1, azi_C_AB_inter_2), 
-                     upper_azi_AB_inter = ifelse(alpha_AB_x1_x2 < beta_AB_x1_x2, azi_C_AB_inter_2, azi_C_AB_inter_1),
-                     angle_AB_inter_17 = angle_triangle(0,0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17), 
-                     x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
-                     x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
-                     y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
-                     y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
+              mutate(#alpha_AB_x1_x2 = azi_C_AB_inter_1 -azi_C_AB_inter_2 ,
+                     #beta_AB_x1_x2 = azi_C_AB_inter_2 -azi_C_AB_inter_1 ,
+                     #lower_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+                     #upper_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_2, azi_C_AB_inter_1),
+                     #lower_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x1", "x2"),
+                     #upper_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x2", "x1"),
+                                                # x1 between 200 - 400, x2 between 0 -200
+                     x_right_AB_stat = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                  azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                  azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ "x1", 
+                                                # x1 & x2 between 200 - 400 
+                                                azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                  azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
+                                                # x1 & x2 between 0 - 200 
+                                                azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                  azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
+                                                # x1 between 0 - 200  & x2 between 200 - 400 
+                                                azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                  azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
+                                                is.na(azi_C_AB_inter_1) ~ NA, 
+                                                is.na(azi_C_AB_inter_2) ~ NA,
+                                                TRUE ~ "x2"),
+                     # select x coordinate on the right side
+                                                  # x1 between 200 - 400, x2 between 0 -200
+                     x_right_AB_inter_17 = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                       azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                       azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ X1_inter_AB_17, 
+                                                     # x1 & x2 between 200 - 400 
+                                                     azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                       azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
+                                                     # x1 & x2 between 0 - 200 
+                                                     azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                       azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
+                                                     # x1 between 0 - 200  & x2 between 200 - 400 
+                                                     azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                       azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
+                                                     is.na(azi_C_AB_inter_1) ~ NA, 
+                                                     is.na(azi_C_AB_inter_2) ~ NA,
+                                                     TRUE ~  X2_inter_AB_17),
+                     # select y coordinate on the right side
+                                                  # x1 between 200 - 400, x2 between 0 -200
+                     y_right_AB_inter_17 = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                    azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                    azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ Y1_inter_AB_17, 
+                                                  # x1 & x2 between 200 - 400 
+                                                  azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
+                                                    azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
+                                                  # x1 & x2 between 0 - 200 
+                                                  azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                    azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
+                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
+                                                  # x1 between 0 - 200  & x2 between 200 - 400 
+                                                  azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
+                                                    azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
+                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
+                                                  is.na(azi_C_AB_inter_1) ~ NA, 
+                                                  is.na(azi_C_AB_inter_2) ~ NA,
+                                                  TRUE ~  Y2_inter_AB_17),
+                     angle_AB_inter_17 = angle_triangle(0, 0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17)), 
+                     #x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
+                     #x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
+                     #y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
+                     #y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
   # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
   mutate(Y_AB_t = l(b0_AB, b1_AB, X_tree),    # calcualte y of function at the x of the tree 
          dist_y_Xtree = distance(X_tree, Y_AB_t, 0, 0),
-         angle_AB_inter_1_tree =  angle_triangle(0, 0, X1_inter_AB_17, Y1_inter_AB_17, X_tree, Y_tree),
+         angle_AB_inter_right_tree =  angle_triangle(0, 0, x_right_AB_inter_17, y_right_AB_inter_17, X_tree, Y_tree),
          azi_AB_inter_1_2 = azi_correction( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17, azimut( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17)),
          azi_AB_inter_1_tree = azi_correction(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17, azimut(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17)),
          Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
@@ -1063,13 +1124,14 @@ trees_and_edges <-
          #                             Dist_cm >= dist_y_Xtree & 
          #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
          t_AB_status_test = ifelse(e_form == 1 &
-                                     azi_gon >= lower_azi_AB_inter & azi_gon <= upper_azi_AB_inter&
+                                     # if the angle between the right intersection and the tree is equal or smaller then the angle between inter_AB_1 and inter_AB_2
+                                     angle_AB_inter_right_tree <=  angle_AB_inter_17 &
                                      Dist_cm >= dist_y_Xtree ,
                                      "out", "in"), 
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
-                                   # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
+                                   # if only one arm of the triangle crosses the circle/ has two intersections with the circle, use the respective arm as a line and assign tree status according to line procedure 
                                    inter_status_AT_17 != "two I" & inter_status_BT_17 == "two I" ~ t_BT_status, 
                                    inter_status_AT_17 == "two I" & inter_status_BT_17 != "two I" ~ t_AT_status,
                                    # if non of the arms touches the circle, assign all trees inside the circle to one group
