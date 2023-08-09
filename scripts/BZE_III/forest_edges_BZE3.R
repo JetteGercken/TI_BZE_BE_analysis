@@ -416,6 +416,58 @@ tot.edge.A <- function(area_AT_AB_side, area_BT_side){
   return(A)
 } 
 
+
+# ----- 0.5.14. select the coordiantes/ azimute of more left intersection  ----------
+
+left.inter <- function(azi_1, azi_2, coord_1, coord_2){
+  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 0 & azi_2 <= 200 & 
+             azi_1 > azi_2 | 
+           # x1 & x2 between 200 - 400 
+             azi_1 >= 200 & azi_1 <= 400 &
+             azi_2 >= 200 & azi_2 <= 400 & 
+             azi_1 < azi_2 |
+           # x1 & x2 between 0 - 200
+             azi_1 >= 0 & azi_1 <= 200 &
+             azi_2 >= 0 & azi_2 <= 200 &
+             azi_1 < azi_2,  coord_1,
+           ifelse(
+             # x1 between 0 - 200  & x2 between 200 - 400 
+             azi_1 >= 0 & azi_1 <= 200 &
+               azi_2 >= 200 & azi_2 <= 400 &
+               azi_1 < azi_2, coord_2,
+             ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_2
+                    )
+             )
+         );
+  return(coordinate)
+}
+
+
+right.inter <- function(azi_1, azi_2, coord_1, coord_2){
+  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 0 & azi_2 <= 200 & 
+                         azi_1 > azi_2 | 
+                         # x1 & x2 between 200 - 400 
+                         azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 200 & azi_2 <= 400 & 
+                         azi_1 < azi_2 |
+                         # x1 & x2 between 0 - 200
+                         azi_1 >= 0 & azi_1 <= 200 &
+                         azi_2 >= 0 & azi_2 <= 200 &
+                         azi_1 < azi_2,  coord_2,
+                       ifelse(
+                         # x1 between 0 - 200  & x2 between 200 - 400 
+                         azi_1 >= 0 & azi_1 <= 200 &
+                           azi_2 >= 200 & azi_2 <= 400 &
+                           azi_1 < azi_2, coord_1,
+                         ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_1
+                         )
+                       )
+  );
+  return(coordinate)
+}
+
 # ----- 1. joining in external info  --------------------------------------
 # ----- 1.1. LIVING TREES -------------------------------------------------
 # ----- 1.1.1. species & inventory names ----------------------------------------------
@@ -1038,65 +1090,20 @@ trees_and_edges <-
                      #lower_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x1", "x2"),
                      #upper_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x2", "x1"),
                                                 # x1 between 200 - 400, x2 between 0 -200
-                     x_right_AB_stat = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                  azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                  azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ "x1", 
-                                                # x1 & x2 between 200 - 400 
-                                                azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                  azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
-                                                # x1 & x2 between 0 - 200 
-                                                azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                  azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
-                                                # x1 between 0 - 200  & x2 between 200 - 400 
-                                                azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                  azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                  azi_C_AB_inter_1 < azi_C_AB_inter_2 ~ "x1",
-                                                is.na(azi_C_AB_inter_1) ~ NA, 
-                                                is.na(azi_C_AB_inter_2) ~ NA,
-                                                TRUE ~ "x2"),
+                     x_left_stat = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, "x1", "x2" ), 
+                     # select x coordinate on the left side
+                     x_left_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
+                     # select y coordinate on the left side
+                     y_left_AB_inter_17 =  left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
                      # select x coordinate on the right side
-                                                  # x1 between 200 - 400, x2 between 0 -200
-                     x_right_AB_inter_17 = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                       azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                       azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ X1_inter_AB_17, 
-                                                     # x1 & x2 between 200 - 400 
-                                                     azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                       azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
-                                                     # x1 & x2 between 0 - 200 
-                                                     azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                       azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
-                                                     # x1 between 0 - 200  & x2 between 200 - 400 
-                                                     azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                       azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                       azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  X1_inter_AB_17,
-                                                     is.na(azi_C_AB_inter_1) ~ NA, 
-                                                     is.na(azi_C_AB_inter_2) ~ NA,
-                                                     TRUE ~  X2_inter_AB_17),
+                     x_right_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
                      # select y coordinate on the right side
-                                                  # x1 between 200 - 400, x2 between 0 -200
-                     y_right_AB_inter_17 = case_when(azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                    azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                    azi_C_AB_inter_1 > azi_C_AB_inter_2 ~ Y1_inter_AB_17, 
-                                                  # x1 & x2 between 200 - 400 
-                                                  azi_C_AB_inter_1 >= 200 & azi_C_AB_inter_1 <= 400 &
-                                                    azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
-                                                  # x1 & x2 between 0 - 200 
-                                                  azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                    azi_C_AB_inter_2 >= 0 & azi_C_AB_inter_2 <= 200 & 
-                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
-                                                  # x1 between 0 - 200  & x2 between 200 - 400 
-                                                  azi_C_AB_inter_1 >= 0 & azi_C_AB_inter_1 <= 200 &
-                                                    azi_C_AB_inter_2 >= 200 & azi_C_AB_inter_2 <= 400 & 
-                                                    azi_C_AB_inter_1 < azi_C_AB_inter_2 ~  Y1_inter_AB_17,
-                                                  is.na(azi_C_AB_inter_1) ~ NA, 
-                                                  is.na(azi_C_AB_inter_2) ~ NA,
-                                                  TRUE ~  Y2_inter_AB_17),
-                     angle_AB_inter_17 = angle_triangle(0, 0, X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17)), 
+                     y_right_AB_inter_17 =  right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
+                     angle_AB_inter_17_gon = ifelse((azi_C_AB_inter_1 - azi_C_AB_inter_2) <0, (azi_C_AB_inter_1 - azi_C_AB_inter_2)*(-1), azi_C_AB_inter_1 - azi_C_AB_inter_2), 
+                     azi_start_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+                     azi_end_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+                     azi_end_AB_inter_17_sum = azi_start_AB_inter_17 + angle_AB_inter_17_gon,
+                     azi_end_AB_inter_17_corr = ifelse(azi_end_AB_inter_17 > 400, azi_end_AB_inter_17 -400, azi_end_AB_inter_17)), 
                      #x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
                      #x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
                      #y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
@@ -1123,11 +1130,29 @@ trees_and_edges <-
          #                             Dist_cm <= 1784 & 
          #                             Dist_cm >= dist_y_Xtree & 
          #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
-         t_AB_status_test = ifelse(e_form == 1 &
-                                     # if the angle between the right intersection and the tree is equal or smaller then the angle between inter_AB_1 and inter_AB_2
-                                     angle_AB_inter_right_tree <=  angle_AB_inter_17 &
-                                     Dist_cm >= dist_y_Xtree ,
+         t_AB_status_test_1 = ifelse(e_form == 1 &
+                                     # start till end
+                                     azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
+                                     # distance of tree exceedes distance of the y on the X of the tree on the AB line
+                                       Y_AB_t_implicit >= 0 ,
                                      "out", "in"), 
+         t_AB_status_test_2 = ifelse(e_form == 1 &
+                                       # if the angle is crossing the line between 400 and 0
+                                       azi_end_AB_inter_17_sum >= 400 &
+                                       # right till 400
+                                       azi_gon >= azi_start_AB_inter_17 & azi_gon <= 400 &
+                                       # 0 till left
+                                       azi_gon >= 0 & azi_gon <= azi_end_AB_inter_17 &
+                                       # distance of tree exceedes distance of the y on the X of the tree on the AB line
+                                       Dist_cm >= dist_y_Xtree |
+                                       e_form == 1 &
+                                       # if the angle is not crossing the line between 400 and 0
+                                       azi_end_AB_inter_17_sum <= 400 &
+                                       # start till end
+                                       azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
+                                       # distance of tree exceedes distance of the y on the X of the tree on the AB line
+                                       Dist_cm >= dist_y_Xtree ,
+                                     "out", "in"),
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
@@ -1343,7 +1368,7 @@ ggplot() +
               #                summarize(n = n()) %>% 
               #                filter(n <= 1), 
               #              by = "plot_ID"),
-              aes(X_tree, Y_tree, colour = t_AB_status_test ))+
+              aes(X_tree, Y_tree, colour = t_AB_status_test_1))+
    theme_bw()+
    facet_wrap(~plot_ID)
 
@@ -1353,7 +1378,7 @@ ggplot() +
 ggplot() +  
   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
   geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  geom_point(data =  trees_and_edges %>% filter(e_form == "1" & azi_gon <= 50 & azi_gon >=0),
+  geom_point(data =  trees_and_edges %>% filter(azi_gon <= 200 & azi_gon >=0),
              aes(X_tree, Y_tree))+
   theme_bw()+
   facet_wrap(~plot_ID)
