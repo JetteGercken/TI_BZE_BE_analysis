@@ -468,6 +468,15 @@ right.inter <- function(azi_1, azi_2, coord_1, coord_2){
   return(coordinate)
 }
 
+
+
+
+select.inter.for.triangle <- function(t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2){
+  x <- ifelse(t.dist <= c.ro & azi_inter_1 == azi_centre, x1, 
+              ifelse(t.dist <= c.ro & azi_inter_2 == azi_centre, x2, NA));
+  return(x)
+}
+
 # ----- 1. joining in external info  --------------------------------------
 # ----- 1.1. LIVING TREES -------------------------------------------------
 # ----- 1.1.1. species & inventory names ----------------------------------------------
@@ -1100,14 +1109,61 @@ trees_and_edges <-
                      # select y coordinate on the right side
                      y_right_AB_inter_17 =  right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
                      angle_AB_inter_17_gon = ifelse((azi_C_AB_inter_1 - azi_C_AB_inter_2) <0, (azi_C_AB_inter_1 - azi_C_AB_inter_2)*(-1), azi_C_AB_inter_1 - azi_C_AB_inter_2), 
+                     angle_AC_BC_grad = angle_AB_inter_17_gon*0.9,
                      azi_start_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
                      azi_end_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
                      azi_end_AB_inter_17_sum = azi_start_AB_inter_17 + angle_AB_inter_17_gon,
-                     azi_end_AB_inter_17_corr = ifelse(azi_end_AB_inter_17 > 400, azi_end_AB_inter_17 -400, azi_end_AB_inter_17)), 
-                     #x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
-                     #x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
-                     #y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
-                     #y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
+                     azi_end_AB_inter_17_corr = ifelse(azi_end_AB_inter_17 > 400, azi_end_AB_inter_17 -400, azi_end_AB_inter_17), 
+                     x1_inter_AC_60 = intersection_c_lx1(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                                                         l.b1 = slope(0,0, X_A, Y_A), 
+                                                         0, 0, data_circle$rmax[3]*2),
+                     x2_inter_AC_60 = intersection_c_lx2(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)),
+                                                         l.b1 = slope(0,0, X_A, Y_A),
+                                                         0, 0, data_circle$rmax[3]*2),
+                     y1_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                                        slope(0,0, X_A, Y_A), 
+                                        x1_inter_AC_60),
+                    y2_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                                       slope(0,0, X_A, Y_A), 
+                                       x2_inter_AC_60),
+                    X_inter_AC_triangle_60 = select.inter.for.triangle(0,
+                                                                       data_circle$rmax[3]*2,
+                                                                   azi_correction(x1_inter_AC_60, y1_inter_AC_60, 0, 0, 
+                                                                                                azimut(x1_inter_AC_60, y1_inter_AC_60, 0, 0)), 
+                                                                   azi_correction(x2_inter_AC_60, y2_inter_AC_60, 0, 0, 
+                                                                                                azimut(x2_inter_AC_60, y2_inter_AC_60, 0, 0)),
+                                                                   azi_correction(X_A, Y_A, 0, 0, 
+                                                                                               azimut(X_A, Y_A, 0, 0))), 
+                    Y_inter_AC_trianble = l(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                                            l.b1 = slope(0,0, X_A, Y_A), 
+                                            x = X_inter_AC_triangle_60),
+                    x1_inter_BC_60 = intersection_c_lx1(l.b0 = intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                                                        l.b1 = slope(0,0, X_B, Y_B), 
+                                                        0, 0, data_circle$rmax[3]*2),
+                    x2_inter_BC_60 = intersection_c_lx2(l.b0 = intercept(X_B, Y_B, slope(0,0, X_B, Y_B)),
+                                                        l.b1 = slope(0,0, X_B, Y_B),
+                                                        0, 0, data_circle$rmax[3]*2),
+                    y1_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                                       slope(0,0, X_B, Y_B), 
+                                       x1_inter_BC_60),
+                    y2_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                                       slope(0,0, X_B, Y_B), 
+                                       x2_inter_BC_60),
+                    X_inter_BC_triangle_60 = select.inter.for.triangle(0,
+                                                                       data_circle$rmax[3]*2,
+                                                                       azi_correction(x1_inter_BC_60, y1_inter_BC_60, 0, 0, 
+                                                                                                azimut(x1_inter_BC_60, y1_inter_BC_60, 0, 0)), 
+                                                                   azi_correction(x2_inter_AC_60, y2_inter_BC_60, 0, 0, 
+                                                                                                azimut(x2_inter_BC_60, y2_inter_BC_60, 0, 0)),
+                                                                   azi_correction(X_A, Y_A, 0, 0, 
+                                                                                               azimut(X_A, Y_A, 0, 0))),
+                    Y_inter_BC_trianble = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                                            slope(0,0, X_B, Y_B),
+                                            X_inter_BC_triangle_60),
+            
+                     x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
+                     y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
+                     y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
@@ -1138,20 +1194,9 @@ trees_and_edges <-
                                      "out", "in"), 
          t_AB_status_test_2 = ifelse(e_form == 1 &
                                        # if the angle is crossing the line between 400 and 0
-                                       azi_end_AB_inter_17_sum >= 400 &
-                                       # right till 400
-                                       azi_gon >= azi_start_AB_inter_17 & azi_gon <= 400 &
-                                       # 0 till left
-                                       azi_gon >= 0 & azi_gon <= azi_end_AB_inter_17 &
-                                       # distance of tree exceedes distance of the y on the X of the tree on the AB line
-                                       Dist_cm >= dist_y_Xtree |
-                                       e_form == 1 &
-                                       # if the angle is not crossing the line between 400 and 0
-                                       azi_end_AB_inter_17_sum <= 400 &
-                                       # start till end
-                                       azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
-                                       # distance of tree exceedes distance of the y on the X of the tree on the AB line
-                                       Dist_cm >= dist_y_Xtree ,
+                                       p.in.triangle(X_inter_AC_triangle_60, X_inter_BC_triangle_60, 0, 
+                                                     Y_inter_AC_triangle_60, Y_inter_BC_triangle_60, 0,
+                                                     X_tree, Y_tree) == "A",
                                      "out", "in"),
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
