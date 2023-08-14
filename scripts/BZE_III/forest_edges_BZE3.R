@@ -1092,85 +1092,29 @@ trees_and_edges <-
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
                      edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
-              mutate(#alpha_AB_x1_x2 = azi_C_AB_inter_1 -azi_C_AB_inter_2 ,
-                     #beta_AB_x1_x2 = azi_C_AB_inter_2 -azi_C_AB_inter_1 ,
-                     #lower_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
-                     #upper_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_2, azi_C_AB_inter_1),
-                     #lower_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x1", "x2"),
-                     #upper_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x2", "x1"),
-                                                # x1 between 200 - 400, x2 between 0 -200
-                     x_left_stat = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, "x1", "x2" ), 
-                     # select x coordinate on the left side
-                     x_left_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
-                     # select y coordinate on the left side
-                     y_left_AB_inter_17 =  left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
-                     # select x coordinate on the right side
-                     x_right_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
-                     # select y coordinate on the right side
-                     y_right_AB_inter_17 =  right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
-                     angle_AB_inter_17_gon = ifelse((azi_C_AB_inter_1 - azi_C_AB_inter_2) <0, (azi_C_AB_inter_1 - azi_C_AB_inter_2)*(-1), azi_C_AB_inter_1 - azi_C_AB_inter_2), 
-                     angle_AC_BC_grad = angle_AB_inter_17_gon*0.9,
-                     azi_start_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
-                     azi_end_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
-                     azi_end_AB_inter_17_sum = azi_start_AB_inter_17 + angle_AB_inter_17_gon,
-                     azi_end_AB_inter_17_corr = ifelse(azi_end_AB_inter_17 > 400, azi_end_AB_inter_17 -400, azi_end_AB_inter_17), 
-                     x1_inter_AC_60 = intersection_c_lx1(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
-                                                         l.b1 = slope(0,0, X_A, Y_A), 
-                                                         0, 0, data_circle$rmax[3]*2),
-                     x2_inter_AC_60 = intersection_c_lx2(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)),
-                                                         l.b1 = slope(0,0, X_A, Y_A),
-                                                         0, 0, data_circle$rmax[3]*2),
-                     y1_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
-                                        slope(0,0, X_A, Y_A), 
-                                        x1_inter_AC_60),
-                    y2_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
-                                       slope(0,0, X_A, Y_A), 
-                                       x2_inter_AC_60),
-                    X_inter_AC_triangle_60 = select.inter.for.triangle(0,
-                                                                       data_circle$rmax[3]*2,
-                                                                   azi_correction(x1_inter_AC_60, y1_inter_AC_60, 0, 0, 
-                                                                                                azimut(x1_inter_AC_60, y1_inter_AC_60, 0, 0)), 
-                                                                   azi_correction(x2_inter_AC_60, y2_inter_AC_60, 0, 0, 
-                                                                                                azimut(x2_inter_AC_60, y2_inter_AC_60, 0, 0)),
-                                                                   azi_correction(X_A, Y_A, 0, 0, 
-                                                                                               azimut(X_A, Y_A, 0, 0))), 
-                    Y_inter_AC_trianble = l(l.b0 = intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
-                                            l.b1 = slope(0,0, X_A, Y_A), 
-                                            x = X_inter_AC_triangle_60),
-                    x1_inter_BC_60 = intersection_c_lx1(l.b0 = intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
-                                                        l.b1 = slope(0,0, X_B, Y_B), 
-                                                        0, 0, data_circle$rmax[3]*2),
-                    x2_inter_BC_60 = intersection_c_lx2(l.b0 = intercept(X_B, Y_B, slope(0,0, X_B, Y_B)),
-                                                        l.b1 = slope(0,0, X_B, Y_B),
-                                                        0, 0, data_circle$rmax[3]*2),
-                    y1_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
-                                       slope(0,0, X_B, Y_B), 
-                                       x1_inter_BC_60),
-                    y2_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
-                                       slope(0,0, X_B, Y_B), 
-                                       x2_inter_BC_60),
-                    X_inter_BC_triangle_60 = select.inter.for.triangle(0,
-                                                                       data_circle$rmax[3]*2,
-                                                                       azi_correction(x1_inter_BC_60, y1_inter_BC_60, 0, 0, 
-                                                                                                azimut(x1_inter_BC_60, y1_inter_BC_60, 0, 0)), 
-                                                                   azi_correction(x2_inter_AC_60, y2_inter_BC_60, 0, 0, 
-                                                                                                azimut(x2_inter_BC_60, y2_inter_BC_60, 0, 0)),
-                                                                   azi_correction(X_A, Y_A, 0, 0, 
-                                                                                               azimut(X_A, Y_A, 0, 0))),
-                    Y_inter_BC_trianble = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
-                                            slope(0,0, X_B, Y_B),
-                                            X_inter_BC_triangle_60),
-            
-                     x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
-                     y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
-                     y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60)), 
+              mutate(X_M_AB = (X1_inter_AB_17 - X2_inter_AB_17)/2, 
+                     Y_M_AB = (Y1_inter_AB_17 - Y2_inter_AB_17)/2, 
+                     b1_MC = slope(0, 0, X_M_AB, Y_M_AB), 
+                     b0_MC = intercept(0, 0, b1_MC), 
+                     X1_inter_MC_17 = intersection_c_lx1(b0_MC, b1_MC, 0, 0, data_circle$r0[3]), 
+                     X2_inter_MC_17 = intersection_c_lx2(b0_MC, b1_MC, 0, 0, data_circle$r0[3]),
+                     y1_inter_MC_17 = l(b0_MC, b1_MC, X1_inter_MC_17), 
+                     y2_inter_MC_17 = l(b0_MC, b1_MC, X2_inter_MC_17), 
+                     dist_C_inter_1_MC = distance(X1_inter_MC_17, y1_inter_MC_17, X_M_AB, Y_M_AB), 
+                     dist_C_inter_2_MC = distance(X2_inter_MC_17, y2_inter_MC_17, X_M_AB, Y_M_AB), 
+                     X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC_17, X2_inter_MC_17), 
+                     Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC_17, y2_inter_MC_17), 
+                     Y_AB_MC_implicit = b0_AB  + b1_AB * X_inter_MC_shorter_side - Y_inter_MC_shorter_side, 
+                     Y_implicit_status_AB_line = case_when(Y_AB_MC_implicit > 0 ~ "positive",  # "y imlicit has to be positive for tree to be outside", 
+                                                           Y_AB_MC_implicit < 0 ~ "negative", # "y imlicit has to be negative for tree to be outside", 
+                                                           TRUE ~ "equal")), 
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
   # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
   mutate(Y_AB_t = l(b0_AB, b1_AB, X_tree),    # calcualte y of function at the x of the tree 
          dist_y_Xtree = distance(X_tree, Y_AB_t, 0, 0),
-         angle_AB_inter_right_tree =  angle_triangle(0, 0, x_right_AB_inter_17, y_right_AB_inter_17, X_tree, Y_tree),
+        # angle_AB_inter_right_tree =  angle_triangle(0, 0, x_right_AB_inter_17, y_right_AB_inter_17, X_tree, Y_tree),
          azi_AB_inter_1_2 = azi_correction( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17, azimut( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17)),
          azi_AB_inter_1_tree = azi_correction(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17, azimut(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17)),
          Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
@@ -1186,18 +1130,20 @@ trees_and_edges <-
          #                             Dist_cm <= 1784 & 
          #                             Dist_cm >= dist_y_Xtree & 
          #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
-         t_AB_status_test_1 = ifelse(e_form == 1 &
-                                     # start till end
-                                     azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
-                                     # distance of tree exceedes distance of the y on the X of the tree on the AB line
-                                       Y_AB_t_implicit >= 0 ,
-                                     "out", "in"), 
-         t_AB_status_test_2 = ifelse(e_form == 1 &
-                                       # if the angle is crossing the line between 400 and 0
-                                       p.in.triangle(X_inter_AC_triangle_60, X_inter_BC_triangle_60, 0, 
-                                                     Y_inter_AC_triangle_60, Y_inter_BC_triangle_60, 0,
-                                                     X_tree, Y_tree) == "A",
-                                     "out", "in"),
+         # t_AB_status_test_1 = ifelse(e_form == 1 &
+         #                             # start till end
+         #                             azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
+         #                             # distance of tree exceedes distance of the y on the X of the tree on the AB line
+         #                               Y_AB_t_implicit >= 0 ,
+         #                             "out", "in"), 
+         t_AB_status_test_2 = ifelse(e_form == 1 & inter_status_AB_17 == "two I" &
+                                       Y_implicit_status_AB_line  == "positive" &
+                                       Y_AB_t_implicit > 0 |
+                                       e_form == 1 & inter_status_AB_17 == "two I" &
+                                       Y_implicit_status_AB_line  == "negative" &
+                                       Y_AB_t_implicit < 0 |
+                                       e_form == 1 & inter_status_AB_17 != "two I" , 
+                                     "in", "out"),
          t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
          t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
@@ -1413,7 +1359,7 @@ ggplot() +
               #                summarize(n = n()) %>% 
               #                filter(n <= 1), 
               #              by = "plot_ID"),
-              aes(X_tree, Y_tree, colour = t_AB_status_test_1))+
+              aes(X_tree, Y_tree, colour = t_AB_status_test_2))+
    theme_bw()+
    facet_wrap(~plot_ID)
 
@@ -1767,7 +1713,7 @@ forest_edges_HBI %>%
             by = c("plot_ID", "e_form")) 
 
 
-# ----- N. intersections of lines AB, AT, BT with all samlping cir --------
+# ----- N.1. intersections of lines AB, AT, BT with all samlping cir --------
 forest_edges_HBI %>% 
    filter(e_form %in% c("1", "2")) %>% 
    # find line parameters
@@ -1906,4 +1852,107 @@ forest_edges_HBI %>%
    mutate(Y_inter_AT_triangle_60 = l(b0_AT, b1_AT, X_inter_AT_triangle_60),  
           Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) 
  
+
+
+# N.2. edge form 1 (AB line) intersection of A to center and B to center lines with 60m radius --------
+forest_edges_HBI.man %>% 
+  select(plot_ID, e_ID, e_type, e_form,
+         A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
+         X_A, X_B, X_T, Y_A, Y_B, Y_T,
+         b1_AB, b1_AT, b1_BT, b0_AB, b0_AT, b0_BT, 
+         X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, azi_C_AB_inter_1, azi_C_AB_inter_2, 
+         X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17,
+         X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
+         X1_inter_AB_12, X2_inter_AB_12, Y1_inter_AB_12, Y2_inter_AB_12, inter_status_AB_12,
+         X1_inter_AT_12, X2_inter_AT_12, Y1_inter_AT_12, Y2_inter_AT_12, inter_status_AT_12,
+         X1_inter_BT_12, X2_inter_BT_12, Y1_inter_BT_12, Y2_inter_BT_12, inter_status_BT_12,
+         X1_inter_AB_5, X2_inter_AB_5, Y1_inter_AB_5, Y2_inter_AB_5, inter_status_AB_5, 
+         X1_inter_AT_5, X2_inter_AT_5, Y1_inter_AT_5, Y2_inter_AT_5, inter_status_AT_5, 
+         X1_inter_BT_5, X2_inter_BT_5, Y1_inter_BT_5, Y2_inter_BT_5, inter_status_BT_5,  
+         X_inter_AT_triangle_60, X_inter_BT_triangle_60, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, 
+         X_inter_AT_17_triangle, X_inter_BT_17_triangle, Y_inter_AT_17_triangle, Y_inter_BT_17_triangle,
+         X_inter_AT_12_triangle, X_inter_BT_12_triangle, Y_inter_AT_12_triangle, Y_inter_BT_12_triangle, 
+         X_inter_AT_5_triangle, X_inter_BT_5_triangle, Y_inter_AT_5_triangle, Y_inter_BT_5_triangle,
+         inter_status_AB_17, inter_status_AT_17, inter_status_BT_17, 
+         edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
+         edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
+         edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
+         edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
+  mutate(#alpha_AB_x1_x2 = azi_C_AB_inter_1 -azi_C_AB_inter_2 ,
+    #beta_AB_x1_x2 = azi_C_AB_inter_2 -azi_C_AB_inter_1 ,
+    #lower_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+    #upper_azi_AB_inter = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, azi_C_AB_inter_2, azi_C_AB_inter_1),
+    #lower_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x1", "x2"),
+    #upper_azi_AB_stat = ifelse(azi_C_AB_inter_1 < azi_C_AB_inter_2, "x2", "x1"),
+    # x1 between 200 - 400, x2 between 0 -200
+    x_left_stat = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, "x1", "x2" ), 
+    # select x coordinate on the left side
+    x_left_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
+    # select y coordinate on the left side
+    y_left_AB_inter_17 =  left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
+    # select x coordinate on the right side
+    x_right_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, X1_inter_AB_17, X2_inter_AB_17),
+    # select y coordinate on the right side
+    y_right_AB_inter_17 =  right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, Y1_inter_AB_17, Y2_inter_AB_17),
+    angle_AB_inter_17_gon = ifelse((azi_C_AB_inter_1 - azi_C_AB_inter_2) <0, (azi_C_AB_inter_1 - azi_C_AB_inter_2)*(-1), azi_C_AB_inter_1 - azi_C_AB_inter_2), 
+    angle_AC_BC_grad = angle_AB_inter_17_gon*0.9,
+    azi_start_AB_inter_17 = left.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+    azi_end_AB_inter_17 = right.inter(azi_C_AB_inter_1, azi_C_AB_inter_2, azi_C_AB_inter_1, azi_C_AB_inter_2),
+    azi_end_AB_inter_17_sum = azi_start_AB_inter_17 + angle_AB_inter_17_gon,
+    azi_end_AB_inter_17_corr = ifelse(azi_end_AB_inter_17 > 400, azi_end_AB_inter_17 -400, azi_end_AB_inter_17), 
+    x1_inter_AC_60 = intersection_c_lx1(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                                        slope(0,0, X_A, Y_A), 
+                                        0, 0, data_circle$rmax[3]*2),
+    x2_inter_AC_60 = intersection_c_lx2(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)),
+                                        slope(0,0, X_A, Y_A),
+                                        0, 0, data_circle$rmax[3]*2),
+    y1_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                       slope(0,0, X_A, Y_A), 
+                       x1_inter_AC_60),
+    y2_inter_AC_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                       slope(0,0, X_A, Y_A), 
+                       x2_inter_AC_60),
+    X_inter_AC_triangle_60 = select.inter.for.triangle(0,
+                                                       data_circle$rmax[3]*2,
+                                                       azi_correction(x1_inter_AC_60, y1_inter_AC_60, 0, 0, 
+                                                                      azimut(x1_inter_AC_60, y1_inter_AC_60, 0, 0)), 
+                                                       azi_correction(x2_inter_AC_60, y2_inter_AC_60, 0, 0, 
+                                                                      azimut(x2_inter_AC_60, y2_inter_AC_60, 0, 0)),
+                                                       azi_correction(X_A, Y_A, 0, 0, 
+                                                                      azimut(X_A, Y_A, 0, 0)), 
+                                                       x1_inter_AC_60, 
+                                                       x2_inter_AC_60), 
+    Y_inter_AC_triangle_60 = l(intercept(X_A, Y_A, slope(0,0, X_A, Y_A)), 
+                               slope(0,0, X_A, Y_A), 
+                               X_inter_AC_triangle_60),
+    x1_inter_BC_60 = intersection_c_lx1(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                                        slope(0,0, X_B, Y_B), 
+                                        0, 0, data_circle$rmax[3]*2),
+    x2_inter_BC_60 = intersection_c_lx2(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)),
+                                        slope(0,0, X_B, Y_B),
+                                        0, 0, data_circle$rmax[3]*2),
+    y1_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                       slope(0,0, X_B, Y_B), 
+                       x1_inter_BC_60),
+    y2_inter_BC_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                       slope(0,0, X_B, Y_B), 
+                       x2_inter_BC_60),
+    X_inter_BC_triangle_60 = select.inter.for.triangle(0, # tdist
+                                                       data_circle$rmax[3]*2, # cro
+                                                       azi_correction(x1_inter_BC_60, y1_inter_BC_60, 0, 0, # azi inter 1
+                                                                      azimut(x1_inter_BC_60, y1_inter_BC_60, 0, 0)),
+                                                       azi_correction(x2_inter_AC_60, y2_inter_BC_60, 0, 0, # azi inter 2
+                                                                      azimut(x2_inter_BC_60, y2_inter_BC_60, 0, 0)),
+                                                       azi_correction(X_A, Y_A, 0, 0,     # azi center
+                                                                      azimut(X_A, Y_A, 0, 0)), 
+                                                       x1_inter_BC_60, x2_inter_AC_60),
+    Y_inter_BC_triangle_60 = l(intercept(X_B, Y_B, slope(0,0, X_B, Y_B)), 
+                               slope(0,0, X_B, Y_B),
+                               X_inter_BC_triangle_60),
+    x1_inter_AB_60 = intersection_c_lx1(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2),
+    x2_inter_AB_60 = intersection_c_lx2(b0_AB, b1_AB, 0, 0, data_circle$rmax[3]*2), 
+    y1_inter_AB_60 = l(b0_AB, b1_AB, x1_inter_AB_60), 
+    y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60))
+
+
  

@@ -3634,6 +3634,25 @@ plot_total <- anti_join(plot_total, plots.to.exclude.LT.RG.DW, by = "plot_ID")
 write.csv(plot_total, paste0(momok.out.home, "LB_RG_DW_Plot_MoMoK.csv"))
 
 
+# export Bucchenhorst side for Marvin: 
+plot_total %>% 
+  inner_join(., trees_total %>% 
+               select(plot_ID, loc_name, state) %>%
+               filter(state == "MV" & loc_name == "Buchenhorst") %>% 
+               distinct(),
+             by = "plot_ID") %>% 
+  select(compartiment, stand_component,  C_t_ha) %>% 
+  filter(compartiment %in% c("ag", "bg", "total")) %>%
+  mutate(compartiment = case_when(compartiment == "ag" ~ "oberirdisch", 
+                                  compartiment == "bg" ~ "unterirdisch", 
+                                  TRUE ~ "gesamt"),  
+         stand_component = case_when(stand_component == "LT" ~ "Oberstand", 
+                                     stand_component == "RG" ~ "Verjüngung", 
+                                     stand_component == "all" ~ "Gesamter Bestand", 
+                                     TRUE ~ "Totholz")) %>%
+  unite("component_compartiment", stand_component, compartiment, sep = " ") %>% 
+  pivot_wider(names_from = component_compartiment, values_from = C_t_ha)
+
 
 # ----- legend MoMoK output -----------------------------------------------
 # here  will collect all column names of all datasets I everexportet so i can do an ultimate inner join and assign the meaning to the respective columns
