@@ -345,6 +345,42 @@ distance <- function(x2, y2, x1, y1){
   return(d)
 }
 
+
+
+# ----- 0.5.8. check for relation between point and line  -----------------------------------------------------------
+middle.point.to.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1){
+  # calculate coordiantes of the middle of thie line between 
+  x_m_line = (x1 - x2)/2;
+  y_m_line = (y1 - y2)/2;
+  # calculate the parameters of the equation between the middle of the line and the centre of the circle
+  b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
+  b0_MC = intercept(c.x0, c.y0, b1_MC);
+  # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
+  X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r0); 
+  X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r0);
+  # insert the intersection x corodinate in the line function to get the respective y coordinate
+  y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC); 
+  y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC);
+  # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
+  dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
+  dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
+  # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
+  X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC); 
+  Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC);
+  # insert coordinates that are for sure on the smaller side of the two halves of the circle into the implicit equation: 
+  Y_MC_implicit = l.b0  + l.b1 * X_inter_MC_shorter_side - Y_inter_MC_shorter_side;
+  Y_implicit_status_M_line = case_when(Y_MC_implicit > 0 ~ "positive",          # "y imlicit has to be positive too for tree to be outside, 
+                                                                                 # as the result of the implicit equation that contains the 
+                                                                                 # point that is for sure in the smaller cirlce segment, has a positive impllciti equation result", 
+                                        Y_MC_implicit < 0 ~ "negative",          # "y imlicit has to be negative for tree to be outside", 
+                                        TRUE ~ "equal");
+  return(Y_implicit_status_M_line)
+}
+
+
+
+
+
 # ------ 0.5.9. check if point lays in triangle  --------------------------
 # this link https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle led me to the following links: 
 # http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html
@@ -476,6 +512,10 @@ select.inter.for.triangle <- function(t.dist, c.ro, azi_inter_1, azi_inter_2, az
               ifelse(t.dist <= c.ro & azi_inter_2 == azi_centre, x2, NA));
   return(x)
 }
+
+
+
+
 
 # ----- 1. joining in external info  --------------------------------------
 # ----- 1.1. LIVING TREES -------------------------------------------------
@@ -1051,13 +1091,33 @@ forest_edges_HBI.man <-
          edge_area_total_17_ha = tot.edge.A(edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha)) %>% 
   mutate(plot_A_17_ha = (c_A(data_circle$r0[3])/10000)/10000, 
          plot_A_12_ha = (c_A(data_circle$r0[2])/10000)/10000, 
-         plot_A_5_ha = (c_A(data_circle$r0[1])/10000)/10000 )
-
-
-# there will always occur the following error as for some lines there are no intersections, so the intersection function returns NaNs
-    # In argument: `X_inter_AT_17_triangle = case_when(...)`.
-    # Caused by warning in `sqrt()`:
-    #   ! NaNs wurden erzeugt
+         plot_A_5_ha = (c_A(data_circle$r0[1])/10000)/10000, 
+         plot_A_ha = NA) %>% 
+# summaroze the edge are per plot and sampling circuit
+left_join(., forest_edges_HBI.man %>% 
+  filter(!is.na(e_form)) %>% 
+  select(plot_ID, e_form,
+         edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
+         edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha,
+         edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha) %>% 
+  pivot_longer(edge_area_ABC_AC_17_ha:edge_area_ABC_BC_5_ha, names_to = "CCS", values_to = "area_ha") %>% 
+    mutate(CCS = case_when(endsWith(CCS, "17_ha")~ "edge_area_17_ha", 
+                         endsWith(CCS, "12_ha")~ "edge_area_12_ha",
+                         endsWith(CCS, "5_ha")~ "edge_area_5_ha",
+                         TRUE ~ NA)) %>% 
+  group_by(plot_ID, CCS) %>%
+  summarize(total_area_AB_ABT_ha = sum(na.omit(area_ha))) %>% 
+    pivot_wider(names_from = CCS, values_from = total_area_AB_ABT_ha), 
+  by = "plot_ID")
+  
+  
+  
+  # there will always occur the following error as for some lines there are no intersections, so the intersection function returns NaNs
+  # In argument: `X_inter_AT_17_triangle = case_when(...)`.
+  # Caused by warning in `sqrt()`:
+  #   ! NaNs wurden erzeugt
+  
+  
 
 
 #----1.1.2.4. tree-edge-status by combining tree and edge data ---------------------------------------
@@ -1091,7 +1151,8 @@ trees_and_edges <-
                      edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
-                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha) %>% 
+                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha, 
+                     edge_area_17_ha, edge_area_12_ha, edge_area_5_ha) %>% 
               mutate(X_M_AB = (X1_inter_AB_17 - X2_inter_AB_17)/2, 
                      Y_M_AB = (Y1_inter_AB_17 - Y2_inter_AB_17)/2, 
                      b1_MC = slope(0, 0, X_M_AB, Y_M_AB), 
@@ -1162,8 +1223,16 @@ trees_and_edges <-
                                       e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ t_BT_status, 
                                       e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ t_AT_status,
                                       # if non of the arms touches the circle, assign all trees inside the circle to one group
-                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "A", 
-                                      TRUE ~ NA)) 
+                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "out", 
+                                      TRUE ~ NA), 
+         t_status_AB_ABT = case_when(e_form == "1" ~  t_AB_status_test_2, 
+                                     e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
+                                     # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
+         e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ t_BT_status, 
+         e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ t_AT_status,
+         # if non of the arms touches the circle, assign all trees inside the circle to one group
+         e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "A", 
+         TRUE ~ NA) )
 # assigning tree status according to frequency of the groups per plot
    # (1) identify if there is more then 1 tree status per plot (A vs. B, C vs. D)
    # (2) identify there are more then two identify the group that has includes the most trees
@@ -1238,8 +1307,24 @@ by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join
 
 
 # ---- 1.1.2.5. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
+# https://stackoverflow.com/questions/66252569/using-ifelse-conditional-on-multiple-columns
 trees_and_edges %>% 
-  mutate(plot_A_ha = case_when(DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form) ~ (c_A(data_circle$r0[1])/10000)/10000,
+   mutate(case_when(
+     DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form)|
+       DBH_cm >= 7 & DBH_cm < 10 & 
+       inter_status_BT_5 != "two I" & 
+       inter_status_AT_5 != "two I" & 
+       inter_status_AB_5 != "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000,
+     DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & |
+       DBH_cm >= 7 & DBH_cm < 10 & inter_status_BT_5 == "two I" | 
+       DBH_cm >= 7 & DBH_cm < 10 & inter_status_AT_5 == "two I" | 
+       DBH_cm >= 7 & DBH_cm < 10 & inter_status_AB_5 == "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000 - edge_area_5_ha,
+     
+                               TRUE ~ NA))
+                               
+                               
+                               
+                               
                                DBH_cm >= 10 & DBH_cm < 30 & is.na(e_form) ~ (c_A(data_circle$r0[2])/10000)/10000,
                                DBH_cm >= 30 & is.na(e_form) ~ (c_A(data_circle$r0[3])/10000)/10000,
                                # for trees that are in a circle that has an edge
