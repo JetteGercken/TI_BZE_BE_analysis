@@ -685,7 +685,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
   mutate(Y_inter_AT_triangle_60 = l(b0_AT, b1_AT, X_inter_AT_triangle_60),  
          Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) %>% 
-  # determine if the result of an implicit function has to be positive or negative to be outside the line 
+ 
   mutate(Y_implicit_status_AB_line = middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB),
          Y_implicit_status_AT_line = middle.point.to.line(X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, 0, 0,  data_circle$r0[3], b0_AT, b1_AT),
          Y_implicit_status_BT_line = middle.point.to.line(X1_inter_BT_17, X2_inter_BT_17, Y1_inter_BT_17, Y2_inter_BT_17, 0, 0,  data_circle$r0[3], b0_BT, b1_BT))
@@ -1114,6 +1114,8 @@ trees_and_edges <-
   # assign a tree-edge-status that calls trees with the same result as the implicit function of the middlepoint-center-line 
   # intersction point on the shorter side of the middlepoint center line
                               #if there are two intersection and the Y inter status of 
+                              # middle.point.to.line is a function that determines if the result of an implicit function has to be positive or negative to be outside the line 
+                              # thus if the edge is a line with two intersection we asssign the 
   mutate(t_AB_status = ifelse(e_form == 1 & inter_status_AB_17 == "two I" & middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB)  == "positive" & Y_AB_t_implicit > 0 |
                                 e_form == 1 & inter_status_AB_17 == "two I" & middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB) == "negative" &  Y_AB_t_implicit < 0 | 
                                 e_form == 1 & inter_status_AB_17 != "two I" , 
