@@ -7229,26 +7229,26 @@ trees_P <- left_join(trees_P,trees_P_SP %>%
                        distinct(), 
                      by = "plot_ID")
 
-# ----- N.6 workdays ------------------------------------------------------
+# ----- N.6 wd ------------------------------------------------------
 # total working days 2023 Brandenburg from February onwards: 
-tot_wd = 229
+wd = 229
+hollidays = 28
+tot_wd = wd-hollidays
 ho_wd = tot_wd*0.5
-already_used_ho_02 = 6
-already_used_ho_03 = 7
-already_used_ho_04 = 9
-already_used_ho_05 = 7
-already_used_ho_06 = 5
-already_used_ho = already_used_ho_02 + already_used_ho_03 + already_used_ho_04
+month <-      c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+wd_ho_used <- c(6, 7, 9, 7, 8, 8, 3, 0, 0,  0,  0)
+alread_used_ho <- as.data.frame(cbind(month, wd_ho_used))
+already_used_ho_sum = as.numeric(alread_used_ho %>% summarize(sum_ho_wd_used = sum(wd_ho_used)) %>% pull(sum_ho_wd_used))
 #ho_planned_04_spain = 5 --> in used for april
-ho_planned_0809_FR_SP = 10
+#ho_planned_0809_FR_SP = 10 --> in used for july
 ho_planned_12_warm = 10
 ho_planned_12_christmas = 5
-ho_planned_tot = ho_planned_0809_FR_SP + ho_planned_12_warm + ho_planned_12_christmas
-weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
-remainung_ho_days <- ho_wd - (already_used_ho + ho_planned_tot)
-current_KW_week <- 25 # 19.06-25.04.
-rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
+ho_planned_tot = ho_planned_12_warm + ho_planned_12_christmas
+weeks_away = 1+1+2+1 # weeks taht i am spending all days in homeoffice
 
+remainung_ho_days <- ho_wd - (already_used_ho_sum + ho_planned_tot)
+current_KW_week <- 33 # 15.08. - 21.08.
+rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
 
 
 

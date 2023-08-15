@@ -8129,35 +8129,3 @@ summary(c_comp_Momok_BWI_SP_A)
 
 
 
-
-# ----- N.6 wd ------------------------------------------------------
-# total working days 2023 Brandenburg from February onwards: 
-tot_wd = 229
-ho_wd = tot_wd*0.5
-month <-      c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-wd_ho_used <- c(6, 7, 9, 7, 8, 8, 2, 0, 0,  0,  0)
-alread_used_ho <- as.data.frame(cbind(month, wd_ho_used))
-already_used_ho_sum = as.numeric(alread_used_ho %>% summarize(sum_ho_wd_used = sum(wd_ho_used)) %>% pull(sum_ho_wd_used))
-#ho_planned_04_spain = 5 --> in used for april
-#ho_planned_0809_FR_SP = 10 --> in used for july
-ho_planned_12_warm = 10
-ho_planned_12_christmas = 5
-ho_planned_tot = ho_planned_12_warm + ho_planned_12_christmas
-weeks_away = 1+2+2+1 # weeks taht i am spending all days in homeoffice
-
-remainung_ho_days <- ho_wd - (already_used_ho_sum + ho_planned_tot)
-current_KW_week <- 32 # 06.08-13.08.
-rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
-
-
-
-
-# N.7 co2 calculations ----------------------------------------------------
-
-CO2_anteil_atmosphere = 0.035 #% # Quelle: https://www.noaa.gov/jetstream/atmosphere
-CO2_anteil_atmosphere_mensch = 0.012 #2% # Quelle: https://www.umweltbundesamt.de/service/uba-fragen/ist-nicht-der-menschliche-beitrag-treibhauseffekt
-CO2_anteil_deutschland_gloable_emissionen = 0.02 # 2% Quelle: https://www.klimafakten.de/behauptungen/behauptung-deutschland-verursacht-nur-rund-zwei-prozent-des-weltweiten-co2-ausstosses#lang
-
-CO2_einflus_deutschland_auf_globalen_CO2_anteil_in_Atmosphäre = CO2_anteil_atmosphere*CO2_anteil_atmosphere*CO2_anteil_deutschland_gloable_emissionen
-
-0.0000245

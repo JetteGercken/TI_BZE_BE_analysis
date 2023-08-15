@@ -347,7 +347,9 @@ distance <- function(x2, y2, x1, y1){
 
 
 
-# ----- 0.5.8. check for relation between point and line  -----------------------------------------------------------
+# ----- 0.5.8. treee edge status -----------------------------------------------------------
+# ----- 0.5.8.1. for straight line  ---------------------------------------------------------
+# ----- 0.5.8.1.1. check for relation between intersections of middle-point-center-line and point and edge line  ---------------------------------------------------------
 middle.point.to.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1){
   # calculate coordiantes of the middle of thie line between 
   x_m_line = (x1 - x2)/2;
@@ -380,27 +382,35 @@ middle.point.to.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1){
 
 
 
+# ----- 0.5.8.2. for line with turning point  ---------------------------------------------------------
+# select the intersection coordinates that have the same azimute as A to T and B to T
+select.inter.for.triangle <- function(t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2){
+  x <- ifelse(t.dist <= c.ro & azi_inter_1 == azi_centre, x1, 
+              ifelse(t.dist <= c.ro & azi_inter_2 == azi_centre, x2, NA));
+  return(x)
+}
 
-# ------ 0.5.9. check if point lays in triangle  --------------------------
+# ------ 0.5.8.2.1. check if point lays in triangle  -------------------------------------------------------------------------------------
 # this link https://stackoverflow.com/questions/2049582/how-to-determine-if-a-point-is-in-a-2d-triangle led me to the following links: 
 # http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html
 # https://www.geogebra.org/m/c8DwbVTP
 # https://en.wikipedia.org/wiki/Barycentric_coordinate_system
 
-
 p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
   a = ((xp - xc)*(yb - yc) + (xc - xb)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   b = ((xp - xc)*(yc - ya) + (xa - xc)*(yp - yc)) / ((yb - yc)*(xa - xc) + (xc - xb)*(ya - yc));
   c = 1 - a - b;
-  in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "A", "B");
-  # A = inside triangle
-  # B = outside triangle
+  in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "B", "A");
+  # B = out = point is inside triangle, so outside plot
+  # A = in =  point is outside triangle, so inside plot
   return(in.or.out)
 }
 
 
 
-# ------0.5.10. angle triabnle for area calculations ----------------------
+# ----- 0.5.9. edge area --------------------------------------------------
+
+# ------0.5.9.1. angle triabnle for area calculations ----------------------
 # calculating angle between two lines at their point of intersection
 angle_triangle <- function(x3, y3, x1, y1, x2, y2){
   b1_1 = (y1-y3)/(x1-x3)
@@ -419,102 +429,31 @@ angle_triangle <- function(x3, y3, x1, y1, x2, y2){
 }
 
 
-
-# ------0.5.11. cirlce segment area  ----------------------
+# ------0.5.9.2. cirlce segment area  ----------------------
 # calculate the area of a cirlce segment by the angle between the two branches of the segment 
 circle_seg_A <- function(r, angle){
   A_c_seg = (pi*r^2) * angle/400; 
   return(A_c_seg)
 }
 
-# ------0.5.12. triangle area  ----------------------
+# ------0.5.9.3. triangle area  ----------------------
 triangle_A <- function(x1, x2, x3, y1, y2, y3){
   # x1|y1 and x2|y2 should be the intersections with the circle, 
   # x3|y3 should be the turning point or centre of the cirlce 
-  
- # https://www.lernhelfer.de/schuelerlexikon/mathematik-abitur/artikel/flaecheninhalt-eines-dreiecks
+# https://www.lernhelfer.de/schuelerlexikon/mathematik-abitur/artikel/flaecheninhalt-eines-dreiecks
   A_tri =  0.5*(x1*(y2-y3) + x2*(y3-y1) + x3*(y3-y2)) ;
-    
-  return(A_tri)
+   return(A_tri)
 }
 
 
-# ----- 0.5.13. selecting/ calculating total edge area per plot  ----------
-
+# ----- 0.5.9.4. selecting/ calculating total edge area per plot  ----------
 tot.edge.A <- function(area_AT_AB_side, area_BT_side){
   A <- ifelse(!is.na(area_AT_AB_side) & !is.na(area_BT_side), area_AT_AB_side + area_BT_side,
               ifelse(!is.na(area_AT_AB_side) & is.na(area_BT_side), area_AT_AB_side, 
                      ifelse(is.na(area_AT_AB_side) & !is.na(area_BT_side), area_BT_side, 
-                            0
-                            )
-                     ) 
-              );
+                            0)));
   return(A)
 } 
-
-
-# ----- 0.5.14. select the coordiantes/ azimute of more left intersection  ----------
-
-left.inter <- function(azi_1, azi_2, coord_1, coord_2){
-  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
-                         azi_2 >= 0 & azi_2 <= 200 & 
-             azi_1 > azi_2 | 
-           # x1 & x2 between 200 - 400 
-             azi_1 >= 200 & azi_1 <= 400 &
-             azi_2 >= 200 & azi_2 <= 400 & 
-             azi_1 < azi_2 |
-           # x1 & x2 between 0 - 200
-             azi_1 >= 0 & azi_1 <= 200 &
-             azi_2 >= 0 & azi_2 <= 200 &
-             azi_1 < azi_2,  coord_1,
-           ifelse(
-             # x1 between 0 - 200  & x2 between 200 - 400 
-             azi_1 >= 0 & azi_1 <= 200 &
-               azi_2 >= 200 & azi_2 <= 400 &
-               azi_1 < azi_2, coord_2,
-             ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_2
-                    )
-             )
-         );
-  return(coordinate)
-}
-
-
-right.inter <- function(azi_1, azi_2, coord_1, coord_2){
-  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
-                         azi_2 >= 0 & azi_2 <= 200 & 
-                         azi_1 > azi_2 | 
-                         # x1 & x2 between 200 - 400 
-                         azi_1 >= 200 & azi_1 <= 400 &
-                         azi_2 >= 200 & azi_2 <= 400 & 
-                         azi_1 < azi_2 |
-                         # x1 & x2 between 0 - 200
-                         azi_1 >= 0 & azi_1 <= 200 &
-                         azi_2 >= 0 & azi_2 <= 200 &
-                         azi_1 < azi_2,  coord_2,
-                       ifelse(
-                         # x1 between 0 - 200  & x2 between 200 - 400 
-                         azi_1 >= 0 & azi_1 <= 200 &
-                           azi_2 >= 200 & azi_2 <= 400 &
-                           azi_1 < azi_2, coord_1,
-                         ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_1
-                         )
-                       )
-  );
-  return(coordinate)
-}
-
-
-
-
-select.inter.for.triangle <- function(t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2){
-  x <- ifelse(t.dist <= c.ro & azi_inter_1 == azi_centre, x1, 
-              ifelse(t.dist <= c.ro & azi_inter_2 == azi_centre, x2, NA));
-  return(x)
-}
-
-
-
 
 
 # ----- 1. joining in external info  --------------------------------------
@@ -745,7 +684,12 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
                                             TRUE ~ NA)) %>% 
   # calcualte y to the x that lie in the same direction then the second point on the line, if turning points lies witin circle and lines "reach out"
   mutate(Y_inter_AT_triangle_60 = l(b0_AT, b1_AT, X_inter_AT_triangle_60),  
-         Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) 
+         Y_inter_BT_triangle_60 = l(b0_BT, b1_BT, X_inter_BT_triangle_60)) %>% 
+  # determine if the result of an implicit function has to be positive or negative to be outside the line 
+  mutate(Y_implicit_status_AB_line = middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB),
+         Y_implicit_status_AT_line = middle.point.to.line(X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, 0, 0,  data_circle$r0[3], b0_AT, b1_AT),
+         Y_implicit_status_BT_line = middle.point.to.line(X1_inter_BT_17, X2_inter_BT_17, Y1_inter_BT_17, Y2_inter_BT_17, 0, 0,  data_circle$r0[3], b0_BT, b1_BT))
+
 
 # new approach to localise points when edge is a line: 
 # https://math.stackexchange.com/questions/1577062/how-to-know-if-a-given-point-is-inside-a-2d-circles-segment
@@ -1092,7 +1036,9 @@ forest_edges_HBI.man <-
   mutate(plot_A_17_ha = (c_A(data_circle$r0[3])/10000)/10000, 
          plot_A_12_ha = (c_A(data_circle$r0[2])/10000)/10000, 
          plot_A_5_ha = (c_A(data_circle$r0[1])/10000)/10000, 
-         plot_A_ha = NA) %>% 
+         plot_A_ha = NA) 
+
+forest_edges_HBI.man <- forest_edges_HBI.man %>% 
 # summaroze the edge are per plot and sampling circuit
 left_join(., forest_edges_HBI.man %>% 
   filter(!is.na(e_form)) %>% 
@@ -1134,9 +1080,9 @@ trees_and_edges <-
                      A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
                      X_A, X_B, X_T, Y_A, Y_B, Y_T,
                      b1_AB, b1_AT, b1_BT, b0_AB, b0_AT, b0_BT, 
-                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, azi_C_AB_inter_1, azi_C_AB_inter_2, 
-                     X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17,
-                     X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
+                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, azi_C_AB_inter_1, azi_C_AB_inter_2, Y_implicit_status_AB_line,
+                     X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17, Y_implicit_status_AT_line, 
+                     X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17, Y_implicit_status_BT_line,
                      X1_inter_AB_12, X2_inter_AB_12, Y1_inter_AB_12, Y2_inter_AB_12, inter_status_AB_12,
                      X1_inter_AT_12, X2_inter_AT_12, Y1_inter_AT_12, Y2_inter_AT_12, inter_status_AT_12,
                      X1_inter_BT_12, X2_inter_BT_12, Y1_inter_BT_12, Y2_inter_BT_12, inter_status_BT_12,
@@ -1152,24 +1098,8 @@ trees_and_edges <-
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
                      edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha, 
-                     edge_area_17_ha, edge_area_12_ha, edge_area_5_ha) %>% 
-              mutate(X_M_AB = (X1_inter_AB_17 - X2_inter_AB_17)/2, 
-                     Y_M_AB = (Y1_inter_AB_17 - Y2_inter_AB_17)/2, 
-                     b1_MC = slope(0, 0, X_M_AB, Y_M_AB), 
-                     b0_MC = intercept(0, 0, b1_MC), 
-                     X1_inter_MC_17 = intersection_c_lx1(b0_MC, b1_MC, 0, 0, data_circle$r0[3]), 
-                     X2_inter_MC_17 = intersection_c_lx2(b0_MC, b1_MC, 0, 0, data_circle$r0[3]),
-                     y1_inter_MC_17 = l(b0_MC, b1_MC, X1_inter_MC_17), 
-                     y2_inter_MC_17 = l(b0_MC, b1_MC, X2_inter_MC_17), 
-                     dist_C_inter_1_MC = distance(X1_inter_MC_17, y1_inter_MC_17, X_M_AB, Y_M_AB), 
-                     dist_C_inter_2_MC = distance(X2_inter_MC_17, y2_inter_MC_17, X_M_AB, Y_M_AB), 
-                     X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC_17, X2_inter_MC_17), 
-                     Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC_17, y2_inter_MC_17), 
-                     Y_AB_MC_implicit = b0_AB  + b1_AB * X_inter_MC_shorter_side - Y_inter_MC_shorter_side, 
-                     Y_implicit_status_AB_line = case_when(Y_AB_MC_implicit > 0 ~ "positive",  # "y imlicit has to be positive for tree to be outside", 
-                                                           Y_AB_MC_implicit < 0 ~ "negative", # "y imlicit has to be negative for tree to be outside", 
-                                                           TRUE ~ "equal")), 
-            by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
+                     edge_area_17_ha, edge_area_12_ha, edge_area_5_ha),
+              by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
   # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
@@ -1181,32 +1111,23 @@ trees_and_edges <-
          Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
          Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
          Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree) %>%
-  # assign a tree-edge-status that calls trees with a Y higher then the respective edge-functions Y
-  # if edge form == 1 choose only those trees that lie within in the azimutes of the intercepts
-  mutate(t_AB_status = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
-                              ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")),
-         # new approach to localise points when edge is a line: 
-         # https://math.stackexchange.com/questions/1577062/how-to-know-if-a-given-point-is-inside-a-2d-circles-segment
-         # t_AB_status_test = ifelse(e_form == 1 &
-         #                             Dist_cm <= 1784 & 
-         #                             Dist_cm >= dist_y_Xtree & 
-         #                             angle_AB_inter_1_tree <= angle_AB_inter_17, "C", "D"), 
-         # t_AB_status_test_1 = ifelse(e_form == 1 &
-         #                             # start till end
-         #                             azi_gon >= azi_start_AB_inter_17 & azi_gon <= azi_end_AB_inter_17 &
-         #                             # distance of tree exceedes distance of the y on the X of the tree on the AB line
-         #                               Y_AB_t_implicit >= 0 ,
-         #                             "out", "in"), 
-         t_AB_status_test_2 = ifelse(e_form == 1 & inter_status_AB_17 == "two I" &
-                                       Y_implicit_status_AB_line  == "positive" &
-                                       Y_AB_t_implicit > 0 |
-                                       e_form == 1 & inter_status_AB_17 == "two I" &
-                                       Y_implicit_status_AB_line  == "negative" &
-                                       Y_AB_t_implicit < 0 |
-                                       e_form == 1 & inter_status_AB_17 != "two I" , 
-                                     "in", "out"),
-         t_AT_status = ifelse(Y_AT_t_implicit == 0, "on line", ifelse(Y_AT_t_implicit > 0, "B", "A")), 
-         t_BT_status = ifelse(Y_BT_t_implicit == 0, "on line", ifelse(Y_BT_t_implicit > 0, "B", "A")),
+  # assign a tree-edge-status that calls trees with the same result as the implicit function of the middlepoint-center-line 
+  # intersction point on the shorter side of the middlepoint center line
+                              #if there are two intersection and the Y inter status of 
+  mutate(t_AB_status = ifelse(e_form == 1 & inter_status_AB_17 == "two I" & middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB)  == "positive" & Y_AB_t_implicit > 0 |
+                                e_form == 1 & inter_status_AB_17 == "two I" & middle.point.to.line(X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 0, 0,  data_circle$r0[3], b0_AB, b1_AB) == "negative" &  Y_AB_t_implicit < 0 | 
+                                e_form == 1 & inter_status_AB_17 != "two I" , 
+                                     "A", "B"),
+         # t_AB_status_2 = ifelse(e_form == 1 & Y_AB_t_implicit == 0, "on line", 
+         #                        ifelse(e_form == 1 & Y_AB_t_implicit > 0, "C", "D")),
+         t_AT_status = ifelse(e_form == 2 & inter_status_AT_17 == "two I" & middle.point.to.line(X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, 0, 0,  data_circle$r0[3], b0_AT, b1_AT)  == "positive" & Y_AT_t_implicit > 0 |
+                                e_form == 2 & inter_status_AT_17 == "two I" & middle.point.to.line(X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, 0, 0,  data_circle$r0[3], b0_AT, b1_AT) == "negative" &  Y_AT_t_implicit < 0 | 
+                                e_form == 2 & inter_status_AT_17 != "two I" , 
+                              "A", "B"),
+         t_BT_status =ifelse(e_form == 2 & inter_status_BT_17 == "two I" & middle.point.to.line(X1_inter_BT_17, X2_inter_BT_17, Y1_inter_BT_17, Y2_inter_BT_17, 0, 0,  data_circle$r0[3], b0_BT, b1_BT)  == "positive" & Y_BT_t_implicit > 0 |
+                               e_form == 2 & inter_status_BT_17 == "two I" & middle.point.to.line(X1_inter_BT_17, X2_inter_BT_17, Y1_inter_BT_17, Y2_inter_BT_17, 0, 0,  data_circle$r0[3], b0_BT, b1_BT) == "negative" &  Y_BT_t_implicit < 0 | 
+                               e_form == 2 & inter_status_BT_17 != "two I" , 
+                             "A", "B"),
          t_ABT_status = case_when(inter_status_AT_17 == "two I" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
                                    # if only one arm of the triangle crosses the circle/ has two intersections with the circle, use the respective arm as a line and assign tree status according to line procedure 
                                    inter_status_AT_17 != "two I" & inter_status_BT_17 == "two I" ~ t_BT_status, 
@@ -1215,133 +1136,37 @@ trees_and_edges <-
                                    inter_status_AT_17 != "two I" & inter_status_BT_17 != "two I" ~ "A", 
                                    TRUE ~ NA), 
          # this combines the previous statements of the tree status  
-          t_status_AB_ABT = case_when(e_form == "1" & Y_AB_t_implicit == 0 ~ "on line", 
-                                      e_form == "1" & Y_AB_t_implicit > 0 ~ "C",
-                                      e_form == "1" & Y_AB_t_implicit < 0 ~ "D",
-                                      e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
-                                      # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
-                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ t_BT_status, 
-                                      e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ t_AT_status,
-                                      # if non of the arms touches the circle, assign all trees inside the circle to one group
-                                      e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "out", 
-                                      TRUE ~ NA), 
-         t_status_AB_ABT = case_when(e_form == "1" ~  t_AB_status_test_2, 
-                                     e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ p.in.triangle(X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, X_tree, Y_tree),
-                                     # if only one arm of the triangle crosses the circle/ has two intersections withthe circle, use the respective arm as a line and assign tree status according to line procedure 
-         e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 == "two I" ~ t_BT_status, 
-         e_form == "2" & inter_status_AT_17 == "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ t_AT_status,
-         # if non of the arms touches the circle, assign all trees inside the circle to one group
-         e_form == "2" & inter_status_AT_17 != "two I" & e_form == "2" & inter_status_BT_17 != "two I" ~ "A", 
-         TRUE ~ NA) )
-# assigning tree status according to frequency of the groups per plot
-   # (1) identify if there is more then 1 tree status per plot (A vs. B, C vs. D)
-   # (2) identify there are more then two identify the group that has includes the most trees
-   # (3) assign the group "main" int the column m_s_status to the most frequent t_status_AB_ABT status per plot 
-   # (4) assing the group "side" in the column m_s_status to the lest frequent group per plot
-trees_and_edges <- trees_and_edges %>% 
-  # this join holds a dataset that assignes "main" to those trees whose AB or ABT status is the most frequent at the respecitive plot and 
-  # "side" to the status category that is least frequent per plot so we can split out trees in main and side stand
-  left_join(., rbind( 
-## for edge form = 1
-  # main info forest edges form 1
-  trees_and_edges %>% 
-    filter(e_form == 1) %>% 
-    group_by(plot_ID, t_AB_status) %>% 
-    summarise(N = n()) %>%                    # count the status groups per plot 
-    top_n(., 1) %>%                           # select the highest value per plot (to the status with the highest count)
-    rename("t_status" = "t_AB_status") %>%    # give the t_AB_status with the highest count/ frequency the m_s_status == "main"
-    mutate(m_s_status = "main_AB"), 
-  # dataset with plots that have 2 categroeis of tree status
-  trees_and_edges %>% 
-    filter(e_form == 1) %>% 
-    # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
-    # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
-    inner_join(., trees_and_edges %>% 
-                 filter(e_form == 1) %>% 
-                 select(plot_ID, t_AB_status) %>% 
-                 distinct() %>%
-                 group_by(plot_ID) %>%
-                 summarise(N = n()) %>%  # summarize how many stati are there per plot
-                 filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
-                 select(plot_ID) %>% 
-                 distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
-               by = "plot_ID") %>% 
-    group_by(plot_ID, t_AB_status) %>%
-    summarise(N = n()) %>%                # count the oobservations for the t_AB_stati 
-    top_n(., -1) %>%                      # select the status group with the lowest frequency per plot
-    rename("t_status" = "t_AB_status") %>% 
-    mutate(m_s_status = "side_AB"),       # assign the category "side_AB" to the lest frequent tree status group per plot
-## for forest egde form = 2
-  trees_and_edges %>% 
-    filter(e_form == 2) %>% 
-    group_by(plot_ID, t_ABT_status) %>% 
-    summarise(N = n()) %>%
-    top_n(., 1) %>% 
-    rename("t_status" = "t_ABT_status") %>% 
-    mutate(m_s_status = "main_ABT"),
-  # dataset with plots that have 2 categroeis of tree status
-  trees_and_edges %>% 
-    filter(e_form == 2) %>% 
-    # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
-    # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
-    inner_join(., trees_and_edges %>% 
-                 filter(e_form == 2) %>% 
-                 select(plot_ID, t_ABT_status) %>% 
-                 distinct() %>%
-                 group_by(plot_ID) %>%
-                 summarise(N = n()) %>%  # summarize how many stati are there per plot
-                 filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
-                 select(plot_ID) %>% 
-                 distinct(),    # pick only plot IDs of those plots that have more then 1 status, so they require a side and a main plot
-               by = "plot_ID") %>% 
-    group_by(plot_ID, t_ABT_status) %>%
-    summarise(N = n()) %>%
-    top_n(., -1) %>%
-    rename("t_status" = "t_ABT_status") %>% 
-    mutate(m_s_status = "side_ABT") %>% 
-  arrange(plot_ID) %>% 
-  select(plot_ID, t_status, m_s_status)),            # closing rbind
-by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join  
-    
-
-
+          t_status_AB_ABT = case_when(e_form == "1" ~  t_AB_status,
+                                     e_form == "2"  ~ t_ABT_status,
+                                     TRUE ~ NA) )
 
 # ---- 1.1.2.5. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
 # https://stackoverflow.com/questions/66252569/using-ifelse-conditional-on-multiple-columns
 trees_and_edges %>% 
    mutate(case_when(
-     DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form)|
-       DBH_cm >= 7 & DBH_cm < 10 & 
+     t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form)|
+       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & 
        inter_status_BT_5 != "two I" & 
        inter_status_AT_5 != "two I" & 
        inter_status_AB_5 != "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000,
-     DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & |
-       DBH_cm >= 7 & DBH_cm < 10 & inter_status_BT_5 == "two I" | 
-       DBH_cm >= 7 & DBH_cm < 10 & inter_status_AT_5 == "two I" | 
-       DBH_cm >= 7 & DBH_cm < 10 & inter_status_AB_5 == "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000 - edge_area_5_ha,
-     
-                               TRUE ~ NA))
+     # if the edge form is 1 and the cirlce is cut by the edge, deduct the edge area from the main area
+     t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I" | 
+       # if the edge type is 2 and there is any kind of intersection of any line of the triannlge witht hte cirlce, deduct the edge area from the circle area from the 
+       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 != "two I"| 
+       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 != "two I" & inter_status_AT_5 == "two I"| 
+       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 == "two I"|   ~ (c_A(data_circle$r0[1])/10000)/10000 - edge_area_5_ha,
+     # if the edge form is 1 and the cirlce is cut by the edge, deduct the edge area from the main area
+     t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I" | 
+       # if the edge type is 2 and there is any kind of intersection of any line of the triannlge witht hte cirlce, deduct the edge area from the circle area from the 
+       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 != "two I"| 
+       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 != "two I" & inter_status_AT_5 == "two I"| 
+       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 == "two I"|   ~  edge_area_5_ha,
+     TRUE ~ NA))
                                
                                
                                
                                
-                               DBH_cm >= 10 & DBH_cm < 30 & is.na(e_form) ~ (c_A(data_circle$r0[2])/10000)/10000,
-                               DBH_cm >= 30 & is.na(e_form) ~ (c_A(data_circle$r0[3])/10000)/10000,
-                               # for trees that are in a circle that has an edge
-                               # here i am facing a problem because i actually don´t know if the tree is positioned in the "edge part" or the "inner part" 
-                               # as i assing the catagory mai/ side_stand to those trees who have a less frequent category, assuming that the category with the most 
-                              # if the tree is from the inner circle, and the trees category is main, and there is an edge area calculated for that plot and circuit, 
-                              # use the area of the inner cirlce minus the edge area
-                               DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & 
-                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_5_ha) |
-                                DBH_cm >= 7 & DBH_cm < 10 & !is.na(e_form) & 
-                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_5_ha) & !is.na(edge_area_ABC_BC_5_ha) ~ ((c_A(data_circle$r0[1])/10000)/10000) - edge_area_total_5_ha, 
-                              DBH_cm >= 10 & DBH_cm < 30 & !is.na(e_form) & 
-                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_12_ha) | !is.na(edge_area_ABC_BC_12_ha) ~ ((c_A(data_circle$r0[2])/10000)/10000) - edge_area_total_12_ha,
-                              DBH_cm >= 30 & !is.na(e_form) & 
-                                startsWith(m_s_status, "main_") & !is.na(edge_area_ABC_AC_17_ha) | !is.na(edge_area_ABC_BC_17_ha) ~ ((c_A(data_circle$r0[3])/10000)/10000) - edge_area_total_17_ha, 
-                              TRUE ~ NA))
-         
+                              
 
 # ----- 1.1.2.6. exporting tree & edge data & edge areas -------------------------------------------------------------------
 write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
@@ -1444,22 +1269,10 @@ ggplot() +
               #                summarize(n = n()) %>% 
               #                filter(n <= 1), 
               #              by = "plot_ID"),
-              aes(X_tree, Y_tree, colour = t_AB_status_test_2))+
+              aes(X_tree, Y_tree, colour = t_AB_status))+
    theme_bw()+
    facet_wrap(~plot_ID)
 
-
-
-
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  geom_point(data =  trees_and_edges %>% filter(azi_gon <= 200 & azi_gon >=0),
-             aes(X_tree, Y_tree))+
-  theme_bw()+
-  facet_wrap(~plot_ID)
-  
-summary(trees_and_edges)
 
 # ----- 2.1.2. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
 # forest edge type 2 
@@ -1630,7 +1443,7 @@ summary(trees_and_edges)
    #                           summarize(n = n()) %>% 
    #                           filter(n <= 1), 
    #                         by = "plot_ID"),
-               aes(X_tree, Y_tree, colour = m_s_status))+
+               aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
    #theme_bw()+
    #facet_wrap(~plot_ID)
  
@@ -1701,7 +1514,7 @@ summary(trees_and_edges)
              aes(x= X_value, y = Y_value))+
    # trees
    geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-              aes(X_tree, Y_tree, colour = m_s_status))+
+              aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
    theme_bw()+ 
    facet_wrap(~plot_ID) 
 
@@ -2040,4 +1853,128 @@ forest_edges_HBI.man %>%
     y2_inter_AB_60 = l(b0_AB, b1_AB, x2_inter_AB_60))
 
 
- 
+# N. 0.5.14. select the coordiantes/ azimute of more left intersection  ----------
+left.inter <- function(azi_1, azi_2, coord_1, coord_2){
+  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 0 & azi_2 <= 200 & 
+                         azi_1 > azi_2 | 
+                         # x1 & x2 between 200 - 400 
+                         azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 200 & azi_2 <= 400 & 
+                         azi_1 < azi_2 |
+                         # x1 & x2 between 0 - 200
+                         azi_1 >= 0 & azi_1 <= 200 &
+                         azi_2 >= 0 & azi_2 <= 200 &
+                         azi_1 < azi_2,  coord_1,
+                       ifelse(
+                         # x1 between 0 - 200  & x2 between 200 - 400 
+                         azi_1 >= 0 & azi_1 <= 200 &
+                           azi_2 >= 200 & azi_2 <= 400 &
+                           azi_1 < azi_2, coord_2,
+                         ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_2
+                         )
+                       )
+  );
+  return(coordinate)
+}
+
+
+right.inter <- function(azi_1, azi_2, coord_1, coord_2){
+  coordinate <- ifelse(azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 0 & azi_2 <= 200 & 
+                         azi_1 > azi_2 | 
+                         # x1 & x2 between 200 - 400 
+                         azi_1 >= 200 & azi_1 <= 400 &
+                         azi_2 >= 200 & azi_2 <= 400 & 
+                         azi_1 < azi_2 |
+                         # x1 & x2 between 0 - 200
+                         azi_1 >= 0 & azi_1 <= 200 &
+                         azi_2 >= 0 & azi_2 <= 200 &
+                         azi_1 < azi_2,  coord_2,
+                       ifelse(
+                         # x1 between 0 - 200  & x2 between 200 - 400 
+                         azi_1 >= 0 & azi_1 <= 200 &
+                           azi_2 >= 200 & azi_2 <= 400 &
+                           azi_1 < azi_2, coord_1,
+                         ifelse(is.na(azi_1) | is.na(azi_2), NA, coord_1
+                         )
+                       )
+  );
+  return(coordinate)
+}
+
+
+
+#N. assigning tree status according to frequency of the groups per plot
+# (1) identify if there is more then 1 tree status per plot (A vs. B, C vs. D)
+# (2) identify there are more then two identify the group that has includes the most trees
+# (3) assign the group "main" int the column m_s_status to the most frequent t_status_AB_ABT status per plot 
+# (4) assing the group "side" in the column m_s_status to the lest frequent group per plot
+trees_and_edges <- trees_and_edges %>% 
+  # this join holds a dataset that assignes "main" to those trees whose AB or ABT status is the most frequent at the respecitive plot and 
+  # "side" to the status category that is least frequent per plot so we can split out trees in main and side stand
+  left_join(., rbind( 
+    ## for edge form = 1
+    # main info forest edges form 1
+    trees_and_edges %>% 
+      filter(e_form == 1) %>% 
+      group_by(plot_ID, t_AB_status) %>% 
+      summarise(N = n()) %>%                    # count the status groups per plot 
+      top_n(., 1) %>%                           # select the highest value per plot (to the status with the highest count)
+      rename("t_status" = "t_AB_status") %>%    # give the t_AB_status with the highest count/ frequency the m_s_status == "main"
+      mutate(m_s_status = "main_AB"), 
+    # dataset with plots that have 2 categroeis of tree status
+    trees_and_edges %>% 
+      filter(e_form == 1) %>% 
+      # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
+      # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
+      inner_join(., trees_and_edges %>% 
+                   filter(e_form == 1) %>% 
+                   select(plot_ID, t_AB_status) %>% 
+                   distinct() %>%
+                   group_by(plot_ID) %>%
+                   summarise(N = n()) %>%  # summarize how many stati are there per plot
+                   filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
+                   select(plot_ID) %>% 
+                   distinct(),    # pick only plot IDs of those plots that hacve more then 1 category
+                 by = "plot_ID") %>% 
+      group_by(plot_ID, t_AB_status) %>%
+      summarise(N = n()) %>%                # count the oobservations for the t_AB_stati 
+      top_n(., -1) %>%                      # select the status group with the lowest frequency per plot
+      rename("t_status" = "t_AB_status") %>% 
+      mutate(m_s_status = "side_AB"),       # assign the category "side_AB" to the lest frequent tree status group per plot
+    ## for forest egde form = 2
+    trees_and_edges %>% 
+      filter(e_form == 2) %>% 
+      group_by(plot_ID, t_ABT_status) %>% 
+      summarise(N = n()) %>%
+      top_n(., 1) %>% 
+      rename("t_status" = "t_ABT_status") %>% 
+      mutate(m_s_status = "main_ABT"),
+    # dataset with plots that have 2 categroeis of tree status
+    trees_and_edges %>% 
+      filter(e_form == 2) %>% 
+      # this inner join allows to select only those plots that have 2 or more categories of tree status, so we can assign "side" to them 
+      # but won't assign side to plots we´ve allready adssigned "main above, because they only have 1 enty which is the highest and the lowest in that case
+      inner_join(., trees_and_edges %>% 
+                   filter(e_form == 2) %>% 
+                   select(plot_ID, t_ABT_status) %>% 
+                   distinct() %>%
+                   group_by(plot_ID) %>%
+                   summarise(N = n()) %>%  # summarize how many stati are there per plot
+                   filter( N > 1) %>%      # filter those that have more then 1 tree status catagory per plot
+                   select(plot_ID) %>% 
+                   distinct(),    # pick only plot IDs of those plots that have more then 1 status, so they require a side and a main plot
+                 by = "plot_ID") %>% 
+      group_by(plot_ID, t_ABT_status) %>%
+      summarise(N = n()) %>%
+      top_n(., -1) %>%
+      rename("t_status" = "t_ABT_status") %>% 
+      mutate(m_s_status = "side_ABT") %>% 
+      arrange(plot_ID) %>% 
+      select(plot_ID, t_status, m_s_status)),            # closing rbind
+    by = c("plot_ID", "t_status_AB_ABT" = "t_status"))   # finisching left join  
+
+
+
+
