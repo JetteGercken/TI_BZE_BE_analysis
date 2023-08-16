@@ -446,7 +446,7 @@ triangle_A <- function(x1, x2, x3, y1, y2, y3){
 }
 
 
-# ----- 0.5.9.4. selecting/ calculating total edge area per plot  ----------
+# ----- 0.5.9.4. selecting/ calculating total edge area per edge type per plot  ----------
 tot.edge.A <- function(area_AT_AB_side, area_BT_side){
   A <- ifelse(!is.na(area_AT_AB_side) & !is.na(area_BT_side), area_AT_AB_side + area_BT_side,
               ifelse(!is.na(area_AT_AB_side) & is.na(area_BT_side), area_AT_AB_side, 
@@ -454,6 +454,62 @@ tot.edge.A <- function(area_AT_AB_side, area_BT_side){
                             0)));
   return(A)
 } 
+
+# ----- 0.5.9.5. assign correct area to trees according to their category (A/B)  ----------
+# to select which area we have assign to the edge and which we have to asssign to the main stand
+# we have to find out on which side of the line the "B" and on which side the "A" trees are located
+# as we know if the result of the implicit function has to be positive or negative for the tree to lie
+# outside the plot, we can calcualte the intersections of a line through the center of the edge line 
+# and the center of the plot. 
+# Following we check which of the intersections is element of the triangle or if the result of the implicit function 
+# of the intersection comlies with the result the implicitf function nee to have for atree to be outside (middle.point.to.line)
+identify.edge.area <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0,l.b0, l.b1, xa, xb, xc, ya, yb, yc, c.seg.a, c.a, tree_status){
+  # x1| y1 and x2|y2 belong to the intersections of the line or two points on a line
+  # c.x0, c.y0 are the center coordinates of the circle
+  # c.r0 is the radius of the circle
+  # l.b0, l.b1 are the parameters of the line we assign the edges for
+  #  xa, xb, xc, ya, yb, yc are the coordinates of the triangle corners that were used to identiy the "out" / "B" trees
+  # c.seg.a means the area of the cirle segment (circle bow) or the circle segmetns per CCS, c.a means the area if the whole circle
+  
+  # calculate coordiantes of the middle of thie line between 
+  x_m_line = (x1 - x2)/2;
+  y_m_line = (y1 - y2)/2;
+  # calculate the parameters of the equation between the middle of the line and the centre of the circle
+  b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
+  b0_MC = intercept(c.x0, c.y0, b1_MC);
+  # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
+  X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r0); 
+  X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r0);
+  # insert the intersection x corodinate in the line function to get the respective y coordinate
+  y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC); 
+  y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC);
+  
+  # finde the x coordiante of the intersection that is within the triangle (p.in.tr)
+         # if inter_1_MC or inter_MC_2 is element of the triangle and the distance between the intersection 
+          # and the middle point of the line is greater then the distanc between the intersection that is outside the triangle and by that inside the plot 
+         # deduct the circle segment from the whole plot area (because the larger part of the plot belongs to category B)
+        # if the itnersection that is element to the triangle lies on the shorter side of the line, use the circle segment / circle bows area as the edge area
+  B_trees_edge.a = ifelse(p.in.triangle(xa, xb, xc, ya, yb, yc, X1_inter_MC, y1_inter_MC) == "B" &
+                  distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
+                    p.in.triangle(xa, xb, xc, ya, yb, yc, X2_inter_MC, y2_inter_MC) == "B" &
+                    distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
+                c.a - c.seg.a, c.seg.a); 
+  # if inter_1_MC or inter_2_MC is not element of the triangle and the distance between this intersection and the middle of the line is bigger then the 
+  # then distance between the intersection that is element to the triangle , so the A side of the line is the bigger side, deduct the circle segment area 
+  # from the cirlce area, 
+  # if the intersection is not element of the triangle but situated on the smaller side of the line (shorter distance between intersection and point M), 
+  # the area of A trees has to be the area of the circle segment itself
+  A_trees_edge.a = ifelse(p.in.triangle(xa, xb, xc, ya, yb, yc, X1_inter_MC, y1_inter_MC) == "A" &
+                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
+                            p.in.triangle(xa, xb, xc, ya, yb, yc, X2_inter_MC, y2_inter_MC) == "A" &
+                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
+                          c.a - c.seg.a, c.seg.a);
+  # if the tree status is "outside" "B", return the area calcualted for the "B" side of the plot, else return the area of the "A" side
+  area = ifelse(tree_status == "B", B_trees_edge.a, A_trees_edge.a);
+ 
+  return(area)
+}
+
 
 
 # ----- 1. joining in external info  --------------------------------------
@@ -1030,13 +1086,9 @@ forest_edges_HBI.man <-
                                              TRUE ~ NA), 
          edge_area_ABC_AC_5_ha = (edge_area_ABC_AC_5_cm2/10000)/10000,   # transfor area in cm2 into area in ha /10000 for m2, /10000 for ha --> afterwards check if results are plausible 
          edge_area_ABC_BC_5_ha = (edge_area_ABC_BC_5_cm2/10000)/10000, 
-         edge_area_total_5_ha = tot.edge.A(edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha), 
-         edge_area_total_12_ha = tot.edge.A(edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha),
-         edge_area_total_17_ha = tot.edge.A(edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha)) %>% 
-  mutate(plot_A_17_ha = (c_A(data_circle$r0[3])/10000)/10000, 
-         plot_A_12_ha = (c_A(data_circle$r0[2])/10000)/10000, 
-         plot_A_5_ha = (c_A(data_circle$r0[1])/10000)/10000, 
-         plot_A_ha = NA) 
+         edge_area_eform_5_ha = tot.edge.A(edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha), 
+         edge_area_eform_12_ha = tot.edge.A(edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha),
+         edge_area_eform_17_ha = tot.edge.A(edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha)) 
 
 forest_edges_HBI.man <- forest_edges_HBI.man %>% 
 # summaroze the edge are per plot and sampling circuit
@@ -1047,9 +1099,9 @@ left_join(., forest_edges_HBI.man %>%
          edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha,
          edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha) %>% 
   pivot_longer(edge_area_ABC_AC_17_ha:edge_area_ABC_BC_5_ha, names_to = "CCS", values_to = "area_ha") %>% 
-    mutate(CCS = case_when(endsWith(CCS, "17_ha")~ "edge_area_17_ha", 
-                         endsWith(CCS, "12_ha")~ "edge_area_12_ha",
-                         endsWith(CCS, "5_ha")~ "edge_area_5_ha",
+    mutate(CCS = case_when(endsWith(CCS, "17_ha")~ "edge_area_plot_17_ha", 
+                         endsWith(CCS, "12_ha")~ "edge_area_plot_12_ha",
+                         endsWith(CCS, "5_ha")~ "edge_area_plot_5_ha",
                          TRUE ~ NA)) %>% 
   group_by(plot_ID, CCS) %>%
   summarize(total_area_AB_ABT_ha = sum(na.omit(area_ha))) %>% 
@@ -1097,8 +1149,9 @@ trees_and_edges <-
                      edge_area_ABC_AC_17_ha, edge_area_ABC_BC_17_ha, 
                      edge_area_ABC_AC_12_ha, edge_area_ABC_BC_12_ha, 
                      edge_area_ABC_AC_5_ha, edge_area_ABC_BC_5_ha, 
-                     edge_area_total_17_ha, edge_area_total_12_ha, edge_area_total_5_ha, 
-                     edge_area_17_ha, edge_area_12_ha, edge_area_5_ha),
+                     edge_area_eform_17_ha, edge_area_eform_12_ha, edge_area_eform_5_ha, 
+                     edge_area_plot_17_ha, edge_area_plot_12_ha, edge_area_plot_5_ha, 
+                     c_A_plot_17_ha,c_A_plot_12_ha, c_A_plot_5_ha),
               by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
   # calculate the Y of the edge for the x of the tree
   # new approach by Johanna Garthe
@@ -1145,25 +1198,44 @@ trees_and_edges <-
 # ---- 1.1.2.5. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
 # https://stackoverflow.com/questions/66252569/using-ifelse-conditional-on-multiple-columns
 trees_and_edges %>% 
-   mutate(case_when(
+   mutate(plot_A = case_when(
+  ## total circle   
+     # edge_area_eform_5_ha contains the total edge area per edge from, so for form 2 it´l include both sides of the area that is cut from the circle by the tirangles arms
+     # if there is no edge at the plot calcualte the whole circle area as the plot area
      t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & is.na(e_form)|
-       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & 
-       inter_status_BT_5 != "two I" & 
-       inter_status_AT_5 != "two I" & 
-       inter_status_AB_5 != "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000,
-     # if the edge form is 1 and the cirlce is cut by the edge, deduct the edge area from the main area
-     t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I" | 
-       # if the edge type is 2 and there is any kind of intersection of any line of the triannlge witht hte cirlce, deduct the edge area from the circle area from the 
-       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 != "two I"| 
-       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 != "two I" & inter_status_AT_5 == "two I"| 
-       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 == "two I"|   ~ (c_A(data_circle$r0[1])/10000)/10000 - edge_area_5_ha,
-     # if the edge form is 1 and the cirlce is cut by the edge, deduct the edge area from the main area
-     t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I" | 
-       # if the edge type is 2 and there is any kind of intersection of any line of the triannlge witht hte cirlce, deduct the edge area from the circle area from the 
-       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 != "two I"| 
-       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 != "two I" & inter_status_AT_5 == "two I"| 
-       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & inter_status_AT_5 == "two I" & inter_status_AT_5 == "two I"|   ~  edge_area_5_ha,
+       # or if the plot has an edge form but only one tree status and non of the lines are intersecting the circle calcualte the whole circle area as the plot area
+       !is.na(e_form) & t_status_AB_ABT %in% c("A", "B") & DBH_cm >= 7 & DBH_cm < 10 & inter_status_BT_5 != "two I" & inter_status_AT_5 != "two I" & inter_status_AB_5 != "two I"  ~ (c_A(data_circle$r0[1])/10000)/10000,
+     
+  ## circle - circle segment 
+     # if the edge form is 1 and the tree lies inside the plot (status == A) and the circle is cut by the edge with 2 intersections, deduct the edge area from the main area
+     t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I"|
+       # or if the edge for is 2 and T lies outside the circle and both arms of the triangle are intersecting the circle, 
+       # deduct the area of the circle intersections from the total circle area for tree status B, because B means the tree is inside the triangle, which covers a the area between the two intersection lines, while the A area
+       # is the space cut from the circle by the triangle arms that reach in
+       t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist > data_circle$r0[1] & inter_status_AT_5 == "two I" & inter_status_BT_5 == "two I"|
+       # or if e_form == 2 and T lies outside the circle, trees with status B are assigned to the area of the cirlce- circle segment
+       t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist <= data_circle$r0[1] ~ ((c_A(data_circle$r0[1])/10000)/10000 - edge_area_eform_5_ha),
+  
+  ## circle segment    
+     # if the edge form is 1 and the trees lies outside the plot (status == B) and the circle is cut by the edge with 2 intersections, use the edge area, cause for AB lines we always assign the B status to the smaller side of the circle
+     t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "1" & inter_status_AB_5 == "two I"|
+        # or if the edge for is 2 and T lies outside the circle and both arms of the triangle are intersecting the circle, 
+        # assign the area of the circle intersections for trees with status A because A means the tree is outside the triangle, 
+        # so the A area is the space cut from the circle by the triangle arms that reach in
+        t_status_AB_ABT == "A" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist > data_circle$r0[1] & inter_status_AT_5 == "two I" & inter_status_BT_5 == "two I"|
+        # if edge_form == 2 and T lies inside the circle trees with status B are assigned to the area of the circle segment
+        t_status_AB_ABT == "B" & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist <= data_circle$r0[1] ~ edge_area_eform_5_ha,
+  
+  ## identify.edge.area function   
+    # if the edge form is 2 and T lies outside the circle and only one side of the triangle is intersecting the circle apply the identify.edge.area function 
+    # this function is adapted to the tree status, so we don´t have to specify it here
+     t_status_AB_ABT %in% c("A", "B") & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist > data_circle$r0[1] & inter_status_AT_5 == "two I" & inter_status_BT_5 != "two I" ~ identify.edge.area(X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, 0, 0, data_circle$r0[1], b0_AT, b1_AT, X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, edge_area_eform_5_ha, (c_A(data_circle$r0[1])/10000)/10000, t_status_AB_ABT),
+     t_status_AB_ABT %in% c("A", "B") & DBH_cm >= 7 & DBH_cm < 10 & e_form == "2" & T_dist > data_circle$r0[1] & inter_status_BT_5 == "two I" & inter_status_AT_5 != "two I" ~ identify.edge.area(X1_inter_BT_17, X2_inter_BT_17, Y1_inter_BT_17, Y2_inter_BT_17, 0, 0, data_circle$r0[1], b0_BT, b1_BT, X_inter_AT_triangle_60, X_inter_BT_triangle_60, X_T, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60, Y_T, edge_area_eform_5_ha, (c_A(data_circle$r0[1])/10000)/10000, t_status_AB_ABT),
      TRUE ~ NA))
+     
+     
+      
+      
                                
                                
                                
