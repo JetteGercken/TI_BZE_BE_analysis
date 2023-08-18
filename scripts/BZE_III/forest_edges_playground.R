@@ -1813,7 +1813,7 @@ ggplot() +
             aes(x= X_value, y = Y_value))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour = t_status_AB_ABT_test))+
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
