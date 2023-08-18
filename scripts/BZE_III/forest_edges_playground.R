@@ -340,6 +340,20 @@ azi_correction <- function(x2, y2, x1, y1, azi){
   return(azi_corrected)
 }
 
+azi <- function(x2, y2, x1, y1){
+  azi = atan((x2 - x1)/(y2 - y1));
+  delta_x = x2 -x1 ;
+  delta_y = y2-y1 ; 
+  azi_corrected = ifelse(delta_x >= 0 & delta_y > 0 | delta_x > 0 & delta_y >= 0, azi,                    # first quadrant x + y+
+                         ifelse(delta_x >= 0 & delta_y < 0 |delta_x > 0 & delta_y <= 0, azi+200,         # second quadrant x + y-
+                                ifelse(delta_x <= 0 & delta_y < 0 |delta_x < 0 & delta_y <= 0,  azi+200,   # third quadrant x- y-
+                                       ifelse(delta_x <= 0 & delta_y > 0 | delta_x < 0 & delta_y >= 0, azi+400, NA
+                                       )
+                                )
+                         )
+  );
+  return(azi_corrected)
+}
 
 
 # ----- 0.5.8. distance between two points --------------------------------
@@ -349,88 +363,186 @@ distance <- function(x2, y2, x1, y1){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ----- 0.5.8. treee edge status -----------------------------------------------------------
 # combining tree status assesment in 1 statement
 tree.status <- function(
   # intersection status
-  edge_form, inter_x1, inter_x2, 
+  edge_form,
   # finding smaller side of cirlce
-  x1, x2, y1, y2, c.x0, c.y0, c.r0, l.AB.b0, l.AB.b1, # x1, x2, y1, y2 are the intersection cooridnates of the line 
+  x1.inter.AB, x2.inter.AB, y1.inter.AB, y2.inter.AB, c.x0, c.y0, c.r017, l.AB.b0, l.AB.b1, # x1, x2, y1, y2 are the intersection cooridnates of the line 
   # implicit funtion with tree coordinates
   x.tree, y.tree, 
-  # select inter for triangle
-  t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2, 
-  # calcualte y for triangle coordiantes 
-  l.AT.b0, l.AT.b1, l.BT.b0, l.B.b0 ){
+  # select the intersection coordinates for the triangle on AT line
+  x1.inter.AT, y1.inter.AT, x2.inter.AT, y2.inter.AT, x.a, y.a, x.t, y.t ,l.AT.b0, l.AT.b1, c.r060, #c.x0, c.y0,  
+  x1.inter.BT, y1.inter.BT, x2.inter.BT, y2.inter.BT, x.b, y.b, l.BT.b0, l.BT.b1 #x.t, y.t , # c.x0, c.y0, c.r060
+  ){
  
   ## For edge form == 1 --> straight line 
-  # check out the intersection status of the respective plot of the  tree
-  i_status <-   ifelse(is.na(inter_x1) & is.na(inter_x2), " no I",      # if 0 solutions
-                       ifelse(!is.na(inter_x1) & !is.na(inter_x2) & inter_x1 == inter_x2, "one I",            # if 1 solution
-                              ifelse(inter_x1 != inter_x2, "two I")));
- 
-   # so if the edge for is 1 and there are 2 interseections of the line with the respective circle 
   if(edge_form == 1){
-    # identfy shorter side of the cirlce
-    Y_stat_MC_implicit = middle.point.to.line(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.AB.b0, l.AB.b1);
-    # calculate result of implicit function with tree coordinates
-    Y_implicit_status_tree_line = l.AB.b0  + l.AB.b1 * x.tree - y.tree;
+   # check out the intersection status of the respective plot of the  tree
+   i_status.AB <-   ifelse(is.na(x1.inter.AB) & is.na(x2.inter.AB), " no I",      # if 0 solutions
+                        ifelse(!is.na(x1.inter.AB) & !is.na(x2.inter.AB) & x1.inter.AB == x2.inter.AB, "one I",            # if 1 solution
+                               ifelse(x1.inter.AB != x2.inter.AB, "two I")))      # so if the edge for is 1 and there are 2 interseections of the line with the respective circle 
+   
+    # identfy shorter side of the cirlce separeted by the AB line
+    x_m_line = (x1 - x2)/2
+    y_m_line = (y1 - y2)/2
+    # calculate the parameters of the equation between the middle of the line and the centre of the circle
+    b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line)
+    b0_MC = intercept(c.x0, c.y0, b1_MC)
+    # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radius
+    X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r017) 
+    X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r017)
+    # insert the intersection x corodinate in the line function to get the respective y coordinate
+    y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC) 
+    y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC)
+    # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
+    dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line)
+    dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) 
+    # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
+    X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC) 
+    Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC)
+    # insert coordinates that are for sure on the smaller side of the two halves of the circle into the implicit equation: 
+    Y_MC_implicit = l.b0  + l.b1 * X_inter_MC_shorter_side - Y_inter_MC_shorter_side
+    # Y_stat_MC_implicit = middle.point.to.line(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.AB.b0, l.AB.b1);
+    # calculate result of implicit function of AB line with tree coordinates
+    Y_implicit_status_tree_line = l.AB.b0  + l.AB.b1 * x.tree - y.tree
     # assigne tree status depending on shorter/ longer side of circle 
-     tree_stat_edge_1 = ifelse(i_status == "two I" & Y_stat_MC_implicit == "positive" & Y_implicit_status_tree_line > 0 |
-                                i_status == "two I" & Y_stat_MC_implicit == "negative" &  Y_implicit_status_tree_line < 0 | 
-                                i_status= "two I",  
-                              "A", "B");
-    return(tree_stat_edge_1)
+     tree_stat_edge_1 = ifelse(i_status.AB == "two I" & Y_MC_implicit > 0 & Y_implicit_status_tree_line > 0 |
+                                i_status.AB == "two I" & Y_MC_implicit < 0 &  Y_implicit_status_tree_line < 0 | 
+                                i_status.AB == "two I",  
+                              "A", "B")
+     return(tree_stat_edge_1)
   }
   
   else if(edge_form == 2){
+    # find intersection on the "right" side (with the same "direction as the line from T to the respective point) 
+    # and calcualte the respective intersection coordinate (x1 vs. x2) for a cricle with a radius = 60m
   # AT
     # select the intersection coordinates for the triangle on AT line
-    x.AT.inter.triangle = select.inter.for.triangle(t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2);
+    x.AT.inter.triangle.60 = ifelse(t.dist <= c.ro & azi(x1.inter.AT, y1.inter.AT, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), 
+                                 ifelse(t.dist <= c.ro & azi(x2.inter.AT, y2.inter.AT, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx2(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060),
+                                        ifelse(t.dist > c.ro & distance(x1.inter.AT, y1.inter.AT, x.t, y.t) > distance(x2.inter.AT, y2.inter.AT, x.t, y.t), intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), 
+                                               ifelse(t.dist > c.ro & distance(x2.inter.AT, y2.inter.AT, x.t, y.t) > distance(x1.inter.AT, y1.inter.AT, x.t, y.t), intersection_c_lx2(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), NA))))
     # calculate y for triangle
-    y.AT.inter.triangle = l.AT.b0 + l.AT.b1*x.AT.inter.triangle;
+    y.AT.inter.triangle.60 = l.AT.b0 + l.AT.b1*x.AT.inter.triangle.60
   #BT 
      # select the intersection coordinates for the triangle on BT line
-    x.BT.inter.triangle = select.inter.for.triangle(t.dist, c.ro, azi_inter_1, azi_inter_2, azi_centre, x1, x2);
+    x.BT.inter.triangle.60 = ifelse(t.dist <= c.ro & azi(x1.inter.BT, y1.inter.BT, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), 
+                                    ifelse(t.dist <= c.ro & azi(x2.inter.BT, y2.inter.BT, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx2(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060),
+                                           ifelse(t.dist > c.ro & distance(x1.inter.BT, y1.inter.BT, x.t, y.t) > distance(x2.inter.BT, y2.inter.BT, x.t, y.t), intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), 
+                                                  ifelse(t.dist > c.ro & distance(x2.inter.BT, y2.inter.BT, x.t, y.t) > distance(x1.inter.BT, y1.inter.BT, x.t, y.t), intersection_c_lx2(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), NA))))
     # calculate y for triangle
-    y.BT.inter.triangle = l.BT.b0 + l.BT.b1*x.BT.inter.triangle;
+    y.BT.inter.triangle.60 = l.BT.b0 + l.BT.b1*x.BT.inter.triangle.60
     
-    
-    
-  }
+    # check if tree is located inside triangle: Beyericentrig triangle function
+    a = ((x.tree - x.t)*(y.BT.inter.triangle.60 - y.t) + (x.t - x.BT.inter.triangle.60)*(y.tree)) / ((y.BT.inter.triangle.60 - y.t)*(x.AT.inter.triangle.60 - x.t) + (x.t - x.BT.inter.triangle.60)*(y.AT.inter.triangle.60 - y.t))
+    b = ((x.tree - x.t)*(y.t - y.AT.inter.triangle.60) + (x.AT.inter.triangle.60 - x.t)*(y.tree - y.t)) / ((y.BT.inter.triangle.60 - y.t)*(x.AT.inter.triangle.60 - x.t) + (x.t - x.BT.inter.triangle.60)*(y.AT.inter.triangle.60 - y.t))
+    c = 1 - a - b
+    in.or.out = ifelse(0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "B", "A")
+    # B = out = point is inside triangle, so outside plot
+    # A = in =  point is outside triangle, so inside plot
+    return(in.or.out)} else {return(NA)};
+
     
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+tree.status.test <- function(
+  # intersection status
+  edge_form,
+  # finding smaller side of cirlce
+  x1.inter.AB, x2.inter.AB, y1.inter.AB, y2.inter.AB, c.x0, c.y0, c.r017, l.AB.b0, l.AB.b1, # x1, x2, y1, y2 are the intersection cooridnates of the line 
+  # implicit funtion with tree coordinates
+  x.tree, y.tree, 
+  # select the intersection coordinates for the triangle on AT line
+  t.dist, x1.inter.AT, y1.inter.AT, x2.inter.AT, y2.inter.AT, x.a, y.a, x.t, y.t ,l.AT.b0, l.AT.b1, c.r060, #c.x0, c.y0,  
+  x1.inter.BT, y1.inter.BT, x2.inter.BT, y2.inter.BT, x.b, y.b, l.BT.b0, l.BT.b1 ){ #x.t, y.t , # c.x0, c.y0, c.r060
+  
+  ## For edge form == 1 --> straight line 
+    # check out the intersection status of the respective plot of the  tree
+    i_status.AB <-   ifelse(is.na(x1.inter.AB) & is.na(x2.inter.AB), " no I",      # if 0 solutions
+                            ifelse(!is.na(x1.inter.AB) & !is.na(x2.inter.AB) & x1.inter.AB == x2.inter.AB, "one I",            # if 1 solution
+                                   ifelse(x1.inter.AB != x2.inter.AB, "two I")));      # so if the edge for is 1 and there are 2 interseections of the line with the respective circle 
+    
+    # identfy shorter side of the cirlce separeted by the AB line
+    x_m_line = (x1.inter.AB - x2.inter.AB)/2;
+    y_m_line = (y1.inter.AB - y2.inter.AB)/2;
+    # calculate the parameters of the equation between the middle of the line and the centre of the circle
+    b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
+    b0_MC = intercept(c.x0, c.y0, b1_MC);
+    # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radius
+    X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r017) ;
+    X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r017);
+    # insert the intersection x corodinate in the line function to get the respective y coordinate
+    y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC); 
+    y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC);
+    # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
+    dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
+    dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
+    # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
+    X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC); 
+    Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC);
+    # insert coordinates that are for sure on the smaller side of the two halves of the circle into the implicit equation: 
+    Y_MC_implicit = l.AB.b0  + l.AB.b1 * X_inter_MC_shorter_side - Y_inter_MC_shorter_side;
+    Y_implicit_status_M_line = case_when(Y_MC_implicit > 0 ~ "positive",          # "y imlicit has to be positive too for tree to be outside, 
+                                         # as the result of the implicit equation that contains the 
+                                         # point that is for sure in the smaller cirlce segment, has a positive impllciti equation result", 
+                                         Y_MC_implicit < 0 ~ "negative",          # "y imlicit has to be negative for tree to be outside", 
+                                         TRUE ~ "equal");
+    # Y_stat_MC_implicit = middle.point.to.line(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.AB.b0, l.AB.b1);
+    # calculate result of implicit function of AB line with tree coordinates
+    Y_implicit_status_tree_line = l.AB.b0  + l.AB.b1 * x.tree - y.tree;
+    # assigne tree status depending on shorter/ longer side of circle 
+    tree_stat_edge_1 = ifelse(edge_form == "1" & i_status.AB == "two I" & Y_implicit_status_M_line == "positive" & Y_implicit_status_tree_line > 0 |
+                                edge_form == "1" & i_status.AB == "two I" & Y_implicit_status_M_line == "negative" &  Y_implicit_status_tree_line < 0 |
+                                edge_form == "1" & i_status.AB != "two I",  
+                              "A", "B");
+    
+  ## for edge form 2 --> triangle
+    # find intersection on the "right" side (with the same "direction as the line from T to the respective point) 
+    # and calcualte the respective intersection coordinate (x1 vs. x2) for a cricle with a radius = 60m
+    # AT
+    x1.AT.inter.30 =  intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, 3000);
+    y1.AT.inter.30 = l.AT.b0 + l.AT.b1*x1.AT.inter.30;
+    x2.AT.inter.30 = intersection_c_lx2 (l.AT.b0, l.AT.b1, c.x0, c.y0, 3000);
+    y2.AT.inter.30 = l.AT.b0 + l.AT.b1*x2.AT.inter.30;
+    # select the intersection coordinates for the triangle on AT line
+    # x.AT.inter.triangle.60 = ifelse(t.dist <= c.r017 & azi(x1.AT.inter.30, y1.AT.inter.30, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), 
+    #                                 ifelse(t.dist <= c.r017 & azi(x2.AT.inter.30, y2.AT.inter.30, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx2(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060),
+    #                                        ifelse(t.dist > c.r017 & distance(x1.AT.inter.30, y1.AT.inter.60, x.t, y.t) > distance(x2.AT.inter.60, y2.AT.inter.60, x.t, y.t), intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), 
+    #                                               ifelse(t.dist > c.r017 & distance(x2.AT.inter.60, y2.AT.inter.60, x.t, y.t) > distance(x1.AT.inter.60, y1.AT.inter.60, x.t, y.t), intersection_c_lx2(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060),
+    #                                                      NA))));
+    x.AT.inter.triangle.60 = ifelse(azi(x1.AT.inter.30, y1.AT.inter.30, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx1(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060), 
+                                    ifelse(azi(x2.AT.inter.30, y2.AT.inter.30, x.t, y.t) == azi(x.a, y.a, x.t, y.t), intersection_c_lx2(l.AT.b0, l.AT.b1, c.x0, c.y0, c.r060),
+                                           NA));
+     # calculate y for triangle
+    y.AT.inter.triangle.60 = ifelse(!is.na(x.AT.inter.triangle.60), l.AT.b0 + l.AT.b1*x.AT.inter.triangle.60, NA);
+  #BT 
+    x1.BT.inter.30 =  intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, 3000);
+    y1.BT.inter.30 = l.BT.b0 + l.BT.b1*x1.BT.inter.30;
+    x2.BT.inter.30 = intersection_c_lx2 (l.BT.b0, l.BT.b1, c.x0, c.y0, 3000);
+    y2.BT.inter.30 = l.BT.b0 + l.BT.b1*x2.BT.inter.30;
+    # select the intersection coordinates for the triangle on AT line
+    # x.BT.inter.triangle.60 = ifelse(t.dist <= c.r017 & azi(x1.BT.inter.30, y1.BT.inter.30, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), 
+    #                                 ifelse(t.dist <= c.r017 & azi(x2.BT.inter.30, y2.BT.inter.30, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx2(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060),
+    #                                        ifelse(t.dist > c.r017 & distance(x1.BT.inter.30, y1.BT.inter.60, x.t, y.t) > distance(x2.BT.inter.60, y2.BT.inter.60, x.t, y.t), intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), 
+    #                                               ifelse(t.dist > c.r017 & distance(x2.BT.inter.60, y2.BT.inter.60, x.t, y.t) > distance(x1.BT.inter.60, y1.BT.inter.60, x.t, y.t), intersection_c_lx2(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060),
+    #                                                      NA))));
+    x.BT.inter.triangle.60 = ifelse(azi(x1.BT.inter.30, y1.BT.inter.30, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx1(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060), 
+                                    ifelse(azi(x2.BT.inter.30, y2.BT.inter.30, x.t, y.t) == azi(x.b, y.b, x.t, y.t), intersection_c_lx2(l.BT.b0, l.BT.b1, c.x0, c.y0, c.r060),
+                                           NA));
+    # calculate y for triangle
+    y.BT.inter.triangle.60 = ifelse(!is.na(x.BT.inter.triangle.60), l.BT.b0 + l.BT.b1*x.BT.inter.triangle.60, NA);
+    
+    # check if tree is located inside triangle: Beyericentrig triangle function
+    a = ((x.tree - x.t)*(y.BT.inter.triangle.60 - y.t) + (x.t - x.BT.inter.triangle.60)*(y.tree)) / ((y.BT.inter.triangle.60 - y.t)*(x.AT.inter.triangle.60 - x.t) + (x.t - x.BT.inter.triangle.60)*(y.AT.inter.triangle.60 - y.t));
+    b = ((x.tree - x.t)*(y.t - y.AT.inter.triangle.60) + (x.AT.inter.triangle.60 - x.t)*(y.tree - y.t)) / ((y.BT.inter.triangle.60 - y.t)*(x.AT.inter.triangle.60 - x.t) + (x.t - x.BT.inter.triangle.60)*(y.AT.inter.triangle.60 - y.t));
+    c = 1 - a - b;
+    tree_stat_edge_2 = ifelse(edge_form == "2" & 0 <= a & a <= 1 & 0 <= b  & b <= 1 & 0 <= c & c <= 1, "B", "A");
+    # B = out = point is inside triangle, so outside plot
+    # A = in =  point is outside triangle, so inside plot
+    return(ifelse(edge_form == 1, tree_stat_edge_1, ifelse(edge_form == 2, tree_stat_edge_2, NA)))
+}
 
 
 
@@ -439,34 +551,34 @@ tree.status <- function(
 # 
 # # ----- 0.5.8.1. for straight line  ---------------------------------------------------------
 # # ----- 0.5.8.1.1. check for relation between intersections of middle-point-center-line and point and edge line  ---------------------------------------------------------
-# middle.point.to.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1){
-#   # calculate coordiantes of the middle of thie line between 
-#   x_m_line = (x1 - x2)/2;
-#   y_m_line = (y1 - y2)/2;
-#   # calculate the parameters of the equation between the middle of the line and the centre of the circle
-#   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
-#   b0_MC = intercept(c.x0, c.y0, b1_MC);
-#   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
-#   X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r0); 
-#   X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r0);
-#   # insert the intersection x corodinate in the line function to get the respective y coordinate
-#   y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC); 
-#   y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC);
-#   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
-#   dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
-#   dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
-#   # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
-#   X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC); 
-#   Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC);
-#   # insert coordinates that are for sure on the smaller side of the two halves of the circle into the implicit equation: 
-#   Y_MC_implicit = l.b0  + l.b1 * X_inter_MC_shorter_side - Y_inter_MC_shorter_side;
-#   Y_implicit_status_M_line = case_when(Y_MC_implicit > 0 ~ "positive",          # "y imlicit has to be positive too for tree to be outside, 
-#                                        # as the result of the implicit equation that contains the 
-#                                        # point that is for sure in the smaller cirlce segment, has a positive impllciti equation result", 
-#                                        Y_MC_implicit < 0 ~ "negative",          # "y imlicit has to be negative for tree to be outside", 
-#                                        TRUE ~ "equal");
-#   return(Y_implicit_status_M_line)
-# }
+ middle.point.to.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1){
+   # calculate coordiantes of the middle of thie line between 
+   x_m_line = (x1 - x2)/2;
+   y_m_line = (y1 - y2)/2;
+   # calculate the parameters of the equation between the middle of the line and the centre of the circle
+   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
+   b0_MC = intercept(c.x0, c.y0, b1_MC);
+   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
+   X1_inter_MC = intersection_c_lx1(b0_MC, b1_MC, c.x0, c.y0, c.r0); 
+   X2_inter_MC = intersection_c_lx2(b0_MC, b1_MC, c.x0, c.y0, c.r0);
+   # insert the intersection x corodinate in the line function to get the respective y coordinate
+   y1_inter_MC = l(b0_MC, b1_MC, X1_inter_MC); 
+   y2_inter_MC = l(b0_MC, b1_MC, X2_inter_MC);
+   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
+   dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
+   dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
+   # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
+   X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC); 
+   Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC);
+   # insert coordinates that are for sure on the smaller side of the two halves of the circle into the implicit equation: 
+   Y_MC_implicit = l.b0  + l.b1 * X_inter_MC_shorter_side - Y_inter_MC_shorter_side;
+   Y_implicit_status_M_line = case_when(Y_MC_implicit > 0 ~ "positive",          # "y imlicit has to be positive too for tree to be outside, 
+                                        # as the result of the implicit equation that contains the 
+                                        # point that is for sure in the smaller cirlce segment, has a positive impllciti equation result", 
+                                        Y_MC_implicit < 0 ~ "negative",          # "y imlicit has to be negative for tree to be outside", 
+                                        TRUE ~ "equal");
+   return(Y_implicit_status_M_line)
+ }
 
 
 
@@ -1246,9 +1358,6 @@ trees_and_edges <-
   # insert y and x of tree in implizite function of line function: 0 = a*x + b - y --> if result > 0 --> group 1, if result <0 --> group 2, if result = 0 --> group 0
   mutate(Y_AB_t = l(b0_AB, b1_AB, X_tree),    # calcualte y of function at the x of the tree 
          dist_y_Xtree = distance(X_tree, Y_AB_t, 0, 0),
-         # angle_AB_inter_right_tree =  angle_triangle(0, 0, x_right_AB_inter_17, y_right_AB_inter_17, X_tree, Y_tree),
-         azi_AB_inter_1_2 = azi_correction( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17, azimut( X2_inter_AB_17, Y2_inter_AB_17, X1_inter_AB_17, Y1_inter_AB_17)),
-         azi_AB_inter_1_tree = azi_correction(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17, azimut(X_tree, Y_tree, X1_inter_AB_17, Y1_inter_AB_17)),
          Y_AB_t_implicit = b0_AB  + b1_AB *X_tree - Y_tree, 
          Y_AT_t_implicit = b0_AT + b1_AT *X_tree - Y_tree,
          Y_BT_t_implicit = b0_BT  + b1_BT *X_tree - Y_tree) %>%
@@ -1281,7 +1390,67 @@ trees_and_edges <-
          # this combines the previous statements of the tree status  
          t_status_AB_ABT = case_when(e_form == "1" ~  t_AB_status,
                                      e_form == "2"  ~ t_ABT_status,
-                                     TRUE ~ NA) )
+                                     TRUE ~ NA), 
+         t_status_AB_ABT_test = tree.status.test(e_form, 
+                                            X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17,
+                                            0, 0, data_circle$r0[3], 
+                                            b0_AB, b1_AB,
+                                            X_tree, Y_tree, 
+                                            T_dist,
+                                            X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17, X_A, Y_A, X_T, Y_T, b0_AT, b1_AT,  
+                                            data_circle$rmax[3]*2,
+                                            X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17, X_B, Y_B,  b0_BT, b1_BT))
+
+identical(trees_and_edges$t_status_AB_ABT,  tree.status.test(trees_and_edges$e_form, 
+                                                             trees_and_edges$X1_inter_AB_17, trees_and_edges$X2_inter_AB_17, trees_and_edges$Y1_inter_AB_17, trees_and_edges$Y2_inter_AB_17,
+                                                             0, 0, data_circle$r0[3], 
+                                                             trees_and_edges$b0_AB, trees_and_edges$b1_AB,
+                                                             trees_and_edges$X_tree, trees_and_edges$Y_tree,
+                                                             trees_and_edges$T_dist,
+                                                             trees_and_edges$X1_inter_AT_17, trees_and_edges$Y1_inter_AT_17, trees_and_edges$X2_inter_AT_17, trees_and_edges$Y2_inter_AT_17, 
+                                                             trees_and_edges$X_A,trees_and_edges$Y_A, trees_and_edges$X_T, trees_and_edges$Y_T,trees_and_edges$b0_AT, trees_and_edges$b1_AT,  
+                                                             data_circle$rmax[3]*2,
+                                                             trees_and_edges$X1_inter_BT_17, trees_and_edges$Y1_inter_BT_17, trees_and_edges$X2_inter_BT_17, trees_and_edges$Y2_inter_BT_17, 
+                                                             trees_and_edges$X_B, trees_and_edges$Y_B,  trees_and_edges$b0_BT, trees_and_edges$b1_BT))
+
+identical(trees_and_edges$t_AB_status[trees_and_edges$e_form == 1], trees_and_edges$t_status_AB_ABT_test[trees_and_edges$e_form == 1])    
+  tree.status.test(trees_and_edges$e_form, 
+                  trees_and_edges$X1_inter_AB_17, trees_and_edges$X2_inter_AB_17, trees_and_edges$Y1_inter_AB_17, trees_and_edges$Y2_inter_AB_17,
+                  0, 0, data_circle$r0[3], 
+                  trees_and_edges$b0_AB, trees_and_edges$b1_AB,
+                  trees_and_edges$X_tree, trees_and_edges$Y_tree,
+                  trees_and_edges$T_dist,
+                  trees_and_edges$X1_inter_AT_17, trees_and_edges$Y1_inter_AT_17, trees_and_edges$X2_inter_AT_17, trees_and_edges$Y2_inter_AT_17, 
+                  trees_and_edges$X_A,trees_and_edges$Y_A, trees_and_edges$X_T, trees_and_edges$Y_T,trees_and_edges$b0_AT, trees_and_edges$b1_AT,  
+                  data_circle$rmax[3]*2,
+                  trees_and_edges$X1_inter_BT_17, trees_and_edges$Y1_inter_BT_17, trees_and_edges$X2_inter_BT_17, trees_and_edges$Y2_inter_BT_17, 
+                  trees_and_edges$X_B, trees_and_edges$Y_B,  trees_and_edges$b0_BT, trees_and_edges$b1_BT)
+
+
+
+
+
+, X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, 
+b0_AB, b1_AB, X_tree, Y_tree,  X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17, X_A, Y_A, X_T, Y_T,
+X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17, X_B, Y_B,  b0_BT, b1_BT),
+
+
+
+tree.status(e_form, 
+            X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17,
+            0, 0, data_circle$r0[3], 
+            b0_AB, b1_AB,
+            X_tree, Y_tree, 
+            X1_inter_AT_17, Y1_inter_AT_17, X2_inter_AT_17, Y2_inter_AT_17, X_A, Y_A, X_T, Y_T, b0_AT, b1_AT,  
+            data_circle$rmax[3]*2,
+            X1_inter_BT_17, Y1_inter_BT_17, X2_inter_BT_17, Y2_inter_BT_17, X_B, Y_B,  b0_BT, b1_BT))
+
+test.f <- function(edge_form){
+  if (edge_form == "1") {return("edge form is line")}
+  else{return("edge form is triangle")}
+  }
+test.f(forest_edges_HBI.man$e_form)
+
 
 # ---- 1.1.2.5. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
 # https://stackoverflow.com/questions/66252569/using-ifelse-conditional-on-multiple-columns
@@ -1491,7 +1660,7 @@ ggplot() +
              #                summarize(n = n()) %>% 
              #                filter(n <= 1), 
              #              by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = t_AB_status))+
+             aes(X_tree, Y_tree, colour = t_ABT_status_triangle))+
   theme_bw()+
   facet_wrap(~plot_ID)
 
@@ -1564,7 +1733,7 @@ ggplot() +
             aes(x= X_value, y = Y_value))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour = t_ABT_status))+
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT_test))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
