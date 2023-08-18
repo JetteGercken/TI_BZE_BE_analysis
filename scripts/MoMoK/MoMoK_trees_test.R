@@ -7236,7 +7236,7 @@ hollidays = 28
 tot_wd = wd-hollidays
 ho_wd = tot_wd*0.5
 month <-      c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-wd_ho_used <- c(6, 7, 9, 7, 8, 8, 3, 0, 0,  0,  0)
+wd_ho_used <- c(6, 7, 9, 7, 8, 8, 5, 0, 0,  0,  0)
 alread_used_ho <- as.data.frame(cbind(month, wd_ho_used))
 already_used_ho_sum = as.numeric(alread_used_ho %>% summarize(sum_ho_wd_used = sum(wd_ho_used)) %>% pull(sum_ho_wd_used))
 #ho_planned_04_spain = 5 --> in used for april
