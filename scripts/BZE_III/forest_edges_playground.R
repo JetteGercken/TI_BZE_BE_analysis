@@ -793,15 +793,15 @@ edge.A.site.triangle <- function(e.form, c.x0, c.y0, c.r0, x.a, x.b, x.t, y.a, y
                            e.from == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
                             c.A - c.seg.A, c.seg.A);
-  edge.2.cone.A = ifelse(e.from == "2" & t.dist <= c.r0, c.cone.A, NA);
-  edge.2.triangle.A = ifelse(e.from == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.seg.A.bsite + c.seg.A, NA)
+  # edge.2.cone.A = ifelse(e.from == "2" & t.dist <= c.r0, c.cone.A, NA);
+  # edge.2.triangle.A = ifelse(e.from == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.seg.A.bsite + c.seg.A, NA)
   
          # for edge form == 1 it´s always the circle segment, cause the trees in  
-  ifelse(e.from == "1" & i_status.AB == "two I", c.seg.A, 
+  area = ifelse(e.from == "1" & i_status.AB == "two I", c.seg.A, 
          ifelse(e.from == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I"|
                   e.from == "2" & t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", edge.2.line.A,
-                       ifelse(e.from == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, c.r0, x.b, y.b, x.t, y.t, coordinate = "y" ), 
-                              ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", y2.inter.AT, 
+                       ifelse(e.from == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A, 
+                              ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.seg.A.bsite + c.seg.A, 
                                      NA))))
   
   
