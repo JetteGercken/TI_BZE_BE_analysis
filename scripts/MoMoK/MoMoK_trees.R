@@ -3281,6 +3281,7 @@ DW_P_SP_TY <- DW_total %>%
   by = c("plot_ID", "SP_group", "DW_type"))
 
 
+
 write.csv(DW_P_SP_TY, paste0(momok.out.home, "DW_P_SP_TY_MoMoK.csv"))
 
 # ----- 2.5.2.3.grouped by decay type and deadwood type -------------------------
@@ -4569,7 +4570,7 @@ comp_pseudo_mono <- comp_pseudo_mono %>%
             by = "BWI_SP_group") %>% 
   mutate(SD_class = SD_class(SD_SP_B_diff, B_pred_vs_B_calc)) 
 
-
+summary(comp_pseudo_mono)
 
 # ----- 4.4.3. Linear model C plausibility by pseudo mono stand of L/S deadwood type and item-mass-class -------------------------------------------------------------
 DW_comp_SL_iB <- DW_comp_SL_iB %>%
