@@ -270,6 +270,8 @@ distance <- function(x2, y2, x1, y1){
 
 
 # intersection between line and circle via switch function 
+# switch function anbales us to select the variable we would like the function to return without writing multiple functions 
+# that caryy out the similar calcualtions and differ only in final steps 
 intersection_line_circle <- function(l.b0, l.b1, c.y0, c.x0, c.r0, coordinate) {
   
   # quadratic formula
