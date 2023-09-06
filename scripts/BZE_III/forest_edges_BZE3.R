@@ -639,19 +639,24 @@ inter.line.circle.geometrical <- function(x.1, y.1, x.2, y.2, c.x0, c.y0, c.r0, 
 east.north.coord <- function(dist, azi, c.x, c.y, coordinate){
   switch(coordinate,
          # Convert polar to cartesian coordinates and add easting northing of central point
-         lat = c.x + (dist*sin(azi*pi/200)), 
-         lon = c.y + (dist*cos(azi*pi/200)))
+         lat = c.x + dist*sin(azi), 
+         lon = c.y + dist*cos(azi))
   }
 
 east.north.azi <- function(east.1, north.1, east.2, north.2){
-  azi = atan((east.2 - east.1)-(north.2-north.1));
+  azi = atan((east.2 - east.1)/(north.2-north.1));
   delta.e = east.2-east.1;
-  delta.n = north.2- north.1;
+  delta.n = north.2-north.1;
   azi.corrected = ifelse(delta.e >= 0 & delta.n > 0 | delta.e > 0 & delta.n >= 0, azi,                    # first quadrant x + y+
                          ifelse(delta.e >= 0 & delta.n < 0 |delta.e > 0 & delta.n <= 0, azi+200,         # second quadrant x + y-
                                 ifelse(delta.e <= 0 & delta.n < 0 |delta.e < 0 & delta.n <= 0,  azi+200,   # third quadrant x- y-
                                        ifelse(delta.e <= 0 & delta.n > 0 | delta.e < 0 & delta.n >= 0, azi+400, NA))));
   return(azi.corrected)
+}
+
+east.north.dist <- function(east.1, north.1, east.2, north.2){
+  d = sqrt(((east.2-east.1)^2)+(north.2-north.1)^2);
+  return(d)
 }
 
 FE_loc_HBI.test <- forest_edges_HBI.man %>% 
@@ -663,42 +668,57 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
          A_north = east.north.coord((A_dist/100), A_azi, RW_MED, HW_MED, coordinate = "lon"),
          B_east = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lat"), 
          B_north = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lon")) %>% 
-  mutate(AB_east_inter_1 = east.north.coord((distance(A_est, A_north, RW_MED, HW_MED)-17.84), 
+  mutate(AB_east_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84), 
                                             east.north.azi(A_east, A_north, B_east, B_north), 
+                                            A_east, A_north,
                                             coordinate = "lat"), 
-         AB_nort_inter_1 = east.north.coord((distance(A_est, A_north, RW_MED, HW_MED)-17.84), 
-                                            100, A_east, A_north, coordinate = "lon"), 
-         AB_east_inter_1 = east.north.coord((distance(A_est, A_north, RW_MED, HW_MED)-17.84+17.84*2), 
-                                            100, B_east, B_north, coordinate = "lat"), 
-         AB_nort_inter_1 = east.north.coord((distance(A_est, A_north, RW_MED, HW_MED)-17.84+17.84*2), 
-                                            100, B_east, B_north, coordinate = "lon")) %>% 
-  mutate(X_A_GPS = coord(HW_MED, RW_MED,  A_dist/100, A_azi, coordinate = "x"), 
-         X_B_GPS = coord(HW_MED, RW_MED, B_dist/100, B_azi, coordinate = "x"), 
-         Y_A_GPS = coord(HW_MED, RW_MED, A_dist/100, A_azi, coordinate = "y"), 
-         Y_B_GPS = coord(HW_MED, RW_MED, B_dist/100, B_azi, coordinate = "y")),
-         # https://stackoverflow.com/questions/6091728/line-segment-circle-intersection
-         AB_x1_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "x"), 
-         AB_y1_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "y"),
-         AB_x2_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84+17.84*2), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "x"),
-         AB_y2_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84+17.84*2), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "y")) %>% 
-  mutate(X_D_GPS = coord(AB_y1_inter_17, AB_x1_inter_17, 17.84*2, 100, coordinate = "x"), 
-         Y_D_GPS = coord(AB_y1_inter_17, AB_x1_inter_17, 17.84*2, 100, coordinate = "y"),
-         X_E_GPS = coord(AB_y2_inter_17, AB_x2_inter_17, 17.84*2, 100, coordinate = "x"), 
-         Y_E_GPS = coord(AB_y2_inter_17, AB_x2_inter_17, 17.84*2, 100, coordinate = "y"), 
-         end_coord_x = X_D_GPS, 
-         end_coord_y = Y_D_GPS) %>% 
-  mutate(b0_AB_GPS = intercept(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS ), 
-         b1_AB_GPS = slope(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS )) %>% 
-  select(plot_ID, b0_AB_GPS, b1_AB_GPS, 
+         AB_north_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84), 
+                                            east.north.azi(A_east, A_north, B_east, B_north), 
+                                            A_east, A_north, 
+                                            coordinate = "lon"),
+         AB_east_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2), 
+                                            east.north.azi( A_east, A_north, B_east, B_north), 
+                                            A_east, A_north, 
+                                            coordinate = "lat"), 
+         AB_north_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2), 
+                                            east.north.azi(A_east, A_north, B_east, B_north), 
+                                            A_east, A_north, 
+                                            coordinate = "lon")) %>% 
+  # mutate(X_A_GPS = coord(HW_MED, RW_MED,  A_dist/100, A_azi, coordinate = "x"), 
+  #        X_B_GPS = coord(HW_MED, RW_MED, B_dist/100, B_azi, coordinate = "x"), 
+  #        Y_A_GPS = coord(HW_MED, RW_MED, A_dist/100, A_azi, coordinate = "y"), 
+  #        Y_B_GPS = coord(HW_MED, RW_MED, B_dist/100, B_azi, coordinate = "y"),
+  #        # https://stackoverflow.com/questions/6091728/line-segment-circle-intersection
+  #        AB_x1_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "x"), 
+  #        AB_y1_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "y"),
+  #        AB_x2_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84+17.84*2), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "x"),
+  #        AB_y2_inter_17 = coord(Y_A_GPS, X_A_GPS,  (distance(HW_MED, RW_MED, Y_A_GPS, X_A_GPS)-17.84+17.84*2), azi(X_B_GPS, Y_B_GPS, X_A_GPS, Y_A_GPS), coordinate = "y")) %>% 
+  # mutate(X_D_GPS = coord(AB_y1_inter_17, AB_x1_inter_17, 17.84*2, 100, coordinate = "x"), 
+  #        Y_D_GPS = coord(AB_y1_inter_17, AB_x1_inter_17, 17.84*2, 100, coordinate = "y"),
+  #        X_E_GPS = coord(AB_y2_inter_17, AB_x2_inter_17, 17.84*2, 100, coordinate = "x"), 
+  #        Y_E_GPS = coord(AB_y2_inter_17, AB_x2_inter_17, 17.84*2, 100, coordinate = "y"), 
+  #        end_coord_x = X_D_GPS, 
+  #        end_coord_y = Y_D_GPS) %>% 
+   mutate(D_east = east.north.coord(17.84*2, 100, AB_east_inter_1, AB_north_inter_1, coordinate = "lat"),
+          D_north = east.north.coord(17.84*2, 100,AB_east_inter_1, AB_north_inter_1,  coordinate = "lon"),
+          E_east = east.north.coord(17.84*2, 100, AB_east_inter_2, AB_north_inter_2, coordinate = "lat"),
+          E_north = east.north.coord(17.84*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon")) %>% 
+ # mutate(b0_AB_GPS = intercept(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS ), 
+  #       b1_AB_GPS = slope(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS )) %>% 
+  # select(plot_ID, b0_AB_GPS, b1_AB_GPS, 
+  #        A_dist, A_azi, B_dist, B_azi,
+  #        RW_MED , X_A_GPS, X_B_GPS, X_D_GPS, X_E_GPS, AB_x1_inter_17, AB_x2_inter_17, end_coord_x, 
+  #        HW_MED,  Y_A_GPS, Y_B_GPS, Y_D_GPS, Y_E_GPS, AB_y1_inter_17, AB_y2_inter_17, end_coord_y)  %>%
+  select(plot_ID,  
          A_dist, A_azi, B_dist, B_azi,
-         RW_MED , X_A_GPS, X_B_GPS, X_D_GPS, X_E_GPS, AB_x1_inter_17, AB_x2_inter_17, end_coord_x, 
-         HW_MED,  Y_A_GPS, Y_B_GPS, Y_D_GPS, Y_E_GPS, AB_y1_inter_17, AB_y2_inter_17, end_coord_y)  %>% 
+         RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2,  
+         HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2) %>%  
     to_long(keys = c("X_name",  "Y_name"),
-            values = c( "x", "y"),  
-            names(.)[8:15], names(.)[16:23])
+            values = c( "lat", "lon"),  
+            names(.)[6:12], names(.)[13:19])
 
 
-plot(FE_loc_HBI.test$x, FE_loc_HBI.test$y)
+plot(FE_loc_HBI.test$lat, FE_loc_HBI.test$lon)
 
 ggplot() +  
   geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = x, y0 = y, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
@@ -723,42 +743,79 @@ ggplot() +
                    xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_E_GPS"], 
                    yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
                    colour = "segment"))
+ggplot() +  
+  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  #geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_point(data = FE_loc_HBI.test,
+             aes(x= lat, y = lon, colour = X_name))+
+  geom_segment(data =FE_loc_HBI.test, 
+               aes(x = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "AB_east_inter_1"], 
+                   y = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "AB_east_inter_1"], 
+                   xend = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "AB_east_inter_2"], 
+                   yend = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "AB_east_inter_2"], 
+                   colour = "segment")) +
+  geom_segment(data =FE_loc_HBI.test, 
+               aes(x = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "D_east"], 
+                   y = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "D_east"], 
+                   xend = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "E_east"], 
+                   yend = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "E_east"], 
+                   colour = "segment"))+
+  geom_segment(data =FE_loc_HBI.test, 
+               aes(x = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "AB_east_inter_1"], 
+                   y = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "AB_east_inter_1"], 
+                   xend = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "D_east"], 
+                   yend = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "D_east"], 
+                   colour = "segment"))+
+  geom_segment(data =FE_loc_HBI.test, 
+               aes(x = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "AB_east_inter_2"], 
+                   y = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "AB_east_inter_2"], 
+                   xend = FE_loc_HBI.test$lat[FE_loc_HBI.test$X_name == "E_east"], 
+                   yend = FE_loc_HBI.test$lon[FE_loc_HBI.test$X_name == "E_east"], 
+                   colour = "segment"))
 
 # center of plot
 center_50005 <- terra::vect(FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
-                            geom=c("y", "x"), 
-                            crs="+proj=longlat +datum=WGS84",
+                            geom=c("lon", "lat"), 
+                            crs="epsg:25833",
                             keepgeom=FALSE)
-crs(center_50005)  <- "epsg:4326"
+#crs(center_50005)  <- "epsg:25833"
+
 # 17 m circle around plot center
 # https://rdrr.io/cran/terra/man/buffer.html
-circle_17_50005 <- terra::buffer(center_50005, (data_circle$r0[3]/100),
-                                 capstyle = "round")
-crs(circle_17_50005) <- "epsg:4326"
+circle_17_50005 <- terra::buffer(center_50005, 17.84)
+plot(circle_17_50005)
+# create square
+square.50005 <- terra::vect(FE_loc_HBI.test %>% filter(!(X_name %in% c("RW_MED", "X_A_GPS", "X_B_GPS")) & 
+                                  !(Y_name %in% c("HW_MED", "Y_A_GPS", "Y_B_GPS"))),
+             geom=c("lon", "lat"),
+             crs="epsg:25833",
+             keepgeom=FALSE)
+square.50005.sf <- sf::st_as_sf(square.50005) 
+write_sf(sub.messpunkt.sf, paste0(field.table.path, "gis_messpunkt_", my.bfhnr, ".gpkg"), append=F)
+plot(square.50005)
+plot(circle_17_50005, add = T)
+
+inter <- terra::intersect(square.50005.sf,circle_17_50005)
+
+
 
 # create circle in st package:
 center_50005 <- st_as_sf(FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
-                         coords = c("y", "x"), crs = 4326) %>% 
-  st_transform(4326)
-circle_17_50005 <- st_buffer(center_50005, dist = 100)
+                         coords = c("lat", "lon"), crs = 25833) 
+circle_17_50005 <- st_buffer(center_50005, dist = 17.84)
 plot(circle_17_50005$geometry)
-#circle_17_50005 <- sf::st_as_sfc(circle_17_50005)
-# create square
-square.50005 <- terra::vect(FE_loc_HBI.test %>% filter(!(X_name %in% c("RW_MED", "X_A_GPS", "X_B_GPS")) & 
-                                  !(Y_name %in% c("HW_MED", "Y_A_GPS", "Y_B_GPS"))), 
-             geom=c("y", "x"),
-             crs="+proj=longlat +datum=WGS84",
-             keepgeom=FALSE)
-terra::crs(square.50005)<- "epsg:4326"
+plot(square.50005, add = T)
+#terra::crs(square.50005)<- "epsg:4326"
 square.50005 <- sf::st_as_sf(square.50005)
 plot(square.50005$geometry)
 
 # https://gis.stackexchange.com/questions/403977/sf-create-polygon-from-minimum-x-and-y-coordinates
 square.50005 <- square.50005 %>% 
-  st_bbox() %>% 
-  st_as_sfc()
+     st_bbox() %>% 
+   st_as_sfc()
 
-st_intersection(square.50005, circle_17_50005) %>% plot()
+
+st_intersection(square.50005, circle_17_50005) 
 
 
 
