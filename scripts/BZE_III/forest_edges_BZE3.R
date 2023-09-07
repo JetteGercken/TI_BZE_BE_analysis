@@ -662,19 +662,22 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
          A_north = east.north.coord((A_dist/100), A_azi, RW_MED, HW_MED, coordinate = "lon"),
          B_east = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lat"), 
          B_north = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lon")) %>% 
-  mutate(AB_east_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84), 
-                                            east.north.azi(A_east, A_north, B_east, B_north), 
-                                            A_east, A_north,
-                                            coordinate = "lat"), 
-         AB_north_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84), 
-                                            east.north.azi(A_east, A_north, B_east, B_north), 
-                                            A_east, A_north, 
+  mutate(AB_east_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84+30), 
+                                            (east.north.azi(B_east, B_north, A_east, A_north)), 
+                                            B_east, B_north,
+                                            coordinate = "lat"),
+         AB_east_inter_1.test = intersection_line_circle(intercept(A_east, A_north, B_east, B_north), 
+                                                         slope(A_east, A_north, B_east, B_north), 
+                                                         RW_MED, HW_MED, 1784, coordinate = "x1"),
+         AB_north_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84+30), 
+                                            (east.north.azi(B_east, B_north, A_east, A_north)), 
+                                            B_east, B_north,
                                             coordinate = "lon"),
-         AB_east_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2), 
+         AB_east_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2+30), 
                                             east.north.azi( A_east, A_north, B_east, B_north), 
                                             A_east, A_north, 
                                             coordinate = "lat"), 
-         AB_north_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2), 
+         AB_north_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2+30), 
                                             east.north.azi(A_east, A_north, B_east, B_north), 
                                             A_east, A_north, 
                                             coordinate = "lon")) %>% 
@@ -697,8 +700,8 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
           D_north = east.north.coord(17.84*2, 100,AB_east_inter_1, AB_north_inter_1,  coordinate = "lon"),
           E_east = east.north.coord(17.84*2, 100, AB_east_inter_2, AB_north_inter_2, coordinate = "lat"),
           E_north = east.north.coord(17.84*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon"), 
-          end_east = AB_east_inter_2, 
-          end_north = AB_north_inter_2) %>% 
+          end_east = AB_east_inter_1, 
+          end_north = AB_north_inter_1) %>% 
  # mutate(b0_AB_GPS = intercept(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS ), 
   #       b1_AB_GPS = slope(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS )) %>% 
   # select(plot_ID, b0_AB_GPS, b1_AB_GPS, 
@@ -712,10 +715,10 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
     to_long(keys = c("X_name",  "Y_name"),
             values = c( "lat", "lon"),  
             names(.)[6:13], names(.)[14:21]) %>% 
-  mutate(order = case_when(X_name == "AB_east_inter_2" ~ 1,
-                           X_name == "AB_east_inter_1" ~ 2, 
-                           X_name == "D_east" ~ 3, 
-                           X_name == "E_east" ~ 4,
+  mutate(order = case_when(X_name == "AB_east_inter_1" ~ 1,
+                           X_name == "D_east" ~ 2, 
+                           X_name == "E_east" ~ 3,
+                           X_name == "AB_east_inter_2" ~ 4,
                            X_name == "end_east" ~ 5, 
                            TRUE ~ NA)) %>% 
   arrange(plot_ID, order)
@@ -747,8 +750,8 @@ plot(FE_loc_HBI.test$lat, FE_loc_HBI.test$lon)
 #                    yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
 #                    colour = "segment"))
 ggplot() +  
-  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  #geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
   geom_point(data = FE_loc_HBI.test,
              aes(x= lat, y = lon, colour = X_name))+
   geom_segment(data =FE_loc_HBI.test, 
@@ -790,25 +793,28 @@ circle_17_50005 <- terra::buffer(center_50005, 17.84)
 square.50005 <- terra::vect(FE_loc_HBI.test %>% 
                               filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
                             geom=c("lon", "lat"),
-                            "polygons",
                             crs="epsg:25833",
                             keepgeom=TRUE)
 
 
 e <- FE_loc_HBI.test %>%
   filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
+  mutate(lon = as.integer(lon), 
+         lat = as.integer(lat)) %>% 
   unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
   mutate(geometry = as.factor(geometry)) %>% 
     select(geometry)
-  #%>% 
-  #select(lon, lat))
+
+#trying to recreate: "POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))" 
+#paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")
+#"POLYGON((5679021.47358096 2517015.68025319, 5679011.35016525 2516981.46653, 5679042.11770261 2516963.39940393,5679052.24111832 2516997.61312711,5679021.47358096 2517015.68025319))"
+#"POLYGON((5679011 2516981, 5679042 2516963, 5679052 2516997, 5679021 2517015, 5679011 2516981))"
 
 
-
-paste(e$geometry, sep = ",")
 p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
+p <- vect(c(paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
 
-as.polygons(square.50005)
+
 #write_sf(square.50005.sf, paste0(field.table.path, "gis_messpunkt_", my.bfhnr, ".gpkg"), append=F)
 plot(square.50005)
 plot(p, add = T)
