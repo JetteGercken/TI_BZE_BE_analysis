@@ -43,7 +43,11 @@
 # install.packages("sjmisc")
 # if(!require(devtools)) install.packages("devtools")
 # devtools::install_github("kassambara/ggcorrplot")
-#
+## spatial
+# install.packages("sf")
+# install.packages("rgdal")
+# install.packages("terra")
+
 
 
 # ----- 0.2. require   ---------------------------------------------------------
@@ -85,7 +89,10 @@ require(TapeS)
 require(magrittr)
 require(sjmisc)
 require(ggforce)                      # Load ggforce package
-
+# spatial 
+require(sf)
+require(rgdal)
+require(terra)
 
 
 # ----- 0.3. working directory -------------------------------------------------

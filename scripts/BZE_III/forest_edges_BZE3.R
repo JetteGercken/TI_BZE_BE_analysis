@@ -619,12 +619,6 @@ ggplot() +
 
 
 # 2.2.1. Visualising areas ------------------------------------------------
-require(sf)
-install.packages("rgdal")
-install.packages("terra")
-require(rgdal)
-require(terra)
-
 
 inter.line.circle.geometrical <- function(x.1, y.1, x.2, y.2, c.x0, c.y0, c.r0, coordinate){
   betrag.dist.minus.radius <- ifelse(((distance(c.y0, c.x0, y.1 , x.1)/100)-c.r0)<0, ((distance(c.y0, c.x0, y.1 , x.1)/100)-c.r0)*(-1), (distance(c.y0, c.x0, y.1 , x.1)/100)-c.r0);
@@ -702,7 +696,9 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
    mutate(D_east = east.north.coord(17.84*2, 100, AB_east_inter_1, AB_north_inter_1, coordinate = "lat"),
           D_north = east.north.coord(17.84*2, 100,AB_east_inter_1, AB_north_inter_1,  coordinate = "lon"),
           E_east = east.north.coord(17.84*2, 100, AB_east_inter_2, AB_north_inter_2, coordinate = "lat"),
-          E_north = east.north.coord(17.84*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon")) %>% 
+          E_north = east.north.coord(17.84*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon"), 
+          end_east = AB_east_inter_2, 
+          end_north = AB_north_inter_2) %>% 
  # mutate(b0_AB_GPS = intercept(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS ), 
   #       b1_AB_GPS = slope(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS )) %>% 
   # select(plot_ID, b0_AB_GPS, b1_AB_GPS, 
@@ -711,38 +707,45 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
   #        HW_MED,  Y_A_GPS, Y_B_GPS, Y_D_GPS, Y_E_GPS, AB_y1_inter_17, AB_y2_inter_17, end_coord_y)  %>%
   select(plot_ID,  
          A_dist, A_azi, B_dist, B_azi,
-         RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2,  
-         HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2) %>%  
+         RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2, end_east, 
+         HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2, end_north) %>%  
     to_long(keys = c("X_name",  "Y_name"),
             values = c( "lat", "lon"),  
-            names(.)[6:12], names(.)[13:19])
+            names(.)[6:13], names(.)[14:21]) %>% 
+  mutate(order = case_when(X_name == "AB_east_inter_2" ~ 1,
+                           X_name == "AB_east_inter_1" ~ 2, 
+                           X_name == "D_east" ~ 3, 
+                           X_name == "E_east" ~ 4,
+                           X_name == "end_east" ~ 5, 
+                           TRUE ~ NA)) %>% 
+  arrange(plot_ID, order)
 
 
 plot(FE_loc_HBI.test$lat, FE_loc_HBI.test$lon)
 
-ggplot() +  
-  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = x, y0 = y, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  #geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  geom_point(data = FE_loc_HBI.test,
-             aes(x= x, y = y, colour = X_name))+
-  geom_segment(data =FE_loc_HBI.test, 
-               aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "AB_x1_inter_17"], 
-                   y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "AB_x1_inter_17"], 
-                   xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "AB_x2_inter_17"], 
-                   yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "AB_x2_inter_17"], 
-                   colour = "segment")) +
- geom_segment(data =FE_loc_HBI.test, 
-              aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_D_GPS"], 
-                  y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_D_GPS"], 
-                  xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_E_GPS"], 
-                  yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
-                  colour = "segment"))+
-  geom_segment(data =FE_loc_HBI.test, 
-               aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_D_GPS"], 
-                   y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_D_GPS"], 
-                   xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_E_GPS"], 
-                   yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
-                   colour = "segment"))
+# ggplot() +  
+#   geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = x, y0 = y, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
+#   #geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+#   geom_point(data = FE_loc_HBI.test,
+#              aes(x= x, y = y, colour = X_name))+
+#   geom_segment(data =FE_loc_HBI.test, 
+#                aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "AB_x1_inter_17"], 
+#                    y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "AB_x1_inter_17"], 
+#                    xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "AB_x2_inter_17"], 
+#                    yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "AB_x2_inter_17"], 
+#                    colour = "segment")) +
+#  geom_segment(data =FE_loc_HBI.test, 
+#               aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_D_GPS"], 
+#                   y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_D_GPS"], 
+#                   xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_E_GPS"], 
+#                   yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
+#                   colour = "segment"))+
+#   geom_segment(data =FE_loc_HBI.test, 
+#                aes(x = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_D_GPS"], 
+#                    y = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_D_GPS"], 
+#                    xend = FE_loc_HBI.test$x[FE_loc_HBI.test$X_name == "X_E_GPS"], 
+#                    yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
+#                    colour = "segment"))
 ggplot() +  
   geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+ # Draw ggplot2 plot with circle representing sampling circuits 
   #geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
@@ -783,31 +786,67 @@ center_50005 <- terra::vect(FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_na
 # 17 m circle around plot center
 # https://rdrr.io/cran/terra/man/buffer.html
 circle_17_50005 <- terra::buffer(center_50005, 17.84)
-plot(circle_17_50005)
 # create square
-square.50005 <- terra::vect(FE_loc_HBI.test %>% filter(!(X_name %in% c("RW_MED", "X_A_GPS", "X_B_GPS")) & 
-                                  !(Y_name %in% c("HW_MED", "Y_A_GPS", "Y_B_GPS"))),
-             geom=c("lon", "lat"),
-             crs="epsg:25833",
-             keepgeom=FALSE)
-square.50005.sf <- sf::st_as_sf(square.50005) 
-write_sf(sub.messpunkt.sf, paste0(field.table.path, "gis_messpunkt_", my.bfhnr, ".gpkg"), append=F)
+square.50005 <- terra::vect(FE_loc_HBI.test %>% 
+                              filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
+                            geom=c("lon", "lat"),
+                            "polygons",
+                            crs="epsg:25833",
+                            keepgeom=TRUE)
+
+
+e <- FE_loc_HBI.test %>%
+  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
+  unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+  mutate(geometry = as.factor(geometry)) %>% 
+    select(geometry)
+  #%>% 
+  #select(lon, lat))
+
+
+
+paste(e$geometry, sep = ",")
+p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
+
+as.polygons(square.50005)
+#write_sf(square.50005.sf, paste0(field.table.path, "gis_messpunkt_", my.bfhnr, ".gpkg"), append=F)
 plot(square.50005)
-plot(circle_17_50005, add = T)
+plot(p, add = T)
+plot(circle_17_50005, add=T)
 
-inter <- terra::intersect(square.50005.sf,circle_17_50005)
+inter <- terra::intersect(circle_17_50005, p)
+plot(inter)
 
 
 
+### SF PACKAGE APPROACH
 # create circle in st package:
-center_50005 <- st_as_sf(FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
+center_50005.sf <- st_as_sf(FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED") %>% select(lon, lat), 
                          coords = c("lat", "lon"), crs = 25833) 
-circle_17_50005 <- st_buffer(center_50005, dist = 17.84)
-plot(circle_17_50005$geometry)
-plot(square.50005, add = T)
+circle_17_50005.sf <- st_buffer(center_50005.sf, dist = 17.84)
 #terra::crs(square.50005)<- "epsg:4326"
-square.50005 <- sf::st_as_sf(square.50005)
-plot(square.50005$geometry)
+square.50005.sf <- sf::st_as_sf(square.50005)
+plot(square.50005.sf$geometry)
+
+box.50005.sf <- FE_loc_HBI.test %>% 
+  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>%
+  select(lon, lat) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 25833) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+dat.poly <- FE_loc_HBI.test %>% 
+  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% select(lon, lat)
+# https://stackoverflow.com/questions/69638192/draw-polygons-around-coordinates-in-r
+hulls <- dat.poly %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 25833) %>%
+  summarize(geometry = st_union(geometry)) %>%
+  st_convex_hull()
+plot(hulls)
+
+plot(circle_17_50005.sf$geometry)
+plot(square.50005.sf$geometry, add = T)
+plot(box.50005$geometry)
 
 # https://gis.stackexchange.com/questions/403977/sf-create-polygon-from-minimum-x-and-y-coordinates
 square.50005 <- square.50005 %>% 
@@ -815,7 +854,7 @@ square.50005 <- square.50005 %>%
    st_as_sfc()
 
 
-st_intersection(square.50005, circle_17_50005) 
+st_intersection(circle_17_50005.sf, hulls) 
 
 
 
