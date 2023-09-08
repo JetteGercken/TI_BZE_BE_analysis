@@ -139,8 +139,9 @@ HBI_trees %>%
 # ----- 1.1.2.1.1. HBI join in forest edge info per plot -----------------------------------------------
 HBI_trees <- HBI_trees %>% 
   # calculate the coordinates of every tree
-  mutate(X_tree = x_coord(Dist_cm, azi_gon), 
-         Y_tree = y_coord(Dist_cm, azi_gon)) %>% 
+  mutate(Dist_m = Dist_cm/100, 
+         X_tree = coord(data_circle$x0[1], data_circle$y0[1], Dist_m, azi_gon, coordinate = "x"), 
+         Y_tree = coord(data_circle$x0[1], data_circle$y0[1], Dist_m, azi_gon, coordinate = "y")) %>% 
   # join in the forest edge information per plot 
   left_join(., forest_edges_HBI %>% 
               select(plot_ID, e_ID, e_type, e_form), 
@@ -166,7 +167,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
   filter(e_form %in% c("1", "2")) %>% 
   # find line parameters
   # 1. calculate x and y coordinates for all edge points
-  mutate(X_A = ifelse(A_azi != "-2", x_coord(A_dist, A_azi), NA), # if the value is marked -2 its equal to an NA
+  mutate(X_A = ifelse(A_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], A_dist, azi_gon, coordinate = "x"), NA), # if the value is marked -2 its equal to an NA
          X_B = ifelse(B_azi != "-2", x_coord(B_dist, B_azi), NA),
          X_T = ifelse(T_azi != "-2", x_coord(T_dist, T_azi), NA), 
          Y_A = ifelse(A_azi != "-2", y_coord(A_dist, A_azi), NA), 
@@ -631,6 +632,16 @@ inter.line.circle.geometrical <- function(x.1, y.1, x.2, y.2, c.x0, c.y0, c.r0, 
 
 
 east.north.coord <- function(dist, azi, c.x, c.y, coordinate){
+  # from Niko Knapps easting northing script
+  # # Convert polar to cartesian coordinates
+  # my.mp.x <- my.mp.distanz * sin(my.mp.azimut * pi/200)
+  # my.mp.y <- my.mp.distanz * cos(my.mp.azimut * pi/200)
+  # 
+  # # Add the cartesian coordinates to the UTM coordinates of the magp
+  # my.easting <- my.magp.easting + my.mp.x
+  # my.northing <- my.magp.northing + my.mp.y
+  
+  
   switch(coordinate,
          # Convert polar to cartesian coordinates and add easting northing of central point
          lat = c.x + dist*sin(azi), 
@@ -658,29 +669,14 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
   left_join(HBI_loc %>% 
               filter(K3_HW >0), by = "plot_ID") %>% 
         # Convert polar to cartesian coordinates
-  mutate(A_east = east.north.coord((A_dist/100), A_azi, RW_MED, HW_MED, coordinate = "lat"), 
-         A_north = east.north.coord((A_dist/100), A_azi, RW_MED, HW_MED, coordinate = "lon"),
-         B_east = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lat"), 
-         B_north = east.north.coord((B_dist/100), B_azi, RW_MED, HW_MED, coordinate = "lon")) %>% 
-  mutate(AB_east_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84+30), 
-                                            (east.north.azi(B_east, B_north, A_east, A_north)), 
-                                            B_east, B_north,
-                                            coordinate = "lat"),
-         AB_east_inter_1.test = intersection_line_circle(intercept(A_east, A_north, B_east, B_north), 
-                                                         slope(A_east, A_north, B_east, B_north), 
-                                                         RW_MED, HW_MED, 1784, coordinate = "x1"),
-         AB_north_inter_1 = east.north.coord((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84+30), 
-                                            (east.north.azi(B_east, B_north, A_east, A_north)), 
-                                            B_east, B_north,
-                                            coordinate = "lon"),
-         AB_east_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2+30), 
-                                            east.north.azi( A_east, A_north, B_east, B_north), 
-                                            A_east, A_north, 
-                                            coordinate = "lat"), 
-         AB_north_inter_2 = east.north.coord(((east.north.dist(A_east, A_north, RW_MED, HW_MED)-17.84)+17.84*2+30), 
-                                            east.north.azi(A_east, A_north, B_east, B_north), 
-                                            A_east, A_north, 
-                                            coordinate = "lon")) %>% 
+  mutate(A_east = RW_MED + X_A,
+         A_north = HW_MED + Y_A,
+         B_east = RW_MED+ X_B,
+         B_north = HW_MED+Y_B) %>% 
+  mutate(AB_east_inter_1 = RW_MED + X1_inter_AB_17,
+         AB_north_inter_1 = HW_MED + Y1_inter_AB_17,
+         AB_east_inter_2 = RW_MED + X2_inter_AB_17,
+         AB_north_inter_2 = HW_MED + Y2_inter_AB_17,) %>% 
   # mutate(X_A_GPS = coord(HW_MED, RW_MED,  A_dist/100, A_azi, coordinate = "x"), 
   #        X_B_GPS = coord(HW_MED, RW_MED, B_dist/100, B_azi, coordinate = "x"), 
   #        Y_A_GPS = coord(HW_MED, RW_MED, A_dist/100, A_azi, coordinate = "y"), 
@@ -696,10 +692,10 @@ FE_loc_HBI.test <- forest_edges_HBI.man %>%
   #        Y_E_GPS = coord(AB_y2_inter_17, AB_x2_inter_17, 17.84*2, 100, coordinate = "y"), 
   #        end_coord_x = X_D_GPS, 
   #        end_coord_y = Y_D_GPS) %>% 
-   mutate(D_east = east.north.coord(17.84*2, 100, AB_east_inter_1, AB_north_inter_1, coordinate = "lat"),
-          D_north = east.north.coord(17.84*2, 100,AB_east_inter_1, AB_north_inter_1,  coordinate = "lon"),
-          E_east = east.north.coord(17.84*2, 100, AB_east_inter_2, AB_north_inter_2, coordinate = "lat"),
-          E_north = east.north.coord(17.84*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon"), 
+   mutate(D_east = east.north.coord(1784*2, 100, AB_east_inter_1, AB_north_inter_1, coordinate = "lat"),
+          D_north = east.north.coord(1784*2, 100,AB_east_inter_1, AB_north_inter_1,  coordinate = "lon"),
+          E_east = east.north.coord(1784*2, 100, AB_east_inter_2, AB_north_inter_2, coordinate = "lat"),
+          E_north = east.north.coord(1784*2, 100,AB_east_inter_2, AB_north_inter_2,  coordinate = "lon"), 
           end_east = AB_east_inter_1, 
           end_north = AB_north_inter_1) %>% 
  # mutate(b0_AB_GPS = intercept(X_A_GPS,Y_A_GPS, X_B_GPS, Y_B_GPS ), 
@@ -750,8 +746,8 @@ plot(FE_loc_HBI.test$lat, FE_loc_HBI.test$lon)
 #                    yend = FE_loc_HBI.test$y[FE_loc_HBI.test$X_name == "X_E_GPS"], 
 #                    colour = "segment"))
 ggplot() +  
-  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
+  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 3000))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = FE_loc_HBI.test %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 1784))+
   geom_point(data = FE_loc_HBI.test,
              aes(x= lat, y = lon, colour = X_name))+
   geom_segment(data =FE_loc_HBI.test, 

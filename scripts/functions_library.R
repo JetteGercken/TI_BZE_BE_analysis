@@ -139,8 +139,8 @@ coord <- function(x.c, y.c, d, azi, coordinate){
   # azi =  Azimute betweeen Point and other ppoint (centre)
   
   switch(coordinate, 
-  x = y.c + d * sin(azi),  # in real cooridnate system y ix of a normal coordiante system
-  y = x.c + d * cos(azi)  # and x is y of normal coordinate system. To make calculations easier I changed the names
+  x = x.c + d * sin(azi),  # x is the latitude or "easting"
+  y = y.c + d * cos(azi)  #  y is the longitude or "northing"
   )  
 }
   
