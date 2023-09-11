@@ -753,8 +753,14 @@ ggplot() +
 
  
 area.list <- list()
- for(i in 1:length(forest_edges_HBI.man$plot_ID[!is.na(forest_edges_HBI.man$e_form)]) ){
-  # i = 1
+forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 
+  semi_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
+            by = "plot_ID")
+forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>% 
+  anti_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
+            by = "plot_ID")
+ for(i in 1:length(forest_edges_HBI.man.sub$plot_ID[!is.na(forest_edges_HBI.man.sub$e_form)]) ){
+  # i = 2
   # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
@@ -858,7 +864,7 @@ area.list <- list()
          #plot(circle.17, add = T)
          )
   
-   inter.square.area <- terra::expanse(inter.square)
+   inter.area <- terra::expanse(inter.square)
    
    
    # closing "if" 
@@ -939,14 +945,11 @@ area.list <- list()
           plot(triangle.poly, add = T), 
           plot(remaining.cirlce.tri, add = T))
     
-    inter.triangle.area <- terra::expanse(inter.triangle)
+    inter.area <- terra::expanse(inter.triangle)
    } # closing else
+
    
-   area <- ifelse(my.e.form == 1, inter.square.area, 
-                  ifelse(my.e.form == 2, inter.triangle.area, 
-                         NA))
-   
-   area.list[[i]] <- area
+   area.list[[i]] <- inter.area
    
  } # closing loop
 # Bind the list elements together
