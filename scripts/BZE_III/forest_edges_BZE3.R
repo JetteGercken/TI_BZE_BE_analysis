@@ -753,13 +753,14 @@ ggplot() +
 
  
 area.list <- list()
- for(i in 1:length(unique(forest_edges_HBI.man$plot_ID[!is.na(forest_edges_HBI.man$e_form)])) ){
-  # i = 2
+ for(i in 1:length(forest_edges_HBI.man$plot_ID[!is.na(forest_edges_HBI.man$e_form)]) ){
+  # i = 1
   # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
    my.plot.id <- forest_edges_HBI.man[i, "plot_ID"] 
    my.e.form <- forest_edges_HBI.man[i, "e_form"]
+   my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
    
    # assign crs
    my.utm.epsg <- 25833
@@ -790,6 +791,7 @@ area.list <- list()
    
    # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
    circle.17 <- terra::buffer(center.points, 17.84)
+   print(plot(circle.17))
    
    if(my.e.form == 1){
     # select points to build square for edge type 1 
@@ -843,16 +845,25 @@ area.list <- list()
    
    square.poly <- vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
    
-   print( 
-         plot(square.poly), 
-         plot(circle.17, add = T)
-   )
+   print(plot(square.poly), 
+         plot(circle.17, add = T))
+   
+   inter.square <- terra::intersect(circle.17, square.poly)
+   # https://rdrr.io/cran/terra/man/erase.html
+   remaining.cricle.squ <- terra::erase(circle.17,inter.square)
+   
+   print(plot(remaining.cricle.squ, col="tomato1"),
+         plot(inter.square, col="palegreen2", add = T),
+         plot(square.poly, add = T)
+         #plot(circle.17, add = T)
+         )
+  
+   inter.square.area <- terra::expanse(inter.square)
    
    
-   
-   } # closing "if" 
+   # closing "if" 
    # if edge form == 2 we need to build a triangle along the forest edge, not a 
-   else{
+   }else{
      # select polar coordiantes of point T (which doesn´t exist for e.form == 1)
      # point T 
      dist.T <- forest_edges_HBI.man[i, "T_dist"] 
@@ -862,7 +873,7 @@ area.list <- list()
      
      # select coordiantes of the points of the triangle corners
      # for AT side
-     AT.triangle.x1 <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
+     AT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
                                           slope(x.T, y.T, x.A, y.A), 
                                           data_circle$x0[3], 
                                           data_circle$y0[3], 
@@ -870,7 +881,7 @@ area.list <- list()
                                           x.A, y.A, 
                                           x.T, y.T, 
                                           coordinate = "x")
-     AT.triangle.y1 <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
+     AT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
                                           slope(x.T, y.T, x.A, y.A), 
                                           data_circle$x0[3], 
                                           data_circle$y0[3], 
@@ -879,7 +890,7 @@ area.list <- list()
                                           x.T, y.T, 
                                           coordinate = "y")
      # for BT side
-     BT.triangle.x1 <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
+     BT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
                                           slope(x.T, y.T, x.B, y.B), 
                                           data_circle$x0[3], 
                                           data_circle$y0[3], 
@@ -887,7 +898,7 @@ area.list <- list()
                                           x.B, y.B, 
                                           x.T, y.T, 
                                           coordinate = "x")
-     BT.triangle.y1 <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
+     BT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
                                           slope(x.T, y.T, x.B, y.B), 
                                           data_circle$x0[3], 
                                           data_circle$y0[3], 
@@ -899,32 +910,47 @@ area.list <- list()
      #calculate UTM coordiantes of triangle corners
      T.east <- my.center.easting + x.T
      T.north <- my.center.northing + y.T
-     AT.triangle.east <- my.center.easting + AT.triangle.x1
-     AT.triangle.north <- my.center.northing + AT.triangle.y1
-     BT.triangle.east <- my.center.easting + BT.triangle.x1
-     BT.triangle.north <- my.center.northing + BT.triangle.y1
-     
+     AT.triangle.east <- my.center.easting + AT.triangle.x
+     AT.triangle.north <- my.center.northing + AT.triangle.y
+     BT.triangle.east <- my.center.easting + BT.triangle.x
+     BT.triangle.north <- my.center.northing + BT.triangle.y
      
      # create dataframe with triangle corner UTM coordiantes
      triangle.df <- as.data.frame(cbind("lat" <- c(T.east, AT.triangle.east, BT.triangle.east, T.east), 
                                         "lon" <- c(T.north, AT.triangle.north, BT.triangle.north, T.north), 
-                                        "id" = c(rep(my.plot.id, length(lat)))%>%
+                                        "id" = c(rep(my.plot.id, length(lat))) ))%>%
                                           mutate(lon = as.integer(lon),
                                                  lat = as.integer(lat)) %>%
                                           unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
                                           mutate(geometry = as.factor(geometry)) %>%
                                           select(geometry)
-                                        ))
+                                       
      
+     # create polygone with corners of triangle
+     triangle.poly <- vect(c(paste("POLYGON", "(", "(", paste(triangle.df$geometry[1], triangle.df$geometry[2], triangle.df$geometry[3], triangle.df$geometry[4], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
      
-     
+    print(plot(triangle.poly),
+          plot(circle.17, add = T)
+          ) 
+    
+    inter.triangle <- terra::intersect(circle.17, triangle.poly)
+    remaining.cirlce.tri <- terra::erase(circle.17, inter.triangle)
+    print(plot(inter.triangle), 
+          plot(triangle.poly, add = T), 
+          plot(remaining.cirlce.tri, add = T))
+    
+    inter.triangle.area <- terra::expanse(inter.triangle)
    } # closing else
    
+   area <- ifelse(my.e.form == 1, inter.square.area, 
+                  ifelse(my.e.form == 2, inter.triangle.area, 
+                         NA))
    
-   
+   area.list[[i]] <- area
    
  } # closing loop
-   
+# Bind the list elements together
+area.dt <- rbindlist(area.list)  
   
 
 
