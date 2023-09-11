@@ -248,7 +248,7 @@ l <- function(b0, b1, x){
 # do a test run whith a plot that has only one edge
 # l.df <- forest_edges_HBI %>% filter(plot_ID ==  "50005")
 # l = l.df$e_b0_AB + l.df$e_b1_AB * X
-# c.df <- data_circle %>% filter(r0 == 1784)
+# c.df <- data_circle %>% filter(r0 == 17.84)
 # c = c.df$r0^2 = (X - c.df$x0)^2 + (Y - c.df$y0)^2
 # insert: 
 # c.df$r0^2 = (X - c.df$x0)^2 + (l.df$e_b1_AB * X + l.df$e_b0_AB - c.df$y0)^2 
@@ -590,9 +590,9 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   # select the diameter of the circle depending on the trees diameter
   c.x0 = 0;
   c.y0 = 0; 
-  c.r0 = ifelse(dbh.cm >= 7 & dbh.cm < 10, 564, 
-                ifelse(dbh.cm >= 10 & dbh.cm < 30,  1262, 
-                       ifelse(dbh.cm >= 30, 1784, NA)))
+  c.r0 = ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
+                ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62, 
+                       ifelse(dbh.cm >= 30, 17.84, NA)))
   
   
   ## calcualte slope and intercept of AT and BT line to calcualte intersections
@@ -790,9 +790,9 @@ edge.A.method <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, 
   # select the diameter of the circle depending on the trees diameter
   c.x0 = 0;
   c.y0 = 0; 
-  c.r0 = ifelse(dbh.cm >= 7 & dbh.cm < 10, 564, 
-                ifelse(dbh.cm >= 10 & dbh.cm < 30,  1262, 
-                       ifelse(dbh.cm >= 30, 1784, NA)))
+  c.r0 = ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
+                ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62, 
+                       ifelse(dbh.cm >= 30, 17.84, NA)))
   
   
   ## calcualte slope and intercept of AT and BT line to calcualte intersections
