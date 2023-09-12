@@ -751,14 +751,14 @@ ggplot() +
                    yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "E_east"], 
                    colour = "segment"))
 
- 
-area.list <- list()
 forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 
   semi_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
             by = "plot_ID")
 forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>% 
   anti_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
             by = "plot_ID")
+
+area.list  <- vector("list", length = nrow(forest_edges_HBI.man.sub))
  for(i in 1:length(forest_edges_HBI.man.sub$plot_ID[!is.na(forest_edges_HBI.man.sub$e_form)]) ){
   # i = 2
   # georefferencing data: 
@@ -774,7 +774,7 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
    # select UTM corrdinates of the plot center
    my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
    my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
-   center.df <- as.data.frame(cbind(my.plot.id,my.center.northing, my.center.easting))
+   center.df <- as.data.frame(cbind(my.plot.id, my.center.northing, my.center.easting))
    
    # extract polar coordiantes of forest edge
    # point A 
@@ -797,7 +797,8 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
    
    # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
    circle.17 <- terra::buffer(center.points, 17.84)
-   print(plot(circle.17))
+   print(#plot(center.points), 
+         plot(circle.17))
    
    if(my.e.form == 1){
     # select points to build square for edge type 1 
@@ -854,9 +855,9 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
    print(plot(square.poly), 
          plot(circle.17, add = T))
    
-   inter.square <- terra::intersect(circle.17, square.poly)
+   inter.square <- terra::intersect(circle.17[i], square.poly[i])
    # https://rdrr.io/cran/terra/man/erase.html
-   remaining.cricle.squ <- terra::erase(circle.17,inter.square)
+   remaining.cricle.squ <- terra::erase(circle.17[i],inter.square[i])
    
    print(plot(remaining.cricle.squ, col="tomato1"),
          plot(inter.square, col="palegreen2", add = T),
@@ -864,8 +865,9 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
          #plot(circle.17, add = T)
          )
   
-   inter.area <- terra::expanse(inter.square)
-   
+   # save area of the intresection into dataframe 
+   inter.area <- terra::expanse(inter.square[i])
+   inter.area <- data.table(inter.area[i])
    
    # closing "if" 
    # if edge form == 2 we need to build a triangle along the forest edge, not a 
@@ -922,9 +924,10 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
      BT.triangle.north <- my.center.northing + BT.triangle.y
      
      # create dataframe with triangle corner UTM coordiantes
-     triangle.df <- as.data.frame(cbind("lat" <- c(T.east, AT.triangle.east, BT.triangle.east, T.east), 
-                                        "lon" <- c(T.north, AT.triangle.north, BT.triangle.north, T.north), 
-                                        "id" = c(rep(my.plot.id, length(lat))) ))%>%
+     triangle.df <- as.data.frame(cbind("lat" = c(T.east, AT.triangle.east, BT.triangle.east, T.east), 
+                                        "lon" = c(T.north, AT.triangle.north, BT.triangle.north, T.north), 
+                                        "id" = c(rep(my.plot.id, length("lon"))) 
+                                        ))%>%
                                           mutate(lon = as.integer(lon),
                                                  lat = as.integer(lat)) %>%
                                           unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
@@ -939,19 +942,23 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
           plot(circle.17, add = T)
           ) 
     
-    inter.triangle <- terra::intersect(circle.17, triangle.poly)
-    remaining.cirlce.tri <- terra::erase(circle.17, inter.triangle)
-    print(plot(inter.triangle), 
+    inter.triangle <- terra::intersect(circle.17[i], triangle.poly[i])
+    remaining.cirlce.tri <- terra::erase(circle.17[i], inter.triangle[i])
+    print(plot(circle.17), 
+          plot(inter.triangle, add = T), 
           plot(triangle.poly, add = T), 
-          plot(remaining.cirlce.tri, add = T))
+          plot(remaining.cirlce.tri, col="tomato1", add = T))
     
-    inter.area <- terra::expanse(inter.triangle)
+    inter.area <-  terra::expanse(inter.triangle[i])
+    inter.area <- data.table(inter.area[i])
+    
    } # closing else
 
    
-   area.list[[i]] <- inter.area
+   area.list[[i]] <- inter.area[i]
    
  } # closing loop
+
 # Bind the list elements together
 area.dt <- rbindlist(area.list)  
   
