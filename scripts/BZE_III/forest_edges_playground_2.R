@@ -1,13 +1,14 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
 # Analysis of the forest inventory accompanying the peat land soil inventory
-# forest edges  
+# forest edges playground 2
+# this script is meant to play around and to accumulate trials and errors
 
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
 
 
-source("C:/Users/gercken/Documents/TI_BZE_BE_analysis/scripts/functions_library.R")
+source("C:/Users/gercken/Documents/TI_BZE_BE_analysis/scripts/functions_library_playground.R")
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -643,16 +644,16 @@ FE_loc_HBI <- forest_edges_HBI.man %>%
          AB_north_inter_2 = HW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], coordinate = "y2")) %>%  #Y2_inter_AB_17,) %>% 
   # calculate point in right angle and 60m distance to each intersection with the 30m circle to create a square 
   mutate(D_east = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 100, coordinate = "x"),
-          D_north = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 100, coordinate = "y"),
-          E_east = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 100, coordinate = "x"),
+         D_north = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 100, coordinate = "y"),
+         E_east = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 100, coordinate = "x"),
          # introduce end point for polygone -> has to be closed
-          E_north = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 100, coordinate = "y"),
-          end_east = AB_east_inter_1, 
-          end_north = AB_north_inter_1, 
-          east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "x"),
-          north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "y"),
-          east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "x"),
-          north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "y"), 
+         E_north = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 100, coordinate = "y"),
+         end_east = AB_east_inter_1, 
+         end_north = AB_north_inter_1, 
+         east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "x"),
+         north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "y"),
+         east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "x"),
+         north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "y"), 
          end_triangle_east = T_east, 
          end_triangle_north = T_north)
 
@@ -666,9 +667,9 @@ FE_loc_HBI.e1 <- FE_loc_HBI %>%
          A_dist, A_azi, B_dist, B_azi,
          RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2, end_east, 
          HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2, end_north) %>%  
-    to_long(keys = c("X_name",  "Y_name"),
-            values = c( "lat", "lon"),  
-            names(.)[6:13], names(.)[14:21]) %>% 
+  to_long(keys = c("X_name",  "Y_name"),
+          values = c( "lat", "lon"),  
+          names(.)[6:13], names(.)[14:21]) %>% 
   # create an order for the points, so that the polygone forms a square
   mutate(order = case_when(X_name == "AB_east_inter_1" ~ 1,
                            X_name == "D_east" ~ 2, 
@@ -713,9 +714,9 @@ dat.poly <- FE_loc_HBI.e1 %>%
 square.poly <- vect(c(paste("POLYGON", "(", "(", paste(dat.poly$geometry[1], dat.poly$geometry[2], dat.poly$geometry[3], dat.poly$geometry[4], dat.poly$geometry[5],sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
 
 # plot circle, polygone and points
-print(plot(circle.17),
+print(plot(square.points),
       plot(square.poly, add = T),
-      plot(square.points, add=T))
+      plot(circle.17, add=T))
 
 # compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
 inter <- terra::intersect(circle.17, square.poly)
@@ -723,16 +724,16 @@ plot(inter)
 
 # get area of intersection
 # https://stackoverflow.com/questions/73614988/get-intersection-area-between-two-polygons-when-using-terraintersect
-   inter$area <- terra::expanse(inter)
-   inter$area_c <- terra::expanse(circle.17)
-   inter$area_rest <- inter$area_c -inter$area
-   inter$area_e <- ifelse(inter$area < inter$area_rest, inter$area_e, inter$area_rest)
-   inter$area_c <- ifelse(inter$area > inter$area_rest, inter$area, inter$area_rest)
+inter$area <- terra::expanse(inter)
+inter$area_c <- terra::expanse(circle.17)
+inter$area_rest <- inter$area_c -inter$area
+inter$area_e <- ifelse(inter$area < inter$area_rest, inter$area_e, inter$area_rest)
+inter$area_c <- ifelse(inter$area > inter$area_rest, inter$area, inter$area_rest)
 
 # compare with area caclulcated by the function --> does not comply
-   trees_and_edges %>% 
-     filter(plot_ID == 50005 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
-   
+trees_and_edges %>% 
+  filter(plot_ID == 50005 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
+
 # plot circle and square
 ggplot() +  
   geom_circle(data = FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
@@ -769,7 +770,7 @@ ggplot() +
 # georefferncing edges for edge form 2 using plot 50042 as an example
 FE_loc_HBI.e2 <- FE_loc_HBI %>% 
   filter(e_form == 2) %>%
-  filter(plot_ID == 50004) %>% 
+  filter(plot_ID == 50042) %>% 
   select(plot_ID,  
          RW_MED, A_east, B_east, T_east, east_AT_inter_triangle_60, east_BT_inter_triangle_60, end_triangle_east, 
          HW_MED, A_north, B_north, T_north, north_AT_inter_triangle_60, north_BT_inter_triangle_60, end_triangle_north) %>%  
@@ -792,7 +793,7 @@ center.points <- terra::vect(FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_nam
                              keepgeom=FALSE)
 
 # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-circle.17 <- terra::buffer(center.points, 17.84*2, capstyle = "round", joinstyle="round")
+circle.17 <- terra::buffer(center.points, 17.84)
 
 # create spatvectior with popoints of the square: 
 triangle.points <- terra::vect(FE_loc_HBI.e2 %>% 
@@ -828,22 +829,10 @@ print(plot(triangle.points),
 inter.e2 <- terra::intersect(circle.17, triangle.poly)
 plot(inter.e2)
 inter.e2$area <- terra::expanse(inter.e2)
-inter.e2$area
-
-
-terra::expanse(circle.17, unit="m", transform=TRUE)
-
-point_sf <- st_as_sfc("POINT (5615244 2516952)", crs= 25833)
-buffer_sf <- st_buffer(point_sf, dist = 17.84)
-sf::st_area(buffer_sf)
 
 # comparing it with the edge area caclucated by the function under plot_A in the "trees_and_edges" dataset
 trees_and_edges %>% 
   filter(plot_ID == 50042 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
-
-
-trees_and_edges %>% 
-  filter(plot_ID == 50004 & trees_and_edges$DBH_cm >30 & trees_and_edges$edge_A_method == "c.A -edge.area")
 
 
 # plot circle and trianle
@@ -874,167 +863,10 @@ ggplot() +
 
 
 # 3.2. georefferencing per loop -------------------------------------------
-# creating dataframe with caartesian coordinates of all edges
-# by using polar coordinates to calculate the cartesian coordinates 
-# by adding polar coordiantes calcualted through functions to the 
-# cartesian coordinates (RW_MED = lat and HW_MED = lon) of the center point of the plot
-
-# dataset with cart coordinates for all edges
-
-
-forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 
-  #semi_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
-   #        by = "plot_ID")%>% 
-  filter(e_form %in% c(1, 2))
-
-circle.df = data.frame()
- circle.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
-for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
-  # i = 1
-  # georefferencing data: 
-  
-  # select plot ID accordint to positioin in the list
-  my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"] 
-  my.e.form <- forest_edges_HBI.man.sub[i, "e_form"]
-  #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
-  
-  # assign crs
-  my.utm.epsg <- 25833
-  
-  # select UTM corrdinates of the plot center
-  my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
-  center.df <- as.data.frame(cbind("id" = my.plot.id, 
-                                   "lon" = my.center.northing, 
-                                   "lat" = my.center.easting))
-  
-  
-  center.point <- sf::st_as_sf(center.df, coords = c("lon","lat"), crs = my.utm.epsg)
-  circle.17 <- sf::st_buffer(center.point, 17.84)
- 
-  # creating polygones in r terra package
-  # create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
-  # center.points <- terra::vect(center.df, 
-  #                              geom=c("my.center.northing", "my.center.easting"), 
-  #                              crs="epsg:25833",
-  #                              keepgeom=FALSE)
-  # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-  # circle.17 <- terra::buffer(center.points, 17.84)
-  # print circle and center 
-  # print(plot(center.points),
-  #       plot(circle.17, add = T))
-  
-
-  
-  circle.list[[i]] <- circle.17
-}
-# circle.list
- circle.list.final <- rbindlist(circle.list)
- 
-  
-# https://stackoverflow.com/questions/26504736/create-a-list-of-spatial-polygon-dataframe-from-a-list-of-dataframe
-
- forest_edges_HBI.man.sub.e1 <- forest_edges_HBI.man%>% filter(e_form == 1)
- square.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.e1$plot_ID)) )
- for(i in 1:length(unique(forest_edges_HBI.man.sub.e1$plot_ID)) ) {
-   # i = 1
-   # georefferencing data: 
-   
-   # select plot ID accordint to positioin in the list
-   my.plot.id <- forest_edges_HBI.man.sub.e1[i, "plot_ID"] 
-   my.e.form <- forest_edges_HBI.man.sub.e1[i, "e_form"]
-   #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
-   
-   # assign crs
-   my.utm.epsg <- 25833
-   
-   # select UTM corrdinates of the plot center
-   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
- 
-  # extract polar coordiantes of forest edge
-  # point A 
-  dist.A <- forest_edges_HBI.man.sub.e1[forest_edges_HBI.man.sub.e1$plot_ID == my.plot.id, "A_dist"] 
-  azi.A <- forest_edges_HBI.man.sub.e1[forest_edges_HBI.man.sub.e1$plot_ID == my.plot.id, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)
-  y.A <- dist.A*cos(azi.A)
-  
-  # point B
-  dist.B <- forest_edges_HBI.man.sub.e1[forest_edges_HBI.man.sub.e1$plot_ID == my.plot.id, "B_dist"] 
-  azi.B <- forest_edges_HBI.man.sub.e1[forest_edges_HBI.man.sub.e1$plot_ID == my.plot.id, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)
-  y.B <- dist.B*cos(azi.B)
-
-  # calculate polar coordiantes of intersections of AB line with 
-  AB.inter.x1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "x1")
-  AB.inter.y1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "y1")
-  
-  AB.inter.x2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "x2")
-  AB.inter.y2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "y2")
-  
-  #  polar coordinates of the corner points of square along the intersecting line AB 
-  # by going 60m distance in a right angle from the respective intersection coordiante
-  x.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "x")
-  y.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "y")
-  x.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "x")
-  y.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "y")
-  
-  # UTM coordiantes of corner points 
-  AB.inter.1.east <- my.center.easting + AB.inter.x1 
-  AB.inter.1.north <- my.center.northing + AB.inter.y1
-  AB.inter.2.east <- my.center.easting + AB.inter.x2 
-  AB.inter.2.north <- my.center.northing + AB.inter.y2
-  D.east <- my.center.easting + x.D
-  D.north <- my.center.northing + y.D
-  E.east <- my.center.easting + x.E
-  E.north <- my.center.northing + y.E
-  
-  
-  # create dataframe that holds coordinates of 
-  square.df <- as.data.frame(cbind("lat" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
-                                   "lon" = c(AB.inter.1.north, D.north, E.north, AB.inter.2.north, AB.inter.1.north),
-                                   "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id, my.plot.id)
-  ))%>% 
-    mutate(lat = as.integer(lat), 
-           lon = as.integer(lon)) %>% 
-    unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-    mutate(geometry = as.factor(geometry)) %>% 
-    select(geometry)
-  
-  square.poly <- vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
-  
-  print(plot(square.poly), 
-        plot(circle.17, add = T))
-  
-  inter.square <- terra::intersect(circle.17, square.poly)
-  # https://rdrr.io/cran/terra/man/erase.html
-  remaining.cricle.squ <- terra::erase(circle.17,inter.square)
-  
-  print(plot(remaining.cricle.squ, col="tomato1"),
-        plot(inter.square, col="palegreen2", add = T),
-        plot(square.poly, add = T)
-        #plot(circle.17, add = T)
-  ) 
-
-
-}
-
 # create dataset that only contains plots with just one edge
 forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 
   semi_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
-            by = "plot_ID") %>% 
-  filter(plot_ID %in% c(50005, 50052))
+            by = "plot_ID")
 # create set with plots who have two edges
 forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>% 
   anti_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
@@ -1042,209 +874,209 @@ forest_edges_HBI.man.2eforms <- forest_edges_HBI.man %>%
 
 # create empty list to store results in
 area.list  <- vector("list", length = nrow(forest_edges_HBI.man.sub))
- for(i in 1:length(forest_edges_HBI.man.sub$plot_ID)) {
+for(i in 1:length(forest_edges_HBI.man.sub) ){
   # i = 2
   # georefferencing data: 
-   
-   # select plot ID accordint to positioin in the list
-   my.plot.id <- forest_edges_HBI.man[i, "plot_ID"] 
-   my.e.form <- forest_edges_HBI.man[i, "e_form"]
-   my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
-   
-   # assign crs
-   my.utm.epsg <- 25833
-   
-   # select UTM corrdinates of the plot center
-   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
-   center.df <- as.data.frame(cbind(my.plot.id, my.center.northing, my.center.easting))
-   
-   # extract polar coordiantes of forest edge
-   # point A 
-   dist.A <- forest_edges_HBI.man[i, "A_dist"] 
-   azi.A <- forest_edges_HBI.man[i, "A_azi"] 
-   x.A <- dist.A*sin(azi.A)
-   y.A <- dist.A*cos(azi.A)
-
-   # point B
-   dist.B <- forest_edges_HBI.man[i, "B_dist"] 
-   azi.B <- forest_edges_HBI.man[i, "B_azi"] 
-   x.B <- dist.B*sin(azi.B)
-   y.B <- dist.B*cos(azi.B)
-
-   # create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
-   center.points <- terra::vect(center.df, 
-                                geom=c("my.center.northing", "my.center.easting"), 
-                                crs="epsg:25833",
-                                keepgeom=FALSE)
-   
-   # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-   circle.17 <- terra::buffer(center.points, 17.84)
-   print(#plot(center.points), 
-         plot(circle.17))
-   
-   if(my.e.form == 1){
+  
+  # select plot ID accordint to positioin in the list
+  my.plot.id <- forest_edges_HBI.man[i, "plot_ID"] 
+  my.e.form <- forest_edges_HBI.man[i, "e_form"]
+  my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
+  
+  # assign crs
+  my.utm.epsg <- 25833
+  
+  # select UTM corrdinates of the plot center
+  my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  center.df <- as.data.frame(cbind(my.plot.id, my.center.northing, my.center.easting))
+  
+  # extract polar coordiantes of forest edge
+  # point A 
+  dist.A <- forest_edges_HBI.man[i, "A_dist"] 
+  azi.A <- forest_edges_HBI.man[i, "A_azi"] 
+  x.A <- dist.A*sin(azi.A)
+  y.A <- dist.A*cos(azi.A)
+  
+  # point B
+  dist.B <- forest_edges_HBI.man[i, "B_dist"] 
+  azi.B <- forest_edges_HBI.man[i, "B_azi"] 
+  x.B <- dist.B*sin(azi.B)
+  y.B <- dist.B*cos(azi.B)
+  
+  # create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
+  center.points <- terra::vect(center.df, 
+                               geom=c("my.center.northing", "my.center.easting"), 
+                               crs="epsg:25833",
+                               keepgeom=FALSE)
+  
+  # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
+  circle.17 <- terra::buffer(center.points, 17.84)
+  print(#plot(center.points), 
+    plot(circle.17))
+  
+  if(my.e.form == 1){
     # select points to build square for edge type 1 
-   # calcualte polar corrdiantes intersection 
-   # inter AB 1
-   AB.inter.x1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), slope(x.A, y.A, x.B, y.B), 
-                                           data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                           coordinate = "x1")
-   AB.inter.y1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                           slope(x.A, y.A, x.B, y.B), 
-                                           data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                           coordinate = "y1")
-  
-   AB.inter.x2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                           slope(x.A, y.A, x.B, y.B), 
-                                           data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                           coordinate = "x2")
-   AB.inter.y2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                           slope(x.A, y.A, x.B, y.B), 
-                                           data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                           coordinate = "y2")
-   
-   #  polar coordinates of the corner points of square along the intersecting line AB 
-     # by going 60m distance in a right angle from the respective intersection coordiante
-   x.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "x")
-   y.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "y")
-   x.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "x")
-   y.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "y")
-   
-   # UTM coordiantes of corner points 
-   AB.inter.1.east <- my.center.easting + AB.inter.x1 
-   AB.inter.1.north <- my.center.northing + AB.inter.y1
-   AB.inter.2.east <- my.center.easting + AB.inter.x2 
-   AB.inter.2.north <- my.center.northing + AB.inter.y2
-   D.east <- my.center.easting + x.D
-   D.north <- my.center.northing + y.D
-   E.east <- my.center.easting + x.E
-   E.north <- my.center.northing + y.E
-   
-   
-   # create dataframe that holds coordinates of 
-   square.df <- as.data.frame(cbind("lat" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
-                                    "lon" = c(AB.inter.1.north, D.north, E.north, AB.inter.2.north, AB.inter.1.north),
-                                    "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id, my.plot.id)
-                                    ))%>% 
-     mutate(lat = as.integer(lat), 
-            lon = as.integer(lon)) %>% 
-     unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-     mutate(geometry = as.factor(geometry)) %>% 
-     select(geometry)
-   
-   square.poly <- vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
-   
-   print(plot(square.poly), 
-         plot(circle.17, add = T))
-   
-   inter.square <- terra::intersect(circle.17, square.poly)
-   # https://rdrr.io/cran/terra/man/erase.html
-   remaining.cricle.squ <- terra::erase(circle.17,inter.square)
-   
-   print(plot(remaining.cricle.squ, col="tomato1"),
-         plot(inter.square, col="palegreen2", add = T),
-         plot(square.poly, add = T)
-         #plot(circle.17, add = T)
-         )
-  
-   # save area of the intresection into dataframe 
-   inter.area <- terra::expanse(inter.square)
-   inter.area <- data.table(inter.area)
-   
-   # closing "if" 
-   # if edge form == 2 we need to build a triangle along the forest edge, not a 
-   }else{
-     # select polar coordiantes of point T (which doesn´t exist for e.form == 1)
-     # point T 
-     dist.T <- forest_edges_HBI.man[i, "T_dist"] 
-     azi.T <- forest_edges_HBI.man[i, "T_azi"] 
-     x.T <- dist.T*sin(azi.T)
-     y.T <- dist.T*cos(azi.T)
-     
-     # select coordiantes of the points of the triangle corners
-     # for AT side
-     AT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
-                                          slope(x.T, y.T, x.A, y.A), 
-                                          data_circle$x0[3], 
-                                          data_circle$y0[3], 
-                                          data_circle$rmax[3]*2, 
-                                          x.A, y.A, 
-                                          x.T, y.T, 
-                                          coordinate = "x")
-     AT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
-                                          slope(x.T, y.T, x.A, y.A), 
-                                          data_circle$x0[3], 
-                                          data_circle$y0[3], 
-                                          data_circle$rmax[3]*2, 
-                                          x.A, y.A, 
-                                          x.T, y.T, 
-                                          coordinate = "y")
-     # for BT side
-     BT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
-                                          slope(x.T, y.T, x.B, y.B), 
-                                          data_circle$x0[3], 
-                                          data_circle$y0[3], 
-                                          data_circle$rmax[3]*2, 
-                                          x.B, y.B, 
-                                          x.T, y.T, 
-                                          coordinate = "x")
-     BT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
-                                          slope(x.T, y.T, x.B, y.B), 
-                                          data_circle$x0[3], 
-                                          data_circle$y0[3], 
-                                          data_circle$rmax[3]*2, 
-                                          x.B, y.B, 
-                                          x.T, y.T, 
-                                          coordinate = "y")
-     
-     #calculate UTM coordiantes of triangle corners
-     T.east <- my.center.easting + x.T
-     T.north <- my.center.northing + y.T
-     AT.triangle.east <- my.center.easting + AT.triangle.x
-     AT.triangle.north <- my.center.northing + AT.triangle.y
-     BT.triangle.east <- my.center.easting + BT.triangle.x
-     BT.triangle.north <- my.center.northing + BT.triangle.y
-     
-     # create dataframe with triangle corner UTM coordiantes
-     triangle.df <- as.data.frame(cbind("lat" = c(T.east, AT.triangle.east, BT.triangle.east, T.east), 
-                                        "lon" = c(T.north, AT.triangle.north, BT.triangle.north, T.north), 
-                                        "id" = c(rep(my.plot.id, length("lon"))) 
-                                        ))%>%
-                                          mutate(lon = as.integer(lon),
-                                                 lat = as.integer(lat)) %>%
-                                          unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-                                          mutate(geometry = as.factor(geometry)) %>%
-                                          select(geometry)
-                                       
-     
-     # create polygone with corners of triangle
-     triangle.poly <- vect(c(paste("POLYGON", "(", "(", paste(triangle.df$geometry[1], triangle.df$geometry[2], triangle.df$geometry[3], triangle.df$geometry[4], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
-     
+    # calcualte polar corrdiantes intersection 
+    # inter AB 1
+    AB.inter.x1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), slope(x.A, y.A, x.B, y.B), 
+                                            data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
+                                            coordinate = "x1")
+    AB.inter.y1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
+                                            slope(x.A, y.A, x.B, y.B), 
+                                            data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
+                                            coordinate = "y1")
+    
+    AB.inter.x2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
+                                            slope(x.A, y.A, x.B, y.B), 
+                                            data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
+                                            coordinate = "x2")
+    AB.inter.y2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
+                                            slope(x.A, y.A, x.B, y.B), 
+                                            data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
+                                            coordinate = "y2")
+    
+    #  polar coordinates of the corner points of square along the intersecting line AB 
+    # by going 60m distance in a right angle from the respective intersection coordiante
+    x.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "x")
+    y.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, 100, coordinate = "y")
+    x.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "x")
+    y.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, 100, coordinate = "y")
+    
+    # UTM coordiantes of corner points 
+    AB.inter.1.east <- my.center.easting + AB.inter.x1 
+    AB.inter.1.north <- my.center.northing + AB.inter.y1
+    AB.inter.2.east <- my.center.easting + AB.inter.x2 
+    AB.inter.2.north <- my.center.northing + AB.inter.y2
+    D.east <- my.center.easting + x.D
+    D.north <- my.center.northing + y.D
+    E.east <- my.center.easting + x.E
+    E.north <- my.center.northing + y.E
+    
+    
+    # create dataframe that holds coordinates of 
+    square.df <- as.data.frame(cbind("lat" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
+                                     "lon" = c(AB.inter.1.north, D.north, E.north, AB.inter.2.north, AB.inter.1.north),
+                                     "id" = c(rep(my.plot.id, length(lat)))
+    ))%>% 
+      mutate(lat = as.integer(lat), 
+             lon = as.integer(lon)) %>% 
+      unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+      mutate(geometry = as.factor(geometry)) %>% 
+      select(geometry)
+    
+    square.poly <- vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
+    
+    print(plot(square.poly), 
+          plot(circle.17, add = T))
+    
+    inter.square <- terra::intersect(circle.17[i], square.poly[i])
+    # https://rdrr.io/cran/terra/man/erase.html
+    remaining.cricle.squ <- terra::erase(circle.17[i],inter.square[i])
+    
+    print(plot(remaining.cricle.squ, col="tomato1"),
+          plot(inter.square, col="palegreen2", add = T),
+          plot(square.poly, add = T)
+          #plot(circle.17, add = T)
+    )
+    
+    # save area of the intresection into dataframe 
+    inter.area <- terra::expanse(inter.square[i])
+    inter.area <- data.table(inter.area[i])
+    
+    # closing "if" 
+    # if edge form == 2 we need to build a triangle along the forest edge, not a 
+  }else{
+    # select polar coordiantes of point T (which doesn´t exist for e.form == 1)
+    # point T 
+    dist.T <- forest_edges_HBI.man[i, "T_dist"] 
+    azi.T <- forest_edges_HBI.man[i, "T_azi"] 
+    x.T <- dist.T*sin(azi.T)
+    y.T <- dist.T*cos(azi.T)
+    
+    # select coordiantes of the points of the triangle corners
+    # for AT side
+    AT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
+                                        slope(x.T, y.T, x.A, y.A), 
+                                        data_circle$x0[3], 
+                                        data_circle$y0[3], 
+                                        data_circle$rmax[3]*2, 
+                                        x.A, y.A, 
+                                        x.T, y.T, 
+                                        coordinate = "x")
+    AT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), 
+                                        slope(x.T, y.T, x.A, y.A), 
+                                        data_circle$x0[3], 
+                                        data_circle$y0[3], 
+                                        data_circle$rmax[3]*2, 
+                                        x.A, y.A, 
+                                        x.T, y.T, 
+                                        coordinate = "y")
+    # for BT side
+    BT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
+                                        slope(x.T, y.T, x.B, y.B), 
+                                        data_circle$x0[3], 
+                                        data_circle$y0[3], 
+                                        data_circle$rmax[3]*2, 
+                                        x.B, y.B, 
+                                        x.T, y.T, 
+                                        coordinate = "x")
+    BT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), 
+                                        slope(x.T, y.T, x.B, y.B), 
+                                        data_circle$x0[3], 
+                                        data_circle$y0[3], 
+                                        data_circle$rmax[3]*2, 
+                                        x.B, y.B, 
+                                        x.T, y.T, 
+                                        coordinate = "y")
+    
+    #calculate UTM coordiantes of triangle corners
+    T.east <- my.center.easting + x.T
+    T.north <- my.center.northing + y.T
+    AT.triangle.east <- my.center.easting + AT.triangle.x
+    AT.triangle.north <- my.center.northing + AT.triangle.y
+    BT.triangle.east <- my.center.easting + BT.triangle.x
+    BT.triangle.north <- my.center.northing + BT.triangle.y
+    
+    # create dataframe with triangle corner UTM coordiantes
+    triangle.df <- as.data.frame(cbind("lat" = c(T.east, AT.triangle.east, BT.triangle.east, T.east), 
+                                       "lon" = c(T.north, AT.triangle.north, BT.triangle.north, T.north), 
+                                       "id" = c(rep(my.plot.id, length("lon"))) 
+    ))%>%
+      mutate(lon = as.integer(lon),
+             lat = as.integer(lat)) %>%
+      unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+      mutate(geometry = as.factor(geometry)) %>%
+      select(geometry)
+    
+    
+    # create polygone with corners of triangle
+    triangle.poly <- vect(c(paste("POLYGON", "(", "(", paste(triangle.df$geometry[1], triangle.df$geometry[2], triangle.df$geometry[3], triangle.df$geometry[4], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
+    
     print(plot(triangle.poly),
           plot(circle.17, add = T)
-          ) 
+    ) 
     
-    inter.triangle <- terra::intersect(circle.17, triangle.poly)
-    remaining.cirlce.tri <- terra::erase(circle.17, inter.triangle)
+    inter.triangle <- terra::intersect(circle.17[i], triangle.poly[i])
+    remaining.cirlce.tri <- terra::erase(circle.17[i], inter.triangle[i])
     print(plot(circle.17), 
           plot(inter.triangle, add = T), 
           plot(triangle.poly, add = T), 
           plot(remaining.cirlce.tri, col="tomato1", add = T))
     
-    inter.area <-  terra::expanse(inter.triangle)
-    inter.area <- data.table(inter.area)
+    inter.area <-  terra::expanse(inter.triangle[i])
+    inter.area <- data.table(inter.area[i])
     
-   } # closing else
-
-   
-   area.list[[i]] <- inter.area
-   
- } # closing loop
+  } # closing else
+  
+  
+  area.list[[i]] <- inter.area
+  
+} # closing loop
 
 # Bind the list elements together
 area.dt <- rbindlist(area.list)  
-  
+
 
 
 
