@@ -4,33 +4,31 @@
 # this script is meant to play around and to accumulate trials and errors
 
 # ----- 0. SETUP ---------------------------------------------------------------
-
 # ----- 0.1. packages and functions --------------------------------------------
 
-
-source("C:/Users/gercken/Documents/TI_BZE_BE_analysis/scripts/functions_library_playground.R")
-
+source(paste0(getwd(), "/playground/functions_library_playground.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+#out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
-HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+HBI_trees <- read.delim(file = here("playground/data/input/beab.csv"), sep = ",", dec = ",")
 # BZE3 locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the third national soil inventory
-HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
+HBI_loc <- read.delim(file = here("playground/data/input/location_HBI.csv"), sep = ";", dec = ",")
 
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # BZE3_trees <- read.delim(file = here("data/input/BZE3/BZE3_trees_total.csv"), sep = ";", dec = ",")
 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+SP_names_com_ID_tapeS <- read.delim(file = here("playground/data/input/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 
-forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+forest_edges_HBI <- read.delim(file = here("playground/data/input/be_waldraender.csv"), sep = ";", dec = ",")
 # forest_edges_BZE3 <-    
 
 # creating dataset with information about the concentric sampling circles
