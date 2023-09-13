@@ -7,7 +7,7 @@
 # ----- 0.1. packages and functions --------------------------------------------
 
 
-source("C:/Users/gercken/Documents/TI_BZE_BE_analysis/scripts/functions_library.R")
+source(paste0(getwd(), "/scripts/functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -792,7 +792,7 @@ center.points <- terra::vect(FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_nam
                              keepgeom=FALSE)
 
 # 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-circle.17 <- terra::buffer(center.points, 17.84*2, capstyle = "round", joinstyle="round")
+circle.17 <- terra::buffer(center.points, 17.84, capstyle = "round", joinstyle="round")
 
 # create spatvectior with popoints of the square: 
 triangle.points <- terra::vect(FE_loc_HBI.e2 %>% 
@@ -879,14 +879,14 @@ ggplot() +
 # by adding polar coordiantes calcualted through functions to the 
 # cartesian coordinates (RW_MED = lat and HW_MED = lon) of the center point of the plot
 
-# dataset with cart coordinates for all edges
+# https://stackoverflow.com/questions/26504736/create-a-list-of-spatial-polygon-dataframe-from-a-list-of-dataframe
 
-
+# 3.2.1. georefferencing trough separate loops  -------------------------------------------
+# dataset with only edge forms 1 and 2 
 forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 
-  #semi_join(., forest_edges_HBI.man %>% group_by(plot_ID) %>% summarize(n = n()) %>% filter(n <2) %>% select(plot_ID), 
-   #        by = "plot_ID")%>% 
   filter(e_form %in% c(1, 2))
 
+## loop to create list with polygones for circles per plot center 
 circle.df = data.frame()
  circle.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
 for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
@@ -908,8 +908,9 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
                                    "lon" = my.center.northing, 
                                    "lat" = my.center.easting))
   
-  
-  center.point <- sf::st_as_sf(center.df, coords = c("lon","lat"), crs = my.utm.epsg)
+  # create sf point with center coordiantes
+  center.point <- sf::st_as_sf(center.df, coords = c("lat", "lon"), crs = my.utm.epsg)
+  # build polygon (circlular buffer) around center point
   circle.17 <- sf::st_buffer(center.point, 17.84)
  
   # creating polygones in r terra package
@@ -924,16 +925,17 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   # print(plot(center.points),
   #       plot(circle.17, add = T))
   
-
-  
+  # saving circle polygones in a list
   circle.list[[i]] <- circle.17
+  
 }
 # circle.list
  circle.list.final <- rbindlist(circle.list)
+ circle.df <- as.data.frame(circle.list.final)
  
   
-# https://stackoverflow.com/questions/26504736/create-a-list-of-spatial-polygon-dataframe-from-a-list-of-dataframe
 
+## loop to create list of polygones for edge form 1
  forest_edges_HBI.man.sub.e1 <- forest_edges_HBI.man%>% filter(e_form == 1)
  square.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.e1$plot_ID)) )
  for(i in 1:length(unique(forest_edges_HBI.man.sub.e1$plot_ID)) ) {
@@ -1005,30 +1007,54 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   square.df <- as.data.frame(cbind("lat" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
                                    "lon" = c(AB.inter.1.north, D.north, E.north, AB.inter.2.north, AB.inter.1.north),
                                    "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id, my.plot.id)
-  ))%>% 
+                                   ))%>% 
     mutate(lat = as.integer(lat), 
            lon = as.integer(lon)) %>% 
     unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-    mutate(geometry = as.factor(geometry)) %>% 
-    select(geometry)
+    mutate(geometry = as.factor(geometry))# %>% 
+    #select(geometry)
   
-  square.poly <- vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
+ ##creating squares in terrra: 
+  #square.poly <- terra::vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
   
-  print(plot(square.poly), 
-        plot(circle.17, add = T))
+ # creating squeares in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
+  square.poly <- sfheaders::sf_polygon(obj = square.df
+                                       , x = "lat"
+                                       , y = "lon"
+                                       , polygon_id = "id")
+  # assing crs
+  sf::st_crs(square.poly) <- my.utm.epsg
   
-  inter.square <- terra::intersect(circle.17, square.poly)
-  # https://rdrr.io/cran/terra/man/erase.html
-  remaining.cricle.squ <- terra::erase(circle.17,inter.square)
+  print(plot(square.poly))
   
-  print(plot(remaining.cricle.squ, col="tomato1"),
-        plot(inter.square, col="palegreen2", add = T),
-        plot(square.poly, add = T)
-        #plot(circle.17, add = T)
-  ) 
+  # intersection testrun: 
+# # option 1: find row number in final dataframe and look for row number in list ´, then turn list into dataframe and then into sf 
+#   # advatange keeps id of circle too, disadvatage: circle id doubles after intersecting
+#   # select list entry that correpons with my plot ID
+#    # https://stackoverflow.com/questions/20782218/how-to-find-row-number-of-a-value-in-r-code
+#   my.circle.list.id <- which(grepl(my.plot.id, circle.df$id))
+#   my.circle <- sf::st_as_sf (as.data.frame(circle.list[my.circle.list.id]))
+#   st_intersection(my.circle, square.poly)
+#   plot()
+#  
+# # option 2: select polygoen of circle from final circle df directly 
+#   # select the circle polygone corresponding with the plot ID
+#   my.circle <- sf::st_as_sf(circle.df$geometry[circle.df$id == my.plot.id])
+#   # calculate intersection
+#   st_intersection(my.circle, square.poly)
+#   plot(st_intersection(my.circle, square.poly))
+#   
+    
+  square.list[[i]] <- square.poly
+
+ } # closing loop for square polys of edge form 1
+ 
+ square.list.final <- rbindlist(square.list)
+ square.df <- as.data.frame(square.list.final)
 
 
-}
+# 3.2.2. georeffernecing everything in 1 loop -----------------------------
+
 
 # create dataset that only contains plots with just one edge
 forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% 

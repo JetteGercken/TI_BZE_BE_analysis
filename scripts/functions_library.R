@@ -47,7 +47,7 @@
 # install.packages("sf")
 # install.packages("rgdal")
 # install.packages("terra")
-
+#install.packages("sfheaders")
 
 
 # ----- 0.2. require   ---------------------------------------------------------
@@ -93,7 +93,7 @@ require(ggforce)                      # Load ggforce package
 require(sf)
 require(rgdal)
 require(terra)
-
+require(sfheaders)
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
