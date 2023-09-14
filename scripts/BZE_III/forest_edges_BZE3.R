@@ -649,22 +649,19 @@ FE_loc_HBI <- forest_edges_HBI.man %>%
           E_north = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 100, coordinate = "y"),
           end_east = AB_east_inter_1, 
           end_north = AB_north_inter_1, 
-          east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "x"),
-          north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_A, Y_A, X_T, Y_T, coordinate = "y"),
-          east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "x"),
-          north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, X_B, Y_B, X_T, Y_T, coordinate = "y"), 
+          east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "x"),
+          north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "y"),
+          east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "x"),
+          north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "y"), 
          end_triangle_east = T_east, 
          end_triangle_north = T_north)
 
-FE_loc_HBI %>% filter(e_form == 1 & is.na(AB_east_inter_1)| e_form == 1 & is.na(AB_east_inter_2))
-intersection_line_circle(-39.07341,  -0.3466951, data_circle$x0[3], data_circle$y0[3], 3000, coordinate = "x1")
-forest_edges_HBI.man$inter_status_AB_17
 
 ## datasetwith cart coordiantes for edge form 1 : line
 # georefferncing edges for edge form 1 using plot 50005 as an example
 FE_loc_HBI.e1 <- FE_loc_HBI %>%
   filter(e_form == 1) %>% 
-  filter(plot_ID == 50036) %>% 
+  filter(plot_ID == 50005) %>% 
   select(plot_ID,  
          A_dist, A_azi, B_dist, B_azi,
          RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2, end_east, 
@@ -716,9 +713,9 @@ dat.poly <- FE_loc_HBI.e1 %>%
 square.poly <- vect(c(paste("POLYGON", "(", "(", paste(dat.poly$geometry[1], dat.poly$geometry[2], dat.poly$geometry[3], dat.poly$geometry[4], dat.poly$geometry[5],sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
 
 # plot circle, polygone and points
-print(plot(circle.17),
+print(plot(square.points),
       plot(square.poly, add = T),
-      plot(square.points, add=T))
+      plot(circle.17, add=T))
 
 # compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
 inter <- terra::intersect(circle.17, square.poly)
@@ -851,7 +848,7 @@ trees_and_edges %>%
 
 # plot circle and trianle
 ggplot() +  
-  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00*2))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
   geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
   geom_point(data = FE_loc_HBI.e2,
              aes(x= lat, y = lon, colour = X_name))+
@@ -944,10 +941,10 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
 
 # 3.2.1.2. creating list of squared polygones for eddge form 1  ---------------------------
 ## loop to create list of polygones for edge form 1
- forest_edges_HBI.man.sub.e1 <- forest_edges_HBI.man%>% filter(e_form == 1)
+ forest_edges_HBI.man.sub.e1 <- forest_edges_HBI.man%>% filter(e_form == 1) %>% filter(inter_status_AB_17 == "two I")
  square.list <- vector("list", length = length(forest_edges_HBI.man.sub.e1$plot_ID))
  for(i in 1:length((forest_edges_HBI.man.sub.e1$plot_ID)) ) {
-   # i = 13
+   # i = 11
    # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
@@ -959,9 +956,9 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
    # assign crs
    my.utm.epsg <- 25833
    
-   # select UTM corrdinates of the plot center
-   my.center.easting <- HBI_loc[i, "RW_MED"]
-   my.center.northing <- HBI_loc[i, "HW_MED"]
+   # select UTM corrdinates of the plot center by plot ID
+   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+   my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
  
   # extract polar coordiantes of forest edge
   # point A 
@@ -976,26 +973,14 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   x.B <- dist.B*sin(azi.B)
   y.B <- dist.B*cos(azi.B)
 
-  
+  b1 <- (y.B- y.A)/(x.B - x.A)
+  b0 <- b1*x.B-y.B
   
   # calculate polar coordiantes of intersections of AB line with 
-  AB.inter.x1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$r0[3], 
-                                          coordinate = "x1")
-  AB.inter.y1 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "y1")
-  
-  AB.inter.x2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "x2")
-  AB.inter.y2 <- intersection_line_circle(intercept(x.A, y.A, x.B, y.B), 
-                                          slope(x.A, y.A, x.B, y.B), 
-                                          data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], 
-                                          coordinate = "y2")
+  AB.inter.x1 <- intersection_line_circle(b0, b1, data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], coordinate = "x1")
+  AB.inter.y1 <- intersection_line_circle(b0, b1, data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], coordinate = "y1")
+  AB.inter.x2 <- intersection_line_circle(b0, b1, data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], coordinate = "x2")
+  AB.inter.y2 <- intersection_line_circle(b0, b1 ,data_circle$x0[3], data_circle$x0[3], data_circle$rmax[3], coordinate = "y2")
   
   my.inter.status <- intersection.status(AB.inter.x1, AB.inter.x2)
   
@@ -1020,7 +1005,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   # create dataframe that holds coordinates of 
   square.df <- as.data.frame(cbind("lat" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
                                    "lon" = c(AB.inter.1.north, D.north, E.north, AB.inter.2.north, AB.inter.1.north),
-                                   "id" = c(rep(paste0(my.plot.id,"_", my.e.id), length=5))
+                                   "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id, my.plot.id)
                                    ))%>% 
     mutate(lat = as.integer(lat), 
            lon = as.integer(lon)) %>% 
@@ -1041,34 +1026,15 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   
   print(plot(square.poly))
   
-  # intersection testrun: 
-# # option 1: find row number in final dataframe and look for row number in list ´, then turn list into dataframe and then into sf 
-#   # advatange keeps id of circle too, disadvatage: circle id doubles after intersecting
-#   # select list entry that correpons with my plot ID
-#    # https://stackoverflow.com/questions/20782218/how-to-find-row-number-of-a-value-in-r-code
-#   my.circle.list.id <- which(grepl(my.plot.id, circle.df$id))
-#   my.circle <- sf::st_as_sf (as.data.frame(circle.list[my.circle.list.id]))
-#   st_intersection(my.circle, square.poly)
-  # there will always appear a warning this way saying: "attribute variables are assumed to be spatially constant throughout all geometries" solution is displayed here: https://github.com/r-spatial/sf/issues/406
-#   plot()
-#  
-# # option 2: select polygoen of circle from final circle df directly 
-#   # select the circle polygone corresponding with the plot ID
-#   my.circle <- sf::st_as_sf(circle.df$geometry[circle.df$id == my.plot.id])
-#   # calculate intersection
-#   st_intersection(my.circle, square.poly)
-#   plot(st_intersection(my.circle, square.poly))
-#   
-    
-  square.list[[i]] <- square.poly
+  square.list[[i]] <- c("e_id" = my.e.id, square.poly)
 
  } # closing loop for square polys of edge form 1
  
  square.list.final <- rbindlist(square.list)
- square.poly.df <- as.data.frame(square.list.final)
+ square.poly.df <- as.data.frame(square.list.final) %>% mutate("e_form" = 1)
 
  
- square.poly.df %>% filter(is.na(geometry))
+
  
  
  
@@ -1076,13 +1042,14 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
 
  ## loop to create list of polygones for edge form 1
  forest_edges_HBI.man.sub.e2 <- forest_edges_HBI.man%>% filter(e_form == 2)
- triangle.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.e2$plot_ID)) )
- for(i in 1:length(unique(forest_edges_HBI.man.sub.e2$plot_ID)) ) {
+ triangle.list <- vector("list", length = length(forest_edges_HBI.man.sub.e2$plot_ID) )
+ for(i in 1:length(forest_edges_HBI.man.sub.e2$plot_ID) ) {
    # i = 1
    # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
    my.plot.id <- forest_edges_HBI.man.sub.e2[i, "plot_ID"] 
+   my.e.id <- forest_edges_HBI.man.sub.e2[i, "e_ID"] 
    my.e.form <- forest_edges_HBI.man.sub.e2[i, "e_form"]
    #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
    
@@ -1095,22 +1062,23 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
    
    # extract polar coordiantes of forest edge
    # point A 
-   dist.A <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "A_dist"] 
-   azi.A <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "A_azi"] 
+   dist.A <- forest_edges_HBI.man.sub.e2[i, "A_dist"] 
+   azi.A <- forest_edges_HBI.man.sub.e2[i, "A_azi"] 
    x.A <- dist.A*sin(azi.A)
    y.A <- dist.A*cos(azi.A)
    
    # point B
-   dist.B <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "B_dist"] 
-   azi.B <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "B_azi"] 
+   dist.B <- forest_edges_HBI.man.sub.e2[i, "B_dist"] 
+   azi.B <- forest_edges_HBI.man.sub.e2[i, "B_azi"] 
    x.B <- dist.B*sin(azi.B)
    y.B <- dist.B*cos(azi.B)
    
    # point T
-   dist.T <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "T_dist"] 
-   azi.T <- forest_edges_HBI.man.sub.e2[forest_edges_HBI.man.sub.e2$plot_ID == my.plot.id, "T_azi"] 
+   dist.T <- forest_edges_HBI.man.sub.e2[i, "T_dist"] 
+   azi.T <- forest_edges_HBI.man.sub.e2[i, "T_azi"] 
    x.T <- dist.T*sin(azi.T)
    y.T <- dist.T*cos(azi.T)
+   
    
    # select polar coordiantes of the points of the triangle corners via "inter_for_triangle"-function
    # for AT side
@@ -1147,8 +1115,8 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
      mutate(lon = as.integer(lon),
             lat = as.integer(lat)) %>%
      unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-     mutate(geometry = as.factor(geometry)) %>%
-     select(geometry)
+     mutate(geometry = as.factor(geometry))
+     #select(geometry)
    
    
    # terra: create polygone with corners of triangle
@@ -1166,17 +1134,21 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
    print(plot(triangle.poly))
    
    # save polygones in list
-   triangle.list[[i]] <- triangle.poly
+   triangle.list[[i]] <- c("e_id" = my.e.id, triangle.poly)
  }
  
  triangle.list.final <- rbindlist(triangle.list)
- triangle.poly.df <- as.data.frame(triangle.list.final)
+ triangle.poly.df <- as.data.frame(triangle.list.final) %>% mutate("e_form" = 2)
  
  
  
 
 # 3.2.1.3. loop for intersections between circles and edges ---------------
 
+ 
+ 
+ 
+ 
  # intersection testrun: 
  # # option 1: find row number in final dataframe and look for row number in list ´, then turn list into dataframe and then into sf 
  #   # advatange keeps id of circle too, disadvatage: circle id doubles after intersecting
@@ -1195,7 +1167,35 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
  #   st_intersection(my.circle, square.poly)
  #   plot(st_intersection(my.circle, square.poly))
  
+ # dataprep for loop
+ # bind polygone dataframes together
+ edge.poly.df <- rbind(square.poly.df, triangle.poly.df)
+ forest_edges_HBI.man.sub <- forest_edges_HBI.man.sub %>% filter(e_form == 1 & inter_status_AB_17 == "two I" | e_form == 2)
  
+  # option 2: select the polygones from trianalge and square which comply with circle ID 
+ for (i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))){ 
+      # i = 23
+
+   # select plot ID of the respective circle 
+    my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
+    
+    plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id)
+    
+    nrow(plot.polys.df)
+    # select the circle polygone corresponding with the plot ID
+    my.circle <- sf::st_as_sf(circle.poly.df[i,])
+    #plot(my.circle)
+    
+    # select the respective polygones the circle is intersected by
+    
+    
+    # calculate intersection
+    st_intersection(my.circle, square.poly)
+    
+    plot(st_intersection(my.circle, square.poly))
+    
+    
+ }
  
  
  
