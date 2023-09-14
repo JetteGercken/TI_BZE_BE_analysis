@@ -2334,6 +2334,9 @@ trees_total_5 <-  trees_total_5 %>%
 trees_tot_piv_wider <- trees_total_5
 write.csv(trees_tot_piv_wider, paste0(momok.out.home,"LT_biomass_compartiment_columns_MoMoK.csv"))
 
+summary(trees_tot_piv_wider)
+
+
 # pivoting all compartiments in 1 column
 trees_total_5 <- trees_total_5 %>% 
    pivot_longer(c(total, ag, bg, f, fw, sw, swb,  stw, stwb), 
@@ -2382,7 +2385,8 @@ trees_total_5 <-trees_total_5 %>%
       summarise(N_t = sum(N_t)) %>%
       mutate(compartiment = "total")),
     by = c("ID_pt",  "CCS_nr", "C_layer", "compartiment")) 
-          
+  
+summary(trees_total_5)        
 
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
@@ -3043,6 +3047,12 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
 
 write.csv(trees_P_CP_SP, paste0(momok.out.home, "forst_zusammenfassung_MoMoK.csv"))
 
+# vergleich mit valentis biomasse für baum mit folgenden Eingangsgrößen: 346 t pro Baum va. 404t pro Baum von tapes
+tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="agb") - 
+  tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="fwb") -
+  
+  tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="ndl")
+
 # ----- 2.5.1.2. grouped by Plot, species -----------------------------------------------------------------
 
 # dataset with Biomass, Carbon and nitrogen per compartiment per speices per plot 
@@ -3170,7 +3180,7 @@ trees_P <- trees_total_5 %>%
               summarise(N_SP_plot = n()), #%>%
              # mutate(compartiment = "total"),
             by = c("plot_ID"))
-
+summary(trees_P)
 
 # preparing trees_P for 
 trees_P.export <- trees_P %>% 

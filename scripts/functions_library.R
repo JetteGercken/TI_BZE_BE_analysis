@@ -688,31 +688,32 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   
 # circle segment on AB or AT or BT side
   # calculate angle between the lines from sampling cirlce intersections to center
-   #  azi_inter1_center = ifelse(t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
-   # azi_inter2_center = ifelse(t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
+     azi_inter1_center = ifelse(t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
+    azi_inter2_center = ifelse(t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
   # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-    # azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
-  angle_between_IC_lines = ifelse(t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
+    azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
+  #angle_between_IC_lines = ifelse(t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
   # calcualte circle segment area: 
-  c.cone.A = (pi*c.r0^2) * angle_between_IC_lines;  # /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
+  # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
+  c.cone.A = ifelse(t.dist <= c.r0, (pi*(c.r0-t.dist)^2) * azi_between_IC_lines*0.9 , (pi*c.r0^2)*azi_between_IC_lines*0.9 ); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
   # calcualte circle area
-  c.A = pi*c.r0^2
+  c.A = pi*c.r0^2;
   # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A =  0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2)) ;
+  trianlge.A =  ifelse(t.dist <= c.r0, (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , (0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2))) ) ;
   # calculate circle segment trouhg withdrawing triangle from cone: 
   c.seg.A = c.cone.A-trianlge.A
   
   # circle segment on BT side, if AT and BT side have intersection
   # calculate angle between the lines from sampling cirlce intersections to center
-     # azi_inter1.bsite_center = ifelse(t.dist <= c.r0, azi(x.1.bsite, y.1.bsite, x.t, y.t), azi(x.1.bsite, y.1.bsite, c.x0, c.y0));
-     # azi_inter2.bsite_center = ifelse(t.dist <= c.r0, azi(x.1.bsite, y.1.bsite, x.t, y.t), azi(x.1.bsite, y.1.bsite, c.x0, c.y0));
+      azi_inter1.bsite_center = azi(x.1.bsite, y.1.bsite, c.x0, c.y0);
+      azi_inter2.bsite_center = azi(x.2.bsite, y.2.bsite, c.x0, c.y0);
   # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-    # azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
-  angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
+     azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
+  #angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
   # calcualte circle segment area: 
-  c.cone.A.bsite = (pi*c.r0^2) * angle_between_IC_lines.bsite # azi_between_IC_lines.bsite/400;  # /400 because our azi (gon)is in gon not degrees 
+  c.cone.A.bsite = (pi*c.r0^2) *azi_between_IC_lines.bsite*0.9;  # angle_between_IC_lines.bsite , *0.9 or /400 because our azi (gon)is in gon not degrees 
   # calcualte circle area
-  c.A.bsite = pi*c.r0^2
+  c.A.bsite = pi*c.r0^2;
   # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
   trianlge.A.bsite =  0.5*(x.1.bsite*(y.2.bsite-c.y0) + x.2.bsite*(c.y0-y.1.bsite) + c.x0*(c.y0-y.2.bsite)) ;
   # calculate circle segment trouhg withdrawing triangle from cone: 
@@ -886,37 +887,40 @@ edge.A.method <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, 
   y.1.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x1.inter.BT, NA);
   y.2.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x2.inter.BT, NA);
   
+ ## build circle segment
   # circle segment on AB or AT or BT side
   # calculate angle between the lines from sampling cirlce intersections to center
-  #  azi_inter1_center = ifelse(t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
-  # azi_inter2_center = ifelse(t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
+  azi_inter1_center = ifelse(t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
+  azi_inter2_center = ifelse(t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
   # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-  # azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
-  angle_between_IC_lines = ifelse(t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
+  azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
+  #angle_between_IC_lines = ifelse(t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
   # calcualte circle segment area: 
-  c.cone.A = (pi*c.r0^2) * angle_between_IC_lines;  # /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
+  # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
+  c.cone.A = ifelse(t.dist <= c.r0, (pi*(c.r0-t.dist)^2) * azi_between_IC_lines*0.9 , (pi*c.r0^2)*azi_between_IC_lines*0.9 ); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
   # calcualte circle area
-  c.A = pi*c.r0^2
+  c.A = pi*c.r0^2;
   # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A =  0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2)) ;
+  trianlge.A =  ifelse(t.dist <= c.r0, (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , (0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2))) ) ;
   # calculate circle segment trouhg withdrawing triangle from cone: 
   c.seg.A = c.cone.A-trianlge.A
   
   # circle segment on BT side, if AT and BT side have intersection
   # calculate angle between the lines from sampling cirlce intersections to center
-  # azi_inter1.bsite_center = ifelse(t.dist <= c.r0, azi(x.1.bsite, y.1.bsite, x.t, y.t), azi(x.1.bsite, y.1.bsite, c.x0, c.y0));
-  # azi_inter2.bsite_center = ifelse(t.dist <= c.r0, azi(x.1.bsite, y.1.bsite, x.t, y.t), azi(x.1.bsite, y.1.bsite, c.x0, c.y0));
+  azi_inter1.bsite_center = azi(x.1.bsite, y.1.bsite, c.x0, c.y0);
+  azi_inter2.bsite_center = azi(x.2.bsite, y.2.bsite, c.x0, c.y0);
   # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-  # azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
-  angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
+  azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
+  #angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
   # calcualte circle segment area: 
-  c.cone.A.bsite = (pi*c.r0^2) * angle_between_IC_lines.bsite # azi_between_IC_lines.bsite/400;  # /400 because our azi (gon)is in gon not degrees 
+  c.cone.A.bsite = (pi*c.r0^2) *azi_between_IC_lines.bsite*0.9;  # angle_between_IC_lines.bsite , *0.9 or /400 because our azi (gon)is in gon not degrees 
   # calcualte circle area
-  c.A.bsite = pi*c.r0^2
+  c.A.bsite = pi*c.r0^2;
   # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
   trianlge.A.bsite =  0.5*(x.1.bsite*(y.2.bsite-c.y0) + x.2.bsite*(c.y0-y.1.bsite) + c.x0*(c.y0-y.2.bsite)) ;
   # calculate circle segment trouhg withdrawing triangle from cone: 
   c.seg.A.bsite = c.cone.A.bsite-trianlge.A.bsite
+  
   
   ## calculate coordiantes of the middle of thie line between 
   x_m_line = (x1 - x2)/2;
