@@ -914,7 +914,10 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   center.point <- sf::st_as_sf(center.df, coords = c("lat", "lon"), crs = my.utm.epsg)
   # build polygon (circlular buffer) around center point
   circle.17 <- sf::st_buffer(center.point, 17.84)
+  circle.12 <- sf::st_buffer(center.point, 12.62)
+  circle.5 <- sf::st_buffer(center.point, 5.64)
  
+  
   # creating polygones in r terra package
   # create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
   # center.points <- terra::vect(center.df, 
@@ -928,7 +931,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
   #       plot(circle.17, add = T))
   
   # saving circle polygones in a list
-  circle.list[[i]] <- circle.17
+  circle.list[[i]] <- rbind(circle.17, circle.12, circle.5)
   
 }
 # circle.list
@@ -1179,7 +1182,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))) {
    # select plot ID of the respective circle 
     my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
     
-    plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id)
+    my.plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id)
     
     nrow(plot.polys.df)
     # select the circle polygone corresponding with the plot ID
