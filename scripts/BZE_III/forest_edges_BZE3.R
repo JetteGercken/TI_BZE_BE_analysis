@@ -617,260 +617,6 @@ ggplot() +
 
 # 3. georefferencing edge data ------------------------------------------------
 
-# 3.1. georefferencing "manually" -----------------------------------
-# creating dataframe with caartesian coordinates of all edges
-# by using polar coordinates to calculate the cartesian coordinates 
-# by adding polar coordiantes calcualted through functions to the 
-# cartesian coordinates (RW_MED = lat and HW_MED = lon) of the center point of the plot
-
-# dataset with cart coordinates for all edges
-FE_loc_HBI <- forest_edges_HBI.man %>% 
-  filter(!is.na(e_form)) %>%
-  left_join(HBI_loc %>% 
-              filter(K3_HW >0), 
-            by = "plot_ID") %>% 
-  # Convert polar to cartesian coordinates (eastinf northing)
-  mutate(A_east = RW_MED + X_A,
-         A_north = HW_MED + Y_A,
-         B_east = RW_MED + X_B,
-         B_north = HW_MED + Y_B, 
-         T_east = RW_MED + X_T, 
-         T_north = HW_MED + Y_T) %>% 
-  # eastin/ northing for intersection with a 30m circle
-  mutate(AB_east_inter_1 = RW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x1"), # X1_inter_AB_17,
-         AB_north_inter_1 = HW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y1"), #Y1_inter_AB_17,
-         AB_east_inter_2 =  RW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x2"), # X2_inter_AB_17,
-         AB_north_inter_2 = HW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y2")) %>%  #Y2_inter_AB_17,) %>% 
-  # calculate point in right angle and 60m distance to each intersection with the 30m circle to create a square 
-  mutate(D_east = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 300, coordinate = "x"),
-          D_north = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 300, coordinate = "y"),
-          E_east = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 300, coordinate = "x"),
-         # introduce end point for polygone -> has to be closed
-          E_north = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 300, coordinate = "y"),
-          end_east = AB_east_inter_1, 
-          end_north = AB_north_inter_1, 
-          east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "x"),
-          north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "y"),
-          east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "x"),
-          north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "y"), 
-         end_triangle_east = T_east, 
-         end_triangle_north = T_north)
-
-
-## datasetwith cart coordiantes for edge form 1 : line
-# georefferncing edges for edge form 1 using plot 50005 as an example
-FE_loc_HBI.e1 <- FE_loc_HBI %>%
-  filter(e_form == 1) %>% 
-  filter(plot_ID == 50057) %>% 
-  select(plot_ID,  
-         A_dist, A_azi, B_dist, B_azi,
-         RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2, end_east, 
-         HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2, end_north) %>%  
-    to_long(keys = c("X_name",  "Y_name"),
-            values = c( "lat", "lon"),  
-            names(.)[6:13], names(.)[14:21]) %>% 
-  # create an order for the points, so that the polygone forms a square
-  mutate(order = case_when(X_name == "AB_east_inter_1" ~ 1,
-                           X_name == "D_east" ~ 2, 
-                           X_name == "E_east" ~ 3,
-                           X_name == "AB_east_inter_2" ~ 4,
-                           X_name == "end_east" ~ 5, 
-                           TRUE ~ NA)) %>% 
-  arrange(plot_ID, order)
-
-
-# create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
-center.points <- terra::vect(FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
-                             geom=c("lon", "lat"), 
-                             crs="epsg:25833",
-                             keepgeom=FALSE)
-
-# 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-circle.17 <- terra::buffer(center.points, 17.84)
-
-# create spatvectior with popoints of the square: 
-square.points <- terra::vect(FE_loc_HBI.e1 %>% 
-                               filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
-                             geom=c("lon", "lat"),
-                             crs="epsg:25833",
-                             keepgeom=TRUE)
-
-# prepare quare data to create SpatVec with geometry polygone
-dat.poly <- FE_loc_HBI.e1 %>%
-  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
-  mutate(lon = as.integer(lon), 
-         lat = as.integer(lat)) %>% 
-  unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-  mutate(geometry = as.factor(geometry)) %>% 
-  select(geometry)
-
-# turning points into polygone: https://rdrr.io/cran/terra/man/vect.html
-# trying to recreate: #p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
-# which was the only way how the points were merged into a polygone
-# successfull trial: paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")
-# lon, lat as numeric: "POLYGON((5679021.47358096 2517015.68025319, 5679011.35016525 2516981.46653, 5679042.11770261 2516963.39940393,5679052.24111832 2516997.61312711,5679021.47358096 2517015.68025319))" # with lon lat as numeric
-# lon, lat as integer_ "POLYGON((5679011 2516981, 5679042 2516963, 5679052 2516997, 5679021 2517015, 5679011 2516981))"
-square.poly <- vect(c(paste("POLYGON", "(", "(", paste(dat.poly$geometry[1], dat.poly$geometry[2], dat.poly$geometry[3], dat.poly$geometry[4], dat.poly$geometry[5],sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
-
-# plot circle, polygone and points
-print(plot(square.points),
-      plot(square.poly, add = T),
-      plot(circle.17, add=T))
-
-# compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
-inter <- terra::intersect(circle.17, square.poly)
-plot(inter)
-
-# get area of intersection
-# https://stackoverflow.com/questions/73614988/get-intersection-area-between-two-polygons-when-using-terraintersect
-   inter$area <- terra::expanse(inter)
-   inter$area_c <- terra::expanse(circle.17)
-   inter$area_rest <- inter$area_c -inter$area
-   inter$area_e <- ifelse(inter$area < inter$area_rest, inter$area_e, inter$area_rest)
-   inter$area_c <- ifelse(inter$area > inter$area_rest, inter$area, inter$area_rest)
-
-# compare with area caclulcated by the function --> does not comply
-   trees_and_edges %>% 
-     filter(plot_ID == 50005 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
-   
-# plot circle and square
-ggplot() +  
-  geom_circle(data = FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
-  geom_point(data = FE_loc_HBI.e1,
-             aes(x= lat, y = lon, colour = X_name))+
-  geom_segment(data =FE_loc_HBI.e1, 
-               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
-                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
-                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
-                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
-                   colour = "segment")) +
-  geom_segment(data =FE_loc_HBI.e1, 
-               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "D_east"], 
-                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "D_east"], 
-                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "E_east"], 
-                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "E_east"], 
-                   colour = "segment"))+
-  geom_segment(data =FE_loc_HBI.e1, 
-               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
-                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
-                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "D_east"], 
-                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "D_east"], 
-                   colour = "segment"))+
-  geom_segment(data =FE_loc_HBI.e1, 
-               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
-                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
-                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "E_east"], 
-                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "E_east"], 
-                   colour = "segment"))
-
-
-## dataset with cart coordinates for edge form 2 : triangle
-# georefferncing edges for edge form 2 using plot 50042 as an example
-FE_loc_HBI.e2 <- FE_loc_HBI %>% 
-  filter(e_form == 2) %>%
-  filter(plot_ID == 50004) %>% 
-  select(plot_ID,  
-         RW_MED, A_east, B_east, T_east, east_AT_inter_triangle_60, east_BT_inter_triangle_60, end_triangle_east, 
-         HW_MED, A_north, B_north, T_north, north_AT_inter_triangle_60, north_BT_inter_triangle_60, end_triangle_north) %>%  
-  to_long(keys = c("X_name",  "Y_name"),
-          values = c( "lat", "lon"),  
-          names(.)[2:8], names(.)[9:15]) %>% 
-  # create an order for the points, so that the polygone forms a square
-  mutate(order = case_when(X_name == "T_east" ~ 1,
-                           X_name == "east_AT_inter_triangle_60" ~ 2, 
-                           X_name == "east_BT_inter_triangle_60" ~ 3,
-                           X_name == "end_triangle_east" ~ 4, 
-                           TRUE ~ NA)) %>% 
-  arrange(plot_ID, order)
-
-# georefferencing data: 
-# create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
-center.points <- terra::vect(FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
-                             geom=c("lon", "lat"), 
-                             crs="epsg:25833",
-                             keepgeom=FALSE)
-
-# 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
-circle.17 <- terra::buffer(center.points, 17.84, capstyle = "round", joinstyle="round")
-
-# create spatvectior with popoints of the square: 
-triangle.points <- terra::vect(FE_loc_HBI.e2 %>% 
-                                 filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
-                               geom=c("lon", "lat"),
-                               crs="epsg:25833",
-                               keepgeom=TRUE)
-# plot(triange.points)
-
-# prepare quare data to create SpatVec with geometry polygone
-triangle.dat.poly <- FE_loc_HBI.e2 %>%
-  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
-  mutate(lon = as.integer(lon), 
-         lat = as.integer(lat)) %>% 
-  unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-  mutate(geometry = as.factor(geometry)) %>% 
-  select(geometry)
-
-# turning points into polygone: https://rdrr.io/cran/terra/man/vect.html
-# trying to recreate: #p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
-# which was the only way how the points were merged into a polygone
-# successfull trial: paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")
-# lon, lat as numeric: "POLYGON((5679021.47358096 2517015.68025319, 5679011.35016525 2516981.46653, 5679042.11770261 2516963.39940393,5679052.24111832 2516997.61312711,5679021.47358096 2517015.68025319))" # with lon lat as numeric
-# lon, lat as integer_ "POLYGON((5679011 2516981, 5679042 2516963, 5679052 2516997, 5679021 2517015, 5679011 2516981))"
-triangle.poly <- vect(c(paste("POLYGON", "(", "(", paste(triangle.dat.poly$geometry[1], triangle.dat.poly$geometry[2], triangle.dat.poly$geometry[3], triangle.dat.poly$geometry[4], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
-
-# plot circle, polygone and points
-print(plot(triangle.points),
-      plot(triangle.poly, add = T),
-      plot(circle.17, add=T))
-
-# compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
-inter.e2 <- terra::intersect(circle.17, triangle.poly)
-plot(inter.e2)
-inter.e2$area <- terra::expanse(inter.e2)
-inter.e2$area
-
-
-terra::expanse(circle.17, unit="m", transform=TRUE)
-
-point_sf <- st_as_sfc("POINT (5615244 2516952)", crs= 25833)
-buffer_sf <- st_buffer(point_sf, dist = 17.84)
-sf::st_area(buffer_sf)
-
-# comparing it with the edge area caclucated by the function under plot_A in the "trees_and_edges" dataset
-trees_and_edges %>% 
-  filter(plot_ID == 50042 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
-
-
-trees_and_edges %>% 
-  filter(plot_ID == 50004 & trees_and_edges$DBH_cm >30 & trees_and_edges$edge_A_method == "c.A -edge.area")
-
-
-# plot circle and trianle
-ggplot() +  
-  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
-  geom_point(data = FE_loc_HBI.e2,
-             aes(x= lat, y = lon, colour = X_name))+
-  geom_segment(data =FE_loc_HBI.e2, 
-               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "T_east"], 
-                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "T_east"], 
-                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
-                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
-                   colour = "segment")) +
-  geom_segment(data =FE_loc_HBI.e2, 
-               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "T_east"], 
-                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "T_east"], 
-                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
-                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
-                   colour = "segment"))+
-  geom_segment(data =FE_loc_HBI.e2, 
-               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
-                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
-                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
-                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
-                   colour = "segment"))
-
 
 
 # 3.2. georefferencing per loop ---------------------------------------------------------------------------------
@@ -1357,20 +1103,27 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    )
  
  datapoly <- na.omit(datapoly)
+
+   ggplot()+
+   geom_sf(circle.list[3])
  
- ggplot()+
-   geom_circle(data = datapoly %>% filter(shape == "circle"), aes(x0 = lon, y0 = lat, r = 6000))+ # Draw ggplot2 plot with circle representing sampling circuits 
-   geom_circle(data = datapoly %>% filter(shape == "circle"), aes(x0 = lon, y0 = lat, r = 1784))+
-   facet_wrap(~plot_ID)
+ c <- circle.poly.df$geometry
+ id <- circle.poly.df$id
  
- ggplot(datapoly, aes(x = lon, y = lat)) +
-   geom_polygon(aes(group = shape, fill = shape)) +
-   facet_wrap(~plot_ID)
+ ggplot() +
+   geom_sf(data = circle.poly.df$geometry, aes(fill = circle.poly.df$id))+
+   geom_sf(data = square.poly.df$geometry, aes(fill = square.poly.df$id))+
+   geom_sf(data = triangle.poly.df$geometry, aes(fill = triangle.poly.df$id))
  
- ggplot() +  
-   geom_circle(data = FE_loc_HBI %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
-   geom_circle(data = FE_loc_HBI %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
-   facet_wrap(~plot_ID)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
 # 3.2.3. georeffernecing everything in 1 loop -----------------------------
@@ -1591,6 +1344,260 @@ area.list  <- vector("list", length = nrow(forest_edges_HBI.man.sub))
 # Bind the list elements together
 area.dt <- rbindlist(area.list)  
   
+
+# 3.1. georefferencing "manually" -----------------------------------
+# creating dataframe with caartesian coordinates of all edges
+# by using polar coordinates to calculate the cartesian coordinates 
+# by adding polar coordiantes calcualted through functions to the 
+# cartesian coordinates (RW_MED = lat and HW_MED = lon) of the center point of the plot
+
+# dataset with cart coordinates for all edges
+FE_loc_HBI <- forest_edges_HBI.man %>% 
+  filter(!is.na(e_form)) %>%
+  left_join(HBI_loc %>% 
+              filter(K3_HW >0), 
+            by = "plot_ID") %>% 
+  # Convert polar to cartesian coordinates (eastinf northing)
+  mutate(A_east = RW_MED + X_A,
+         A_north = HW_MED + Y_A,
+         B_east = RW_MED + X_B,
+         B_north = HW_MED + Y_B, 
+         T_east = RW_MED + X_T, 
+         T_north = HW_MED + Y_T) %>% 
+  # eastin/ northing for intersection with a 30m circle
+  mutate(AB_east_inter_1 = RW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x1"), # X1_inter_AB_17,
+         AB_north_inter_1 = HW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y1"), #Y1_inter_AB_17,
+         AB_east_inter_2 =  RW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x2"), # X2_inter_AB_17,
+         AB_north_inter_2 = HW_MED + intersection_line_circle(b0_AB, b1_AB, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y2")) %>%  #Y2_inter_AB_17,) %>% 
+  # calculate point in right angle and 60m distance to each intersection with the 30m circle to create a square 
+  mutate(D_east = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 300, coordinate = "x"),
+         D_north = coord(AB_east_inter_1, AB_north_inter_1, data_circle$r0[3]*2, 300, coordinate = "y"),
+         E_east = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 300, coordinate = "x"),
+         # introduce end point for polygone -> has to be closed
+         E_north = coord(AB_east_inter_2, AB_north_inter_2, data_circle$r0[3]*2, 300, coordinate = "y"),
+         end_east = AB_east_inter_1, 
+         end_north = AB_north_inter_1, 
+         east_AT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "x"),
+         north_AT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_A, Y_A, X_T, Y_T, coordinate = "y"),
+         east_BT_inter_triangle_60 = RW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "x"),
+         north_BT_inter_triangle_60 = HW_MED + inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], X_B, Y_B, X_T, Y_T, coordinate = "y"), 
+         end_triangle_east = T_east, 
+         end_triangle_north = T_north)
+
+
+## datasetwith cart coordiantes for edge form 1 : line
+# georefferncing edges for edge form 1 using plot 50005 as an example
+FE_loc_HBI.e1 <- FE_loc_HBI %>%
+  filter(e_form == 1) %>% 
+  filter(plot_ID == 50057) %>% 
+  select(plot_ID,  
+         A_dist, A_azi, B_dist, B_azi,
+         RW_MED, A_east, B_east, D_east, E_east, AB_east_inter_1, AB_east_inter_2, end_east, 
+         HW_MED, A_north, B_north, D_north, E_north, AB_north_inter_1, AB_north_inter_2, end_north) %>%  
+  to_long(keys = c("X_name",  "Y_name"),
+          values = c( "lat", "lon"),  
+          names(.)[6:13], names(.)[14:21]) %>% 
+  # create an order for the points, so that the polygone forms a square
+  mutate(order = case_when(X_name == "AB_east_inter_1" ~ 1,
+                           X_name == "D_east" ~ 2, 
+                           X_name == "E_east" ~ 3,
+                           X_name == "AB_east_inter_2" ~ 4,
+                           X_name == "end_east" ~ 5, 
+                           TRUE ~ NA)) %>% 
+  arrange(plot_ID, order)
+
+
+# create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
+center.points <- terra::vect(FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
+                             geom=c("lon", "lat"), 
+                             crs="epsg:25833",
+                             keepgeom=FALSE)
+
+# 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
+circle.17 <- terra::buffer(center.points, 17.84)
+
+# create spatvectior with popoints of the square: 
+square.points <- terra::vect(FE_loc_HBI.e1 %>% 
+                               filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
+                             geom=c("lon", "lat"),
+                             crs="epsg:25833",
+                             keepgeom=TRUE)
+
+# prepare quare data to create SpatVec with geometry polygone
+dat.poly <- FE_loc_HBI.e1 %>%
+  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
+  mutate(lon = as.integer(lon), 
+         lat = as.integer(lat)) %>% 
+  unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+  mutate(geometry = as.factor(geometry)) %>% 
+  select(geometry)
+
+# turning points into polygone: https://rdrr.io/cran/terra/man/vect.html
+# trying to recreate: #p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
+# which was the only way how the points were merged into a polygone
+# successfull trial: paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")
+# lon, lat as numeric: "POLYGON((5679021.47358096 2517015.68025319, 5679011.35016525 2516981.46653, 5679042.11770261 2516963.39940393,5679052.24111832 2516997.61312711,5679021.47358096 2517015.68025319))" # with lon lat as numeric
+# lon, lat as integer_ "POLYGON((5679011 2516981, 5679042 2516963, 5679052 2516997, 5679021 2517015, 5679011 2516981))"
+square.poly <- vect(c(paste("POLYGON", "(", "(", paste(dat.poly$geometry[1], dat.poly$geometry[2], dat.poly$geometry[3], dat.poly$geometry[4], dat.poly$geometry[5],sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
+
+# plot circle, polygone and points
+print(plot(square.points),
+      plot(square.poly, add = T),
+      plot(circle.17, add=T))
+
+# compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
+inter <- terra::intersect(circle.17, square.poly)
+plot(inter)
+
+# get area of intersection
+# https://stackoverflow.com/questions/73614988/get-intersection-area-between-two-polygons-when-using-terraintersect
+inter$area <- terra::expanse(inter)
+inter$area_c <- terra::expanse(circle.17)
+inter$area_rest <- inter$area_c -inter$area
+inter$area_e <- ifelse(inter$area < inter$area_rest, inter$area_e, inter$area_rest)
+inter$area_c <- ifelse(inter$area > inter$area_rest, inter$area, inter$area_rest)
+
+# compare with area caclulcated by the function --> does not comply
+trees_and_edges %>% 
+  filter(plot_ID == 50005 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
+
+# plot circle and square
+ggplot() +  
+  geom_circle(data = FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = FE_loc_HBI.e1 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
+  geom_point(data = FE_loc_HBI.e1,
+             aes(x= lat, y = lon, colour = X_name))+
+  geom_segment(data =FE_loc_HBI.e1, 
+               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
+                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
+                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
+                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
+                   colour = "segment")) +
+  geom_segment(data =FE_loc_HBI.e1, 
+               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "D_east"], 
+                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "D_east"], 
+                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "E_east"], 
+                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "E_east"], 
+                   colour = "segment"))+
+  geom_segment(data =FE_loc_HBI.e1, 
+               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
+                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_1"], 
+                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "D_east"], 
+                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "D_east"], 
+                   colour = "segment"))+
+  geom_segment(data =FE_loc_HBI.e1, 
+               aes(x = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
+                   y = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "AB_east_inter_2"], 
+                   xend = FE_loc_HBI.e1$lat[FE_loc_HBI.e1$X_name == "E_east"], 
+                   yend = FE_loc_HBI.e1$lon[FE_loc_HBI.e1$X_name == "E_east"], 
+                   colour = "segment"))
+
+
+## dataset with cart coordinates for edge form 2 : triangle
+# georefferncing edges for edge form 2 using plot 50042 as an example
+FE_loc_HBI.e2 <- FE_loc_HBI %>% 
+  filter(e_form == 2) %>%
+  filter(plot_ID == 50004) %>% 
+  select(plot_ID,  
+         RW_MED, A_east, B_east, T_east, east_AT_inter_triangle_60, east_BT_inter_triangle_60, end_triangle_east, 
+         HW_MED, A_north, B_north, T_north, north_AT_inter_triangle_60, north_BT_inter_triangle_60, end_triangle_north) %>%  
+  to_long(keys = c("X_name",  "Y_name"),
+          values = c( "lat", "lon"),  
+          names(.)[2:8], names(.)[9:15]) %>% 
+  # create an order for the points, so that the polygone forms a square
+  mutate(order = case_when(X_name == "T_east" ~ 1,
+                           X_name == "east_AT_inter_triangle_60" ~ 2, 
+                           X_name == "east_BT_inter_triangle_60" ~ 3,
+                           X_name == "end_triangle_east" ~ 4, 
+                           TRUE ~ NA)) %>% 
+  arrange(plot_ID, order)
+
+# georefferencing data: 
+# create SpatVec with center of the plots as points: https://rdrr.io/cran/terra/man/vect.html
+center.points <- terra::vect(FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), 
+                             geom=c("lon", "lat"), 
+                             crs="epsg:25833",
+                             keepgeom=FALSE)
+
+# 17 m circle around plot center: https://rdrr.io/cran/terra/man/buffer.html
+circle.17 <- terra::buffer(center.points, 17.84, capstyle = "round", joinstyle="round")
+
+# create spatvectior with popoints of the square: 
+triangle.points <- terra::vect(FE_loc_HBI.e2 %>% 
+                                 filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))),
+                               geom=c("lon", "lat"),
+                               crs="epsg:25833",
+                               keepgeom=TRUE)
+# plot(triange.points)
+
+# prepare quare data to create SpatVec with geometry polygone
+triangle.dat.poly <- FE_loc_HBI.e2 %>%
+  filter(!(X_name %in% c("RW_MED", "A_east", "B_east")) & !(Y_name %in% c("HW_MED", "A_north", "B_north"))) %>% 
+  mutate(lon = as.integer(lon), 
+         lat = as.integer(lat)) %>% 
+  unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+  mutate(geometry = as.factor(geometry)) %>% 
+  select(geometry)
+
+# turning points into polygone: https://rdrr.io/cran/terra/man/vect.html
+# trying to recreate: #p <- vect(c("POLYGON ((5679011 2516981, 5679042 2516963, 5679052 2516998, 5679021 2517016, 5679011 2516981))"), crs="epsg:25833")
+# which was the only way how the points were merged into a polygone
+# successfull trial: paste("POLYGON", "(", "(", paste(e$geometry[1], e$geometry[2], e$geometry[3], e$geometry[4], e$geometry[5],sep = ", "), ")", ")", sep = "")
+# lon, lat as numeric: "POLYGON((5679021.47358096 2517015.68025319, 5679011.35016525 2516981.46653, 5679042.11770261 2516963.39940393,5679052.24111832 2516997.61312711,5679021.47358096 2517015.68025319))" # with lon lat as numeric
+# lon, lat as integer_ "POLYGON((5679011 2516981, 5679042 2516963, 5679052 2516997, 5679021 2517015, 5679011 2516981))"
+triangle.poly <- vect(c(paste("POLYGON", "(", "(", paste(triangle.dat.poly$geometry[1], triangle.dat.poly$geometry[2], triangle.dat.poly$geometry[3], triangle.dat.poly$geometry[4], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
+
+# plot circle, polygone and points
+print(plot(triangle.points),
+      plot(triangle.poly, add = T),
+      plot(circle.17, add=T))
+
+# compute intersection between square and circle: https://rdrr.io/github/rspatial/terra/man/intersect.html
+inter.e2 <- terra::intersect(circle.17, triangle.poly)
+plot(inter.e2)
+inter.e2$area <- terra::expanse(inter.e2)
+inter.e2$area
+
+
+terra::expanse(circle.17, unit="m", transform=TRUE)
+
+point_sf <- st_as_sfc("POINT (5615244 2516952)", crs= 25833)
+buffer_sf <- st_buffer(point_sf, dist = 17.84)
+sf::st_area(buffer_sf)
+
+# comparing it with the edge area caclucated by the function under plot_A in the "trees_and_edges" dataset
+trees_and_edges %>% 
+  filter(plot_ID == 50042 & trees_and_edges$DBH_cm >30 & t_status_AB_ABT == "B")
+
+
+trees_and_edges %>% 
+  filter(plot_ID == 50004 & trees_and_edges$DBH_cm >30 & trees_and_edges$edge_A_method == "c.A -edge.area")
+
+
+# plot circle and trianle
+ggplot() +  
+  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 30.00))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = FE_loc_HBI.e2 %>% filter(X_name == "RW_MED" & Y_name == "HW_MED"), aes(x0 = lat, y0 = lon, r = 17.84))+
+  geom_point(data = FE_loc_HBI.e2,
+             aes(x= lat, y = lon, colour = X_name))+
+  geom_segment(data =FE_loc_HBI.e2, 
+               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "T_east"], 
+                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "T_east"], 
+                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
+                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
+                   colour = "segment")) +
+  geom_segment(data =FE_loc_HBI.e2, 
+               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "T_east"], 
+                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "T_east"], 
+                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
+                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
+                   colour = "segment"))+
+  geom_segment(data =FE_loc_HBI.e2, 
+               aes(x = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
+                   y = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_AT_inter_triangle_60"], 
+                   xend = FE_loc_HBI.e2$lat[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
+                   yend = FE_loc_HBI.e2$lon[FE_loc_HBI.e2$X_name == "east_BT_inter_triangle_60"], 
+                   colour = "segment"))
 
 
 
