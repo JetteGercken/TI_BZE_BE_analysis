@@ -7236,7 +7236,7 @@ hollidays = 28
 tot_wd = wd-hollidays
 ho_wd = tot_wd*0.5
 month <-      c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
-wd_ho_used <- c(6, 7, 9, 7, 8, 8, 5, 0, 0,  0,  0)
+wd_ho_used <- c(6, 7, 9, 7, 8, 8, 7, 6, 0,  0,  0)
 alread_used_ho <- as.data.frame(cbind(month, wd_ho_used))
 already_used_ho_sum = as.numeric(alread_used_ho %>% summarize(sum_ho_wd_used = sum(wd_ho_used)) %>% pull(sum_ho_wd_used))
 #ho_planned_04_spain = 5 --> in used for april
@@ -7247,11 +7247,11 @@ ho_planned_tot = ho_planned_12_warm + ho_planned_12_christmas
 weeks_away = 1+1+2+1 # weeks taht i am spending all days in homeoffice
 
 remainung_ho_days <- ho_wd - (already_used_ho_sum + ho_planned_tot)
-current_KW_week <- 33 # 15.08. - 21.08.
+current_KW_week <- 38 # 18.09. - 24.09.
 rem_ho_days_week <- remainung_ho_days/(52 - (current_KW_week + weeks_away))
+rem_ho_days_week
 
-
-
+sum(wd_ho_used)
 # N.7 co2 calculations ----------------------------------------------------
 
 CO2_anteil_atmosphere = 0.035 #% # Quelle: https://www.noaa.gov/jetstream/atmosphere
