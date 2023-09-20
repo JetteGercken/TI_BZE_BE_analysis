@@ -645,6 +645,8 @@ forest_edges_HBI.man.sub <- forest_edges_HBI.man %>%
   filter(e_form %in% c(1, 2)) %>% 
   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") 
 
+
+
 ## loop to create list with polygones for circles per plot center 
 # create empty list to store circle polygones in 
 circle.list <- vector("list", length = length(forest_edges_HBI.man.sub$plot_ID))
@@ -809,7 +811,6 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   #square.poly <- terra::vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
   
   
-  
  # creating squeares in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
   square.poly <- sfheaders::sf_polygon(obj = square.df
                                        , x = "lon"
@@ -958,7 +959,6 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
 
 # 3.2.1.3. loop for intersections between circles and edges ---------------
 
-
  # intersection testrun: 
  # # option 1: find row number in final dataframe and look for row number in list ´, then turn list into dataframe and then into sf 
  #   # advatange keeps id of circle too, disadvatage: circle id doubles after intersecting
@@ -1078,6 +1078,92 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  edges.area.df <- as.data.frame(edges.list.final)
  
 
+ 
+ 
+ # dataprep for loop
+ # createa dataframe with plots that have only one forest edges
+ forest_edges_HBI.man.sub.2.edges <- forest_edges_HBI.man %>% # rows:84
+   # select only plots with a known edge form
+   filter(e_form == 1 | e_form == 2) %>%  # rows:84
+   # remove plots that have two edges
+   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 15 plots iwth 2 edges --> 30 rows -> 54 left
+   # remove plots that do now have a corresponding center coordiante in the HBI loc document
+   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 53 --> there are 2 plots without corresponding 
+ 
+ edges.list.two.edges <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))*2)
+ 
+ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
+   # i =1
+   
+   # select plot ID of the respective circle 
+   my.plot.id <- forest_edges_HBI.man.sub.2.edges[i, "plot_ID"]
+   my.e.form <- edge.poly.df$e_form[edge.poly.df$id == my.plot.id]
+   my.e.id <- edge.poly.df$e_id[edge.poly.df$id == my.plot.id]
+   
+   
+   # select the polygones with the same plot ID as the cirlce
+    my.plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id) %>% arrange(e_id)
+   
+   # select the circle polygone corresponding with the plot ID
+   # my.circle.list.id <- which(grepl(my.plot.id, circle.df$id))
+   my.circle <- sf::st_as_sf(circle.poly.df %>% filter(id == my.plot.id) %>% distinct())
+   #plot(my.circle)
+   
+   # select the respective polygones the circle is intersected by
+   my.poly.1 <- sf::st_as_sf(my.plot.polys.df[1,])
+   my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
+   
+   
+    print(plot(my.poly.2$geometry), 
+          plot(my.poly.1$geometry, add = T), 
+          plot(my.circle$geometry,add = T))
+   
+   #  print(plot(my.circle$geometry), 
+   #       plot(my.poly.1$geometry, add = T), 
+   #       plot(my.poly.2$geometry, add = T))
+   
+   # calculate intersection for firest polygone 
+   inter.poly.1  <- st_intersection(my.circle, my.poly.1)
+   
+   
+   # calcualte remaining circle
+   # create poly woth remaining area: https://gis.stackexchange.com/questions/353633/r-spatial-erase-one-polygon-from-another-correct-use-of-st-difference
+   remaining.circle.1 <- if(nrow(inter.poly.1)==0){my.circle}else{st_difference(my.circle, inter.poly.1)}
+   
+  
+   print(plot(remaining.circle.1$geometry), 
+         plot(inter.poly.1$geometry, col = "red", add = T))
+   
+  # calculate intersecting area of second polygone by withdrawing it from remaining circle
+   inter.poly.2 <- st_intersection(remaining.circle.1, my.poly.2)
+   
+  # calculate the area remaining if both intersects are decucted
+  # so the area of the frst remining circle minus the area of the second remaining circle 
+   remaining.circle.1.and.2 <- if(nrow(inter.poly.2)==0){remaining.circle.1}else{st_difference(remaining.circle.1, inter.poly.2)}
+   
+   inter.area <- ifelse(is.null(inter.poly), NA, sf::st_area(inter.poly))
+   
+   inter.area.df <- as.data.frame(cbind("id" = my.plot.id,  "e_id" = my.e.id, "area_m2" = inter.area))
+   
+   edges.list[[i]] <- inter.area.df
+   
+   
+   # cbind("id" = my.plot.id,
+   #                        "e_id" = my.e.id, 
+   #                        "e_form" = my.e.form,
+   #                        "area" = ifelse(is.null(inter.poly), NA, inter.area), 
+   #                        "geometry" = ifelse(is.null(inter.poly), NA, inter.poly$geometry))
+   
+   
+   
+   
+   
+ }
+ 
+ edges.list.final <- rbindlist(edges.list)
+ edges.area.df <- as.data.frame(edges.list.final)
+ 
+ 
 # 3.2.1.4. visualising loops results -----------------------------
  datapoly <- rbind( 
   forest_edges_HBI.man %>%
@@ -1111,9 +1197,9 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  id <- circle.poly.df$id
  
  ggplot() +
-   geom_sf(data = circle.poly.df$geometry, aes(fill = circle.poly.df$id))+
-   geom_sf(data = square.poly.df$geometry, aes(fill = square.poly.df$id))+
-   geom_sf(data = triangle.poly.df$geometry, aes(fill = triangle.poly.df$id))
+   geom_sf(data = circle.poly.df$geometry[45], aes(fill = circle.poly.df$id[45]))+
+   #geom_sf(data = square.poly.df$geometry[10], aes())+
+   geom_sf(data = triangle.poly.df$geometry[10], aes())
  
  
  

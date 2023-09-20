@@ -2388,6 +2388,30 @@ trees_total_5 <-trees_total_5 %>%
   
 summary(trees_total_5)        
 
+
+
+
+
+# ----- comparisson with Valentins Bachelor thesis for plot 34010 ---------
+#### comparisson with Valentin Bukharts data: 
+# O:\a7forum\LEVEL I\BZE\Moormonitoring\Literatur\Qualifizierungsarbeiten\Bachelorarbeit Valentin 
+# obj <- tprTrees(spp = 1, 
+#          Dm = 37.3, 
+#          Hm = 1.3, 
+#          Ht = 20.3)
+# tprBiomass(obj, component = "agb")
+# # 568.9362
+# 346.0323+ 31.6553+ 96.9481+ 49.4387 # 524.0744
+
+view(trees_total_5 %>% filter(plot_ID == 34010))
+
+
+
+
+
+
+
+
 # ----- 2.1.2.3. comparisson biomass trees -----------------------------------------------------------
 biotest <- trees_total_5 %>% 
   select(plot_ID, SP_code, tpS_ID, Bio_SP_group, H_SP_group, LH_NH, DBH_cm, DBH_h_cm, D_03_cm, H_m, age, plot_A_ha) %>% 
@@ -4366,6 +4390,78 @@ comp_pseudo_mono <- trees_P_SP %>%
 
 
 summary(comp_pseudo_mono)
+
+
+
+
+
+
+
+# ----- 4.1.5. comparisson MoMoK Valentins BA -----------------------------
+trees_P_test <- trees_total_5 %>%
+  group_by(plot_ID, compartiment) %>% 
+  filter(plot_ID == 34010) %>% 
+  summarise(B_t_plot = sum(B_t_tapes),             # Biomass per plot per compartiment
+            C_t_plot = sum(C_t_tapes),             # Carbon per plot per compartiment    
+            N_t_plot = sum(N_t),                   # Nitrogen per plot per compartiment
+            plot_A_ha = mean(plot_A_ha)) %>%       # plot area in hectare to reffer data to hectar later
+  mutate(MoMoK_A_ha = (50*50)/10000) %>%           # MoMoK area in hectare to reffer data to MoMoK area later
+  left_join(., trees_total_5 %>%
+              filter(plot_ID == 34010) %>%
+              filter(compartiment == "total") %>% 
+              group_by(plot_ID) %>%                         # group by plot only to create column with 
+              summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
+                        sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
+                        mean_H_m = mean(H_m),                # mean height per species per  per plot
+                        sd_height_m = sd(H_m),               # standart deviation height
+                        BA_m2_plot = sum(BA_m2),            # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
+                        Nt_plot = n(),                          # number of trees per plot
+                        plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+              mutate(MoMoK_A_ha = (50*50)/10000, 
+                     BA_m2ha = BA_m2_plot/plot_A_ha,       # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
+                     BA_m2MA = (BA_m2_plot/plot_A_ha)*MoMoK_A_ha,
+                     Nt_ha = Nt_plot/plot_A_ha,
+                     Nt_MA = (Nt_plot/plot_A_ha)*MoMoK_A_ha,
+                     # compartiment = "total"
+              ) %>% 
+              select(-c(plot_A_ha, MoMoK_A_ha)),            # just to ensure the join works
+            by = c("plot_ID")) %>%           # join it to the dataset grouped by plot, species and compartiment 
+  mutate(B_t_ha = B_t_plot/plot_A_ha, 
+         C_t_ha = C_t_plot/plot_A_ha,
+         N_t_ha = N_t_plot/plot_A_ha,
+         B_t_MA = (B_t_plot/plot_A_ha)*MoMoK_A_ha, 
+         C_t_MA = (C_t_plot/plot_A_ha)*MoMoK_A_ha,
+         N_t_MA = (N_t_plot/plot_A_ha)*MoMoK_A_ha) %>% 
+  # dataset with dominant species per plot
+  left_join(., trees_P_SP %>% 
+              filter(plot_ID == 34010) %>%
+              ungroup() %>% # this was necesarry becaue it kept grouping the data by their species group
+              dplyr::select(plot_ID, dom_SP) %>%
+              #filter(compartiment == "total") %>%
+              distinct(), 
+            by = c("plot_ID")) %>% 
+  #calculating number of species per plot
+  left_join(., trees_total_5 %>%
+              filter(plot_ID == 34010) %>%
+              #filter(compartiment == "total") %>% 
+              select(plot_ID, SP_code) %>%
+              group_by(plot_ID) %>% 
+              distinct() %>% 
+              summarise(N_SP_plot = n()), #%>%
+            # mutate(compartiment = "total"),
+            by = c("plot_ID"))
+
+trees_total_5 %>% 
+  group_by(plot_ID) %>% 
+  select(plot_ID, CCS_nr) %>%  
+  distinct() %>% 
+  summarise(n_circuits = n()) %>% 
+  filter(n_circuits > 1)
+
+
+trees_P %>% filter(plot_ID == 34010) %>% select(plot_ID, compartiment, C_t_ha)
+68*2
+
 
 # ----- 4.2. DEAD TREES PLAUSIBILITY ------------------------------------
 # ----- 4.2.1. DW volume üper hectar per plot compared with BWI DW volume (not separated by deadwood type) ------------------------------------
@@ -8220,6 +8316,12 @@ corrplot(cor(cor.sp), is.corr = FALSE, p.mat = testRes$p, method = 'circle', typ
          order = 'AOE', diag = FALSE)$corrPos -> p1
 text(p1$x, p1$y, round(p1$corr, 2))
 summary(c_comp_Momok_BWI_SP_A)
+
+
+
+
+
+
 
 
 
