@@ -335,8 +335,8 @@ p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.
                               ifelse(x1 != x2, "two I")));      # so if the edge for is 1 and there are 2 interseections of the line with the respective circle 
   
   # calculate coordiantes of the middle of thie line between 
-  x_m_line = (x1 - x2)/2;
-  y_m_line = (y1 - y2)/2;
+  x_m_line = (x1 + x2)/2;
+  y_m_line = (y1 + y2)/2;
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
   b0_MC = intercept(c.x0, c.y0, x_m_line, y_m_line);
@@ -438,8 +438,8 @@ p.site.triangle <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0,l.b0, l.b1, xa, xb,
                               ifelse(x1 != x2, "two I")));      # so if the edge for is 1 and there are 2 interseections of the line with the respective circle 
   
   # calculate coordiantes of the middle of thie line between intersection 1 and 2
-  x_m_line = (x1 - x2)/2;
-  y_m_line = (y1 - y2)/2;
+  x_m_line = (x1 + x2)/2;
+  y_m_line = (y1 + y2)/2;
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
   b0_MC = intercept(c.x0, c.y0,  x_m_line, y_m_line);
@@ -721,8 +721,8 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   
   
   ## calculate coordiantes of the middle of thie line between 
-  x_m_line = (x1 - x2)/2;
-  y_m_line = (y1 - y2)/2;
+  x_m_line = (x1 + x2)/2;
+  y_m_line = (y1 + y2)/2;
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
   b0_MC = intercept(c.x0, c.y0, x_m_line, y_m_line);
@@ -923,8 +923,8 @@ edge.A.method <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, 
   
   
   ## calculate coordiantes of the middle of thie line between 
-  x_m_line = (x1 - x2)/2;
-  y_m_line = (y1 - y2)/2;
+  x_m_line = (x1 + x2)/2;
+  y_m_line = (y1 + y2)/2;
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line);
   b0_MC = intercept(c.x0, c.y0, x_m_line, y_m_line);
