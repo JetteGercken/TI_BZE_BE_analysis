@@ -442,16 +442,12 @@ ggplot() +
             aes(x= X_value, y = Y_value))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour = edge_A_method))+
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+# edge_A_method))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
 
 
-# for plot 50080 there are two many edges measured
-# for plot 50102 there is no intersection between the line BT and the 60m radius but I don´t know why. 
-geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2)) # Draw ggplot2 plot with circle representing sampling circuits
   
 # ----- 2.1.3. visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
 # plotting trees and interception lines divided in t_line_status
@@ -469,38 +465,20 @@ ggplot() +
              aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              # inner_join(.,   forest_edges_HBI.man %>% 
-              #              filter(e_form == "1") %>% 
-              #              group_by(plot_ID) %>% 
-              #              summarize(n = n()) %>% 
-              #              filter(n <= 1), 
-              #            by = "plot_ID") %>% 
-              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+             select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),  
                       names(.)[2:3], names(.)[4:5]), 
             aes(x= X_value, y = Y_value))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              # inner_join(.,   forest_edges_HBI.man %>% 
-              #              filter(e_form == "1") %>% 
-              #              group_by(plot_ID) %>% 
-              #              summarize(n = n()) %>% 
-              #              filter(n <= 1), 
-              #            by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+             select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              # inner_join(.,   forest_edges_HBI.man %>% 
-              #              filter(e_form == "1") %>% 
-              #              group_by(plot_ID) %>% 
-              #              summarize(n = n()) %>% 
-              #              filter(n <= 1), 
-              #            by = "plot_ID") %>% 
+              filter(e_form == "1") %>%
               select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
@@ -508,25 +486,13 @@ ggplot() +
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              # inner_join(.,   forest_edges_HBI.man %>% 
-              #              filter(e_form == "1") %>% 
-              #              group_by(plot_ID) %>% 
-              #              summarize(n = n()) %>% 
-              #              filter(n <= 1), 
-              #            by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+             select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
                       names(.)[2:3], names(.)[4:5]),  
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              # inner_join(.,   forest_edges_HBI.man %>% 
-              #              filter(e_form == "1") %>% 
-              #              group_by(plot_ID) %>% 
-              #              summarize(n = n()) %>% 
-              #              filter(n <= 1), 
-              #            by = "plot_ID") %>% 
               select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
               to_long(keys = c("X_name",  "Y_name"),
                       values = c( "X_value", "Y_value"),
@@ -534,13 +500,7 @@ ggplot() +
             aes(x= X_value, y = Y_value, colour = X_name))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "1"), #%>% 
-             #              inner_join(.,   forest_edges_HBI.man %>% 
-             #                           filter(e_form == "1") %>% 
-             #                           group_by(plot_ID) %>% 
-             #                           summarize(n = n()) %>% 
-             #                           filter(n <= 1), 
-             #                         by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+            aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
   #theme_bw()+
   #facet_wrap(~plot_ID)
   
@@ -1115,7 +1075,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  forest_edges_HBI.man.sub.2.edges <- forest_edges_HBI.man %>% # rows:84
    # select only plots with a known edge form
    filter(e_form == 1 | e_form == 2) %>%  # rows:84
-  # filter(inter_status_AB_17 == "two I") %>% 
+   #filter(inter_status_AB_17 == "two I") %>% 
    # remove plots that have two edges
    semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 15 plots iwth 2 edges --> 30 rows -> 54 left
    # remove plots that do now have a corresponding center coordiante in the HBI loc document
@@ -1124,7 +1084,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  edges.list.two.edges <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
-   # i = 15
+    #i = 11
    
    # select plot ID of the respective circle 
    my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges$plot_ID)[i]
@@ -1145,7 +1105,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
    
    
-    print(plot(my.poly.1$geometry, main=my.plot.id), 
+    print(plot(my.poly.1$geometry, main= my.plot.id), 
           plot(my.poly.2$geometry,
              #  col = "red", 
                add = T), 
@@ -1204,10 +1164,10 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    inter.area.df <- as.data.frame(
      cbind(
      "id" = c(my.plot.id, my.plot.id, my.plot.id), 
-     "e_id" = c(my.poly.1$e_id, my.poly.2$e_id, NA), 
-     "e_form" = c(my.poly.1$e_form, my.poly.2$e_form, NA),
+     "e_id" = c(my.poly.1$e_id, my.poly.2$e_id, 0), 
+     "e_form" = c(my.poly.1$e_form, my.poly.2$e_form, 0),
      "shape" = c("edge", "edge", "circle"),
-     "inter_stat" = c(inter.status.poly.1, inter.status.poly.2, NA),
+     "inter_stat" = c(inter.status.poly.1, inter.status.poly.2, 0),
      "area_m2" = c(inter.1.area, inter.2.area, remaining.circle.area)
      ))
    
