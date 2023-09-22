@@ -369,7 +369,7 @@ ggplot() +
              #                summarize(n = n()) %>% 
              #                filter(n <= 1), 
              #              by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = edge_A_method))+
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
   theme_bw()+
   facet_wrap(~plot_ID)
 
@@ -450,7 +450,9 @@ ggplot() +
 
 # for plot 50080 there are two many edges measured
 # for plot 50102 there is no intersection between the line BT and the 60m radius but I don´t know why. 
-
+geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2)) # Draw ggplot2 plot with circle representing sampling circuits
+  
 # ----- 2.1.3. visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
 # plotting trees and interception lines divided in t_line_status
 #AB line
@@ -713,8 +715,8 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  square.coords <- vector("list", length = length(forest_edges_HBI.man.sub.e1$plot_ID)*5)
  
  for(i in 1:length(forest_edges_HBI.man.sub.e1$plot_ID) ) {
-   # i = 55
-   # i = which(grepl(50042, forest_edges_HBI.man.sub.e1$plot_ID))
+   # i = 37
+   # i = which(grepl(50086, forest_edges_HBI.man.sub.e1$plot_ID))
    # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
@@ -757,23 +759,23 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   
   # for edge form 1 i have to cinsiderthat the square has ot "look" into the direction of the shorter side
   # calculate coordiantes of the middle of thie line between 
-  x_m_line = (AB.inter.x1 + AB.inter.x2)/2;
-  y_m_line = (AB.inter.y1 + AB.inter.y2)/2;
+  x_m_line = (AB.inter.x1 + AB.inter.x2)/2
+  y_m_line = (AB.inter.y1 + AB.inter.y2)/2
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
-  b1_MC = slope(data_circle$x0[3], data_circle$y0[3], x_m_line, y_m_line);
-  b0_MC = intercept(data_circle$x0[3], data_circle$y0[3], x_m_line, y_m_line);
+  b1_MC = slope(data_circle$x0[3], data_circle$y0[3], x_m_line, y_m_line)
+  b0_MC = intercept(data_circle$x0[3], data_circle$y0[3], x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
-  X1_inter_MC = intersection_line_circle(b0_MC, b1_MC, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x1"); 
-  X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "x2");
+  X1_inter_MC = intersection_line_circle(b0_MC, b1_MC, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, coordinate = "x1") 
+  X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, coordinate = "x2")
   # insert the intersection x corodinate in the line function to get the respective y coordinate
-  y1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y1"); 
-  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3], coordinate = "y1");
+  y1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, coordinate = "y1") 
+  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, coordinate = "y2")
   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
-  dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
-  dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
+  dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line)
+  dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) 
   # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
-  X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC); 
-  Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC);
+  X_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, X1_inter_MC, X2_inter_MC) 
+  Y_inter_MC_shorter_side = ifelse(dist_C_inter_1_MC < dist_C_inter_2_MC, y1_inter_MC, y2_inter_MC)
   
   azi.for.square.corners <- azi(X_inter_MC_shorter_side, Y_inter_MC_shorter_side, x_m_line, y_m_line)
   
@@ -782,11 +784,19 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   x.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "x")  # this is: easting, longitude, RW
   y.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
   x.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "x")  # this is: easting, longitude, RW
-  y.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
+  y.E <- coord(AB.inter.x2,AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
   
-  
-  
-  # UTM coordiantes of corner points 
+   # test.df<- as.data.frame(cbind(x <- c(0, AB.inter.x1, AB.inter.x2, x_m_line, X1_inter_MC, X2_inter_MC, x.D, x.E), 
+   #                                y <- c(0, AB.inter.y1, AB.inter.y2, y_m_line, y1_inter_MC, y2_inter_MC, y.D, y.E),
+   #                                type <- c("center", "AB.inter.x1", "AB.inter.x2", "x_m_line", "X1_inter_MC", "X2_inter_MC", "x.D", "x.E")
+   #                                ))
+   #  print(ggplot()+
+   #    geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+   #    geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax))+ # Draw ggplot2 plot with circle representing sampling circuits
+   #    geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+   #   geom_point(data = test.df, aes(x = x, y = y, color = type)))
+    
+    # UTM coordiantes of corner points 
   AB.inter.1.east <- my.center.easting + AB.inter.x1 
   AB.inter.1.north <- my.center.northing + AB.inter.y1
   AB.inter.2.east <- my.center.easting + AB.inter.x2 
@@ -796,6 +806,11 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   E.east <- my.center.easting + x.E
   E.north <- my.center.northing + y.E
   
+  # creating the turning point od a triangle by selecting the intersection of the 
+  # line from the middle of the AB.inter-ray and the circle center (MC_line) with 
+  # the 60m radius at the "shorter side" so the intersection of the MC_line with a 60m radius that has le lest distance to the MC point on the AB.inter-ray
+  turning.east <- my.center.easting + X_inter_MC_shorter_side
+  turning.north <- my.center.northing + Y_inter_MC_shorter_side
   
   # create dataframe that holds coordinates of 
   square.df <- as.data.frame(cbind("lon" = c(AB.inter.1.east, D.east, E.east, AB.inter.2.east, AB.inter.1.east),
@@ -809,19 +824,29 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
     mutate(geometry = as.factor(geometry))# %>% 
     #select(geometry)
   
+  square.test.df <- as.data.frame(cbind("lon" = c(turning.east, AB.inter.1.east, AB.inter.2.east, turning.east),
+                                        "lat" = c(turning.north, AB.inter.1.north, AB.inter.2.north,  turning.north),
+                                        "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id),
+                                        "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id)))%>%
+    mutate(lat = as.integer(lat), 
+           lon = as.integer(lon)) %>% 
+    unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
+    mutate(geometry = as.factor(geometry))# %>% 
+  #select(geometry)
+  
  ##creating squares in terrra: 
   #square.poly <- terra::vect(c(paste("POLYGON", "(", "(", paste(square.df$geometry[1], square.df$geometry[2], square.df$geometry[3], square.df$geometry[4], square.df$geometry[5], sep = ", "), ")", ")", sep = "")), crs="epsg:25833")
   
   
  # creating squeares in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
-  square.poly <- sfheaders::sf_polygon(obj = square.df
+  square.poly <- sfheaders::sf_polygon(obj = square.test.df  ##### !!! change back to square.df
                                        , x = "lon"
                                        , y = "lat"
                                        , polygon_id = "id")
   # assing crs
   sf::st_crs(square.poly) <- my.utm.epsg
   
-  print(plot(square.poly$geometry))
+  print(plot(square.poly$geometry, main = my.plot.id))
   
   square.list[[i]] <- c("e_id" = my.e.id, square.poly)
   
@@ -852,6 +877,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  for(i in 1:length(forest_edges_HBI.man.sub.e2$plot_ID) ) {
    # i = 1
+   # i = which(grepl(50102, forest_edges_HBI.man.sub.e2$plot_ID))
    # georefferencing data: 
    
    # select plot ID accordint to positioin in the list
@@ -890,22 +916,35 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    # select polar coordiantes of the points of the triangle corners via "inter_for_triangle"-function
    # for AT side
    AT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), slope(x.T, y.T, x.A, y.A), 
-                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, 
+                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*3, 
                                        x.A, y.A, x.T, y.T, 
                                        coordinate = "x")                              # longitude, easting, RW, X
    AT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), slope(x.T, y.T, x.A, y.A), 
-                                       data_circle$x0[3], data_circle$y0[3],data_circle$rmax[3]*2, 
+                                       data_circle$x0[3], data_circle$y0[3],data_circle$rmax[3]*3, 
                                        x.A, y.A, x.T, y.T, 
                                        coordinate = "y")                              # latitude, northing, HW, y 
    # for BT side
    BT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B),slope(x.T, y.T, x.B, y.B), 
-                                       data_circle$x0[3],data_circle$y0[3],data_circle$rmax[3]*2, 
+                                       data_circle$x0[3],data_circle$y0[3],data_circle$rmax[3]*3, 
                                        x.B, y.B, x.T, y.T, 
                                        coordinate = "x")                              # longitude, easting, RW, X
    BT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), slope(x.T, y.T, x.B, y.B), 
-                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*2, 
+                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*3, 
                                        x.B, y.B, x.T, y.T, 
                                        coordinate = "y")                              # latitude, northing, HW, y 
+
+    
+   # test.df<- as.data.frame(cbind(x <- c(0, x.A, x.B, AT.triangle.x, BT.triangle.x, x.T),
+   #                               y <- c(0, y.A, y.B, AT.triangle.y, BT.triangle.y, y.T),
+   #                               type <- c("center", "x.A", "x.B", "AT.triangle.x", "BT.triangle.x", "x.T")
+   #                                 ))
+   #   print(ggplot()+
+   #     geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+   #     geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax))+ # Draw ggplot2 plot with circle representing sampling circuits
+   #     geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+   #       geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*3))+
+   #       geom_point(data = test.df, aes(x = x, y = y, color = type)))
+   
    
    #calculate UTM coordiantes of triangle corners
    T.east <- my.center.easting + x.T                                            # longitude, easting, RW, X
@@ -939,7 +978,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    sf::st_crs(triangle.poly) <- my.utm.epsg
    
    # print triangle
-   print(plot(triangle.poly$geometry))
+   print(plot(triangle.poly$geometry, main = my.plot.id))
    
    # save polygones in list
    triangle.list[[i]] <- c("e_id" = my.e.id, triangle.poly)
@@ -1076,7 +1115,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  forest_edges_HBI.man.sub.2.edges <- forest_edges_HBI.man %>% # rows:84
    # select only plots with a known edge form
    filter(e_form == 1 | e_form == 2) %>%  # rows:84
-   #filter(inter_status_AB_17 == "two I") %>% 
+  # filter(inter_status_AB_17 == "two I") %>% 
    # remove plots that have two edges
    semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 15 plots iwth 2 edges --> 30 rows -> 54 left
    # remove plots that do now have a corresponding center coordiante in the HBI loc document
@@ -1085,7 +1124,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  edges.list.two.edges <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
-   # i = 3
+   # i = 15
    
    # select plot ID of the respective circle 
    my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges$plot_ID)[i]
@@ -1106,11 +1145,11 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
    
    
-    print(plot(my.circle$geometry), 
-          plot(my.poly.1$geometry,
+    print(plot(my.poly.1$geometry, main=my.plot.id), 
+          plot(my.poly.2$geometry,
              #  col = "red", 
                add = T), 
-          plot(my.poly.2$geometry,
+          plot(my.circle$geometry,
             #   col = "blue", 
                add = T))
    
@@ -1134,7 +1173,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   # remaining.circle.1 <- if(nrow(remaining.circle.1)==0){my.circle}else{remaining.circle.1}
    
   
-    print(plot(remaining.circle.1$geometry)) 
+    print(plot(remaining.circle.1$geometry, main = my.plot.id)) 
    #       plot(inter.poly.1$geometry, col = "red", add = T))
    
   # calculate intersecting area of second polygone by withdrawing it from remaining circle
@@ -1153,7 +1192,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   # so the area of the frst remining circle minus the area of the second remaining circle 
    remaining.circle.1.and.2 <- if(nrow(inter.poly.2)==0){remaining.circle.1}else{sf::st_difference(remaining.circle.1, inter.poly.2)}
    
-   print(plot(remaining.circle.1.and.2$geometry)) 
+   print(plot(remaining.circle.1.and.2$geometry, main = my.plot.id)) 
    
    # calculate the area of the intersection 1
    inter.1.area <- ifelse(nrow(inter.poly.1) == 0, 0, sf::st_area(inter.poly.1))
@@ -1213,6 +1252,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  c <- circle.poly.df$geometry
  id <- circle.poly.df$id
  
+# https://ggplot2.tidyverse.org/reference/ggsf.html
  ggplot() +
    geom_sf(data = circle.poly.df$geometry[45], aes(fill = circle.poly.df$id[45]))+
    #geom_sf(data = square.poly.df$geometry[10], aes())+

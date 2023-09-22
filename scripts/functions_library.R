@@ -345,7 +345,7 @@ p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.
   X2_inter_MC = intersection_line_circle(b0_MC, b1_MC, c.x0, c.y0, c.r0, coordinate = "x2");
   # insert the intersection x corodinate in the line function to get the respective y coordinate
   y1_inter_MC = intersection_line_circle(b0_MC, b1_MC, c.x0, c.y0, c.r0, coordinate = "y1"); 
-  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC, c.x0, c.y0, c.r0, coordinate = "y1");
+  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC, c.x0, c.y0, c.r0, coordinate = "y2");
   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
   dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line);
   dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line); 
@@ -359,10 +359,11 @@ p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.
                                     # point that is for sure in the smaller cirlce segment, has a positive impllciti equation result", 
                                     "negative");          # "y imlicit has to be negative for tree to be outside", 
   Y_tree_implicit = l.b0  + l.b1 * x.tree - y.tree;
+  # if the result of the impliyit function of the trees corodinates corresponds with the result of the intersection on the shorter side of the circle, the tree status has to be B
   Y_implicit_status_tree_line =  ifelse(i_status == "two I" & Y_implicit_status_M_line == "positive" & Y_tree_implicit >= 0 |
-                                          i_status == "two I" & Y_implicit_status_M_line == "negative" &  Y_tree_implicit < 0 |
-                                          i_status != "two I",  
-                                        "A", "B"); # if the line is crossing the plot by two intersections and there 
+                                          i_status == "two I" & Y_implicit_status_M_line == "negative" &  Y_tree_implicit < 0,
+                                         # i_status != "two I",  
+                                        "B", "A"); # if the line is crossing the plot by two intersections and there 
   
   return(Y_implicit_status_tree_line)
 }
@@ -389,6 +390,12 @@ inter.for.triangle <- function(l.b0, l.b1, c.x0, c.y0, c.r0.inter, x, y, x.t, y.
   azi.inter.2.t <- azi(x2.inter, y2.inter, x.t, y.t);
   # azimut between the other opint on the line ant the trunign point
   azi.point.t <- azi(x, y, x.t, y.t);
+  
+  # reducing the number of digits so there wont occure weird differences that make r return NA
+  azi.inter.1.t <- format(round(azi.inter.1.t, 10), nsmall = 10) 
+  azi.inter.2.t <- format(round(azi.inter.2.t, 10), nsmall = 10)
+  azi.point.t <- format(round(azi.point.t, 10), nsmall = 10)
+  
   switch(coordinate,
          x = ifelse(azi.inter.1.t == azi.point.t,x1.inter,
                     ifelse(azi.inter.2.t == azi.point.t, x2.inter , NA)), 
