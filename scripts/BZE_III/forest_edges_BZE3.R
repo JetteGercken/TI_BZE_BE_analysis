@@ -991,83 +991,88 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 53 --> there are 2 plots without corresponding 
  
  edges.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
-
+ inter.poly.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
+ remaining.circle.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
+ 
  for (i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))){ 
-      # i =46
-
+   # i = 2
+   
    # select plot ID of the respective circle 
-    my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
-    my.e.form <- edge.poly.df$e_form[edge.poly.df$id == my.plot.id]
-    my.e.id <- edge.poly.df$e_id[edge.poly.df$id == my.plot.id]
-    
-    
-     # select the polygones with the same plot ID as the cirlce
-    # my.plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id) 
-    # count the numbers of rows of the polygone datafarme of the plot
-    # my.poly.count <- nrow(my.plot.polys.df)
-    
-    # select the circle polygone corresponding with the plot ID
-    # my.circle.list.id <- which(grepl(my.plot.id, circle.df$id))
-    my.circle <- sf::st_as_sf(circle.poly.df %>% filter(id == my.plot.id) %>% distinct())
-    #plot(my.circle)
-    
-    # select the respective polygones the circle is intersected by
-    my.poly <- sf::st_as_sf(edge.poly.df %>% filter(id == my.plot.id))
-    
+   my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
+   my.e.form <- edge.poly.df$e_form[edge.poly.df$id == my.plot.id]
+   my.e.id <- edge.poly.df$e_id[edge.poly.df$id == my.plot.id]
+   
+   
+   # select the polygones with the same plot ID as the cirlce
+   # my.plot.polys.df <- edge.poly.df %>% filter(id == my.plot.id) 
+   # count the numbers of rows of the polygone datafarme of the plot
+   # my.poly.count <- nrow(my.plot.polys.df)
+   
+   # select the circle polygone corresponding with the plot ID
+   # my.circle.list.id <- which(grepl(my.plot.id, circle.df$id))
+   my.circle <- sf::st_as_sf(circle.poly.df %>% filter(id == my.plot.id) %>% distinct())
+   #plot(my.circle)
+   
+   # select the respective polygones the circle is intersected by
+   my.poly <- sf::st_as_sf(edge.poly.df %>% filter(id == my.plot.id))
+   
    # if(my.poly.count > 1){my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])} else{}
-    
-    # print(plot(my.circle$geometry), 
-    #       plot(my.poly.1$geometry, col = "blue", add = T), 
-    #       plot(my.poly.2$geometry, col = "red", add = T))
-    # 
-      print(plot(my.poly$geometry, main = my.plot.id), 
-           plot(my.circle$geometry, add = T))
-    
-    # calculate intersection for firest polygone 
-    inter.poly  <- st_intersection(my.circle, my.poly)
-    
-    
-    #print(plot(my.circle$geometry), 
-     #     plot(inter.poly$geometry, col = "red", add = T))
-    
-    # if there area pwo polygoens per plot 
-    # create poly woth remaining area: https://gis.stackexchange.com/questions/353633/r-spatial-erase-one-polygon-from-another-correct-use-of-st-difference
-    # rest.poly <- sf::st_difference(my.circle, inter.poly)
-    
-    # findintersection of second polygone with cirlce
-    # if(my.poly.count > 1){
-    #   my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
-    #   inter.poly.2 <- sf::st_intersection(my.circle, my.poly.2)
-    #   inter.poly.1.and.2 <- sf::st_intersection(inter.poly.1, inter.poly.2)
-    #   inter.status.polygones <- ifelse(nrow(inter.poly.1.and.2) != 0 & my.poly.count > 1, "warning", "fine")
-    #   rest.poly.1.and.2 <- ifelse(inter.status.polygones == "fine",  sf::st_difference(rest.poly.1, inter.poly.2), NULL)
-    #   
-    #   } else{}
-    
-    # check if both the intersection of the polygones with the circle intersect each other
-    # if(my.poly.count > 1){inter.poly.1.and.2 <- sf::st_intersection(inter.poly.1, inter.poly.2)} else{}
-    # 
-    # ifelse(nrow(inter.poly.1.and.2) != 0 & my.poly.count > 1, print("warning: edges intersect within circle"), print("all fine"))
-    # inter.status.polygones <- ifelse(nrow(inter.poly.1.and.2) != 0 & my.poly.count > 1, "warning", "fine")
-    # 
-    # # if inter status is not warning deduct edge 1 and edge 2 and then calculate the remaining area: 
-    #  # so remaining area rest.poly.1 = total circle - poly 1
-    #  # remaining area rest.poly.1.and.2 = total cirlce - poly 1 - poly 2 = rest.poly.1 - inter.poly.1
-    # if(inter.status.polygones == "fine"){rest.poly.1.and.2 <- sf::st_difference(rest.poly.1, inter.poly.2)}else{}
-    
-    inter.area <- ifelse(nrow(inter.poly) == 0, 0, sf::st_area(inter.poly))
-    
-    inter.area.df <- as.data.frame(cbind("id" = my.plot.id,  "e_id" = my.e.id, "area_m2" = inter.area))
-    
-    edges.list[[i]] <- inter.area.df
-      
+   
+   # print(plot(my.circle$geometry), 
+   #       plot(my.poly.1$geometry, col = "blue", add = T), 
+   #       plot(my.poly.2$geometry, col = "red", add = T))
+   # 
+   #print(plot(my.poly$geometry, main = my.plot.id), 
+    #     plot(my.circle$geometry))
+   
+   # calculate intersection for firest polygone 
+   inter.poly  <- sf::st_intersection(my.circle, my.poly)
+   remaining.cricle.poly  <- if(nrow(inter.poly)==0){my.circle}else{sf::st_difference(my.circle, inter.poly)}
+   
+   #print polygones
+   #print(plot(remaining.cricle.poly$geometry, main = my.plot.id)) 
+   #print(plot(inter.poly$geometry, main = my.plot.id)) 
+   
+   # calculate area
+   inter.area <- ifelse(nrow(inter.poly) == 0, 0, sf::st_area(inter.poly))
+   remaining.circle.area <- ifelse(nrow(remaining.cricle.poly) == 0, 0, sf::st_area(remaining.cricle.poly))
+   
+   # create area dataframe
+   inter.area.df <- as.data.frame(
+     cbind(
+       "id" = c(my.plot.id, my.plot.id),
+       "e_id" = c(my.e.id,  0),
+       "shape" = c("edge", "circle"),
+       "area_m2" = c(inter.area, remaining.circle.area)
+       ))
+   
 
+   
+   #inter.area.df <- as.data.frame(cbind("id" = my.plot.id,  "e_id" = my.e.id, "area_m2" = inter.area))
+   
+  # edges.list[[i]] <- inter.area.df
+   
+   # list with inter areas
+   edges.list[[i]] <- inter.area.df
+   
+  inter.poly.list[[i]] <- c("id" = my.plot.id, "e_id" = my.e.id, inter.poly)
+   remaining.circle.list [[i]] <- c("id" = my.plot.id, "e_id" = my.e.id, remaining.cricle.poly)
+   
  }
- 
- edges.list.final <- rbindlist(edges.list)
- edges.area.df <- as.data.frame(edges.list.final)
- 
+ # list of areas
+ edges.area.list.final <- rbindlist(edges.list)
+ edges.area.df <- as.data.frame(edges.area.list.final)
 
+ 
+ # list of polygones of forest edges !!!! DOESNT WORK YET
+ inter.poly.list.final <- rbindlist(inter.poly.list)
+ inter.poly.df <- as.data.frame(inter.poly.list.final)
+ # list of polygones of remainign circles !!!! DOESNT WORK YET
+ rem.circle.poly.list.final <- rbindlist(remaining.circle.list,  fill=TRUE)
+ inter.poly.df <- as.data.frame(rem.circle.poly.list.final) 
+ 
+ 
+ 
  
  
  # dataprep for loop
