@@ -744,7 +744,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   x.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "x")  # this is: easting, longitude, RW
   y.D <- coord(AB.inter.x1, AB.inter.y1,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
   x.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "x")  # this is: easting, longitude, RW
-  y.E <- coord(AB.inter.x2,AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
+  y.E <- coord(AB.inter.x2, AB.inter.y2,  data_circle$rmax[3]*2, azi.for.square.corners, coordinate = "y")  # this is: northing, latitude, HW
   
    # test.df<- as.data.frame(cbind(x <- c(0, AB.inter.x1, AB.inter.x2, x_m_line, X1_inter_MC, X2_inter_MC, x.D, x.E), 
    #                                y <- c(0, AB.inter.y1, AB.inter.y2, y_m_line, y1_inter_MC, y2_inter_MC, y.D, y.E),
@@ -784,7 +784,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
     mutate(geometry = as.factor(geometry))# %>% 
     #select(geometry)
   
-  square.test.df <- as.data.frame(cbind("lon" = c(turning.east, AB.inter.1.east, AB.inter.2.east, turning.east),
+  triangle.e1.df <- as.data.frame(cbind("lon" = c(turning.east, AB.inter.1.east, AB.inter.2.east, turning.east),
                                         "lat" = c(turning.north, AB.inter.1.north, AB.inter.2.north,  turning.north),
                                         "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id),
                                         "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id)))%>%
@@ -799,7 +799,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
   
   
  # creating squeares in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
-  square.poly <- sfheaders::sf_polygon(obj = square.test.df  ##### !!! change back to square.df
+  square.poly <- sfheaders::sf_polygon(obj = triangle.e1.df  ##### !!! change back to square.df if you want squares
                                        , x = "lon"
                                        , y = "lat"
                                        , polygon_id = "id")
@@ -995,7 +995,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  remaining.circle.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))){ 
-   # i = 2
+   # i = 1
    
    # select plot ID of the respective circle 
    my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
@@ -1022,12 +1022,12 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    #       plot(my.poly.1$geometry, col = "blue", add = T), 
    #       plot(my.poly.2$geometry, col = "red", add = T))
    # 
-   #print(plot(my.poly$geometry, main = my.plot.id), 
-    #     plot(my.circle$geometry))
+   print(plot(my.poly$geometry, main = my.plot.id), 
+        plot(my.circle$geometry))
    
    # calculate intersection for firest polygone 
-   inter.poly  <- sf::st_intersection(my.circle, my.poly)
-   remaining.cricle.poly  <- if(nrow(inter.poly)==0){my.circle}else{sf::st_difference(my.circle, inter.poly)}
+   inter.poly  <- sf::st_intersection(my.circle, st_geometry(my.poly))
+   remaining.circle.poly  <- if(nrow(inter.poly)==0){my.circle}else{sf::st_difference(my.circle, st_geometry(inter.poly))}
    
    #print polygones
    #print(plot(remaining.cricle.poly$geometry, main = my.plot.id)) 
@@ -1046,17 +1046,23 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
        "area_m2" = c(inter.area, remaining.circle.area)
        ))
    
-
-   
-   #inter.area.df <- as.data.frame(cbind("id" = my.plot.id,  "e_id" = my.e.id, "area_m2" = inter.area))
-   
-  # edges.list[[i]] <- inter.area.df
-   
    # list with inter areas
    edges.list[[i]] <- inter.area.df
    
-  inter.poly.list[[i]] <- c("id" = my.plot.id, "e_id" = my.e.id, inter.poly)
-   remaining.circle.list [[i]] <- c("id" = my.plot.id, "e_id" = my.e.id, remaining.cricle.poly)
+  inter.poly.list[[i]] <- if(nrow(inter.poly) != 0){c("e_id" = my.e.id, inter.poly)}else{}
+    
+    
+    
+    # cbind(
+    # "id" = c(my.plot.id, my.plot.id),
+    # "e_id" = c(my.e.id,  0),
+    # "shape" = c("edge", "circle"),
+    # "geometry" = if(nrow(inter.poly)==0){"geometry" = c(NA, c(remaining.circle.poly$geometry))}else{"geometry" = c(c(inter.poly$geometry), c(remaining.circle.poly$geometry))}
+    # )
+    
+  #c("id" = if(nrow(inter.poly)==0){my.plot.id}else{}, "e_id" = my.e.id,  if(nrow(inter.poly)==0){NA}else{inter.poly})
+  
+   remaining.circle.list[[i]] <- c("e_id" = my.e.id, remaining.circle.poly)
    
  }
  # list of areas
@@ -1066,14 +1072,13 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  # list of polygones of forest edges !!!! DOESNT WORK YET
  inter.poly.list.final <- rbindlist(inter.poly.list)
- inter.poly.df <- as.data.frame(inter.poly.list.final)
+ inter.poly.df <- as.data.frame(inter.poly.list)
  # list of polygones of remainign circles !!!! DOESNT WORK YET
- rem.circle.poly.list.final <- rbindlist(remaining.circle.list,  fill=TRUE)
+ rem.circle.poly.list.final <- rbindlist(remaining.circle.list)
  inter.poly.df <- as.data.frame(rem.circle.poly.list.final) 
  
- 
- 
- 
+ view(inter.poly.list)
+
  
  # dataprep for loop
  # createa dataframe with plots that have only one forest edges
@@ -1183,6 +1188,8 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  edges.list.two.edges.final <- rbindlist(edges.list.two.edges)
  edges.area.two.edges.df <- as.data.frame(edges.list.two.edges.final)
+ 
+ 
  
  
 # 3.2.1.4. visualising loops results -----------------------------
