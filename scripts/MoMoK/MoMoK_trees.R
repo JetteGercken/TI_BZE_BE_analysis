@@ -3032,16 +3032,33 @@ trees_P_CP_SP <- left_join(
               mean_BA_SP_plot = mean(BA_m2),        # calculate mean BA in m2 per species per canopy payer per plot
               h_g = sum(mean(H_m)*BA_m2)/sum(BA_m2),  # Höhe des Grundfächenmittelstammes
               d_g = ((sqrt((mean(BA_m2)/pi)))*2)*10,  # multiply by two to get radius into diameter, multiply by 10 to transform m into cm
-              Nt_plot = n(),                           # STückzahl pro plot counting number of observations per group to get number of trees per ha
-              plot_A_ha = mean(plot_A_ha)) %>%
+              Nt_plot = n()                           # STückzahl pro plot counting number of observations per group to get number of trees per ha
+             ) %>%
+    # dataset with area per plot considering multipple sampling circuits per plot
+    left_join(., trees_total_5 %>%
+                select(plot_ID, CCS_nr) %>% 
+                distinct() %>%
+                mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                group_by(plot_ID) %>%
+                summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+                mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+              by = "plot_ID") %>% 
     mutate(SP_BA_m2ha = SP_BA_plot/plot_A_ha,         # calculate BA per species per plot in m2/ ha
            Nt_ha = Nt_plot/ plot_A_ha),         
   # dataset with total BA per plot
   trees_total_5 %>%
     filter(compartiment == "ag") %>% 
     group_by(plot_ID, C_layer) %>%                  # group by plot to calculate total BA per plot
-    summarise(tot_BA_plot = sum(BA_m2),             # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-              plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to calculate BA per ha
+    summarise(tot_BA_plot = sum(BA_m2)) %>%      # plot area in hectare to calculate BA per ha
+    # dataset with area per plot considering multipple sampling circuits per plot
+    left_join(., trees_total_5 %>%
+                select(plot_ID, CCS_nr) %>% 
+                distinct() %>%
+                mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                group_by(plot_ID) %>%
+                summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+                mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+              by = "plot_ID") %>% 
     mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha),     # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
   by=c("plot_ID","C_layer", "plot_A_ha")) %>% 
   select(- c(plot_A_ha, tot_BA_plot)) %>%           # remove unnecessary variables
@@ -3071,11 +3088,7 @@ trees_P_CP_SP <- left_join(trees_P_CP_SP,
 
 write.csv(trees_P_CP_SP, paste0(momok.out.home, "forst_zusammenfassung_MoMoK.csv"))
 
-# vergleich mit valentis biomasse für baum mit folgenden Eingangsgrößen: 346 t pro Baum va. 404t pro Baum von tapes
-tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="agb") - 
-  tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="fwb") -
-  
-  tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="ndl")
+
 
 # ----- 2.5.1.2. grouped by Plot, species -----------------------------------------------------------------
 
@@ -3085,8 +3098,17 @@ trees_P_SP <-  trees_total_5 %>%
     summarize(B_t_P_SP = sum(B_t_tapes),             # Biomass per SP per compartiment
               C_t_P_SP = sum(C_t_tapes),             # Carbon per SP per compartiment    
               N_t_P_SP = sum(N_t),                   # Nitrogen sper SP per compartiment
-              plot_A_ha = mean(plot_A_ha)) %>%      # plot area in hectare to reffer data to hectar
-    mutate(MoMoK_A_ha = (50*50)/10000) %>%           # actual momok area in hectar) %>% 
+             # plot_A_ha = mean(plot_A_ha)
+              ) %>%      # plot area in hectare to reffer data to hectar
+  # dataset with area per plot considering multipple sampling circuits per plot
+  left_join(., trees_total_5 %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+              mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+            by = "plot_ID") %>% 
              # data set with BA etc. per species per plot
   left_join(.,  trees_total_5 %>%
               filter(compartiment == "total") %>% 
@@ -3097,23 +3119,35 @@ trees_P_SP <-  trees_total_5 %>%
                         mean_H_m = mean(H_m),                # mean height per species per  per plot
                         sd_height_m = sd(H_m),               # standart deviation of height --> structual richness indicator
                         SP_BA_plot = sum(BA_m2),             #  BA per species  per plot in m2
-                        Nt_P_SP = n(), 
-                        plot_A_ha = mean(plot_A_ha)) %>% 
-              mutate(MoMoK_A_ha = (50*50)/10000, 
-                     #compartiment = "total", 
-                     Nt_ha = Nt_P_SP/ plot_A_ha, 
+                        Nt_P_SP = n()) %>% 
+              # dataset with area per plot considering multipple sampling circuits per plot
+              left_join(., trees_total_5 %>%
+                          select(plot_ID, CCS_nr) %>% 
+                          distinct() %>%
+                          mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                          group_by(plot_ID) %>%
+                          summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+                          mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+                        by = "plot_ID") %>% 
+              mutate(Nt_ha = Nt_P_SP/ plot_A_ha, 
                      Nt_MA = (Nt_P_SP/ plot_A_ha)*MoMoK_A_ha, 
                      SP_BA_m2ha = SP_BA_plot/ plot_A_ha, 
                      SP_BA_m2MA = (SP_BA_plot/ plot_A_ha)*MoMoK_A_ha) %>%             # this is to only add the values to one row per plot and species and avoid repeted plot-species wise values that are not grouped by compartiment and thus keep being repeated 
               # dataset with total BA per plot to calcualte share of each species by total basal area
-              left_join(.,trees_total_5 %>%
+              left_join(., trees_total_5 %>%
                           filter(compartiment == "total") %>%
                           group_by(plot_ID) %>%                         # group by plot to calculate total BA per plot
-                          summarise(tot_BA_plot = sum(BA_m2),           # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-                                    plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
-                          mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha   # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
-                                 #compartiment = "total"
-                                 ),               # just to ensure the join works
+                          summarise(tot_BA_plot = sum(BA_m2)) %>%    # plot area in hectare to calculate BA per ha
+                                      # dataset with area per plot considering multipple sampling circuits per plot
+                          left_join(., trees_total_5 %>%
+                                        select(plot_ID, CCS_nr) %>% 
+                                        distinct() %>%
+                                        mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                                        group_by(plot_ID) %>%
+                                        summarize(plot_A_ha = sum(CCS_A_ha)),     
+                                      by = "plot_ID") %>% 
+                            mutate(tot_BA_m2ha = tot_BA_plot/plot_A_ha   # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
+                                  ),               # just to ensure the join works
                         by=c("plot_ID", "plot_A_ha")) %>% 
               select(- c(plot_A_ha, tot_BA_plot, MoMoK_A_ha)) %>%  # remove unnecessary variables
               mutate(BA_SP_per = (SP_BA_m2ha/tot_BA_m2ha)*100),  # calculate proportion of each species to total BA in percent)
@@ -3161,18 +3195,37 @@ trees_P <- trees_total_5 %>%
   summarise(B_t_plot = sum(B_t_tapes),             # Biomass per plot per compartiment
             C_t_plot = sum(C_t_tapes),             # Carbon per plot per compartiment    
             N_t_plot = sum(N_t),                   # Nitrogen per plot per compartiment
-            plot_A_ha = mean(plot_A_ha)) %>%       # plot area in hectare to reffer data to hectar later
-  mutate(MoMoK_A_ha = (50*50)/10000) %>%           # MoMoK area in hectare to reffer data to MoMoK area later
+            #plot_A_ha = mean(plot_A_ha)
+            ) %>%       # plot area in hectare to reffer data to hectar later
+  # dataset with area per plot considering multipple sampling circuits per plot
+  left_join(., trees_total_5 %>%
+              select(plot_ID, CCS_nr) %>% 
+              distinct() %>%
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+              group_by(plot_ID) %>%
+              summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+              mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+            by = "plot_ID") %>% 
   left_join(., trees_total_5 %>%
               filter(compartiment == "total") %>% 
-              group_by(plot_ID) %>%                         # group by plot only to create column with 
+              group_by(plot_ID) %>%   # group by plot only to create column with 
               summarise(mean_DBH_cm = mean(DBH_cm),          # mean diameter per species  per plot
                         sd_DBH_cm = sd(DBH_cm),              # standard deviation of diameter 
                         mean_H_m = mean(H_m),                # mean height per species per  per plot
                         sd_height_m = sd(H_m),               # standart deviation height
                         BA_m2_plot = sum(BA_m2),            # calculate total BA per plot in m2 by summarizing the BA of individual trees after grouping the dataset by plot
-                        Nt_plot = n(),                          # number of trees per plot
-                        plot_A_ha = mean(plot_A_ha)) %>%    # plot area in hectare to calculate BA per ha
+                        Nt_plot = n()                       # number of trees per plot
+                        #plot_A_ha = mean(plot_A_ha)         # plot area in hectare to calculate BA per ha
+                        ) %>%   
+              # dataset with area per plot considering multipple sampling circuits per plot
+              left_join(., trees_total_5 %>%
+                          select(plot_ID, CCS_nr) %>% 
+                          distinct() %>%
+                          mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
+                          group_by(plot_ID) %>%
+                          summarize(plot_A_ha = sum(CCS_A_ha)) %>%  
+                          mutate(MoMoK_A_ha = (50*50)/10000),     # calculate momok area
+                        by = "plot_ID") %>% 
               mutate(MoMoK_A_ha = (50*50)/10000, 
                      BA_m2ha = BA_m2_plot/plot_A_ha,       # calculate total BA per plot in m2 per hectare by dividing total BA m2/plot by area plot/ha
                      BA_m2MA = (BA_m2_plot/plot_A_ha)*MoMoK_A_ha,
@@ -3244,7 +3297,7 @@ DW_P_SP_TY_DEC <- DW_total %>%
   left_join(., DW_total %>%
               select(plot_ID, CCS_nr) %>% 
               distinct() %>%
-              mutate(CCS_A_ha = tons(c_A(12.62))) %>% 
+              mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
               group_by(plot_ID) %>%
               summarize(plot_A_ha = sum(CCS_A_ha)), 
             by = "plot_ID") %>%
@@ -3940,7 +3993,7 @@ trees_total_5 %>%
 
   B_diff_H_methods <- trees_total_5 %>%
           filter(compartiment=="ag") %>%
-          select(plot_ID, SP_code, tpS_ID, t_ID, 
+          select(plot_ID, CCS_nr, SP_code, tpS_ID, t_ID, 
                  DBH_cm, DBH_h_cm, DBH_h_m, 
                  H_m, H_method, 
                  B_t_tapes,               # sampled and modelled heights and tapeS biomass functions
@@ -3966,10 +4019,10 @@ trees_total_5 %>%
       left_join(., trees_total_5 %>% 
                   filter(H_method == "sampled" & compartiment == "ag") %>% 
                   mutate(B_t_GHG_B_sampled_H = tons(aB_kg_GHG)) %>% 
-                  select(plot_ID, SP_code, t_ID, H_method, B_t_tapes, B_t_GHG_B_sampled_H) %>% 
+                  select(plot_ID, CCS_nr, SP_code, t_ID, H_method, B_t_tapes, B_t_GHG_B_sampled_H) %>% 
                   rename(B_t_tapes_B_sampled_H  = B_t_tapes) %>% 
                   distinct(), 
-              by = c("plot_ID", "t_ID", "SP_code", "H_method")) %>% 
+              by = c("plot_ID", "CCS_nr", "t_ID", "SP_code", "H_method")) %>% 
     pivot_longer(., c("B_t_GHG_B_sampled_modelled_H", 
                       "B_t_tapes_B_sampled_modelled_H", 
                       "B_t_tapes_B_sampled_tapes_H",
@@ -4120,7 +4173,7 @@ c_comp_Momok_BWI_all <- trees_total_5 %>%
   select(-c(C_t_tapes,C_t_tps_H,C_t_GHG, plot_A_ha, Nt))
 
 
-summary(c_comp_Momok_BWI_P)
+summary(c_comp_Momok_BWI_all)
 
 # comparing C by dom SP without age with respective C stock per species group from BWI
 C_comp_domSP_BWI<- trees_P %>%                  
@@ -4146,7 +4199,25 @@ C_comp_domSP_BWI<- trees_P %>%
                 select(BWI_SP_group, C_t_ha_BWI, B_t_ha_BWI,  Nt_ha_BWI, BA_m2ha_BWI, SD_C) %>% 
                 distinct(), 
               by = "BWI_SP_group") %>% 
-    left_join(., DW_V_C_com %>% 
+    left_join(., DW_P %>% 
+                filter(compartiment == "total")%>%
+                select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
+                mutate(DW_type = "all") %>% 
+                left_join(., trees_total %>% 
+                            select(plot_ID, state) %>% 
+                            distinct(), 
+                          by = "plot_ID") %>% 
+                left_join(., BWI_DW_V %>%             # BWI 2012 Volumen pro Bundesland
+                            filter(DW_type == "all") %>% 
+                            select(state_abbreviation, V_m3_ha_BWI), 
+                          by = c("state" = "state_abbreviation")) %>% 
+                left_join(., BWI_DW_C %>%             # BWI Kohlenstoff KI 2017
+                            filter(DW_type == "all") %>% 
+                            rename("BWI_C_t_ha" = "C_t_ha") %>% 
+                            select(DW_type, BWI_C_t_ha, SD_C), 
+                          by = "DW_type") %>% 
+                mutate(V_diff = V_m3_ha - V_m3_ha_BWI,
+                       C_diff = C_t_ha - BWI_C_t_ha) %>% 
                 select(plot_ID, V_m3_ha , V_diff), 
               by= "plot_ID") %>% 
     left_join(., site_info %>% 
@@ -4187,10 +4258,27 @@ cor.df <- trees_P %>%
               select(BWI_SP_group, Nt_ha_BWI, C_t_ha_BWI, SD_C, B_t_ha_BWI, SD_B, BA_m2ha_BWI) %>% 
               distinct(), 
             by = "BWI_SP_group") %>% 
-  left_join(., DW_V_C_com %>%
-              filter(compartiment == "total") %>% 
-              select(plot_ID, V_m3_ha , V_diff), 
-            by= "plot_ID") %>% 
+  left_join(., DW_P %>% 
+              filter(compartiment == "total")%>%
+               select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
+               mutate(DW_type = "all") %>% 
+               left_join(., trees_total %>% 
+                           select(plot_ID, state) %>% 
+                           distinct(), 
+                         by = "plot_ID") %>% 
+               left_join(., BWI_DW_V %>%             # BWI 2012 Volumen pro Bundesland
+                           filter(DW_type == "all") %>% 
+                           select(state_abbreviation, V_m3_ha_BWI), 
+                         by = c("state" = "state_abbreviation")) %>% 
+               left_join(., BWI_DW_C %>%             # BWI Kohlenstoff KI 2017
+                           filter(DW_type == "all") %>% 
+                           rename("BWI_C_t_ha" = "C_t_ha") %>% 
+                           select(DW_type, BWI_C_t_ha, SD_C), 
+                         by = "DW_type") %>% 
+               mutate(V_diff = V_m3_ha - V_m3_ha_BWI,
+                      C_diff = C_t_ha - BWI_C_t_ha) %>% 
+              select(plot_ID, V_m3_ha , V_diff),
+             by= "plot_ID") %>% 
   left_join(., site_info %>% 
               dplyr::select(plot_ID, growth), 
             by = "plot_ID") %>% 
@@ -4271,7 +4359,25 @@ C_comp_domSP_BWI_A <- trees_P %>%
               distinct(), 
             by = "BWI_SP_group") %>% 
   # joining in Deadwood volume & deadwood volume differenc of MoMoK and BWI  
-  left_join(., DW_V_C_com %>% 
+  left_join(., DW_P %>% 
+              filter(compartiment == "total")%>%
+              select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
+              mutate(DW_type = "all") %>% 
+              left_join(., trees_total %>% 
+                          select(plot_ID, state) %>% 
+                          distinct(), 
+                        by = "plot_ID") %>% 
+              left_join(., BWI_DW_V %>%             # BWI 2012 Volumen pro Bundesland
+                          filter(DW_type == "all") %>% 
+                          select(state_abbreviation, V_m3_ha_BWI), 
+                        by = c("state" = "state_abbreviation")) %>% 
+              left_join(., BWI_DW_C %>%             # BWI Kohlenstoff KI 2017
+                          filter(DW_type == "all") %>% 
+                          rename("BWI_C_t_ha" = "C_t_ha") %>% 
+                          select(DW_type, BWI_C_t_ha, SD_C), 
+                        by = "DW_type") %>% 
+              mutate(V_diff = V_m3_ha - V_m3_ha_BWI,
+                     C_diff = C_t_ha - BWI_C_t_ha) %>% 
               select(plot_ID, V_m3_ha , V_diff), 
             by= "plot_ID") %>% 
   # dataset with information about the site conditions& expected growth behavior
@@ -4359,7 +4465,25 @@ comp_pseudo_mono <- trees_P_SP %>%
               distinct(), 
             by = "BWI_SP_group") %>% 
   # dataset with deadwood volume
-  left_join(., DW_V_C_com %>% 
+  left_join(., DW_P %>% 
+              filter(compartiment == "total")%>%
+              select(plot_ID, V_m3_ha, B_t_ha, C_t_ha) %>% 
+              mutate(DW_type = "all") %>% 
+              left_join(., trees_total %>% 
+                          select(plot_ID, state) %>% 
+                          distinct(), 
+                        by = "plot_ID") %>% 
+              left_join(., BWI_DW_V %>%             # BWI 2012 Volumen pro Bundesland
+                          filter(DW_type == "all") %>% 
+                          select(state_abbreviation, V_m3_ha_BWI), 
+                        by = c("state" = "state_abbreviation")) %>% 
+              left_join(., BWI_DW_C %>%             # BWI Kohlenstoff KI 2017
+                          filter(DW_type == "all") %>% 
+                          rename("BWI_C_t_ha" = "C_t_ha") %>% 
+                          select(DW_type, BWI_C_t_ha, SD_C), 
+                        by = "DW_type") %>% 
+              mutate(V_diff = V_m3_ha - V_m3_ha_BWI,
+                     C_diff = C_t_ha - BWI_C_t_ha) %>% 
               select(plot_ID, V_m3_ha , V_diff), 
             by= "plot_ID") %>% 
   # dataset with expected growth behavior at the respecitive plot, depending on dominant species and regeneration status of the peatland 
@@ -4398,6 +4522,13 @@ summary(comp_pseudo_mono)
 
 
 # ----- 4.1.5. comparisson MoMoK Valentins BA -----------------------------
+
+# vergleich mit valentis biomasse für baum mit folgenden Eingangsgrößen: 346 t pro Baum va. 404t pro Baum von tapes
+tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="agb") - 
+ ( tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="fwb") -
+   tprBiomass(tprTrees(spp = 1, Dm = 37.3, Hm = 1.3, Ht = 20.03),  component="ndl"))
+
+
 trees_P_test <- trees_total_5 %>%
   group_by(plot_ID, compartiment) %>% 
   filter(plot_ID == 34010) %>% 
@@ -5035,7 +5166,7 @@ biotest %>% filter(is.na(tapes_fB_kg))
 # ---- 3.2.2. branch Biomass visualization ----------------------------------------
 # points
 biotest %>% 
-  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg, GHG_tps_brB_kg)%>% 
+  select(plot_ID, SP_code, DBH_cm, WuWi_brB_kg, tapes_brB_kg, Vondr_brB_kg, tps_GHG_brB_kg, Vondr_GHG_brB_kg, GHG_tps_fwB_kg)%>% 
   tidyr::gather("method", "biomass", 4:9) %>% 
   ggplot(., aes(DBH_cm, biomass))+
   geom_point(aes(colour = method))+
@@ -5058,7 +5189,7 @@ biotest %>%
 # tapeS GHG comparissson
 ##point
 biotest %>% 
-  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_brB_kg, tps_GHG_brB_kg )%>%    #branches calculated in tapeS and GHG stepwise
+  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_fwB_kg, tps_GHG_brB_kg )%>%    #branches calculated in tapeS and GHG stepwise
   tidyr::gather("method", "biomass", 4:6) %>% 
   ggplot(., aes(DBH_cm, biomass))+
   geom_point(aes(colour = method))+
@@ -5067,7 +5198,7 @@ biotest %>%
   facet_wrap(plot_ID~SP_code)
 ##bar
 biotest %>% 
-  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_brB_kg, tps_GHG_brB_kg)%>% # 
+  select(plot_ID, SP_code,DBH_cm, tapes_brB_kg, GHG_tps_fwB_kg, tps_GHG_brB_kg)%>% # 
   tidyr::gather("method", "biomass", 4:6) %>%  
   ggplot(., aes(method, biomass))+
   geom_bar(aes(fill = method), 
@@ -5287,7 +5418,7 @@ biotest %>%
   geom_bar(aes(fill = method), 
            stat="identity", 
            position=position_dodge())+
-  scale_fill_viridis_discrete(labels = c("foliage GHG", "foliage tapes"))+
+  scale_fill_viridis_d(labels = c("foliage GHG", "foliage tapes"))+
   #geom_line(aes(colour = method))+
   #geom_smooth(method = "lm", se=FALSE, color="black")+
   facet_wrap(plot_ID~SP_code)+
@@ -5388,9 +5519,9 @@ biotest %>%
          GHG_aB_kg, tapes_ab_kg,
          GHG_tps_stwB_kg, tapes_stwB_kg, 
          GHG_tps_stwbB_kg, tapes_stwbB_kg,
-         GHG_tps_DhB_kg, tapes_DhB_kg, 
-         GHG_tps_DhRB_kg, tapes_DhbB_kg,  
-         GHG_tps_brB_kg, tapes_brB_kg, 
+         GHG_tps_swB_kg, tapes_DhB_kg, 
+         GHG_tps_swbB_kg, tapes_DhbB_kg,  
+         GHG_tps_fwB_kg, tapes_brB_kg, 
          GHG_tps_fB_kg, tapes_fB_kg) %>% 
   tidyr::gather("method", "biomass", 4:17) %>% 
   ggplot(., aes(method, biomass))+
@@ -5486,7 +5617,7 @@ RG_total.test <- RG_total %>%
 summary(RG_total)
 
 
-RG_total %>% 
+RG_total.test%>% 
   select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
   tidyr::gather("method", "biomass", 4:5) %>% 
   ggplot(., aes(D_cm, biomass, colour = method))+
@@ -5497,7 +5628,7 @@ RG_total %>%
 
 
 
-RG_total %>% 
+RG_total.test %>% 
   select(plot_ID, LH_NH, H_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
   tidyr::gather("method", "biomass", 4:5) %>% 
   ggplot(., aes(H_cm, biomass, colour = method))+
@@ -5506,7 +5637,7 @@ RG_total %>%
   geom_smooth(method = "loess", se=TRUE)+
   facet_wrap(~LH_NH)
 
-RG_total %>% 
+RG_total.test %>% 
   select(plot_ID, LH_NH, D_cm, Annig_aB_kg, RG_GHG_aB_kg)%>% 
   tidyr::gather("method", "biomass", 4:5) %>% 
   ggplot(., aes(method, biomass))+
@@ -5681,19 +5812,19 @@ ggplot(data = cor.df,
 
 cor.df %>% 
   ggplot(aes(x = BA_diff))+
-  geom_point(aes(y = C_diff, color = dom_SP))+
-  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  geom_point(aes(y = B_diff, color = dom_SP))+
+  geom_smooth(aes(y = B_diff_pred), method = "loess")+
   #geom_line(aes(y = C_diff_pred, color = dom_SP))+
   geom_vline(xintercept = 0)+
   geom_hline(yintercept=0)+
   xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  ylim(max(cor.df$B_diff)*(-1), max(cor.df$B_diff))+
   # geom_line()+
   # facet_wrap(~dom_SP)+
   xlab("difference BA m2 per hectar ") +
-  ylab("difference C t per hectar")+
+  ylab("difference Biomass t per hectar")+
   #ylim(0, 50)+
-  ggtitle("C diff vs. BA diff")+
+  ggtitle("B diff vs. BA diff")+
   theme_light()+
   theme(legend.position = "right")
 
@@ -5720,13 +5851,13 @@ C_comp_domSP_BWI %>%
 # ----- 3.4.1.3. difference carbon MoMoK vs. BWI  by pseudo monocultures  -----------------
 comp_pseudo_mono %>% 
   ggplot(., aes(x = BA_diff))+
-  geom_point(aes(y = C_diff, color = BWI_SP_group))+
-  geom_smooth(aes(y = C_diff_pred, method = "loess"))+
+  geom_point(aes(y = B_diff, color = BWI_SP_group))+
+  geom_smooth(aes(y = B_diff_pred), method = "loess")+
   #geom_line(aes(y = C_diff_pred, color = dom_SP))+
   geom_vline(xintercept = 0)+
   geom_hline(yintercept=0)+
   xlim(max(cor.df$BA_diff)*(-1), max(cor.df$BA_diff))+
-  ylim(max(cor.df$C_diff)*(-1), max(cor.df$C_diff))+
+  ylim(max(cor.df$B_diff)*(-1), max(cor.df$B_diff))+
   # geom_line()+
   facet_wrap(~BWI_SP_group)+
   xlab("difference BA m2 per hectar ") +
