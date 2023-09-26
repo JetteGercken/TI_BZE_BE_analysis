@@ -992,11 +992,12 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  edges.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  inter.poly.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
+ inter.poly.NA.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  remaining.circle.poly.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  remaining.circle.multipoly.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub$plot_ID))){ 
-   # i = 43
+   # i = 2
    
    # select plot ID of the respective circle 
    my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"]
@@ -1027,58 +1028,69 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
          plot(my.poly$geometry, add = T))
    
    # calculate intersection for firest polygone 
+   inter.poly  <- sf::st_intersection(my.circle, my.poly)
+   inter.status.poly <- ifelse(nrow(inter.poly) == 0, "no intersections",
+                                 ifelse(inter.poly$e_id == 1 & inter.poly$geometry == my.circle$geometry,  "no intersections",
+                                        ifelse(inter.poly$e_id == 2 & inter.poly$geometry == my.circle$geometry, "fully covering circle", 
+                                               "partly intersecting")))
+   
    inter.poly  <- sf::st_intersection(my.circle, st_geometry(my.poly))
-   remaining.circle.poly  <- if(nrow(inter.poly)==0){my.circle}else{sf::st_difference(my.circle, st_geometry(inter.poly))}
-   
-   as.data.frame(inter.poly)
-   
-   #print polygones
-   #print(plot(remaining.cricle.poly$geometry, main = my.plot.id)) 
-   #print(plot(inter.poly$geometry, main = my.plot.id)) 
+   remaining.circle.poly  <- if(nrow(inter.poly)==0){my.circle}else{sf::st_difference(my.circle, inter.poly)}
    
    # calculate area
+   # intersection
    inter.area <- ifelse(nrow(inter.poly) == 0, 0, sf::st_area(inter.poly))
-   remaining.circle.area <- ifelse(nrow(remaining.cricle.poly) == 0, 0, sf::st_area(remaining.cricle.poly))
-    
+   #remaining circle
+   remaining.circle.area <- ifelse(nrow(remaining.circle.poly) == 0, 0, sf::st_area(remaining.circle.poly))
    # create area dataframe for areas
-   inter.area.df <- as.data.frame(
-     cbind(
-       "id" = c(my.plot.id, my.plot.id),
-       "e_id" = c(my.e.id,  0),
-       "shape" = c("edge", "circle"),
-       "area_m2" = c(inter.area, remaining.circle.area)
-       ))
-   
+   inter.area.df <- as.data.frame(cbind("id" = c(my.plot.id, my.plot.id),
+                                        "e_id" = c(my.e.id,  0),
+                                        "e_form" = c(my.e.form, 0),
+                                        "shape" = c("edge", "circle"),
+                                        "inter_stat" = c(inter.status.poly, 0),
+                                        "area_m2" = c(inter.area, remaining.circle.area)))
    # list with inter and remaining circle areas areas
    edges.list[[i]] <- inter.area.df
    
-   
    # create lists with polgons of intersections if there are intersections
-  inter.poly.list[[i]] <- if(nrow(inter.poly)!= 0){c("e_id" = my.e.id, "id" = my.plot.id, "geometry"=NA)}else{}
-  inter.poly.list[[i]] <- if(nrow(inter.poly)== 0){c("e_id" = my.e.id, inter.poly)}else{}
-  # create list wit polygones of the remaining cirlce when it´s only one polygone
+   inter.poly.list[[i]] <- if(nrow(inter.poly)!= 0){c("e_id" = my.poly$e_id, "id" = my.poly$id, "e_form" = my.poly$e_form, inter.poly)
+     }else{c("e_id" = my.poly$e_id, "id" = my.poly$id, "e_form" = my.poly$e_form, my.poly)}
+  
+   inter.poly.NA.list[[i]] <- if(nrow(inter.poly)== 0){c("e_id" = my.e.id, "id" = my.plot.id, "geometry" = 0)}else{}
+  
+   # create list wit polygones of the remaining cirlce when it´s only one polygone
   remaining.circle.poly.list[[i]] <- if(st_geometry_type(remaining.circle.poly)== "POLYGON"){c("e_id" = 0, remaining.circle.poly)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
   remaining.circle.multipoly.list[[i]] <- if(st_geometry_type(remaining.circle.poly)== "MULTIPOLYGON"){c("e_id" = 0, remaining.circle.poly)}else{}
- }
+ 
+  
+  }
+ 
  # list of areas
  edges.area.list.final <- rbindlist(edges.list)
  edges.area.df <- as.data.frame(edges.area.list.final)
 
  
  # list of polygones of forest edges !!!! DOESNT WORK YET
- inter.poly.list.final <- rbindlist(inter.poly.list)
- inter.poly.df <- as.data.frame(inter.poly.list.final)
- # list of polygones of remainign circles !!!! DOESNT WORK YET
- rem.circle.poly.list.final <- rbindlist(remaining.circle.poly.list)
- rem.circle.poly.df <- as.data.frame(rem.circle.poly.list.final) 
+ inter.poly.list.final <- rbindlist(inter.poly.list, fill=TRUE)
+ inter.poly.df <- as.data.frame(inter.poly.list.final)[,c(2, 1, 3, 7)]
+ # select only those rows from the NA dataframe that are not intersecting
+ inter.poly.list.NA.final <- rbindlist( inter.poly.NA.list[lengths(inter.poly.NA.list) > 0L])
+ inter.poly.NA.df <- as.data.frame(inter.poly.list.NA.final)
  
+ # list of polygones of remainign circles !!!! DOESNT WORK YET
+ rem.circle.poly.list.final <- rbindlist(remaining.circle.poly.list, fill = TRUE)
+ rem.circle.poly.df <- as.data.frame(rem.circle.poly.list.final)[,c(2,1,3)]  %>% distinct()
+ # list of multipolygones of remaining circles
  rem.circle.multipoly.list.final <- rbindlist(remaining.circle.multipoly.list)
- rem.circle.multipoly.df <- as.data.frame(rem.circle.multipoly.list.final)
+ rem.circle.multipoly.df <- as.data.frame(rem.circle.multipoly.list.final)[,c(2,1,4)] %>% distinct()
  
  rem.circle.one.edge.df <- rbind(rem.circle.poly.df, rem.circle.multipoly.df)
  
 
+ 
+ 
+ 
  
  # dataprep for loop
  # createa dataframe with plots that have only one forest edges
@@ -1094,7 +1106,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  edges.list.two.edges <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
-    #i = 11
+    #i = 4
    
    # select plot ID of the respective circle 
    my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges$plot_ID)[i]
