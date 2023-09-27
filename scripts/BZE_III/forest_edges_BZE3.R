@@ -1151,13 +1151,6 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
 
 # 3.2.1.4. sorting trees into edge and remaining circle polygones ---------
-# bind edges intersections together
- all.inter.polys.df <- rbind(inter.poly.one.edge.df, 
-                        inter.poly.two.edges.df)
- 
- # bind remaining circles together
-all.remaining.circles.df <- rbind(rem.circle.one.edge.df,
-                              rem.circle.two.edges.df)
 
 trees.one.edge <- HBI_trees %>%
   # filter only for trees that are located in plots with a forest edge
@@ -1245,54 +1238,125 @@ tree.points.list.one.edge.final <- rbindlist(tree.points.list)
 tree.points.one.edge.df <- as.data.frame(tree.points.list.one.edge.final)
  
  
- 
+
+
+
+# intersection of trees with 2 edges
+trees.two.edges <- HBI_trees %>%
+  # filter only for trees that are located in plots with a forest edge
+  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
+  # filter for trees located in plots htat haev only one forest edge
+  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
+  # remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+
+tree.status.two.edges.list <- vector("list", length = length(trees.two.edges$tree_ID))
+tree.points.two.edges.list <- vector("list", length = length(trees.two.edges$tree_ID))
+
+for (i in 1:length(trees.two.edges$tree_ID)){ 
+  # i = 1
+  
+  # select plot ID accordint to positioin in the list
+  my.plot.id <- trees.two.edges[i, "plot_ID"] 
+  my.tree.id <- trees.two.edges[i, "tree_ID"]
+  
+  # select the remaining cirlce we want to intersect the tree with
+  my.rem.circle <- sf::st_as_sf(rem.circle.two.edges.df %>% filter(id == my.plot.id) %>% distinct())
+  my.edges.df <- inter.poly.two.edges.df %>% filter(id == my.plot.id) %>% distinct() %>% arrange(e_id)
+  my.inter.1 <- sf::st_as_sf(my.edges.df[1,])
+  my.inter.2 <- sf::st_as_sf(my.edges.df[2,])
+  
+  # assign crs
+  my.utm.epsg <- 25833
+  
+  # select UTM corrdinates of the plot center
+  my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  
+  # extract polar coordiantes of forest edge
+  # point A 
+  dist.tree <- trees.two.edges[i, "Dist_cm"]/100 
+  azi.tree <- trees.two.edges[i, "azi_gon"] 
+  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  
+  # transform polar into cartesian coordiantes
+  tree.east <- my.center.easting + x.tree
+  tree.north <- my.center.northing + y.tree
+  
+  # save cartesian coordiantes in dataframe
+  tree.coord.df <- as.data.frame(cbind(
+    "id" = c(my.plot.id), 
+    "t_id" = c(my.tree.id),
+    "lon" = c(tree.east),
+    "lat" = c(tree.north)
+  ))
+  
+  # create sf point object from dataframe
+  #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
+  tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
+  # assing CRS to points
+  sf::st_crs(tree.sf) <- my.utm.epsg
+  
+  # print(plot(my.inter$geometry), 
+  #       plot(my.rem.circle$geometry, add = T), 
+  #       plot(tree.sf$geometry, add = T)
+  #       )
+  
+  inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
+  inter.tree.edge.1 <- sf::st_intersection(tree.sf, my.inter.1)
+  inter.tree.edge.2 <- sf::st_intersection(tree.sf, my.inter.2)
+  
+  tree_status <- ifelse(nrow(inter.tree.edge.1)!= 0 & nrow(inter.tree.edge.2)== 0 & nrow(inter.tree.circle)== 0,  "B", 
+                        ifelse(nrow(inter.tree.edge.2)!= 0 & nrow(inter.tree.edge.1)== 0 & nrow(inter.tree.circle)== 0,  "C", 
+                               ifelse(nrow(inter.tree.circle)!= 0 & nrow(inter.tree.edge.1)== 0 & nrow(inter.tree.edge.2)== 0,  "A",
+                               "warning")))
+  
+  tree.status.two.edges.list[[i]] <- as.data.frame(cbind(
+    "id" = c(my.plot.id), 
+    "t_id" = c(my.tree.id),
+    "lon" = c(tree.coord.df$lon),
+    "lat" = c(tree.coord.df$lat),
+    "t_stat" = c(tree_status))) 
+  
+  tree.points.two.edges.list[[i]] <- c("t_stat" = tree_status, tree.sf)
+  
+  
+}
+
+# save tree corodiantes and status into dataframe
+tree.status.list.two.edges.final <- rbindlist(tree.status.two.edges.list)
+tree.status.two.edges.df <- as.data.frame(tree.status.list.two.edges.final)
+# save tree sf into dataframe
+tree.points.list.two.edges.final <- rbindlist(tree.points.two.edges.list)
+tree.points.two.edges.df <- as.data.frame(tree.points.list.two.edges.final)
+
+all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
  
  
  
 # 3.2.1.4. visualising loops results -----------------------------
- datapoly <- rbind( 
-  forest_edges_HBI.man %>%
-    filter(e_form %in% c(1, 2)) %>% 
-    select(plot_ID, e_ID, e_form) %>%
-    left_join(., HBI_loc %>% 
-                filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%
-                rename("lon" = "RW_MED") %>%
-                rename("lat" = "HW_MED") %>%
-                select(plot_ID, lon, lat),
-              by = "plot_ID") %>% 
-    mutate(shape = "circle"),
-  triangle.e1.coords.df %>%
-    select(id, e_id, e_form, lon, lat) %>%
-    rename("plot_ID" = "id") %>%
-    rename("e_ID" = "e_id")%>% 
-    mutate(shape = "square"),
-  triangle.e2.coords.df %>%
-    select(id, e_id, e_form, lon, lat) %>%
-    rename("plot_ID" = "id") %>%
-    rename("e_ID" = "e_id") %>% 
-    mutate(shape = "triangle")
-   )
- 
- datapoly <- na.omit(datapoly)
-
- 
+# for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
  ggplot() +
-   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == 50005], aes(fill = NULL))+
-   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == 50005], aes())+
-   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == 50005], aes())+
+   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == 50005], aes(alpha = 0))+
+   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == 50005], aes(alpha = 0))+
+   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == 50005], aes(alpha = 0))+
    geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == 50005], aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == 50005]))
    
- 
+ # for all plots
  for(i in 1:length(unique(circle.poly.df$id))){
+   # https://ggplot2.tidyverse.org/reference/ggsf.html
+   
    #i = 62
    my.plot.id = unique(circle.poly.df)[i, "id"]
    
    print(ggplot() +
-     geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == my.plot.id], aes(fill = NULL))+
-     geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == my.plot.id], aes())+
-     geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == my.plot.id], aes())+
-     geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == my.plot.id], aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == my.plot.id])))
+           ggtitle(paste0(my.plot.id, " - ", triangle.e1.poly.df$e_form[triangle.e1.poly.df$id == my.plot.id], " - " , triangle.e2.poly.df$e_form[triangle.e2.poly.df$id == my.plot.id]))+ 
+           geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == my.plot.id], aes(alpha = 0))+
+           geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == my.plot.id], aes(alpha = 0))+
+           geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == my.plot.id], aes(alpha = 0))+
+           geom_sf(data = all.trees.points$geometry[all.trees.points$id == my.plot.id], aes(color = all.trees.points$t_stat[all.trees.points$id == my.plot.id])))
    
  }
  
