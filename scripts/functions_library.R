@@ -186,12 +186,10 @@ angle <- function(x3, y3, x1, y1, x2, y2, unit){
   b1_1 = (y1-y3)/(x1-x3)
   b1_2 = (y2-y3)/(x2-x3)
   # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
-  m = (b1_1 - b1_2)/(1 + b1_1*b1_2);
-  m_betrag = ifelse(m >= 0, m, m*(-1));
-  angle.between.two.lines.rad = atan(m_betrag)
+  angle.between.two.lines.rad = atan(abs((b1_1 - b1_2)/(1 + b1_1*b1_2)));
   switch(unit, 
          # bogenmas in rad
-         angle.rad = atan(m_betrag), 
+         angle.rad = angle.between.two.lines.rad, 
          # transfer bogenmas in rad into Kreismaß in degrees 
          # https://www.matheretter.de/wiki/bogenmass-umrechnen
          angle.degrees = angle.between.two.lines.rad*(180/pi), 

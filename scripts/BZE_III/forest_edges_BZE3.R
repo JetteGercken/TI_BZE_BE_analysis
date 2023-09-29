@@ -1140,7 +1140,9 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  rem.circle.multipoly.two.edges.list.final <- rbindlist(rem.circle.multipoly.2.edges.list)
  rem.circle.multipoly.two.edges.df <- as.data.frame(rem.circle.multipoly.two.edges.list.final)[,c(2,1, rem.circle.multipoly.two.edges.df$geometry)] %>% distinct()
  # binding the both circle lists back together 
- rem.circle.two.edges.df <- rbind(rem.circle.poly.two.edges.df, rem.circle.multipoly.two.edges.df)
+ rem.circle.two.edges.df <- if(nrow(rem.circle.poly.two.edges.df) != 0 && nrow(rem.circle.multipoly.two.edges.list.final) != 0){
+   rbind(rem.circle.poly.two.edges.df, rem.circle.multipoly.two.edges.df)
+ }else{rem.circle.poly.two.edges.df}
 
  
  
@@ -1199,6 +1201,7 @@ for (i in 1:length(trees.one.edge$tree_ID)){
     "lon" = c(tree.east),
     "lat" = c(tree.north)
   ))
+  
   
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
@@ -1339,10 +1342,10 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
  ggplot() +
-   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == 50005], aes(alpha = 0))+
-   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == 50005], aes(alpha = 0))+
-   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == 50005], aes(alpha = 0))+
-   geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == 50005], aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == 50005]))
+   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == 50024], aes(alpha = 0))+
+   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == 50024], aes(alpha = 0))+
+   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == 50024], aes(alpha = 0))+
+   geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == 50024], aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == 50024]))
    
  # for all plots
  for(i in 1:length(unique(circle.poly.df$id))){
