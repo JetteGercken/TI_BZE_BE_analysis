@@ -1147,7 +1147,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  
  
- 
+ all.edges.area.df <- rbind(edges.area.df, edges.area.two.edges.df)
  
  
  
@@ -1341,11 +1341,13 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
+p_id =   50059 
  ggplot() +
-   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == 50024], aes(alpha = 0))+
-   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == 50024], aes(alpha = 0))+
-   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == 50024], aes(alpha = 0))+
-   geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == 50024], aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == 50024]))
+   geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
+   geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
+   geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == p_id], aes(alpha = 0))+
+   geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == p_id], 
+           aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == p_id]))
    
  # for all plots
  for(i in 1:length(unique(circle.poly.df$id))){
@@ -1847,4 +1849,92 @@ ggplot() +
 
 
 
-
+### visulaizing polar cordiante based plot for individual plots
+my.p.id = 50059
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  # AB line
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "1" & plot_ID == my.p.id) %>% 
+               inner_join(.,   forest_edges_HBI.man %>% 
+                            filter(e_form == "1" & plot_ID == my.p.id) %>%
+                            group_by(plot_ID) %>% 
+                            summarize(n = n()) %>% 
+                            filter(n <= 1), 
+                          by = "plot_ID") %>% 
+               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:5], names(.)[6:9]), 
+             aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1" & plot_ID == my.p.id) %>%
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>%
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>%
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1" & plot_ID == my.p.id) %>%
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1" & plot_ID == my.p.id) %>%
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>%
+              inner_join(.,   forest_edges_HBI.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  # trees
+  geom_point(data =  trees_and_edges %>% filter(e_form == "1" & plot_ID == my.p.id),
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+  theme_bw()+
+  facet_wrap(~plot_ID)

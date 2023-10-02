@@ -197,6 +197,22 @@ angle <- function(x3, y3, x1, y1, x2, y2, unit){
          angle.gon = ((angle.between.two.lines.rad*(180/pi))/360)*400)
 }
 
+angle.vectors <- function(x1, y1, x2, y2, unit){
+  scalar.product = (x1*x2)+(y1*y2);
+  length.1 = sqrt(x1^2+y1^2);
+  length.2 = sqrt(x2^2+y2^2);
+  angle.cos = (scalar.product)/(abs(length.1)*abs(length.2));
+  angle = acos(angle.cos)
+   switch(unit,
+          length.2 = length.2,
+          scalar.product = scalar.product,
+          angle.cos=angle.cos, 
+          angle=angle,
+          degrees = angle,
+          gon = angle*0.9
+  )
+}
+
 
 # ----- 1.4.3. distance between two points --------------------------------
 distance <- function(x2, y2, x1, y1){
@@ -584,6 +600,63 @@ tree.status <- function(
 
 # this function should eable us to skip the part where we have to calcualte the intersections etc. for each circle and line
 # this way we´ll just return the area per sampling circle 
+
+
+
+CircleSegmnent <- function(x1,y1,x2,y2,r){
+  # standart line equation parameters: onmicalculator.com
+  A = y2-y1
+  B = x2 - x1
+  C = y1*B - A*x1
+  # shortest distance between center and AB line: chilimath.com
+  # center is always 0|0
+  d = abs(C)/sqrt(A^2+B^2)
+  # height of the cirlce regment between line and circle perimeter
+  h = ifelse(d<=r, r-d, 0)
+  # calculate area of cirlce segment with heigth and radius : wikipedia.de
+  area = r^2*acos(1-(h/r))-(r-h)*sqrt(r^2-(r-h)^2)
+  return(area)
+}
+
+
+triangle.area <- function(x.0, y.0, x1,y1,x2,y2){
+  # standart line equation parameters: onmicalculator.com
+  A = y2-y1
+  B = x2 - x1
+  C = y1*B - A*x1
+  # shortest distance between center and AB line: chilimath.com
+  h.triangle  = abs(A*x.0 + B*y.0 + C)/sqrt(A^2+B^2)
+  g.triangle = distance(x1,y1,x2,y2)
+  A.triangle = (h.triangle/2)*g.triangle
+  
+  return(A.triangle)
+  
+}
+
+
+
+
+
+triangle.circle.intersection <- function(x1,y1,x2,y2,x3,y3,r){
+  # center point of circle
+  pt.circle <- sf::st_point(c(0,0))
+  circle.poly <- sf::st_buffer(pt.circle, dist = r)
+  # triangle polygone 
+  poly.data = matrix(c(x1,y1,x2,y2,x3,y3,x1,y1), ncol = 2, byrow = TRUE)
+  triangle.poly <- sf::st_polygon(list(poly.data))
+  # intersection between circle and triangle
+  intersection.circle.trianlge <- sf::st_intersection(circle.poly, triangle.poly)
+  #calculate area of intersection if intersection is not empty
+  area.intresection <- sf::st_area(intersection.circle.trianlge)
+  
+  #plot(circle.poly)
+  #lot(triangle.poly, add = T)
+  
+  return(area.intresection)
+}
+
+
+
 
 edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status){
   # x1| y1 and x2|y2 belong to the intersections of the line or two points on a line

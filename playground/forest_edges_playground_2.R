@@ -398,34 +398,36 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   
   # circle segment on AB or AT or BT side
   # calculate angle between the lines from sampling cirlce intersections to center
-  azi_inter1_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
-  azi_inter2_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
-  # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-  azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
-  angle_between_IC_lines = ifelse(e.form == 2 & t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), 
-                                  angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
+    # azi_inter1_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
+    # azi_inter2_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
+    # # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
+    # azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
+  
+  angle_between_IC_lines = ifelse(e.form == 2 & t.dist <= c.r0, angle.vectors(x.t, y.t, x1, y1, x2, y2, unit = "degrees"), 
+                                  angle.vectors(c.x0, c.y0, x1, y1, x2, y2, unit = "degrees"))
   
 
-  # https://simpleclub.com/lessons/mathematik-schnittwinkel-zwischen-gerade-und-gerade
-  b1.x1.c = ifelse(e.form == 2 & t.dist <= c.r0, slope(x.t, y.t, x1, y1), slope(c.x0, c.y0, x1, y1))
-  b1.x2.c = ifelse(e.form == 2 & t.dist <= c.r0, slope(x.t, y.t, x2, y2), slope(c.x0, c.y0, x2, y2))
-  angle_between_IC_lines = acos((b1.x1.c*b1.x2.c)/(sqrt(b1.x1.c)*sqrt(b1.x2.c))  )*(180/pi)
- 
-  
-  # calcualte circle segment area: 
+    # calcualte circle segment area: 
   # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
   c.cone.A = ifelse(e.form == 2 & t.dist <= c.r0, (pi*(c.r0-t.dist)^2) * angle_between_IC_lines/360, 
                     (pi*c.r0^2)*angle_between_IC_lines/360); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
   # calcualte circle area
   c.A = pi*c.r0^2;
+  
   # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A =  ifelse(e.form == 2 &  t.dist <= c.r0, 
-                       (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , 
-                       0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2)) ) ;
-  1 2 [ x A ( y B − y C ) + x B ( y C − y A ) + x C ( y A − y B ) ] 
-  0.5*(c.x0*(y1-y2) + x1*(y2-c.y0) + x2*(c.y0-y1))
+    # trianlge.A =  ifelse(e.form == 2 &  t.dist <= c.r0, 
+    #                      (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , 
+    #                      0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2)) ) ;
+   triangle.A = ifelse(e.form == 2 &  t.dist <= c.r0,
+                      triangle.area(x.t, y.t, x1, y1, x2, y2),
+                      triangle.area(c.x0, c.y0, x1, y1, x2, y2))
+  
   # calculate circle segment trouhg withdrawing triangle from cone: 
-  c.seg.A = c.cone.A-trianlge.A
+  angl = angle.vectors(c.x0, c.y0, x1, y1, x2, y2, unit = "degrees")
+  
+   c.seg.A = c.cone.A-trianlge.A
+   CircleSegmnent(x1, y1, x2, y2, 17.84)
+   all.edges.area.df %>% filter(id == 50005)
   
   # circle segment on BT side, if AT and BT side have intersection
   # calculate angle between the lines from sampling cirlce intersections to center
@@ -501,6 +503,37 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   area = ifelse(tree_status == "A" | is.na(e.form), circle.area, edge.area);
 
 
+
+  
+
+# ----- trying out different functions to calcualte the angle between tw --------
+# richtugnsvector
+  x.a = 1
+  y.a = 2
+  x.b = -5
+  y.b = -1
+  
+angle.vectors <- function(x.0, y.0, x.1, y.1, x.2, y.2, unit){
+  # calculate vector from center/ turning point to respective other point on the line: https://studyflix.de/mathematik/vektor-berechnen-4349
+  x.a = x.1 - x.0
+  y.a = y.1 - y.0
+  x.b = x.2 - x.0
+  y.b = y.2 - y.0
+  # calculate ange betweern vectors: https://studyflix.de/mathematik/winkel-zwischen-zwei-vektoren-2251
+  scalar.porduct = x.a * x.b +  y.a * y.b
+  length.a = sqrt(abs(x.a)^2 + abs(y.a)^2)
+  length.b = sqrt(abs(x.b)^2 + abs(y.b)^2)
+  cos.minus.1 = (scalar.porduct)/(length.a * length.b)
+  angle.rad = acos(cos.minus.1)
+  angle.degrees = angle.rad*(180/pi)
+  angle.gon = angle.rad*(180/pi)*0.9
+  switch(unit, 
+         rad = angle.rad, 
+         degrees = angle.degrees, 
+         gon = angle.gon)
+  }
+  
+  
 
 
 # ----- 2. visualization  -------------------------------------------------
@@ -1140,21 +1173,22 @@ test <- forest_edges_HBI.man$ %>%
 
 
 jeremy.test.df <- forest_edges_HBI.man %>% select(plot_ID, e_ID, e_form, 
-                                          X_T, Y_T,
-                                          X_inter_AT_triangle_60, 
-                                          Y_inter_AT_triangle_60,
-                                          X_inter_BT_triangle_60, 
-                                          Y_inter_BT_triangle_60) %>%
+                                X_T, Y_T,
+                                X_inter_AT_triangle_60, 
+                                Y_inter_AT_triangle_60,
+                                X_inter_BT_triangle_60, 
+                                Y_inter_BT_triangle_60) %>%
   filter(e_form == 2 ) %>%
   mutate(id = row_number()) %>%
   group_by(id) %>%
-  mutate(jeremy.test = jeremy(X_inter_AT_triangle_60, 
+  mutate(jeremy.test = triangle.circle.intersection(X_inter_AT_triangle_60, 
                               Y_inter_AT_triangle_60,
                               X_inter_BT_triangle_60, 
                               Y_inter_BT_triangle_60, 
                               X_T, Y_T, 
                               17.84)) 
-jeremy.test.df <- jeremy.test.df %>% 
+
+jeremy.test.df %>% 
   left_join(., edges.area.df %>% filter(e_form == 2) %>% 
               mutate(id = as.integer(id), 
                      e_id = as.integer(e_id),
@@ -1164,43 +1198,6 @@ jeremy.test.df <- jeremy.test.df %>%
             by = c(c("plot_ID" = "id"), c("e_ID"="e_id"), "e_form")) %>% 
   mutate(area.diff= jeremy.test-area_m2)
 
-summary(jeremy.test.df)
-495.549
-
-
-CircleSegmnent <- function(x1,y1,x2,y2,r){
-  # standart line equation parameters: onmicalculator.com
-  A = y2-y1
-  B = x2 - x1
-  C = y1*B - A*x1
-  # shortest distance between center and AB line: chilimath.com
-    # center is always 0|0
-  d = abs(C)/sqrt(A^2+B^2)
-  # height of the cirlce regment between line and circle perimeter
-  h = ifelse(d<=r, r-d, 0)
-  # calculate area of cirlce segment with heigth and radius : wikipedia.de
-  area = r^2*acos(1-(h/r))-(r-h)*sqrt(r^2-(r-h)^2)
-  return(area)
-}
-
-
-jeremy <- function(x1,y1,x2,y2,x3,y3,r){
-  # center point of circle
-  pt.circle <- sf::st_point(c(0,0))
-  circle.poly <- sf::st_buffer(pt.circle, dist = r)
-  # triangle polygone 
-  poly.data = matrix(c(x1,y1,x2,y2,x3,y3,x1,y1), ncol = 2, byrow = TRUE)
-  triangle.poly <- sf::st_polygon(list(poly.data))
-  # intersection between circle and triangle
-  intersection.circle.trianlge <- sf::st_intersection(circle.poly, triangle.poly)
-  #calculate area of intersection if intersection is not empty
-  area.intresection <- sf::st_area(intersection.circle.trianlge)
-
-  plot(circle.poly)
-  plot(triangle.poly, add = T)
- 
-   return(area.intresection)
-  }
 
 jeremy(0,1,1,0,1,1,2)
 plot(circle.poly)
@@ -1212,8 +1209,55 @@ circle.poly <- sf::st_buffer(pt.circle, dist = 0)
 x =  matrix(c(0,1,1,0,1,1,0,1), ncol=2, byrow = TRUE)
 x.poly <- sf::st_polygon(list(x))
 plot(circle.poly)
-plot(x.poly), add =T)
+plot(x.poly, add =T)
 st_area(st_intersection(circle.poly, x.poly))
+
+
+
+
+e1.test.df <- forest_edges_HBI.man %>% select(plot_ID, e_ID, e_form, 
+                                                  X_T, Y_T,
+                                              X_A, 
+                                              Y_A, 
+                                              X_B,
+                                              Y_B) %>%
+  filter(e_form == 1) %>% 
+  #filter(plot_ID == 50006 ) %>%
+  mutate(CircleSegmnent.test = CircleSegmnent(X_A, 
+                                              Y_A, 
+                                              X_B,
+                                              Y_B, 
+                                              17.84)) 
+
+e1.test.df <- e1.test.df %>% 
+  left_join(., all.edges.area.df %>% filter(e_form == 1) %>% 
+              mutate(id = as.integer(id), 
+                     e_id = as.integer(e_id),
+                     e_form = as.integer(e_form), 
+                     area_m2 = as.numeric(area_m2)) %>% 
+              select(id, e_id, e_form, area_m2), 
+            by = c(c("plot_ID" = "id"), c("e_ID"="e_id"), "e_form")) %>% 
+  mutate(area.diff= CircleSegmnent.test-area_m2) %>% 
+  arrange(area.diff)
+
+summary(e1.test.df)
+
+x1 =25.3
+x2 = -20.9
+y1 = 8.72
+y2 = -19.0 
+r = 17.84
+# standart line equation parameters: onmicalculator.com
+A = y2-y1
+B = x2 - x1
+C = y1*B - A*x1
+# shortest distance between center and AB line: chilimath.com
+# center is always 0|0
+d = abs(C)/sqrt(A^2+B^2)
+# height of the cirlce regment between line and circle perimeter
+h = ifelse(d<=r, r-d, 0)
+# calculate area of cirlce segment with heigth and radius : wikipedia.de
+area = r^2*acos(1-(h/r))-(r-h)*sqrt(r^2-(r-h)^2)
 
 
 
@@ -1851,4 +1895,184 @@ rem.circle.multipoly.two.edges.list.final <- rbindlist(rem.circle.multipoly.2.ed
 rem.circle.multipoly.two.edges.df <- as.data.frame(rem.circle.multipoly.two.edges.list.final)[,c(2,1, rem.circle.multipoly.two.edges.df$geometry)] %>% distinct()
 # binding the both circle lists back together 
 rem.circle.two.edges.df <- rbind(rem.circle.poly.two.edges.df, rem.circle.multipoly.two.edges.df)
+
+
+
+
+
+
+
+
+# 3.2.1.4. visualising loops results -----------------------------
+# for 1 plot
+# https://ggplot2.tidyverse.org/reference/ggsf.html
+p_id =   50059 
+ggplot() +
+  geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
+  geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
+  geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == p_id], aes(alpha = 0))+
+  geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == p_id], 
+          aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == p_id]))
+
+# for all plots
+for(i in 1:length(unique(circle.poly.df$id))){
+  # https://ggplot2.tidyverse.org/reference/ggsf.html
+  
+  #i = 62
+  my.plot.id = unique(circle.poly.df)[i, "id"]
+  
+  print(ggplot() +
+          ggtitle(paste0(my.plot.id, " - ", triangle.e1.poly.df$e_form[triangle.e1.poly.df$id == my.plot.id], " - " , triangle.e2.poly.df$e_form[triangle.e2.poly.df$id == my.plot.id]))+ 
+          geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == my.plot.id], aes(alpha = 0))+
+          geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == my.plot.id], aes(alpha = 0))+
+          geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == my.plot.id], aes(alpha = 0))+
+          geom_sf(data = all.trees.points$geometry[all.trees.points$id == my.plot.id], aes(color = all.trees.points$t_stat[all.trees.points$id == my.plot.id])))
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# plot all edges together for plot_ID 
+my.p.id = 50059
+
+#AB line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  ### AB line
+  geom_point(data = forest_edges_HBI.man %>%
+               filter(e_form == "1" & plot_ID == my.p.id) %>% 
+               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:5], names(.)[6:9]), 
+             aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "1" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  # trees
+  geom_point(data =  trees_and_edges %>% 
+             filter(plot_ID == my.p.id),
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))
+  #theme_bw()+
+  #facet_wrap(~plot_ID)
+  
+  # forest edge type 2 
+  # if the # i removed, this part allows to plot plots with forest edges with a turning point
+  ### AT line
+  # ggplot() +  
+  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "2" & plot_ID == my.p.id) %>% 
+               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "2" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle AT
+  geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "2" & plot_ID == my.p.id) %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "2" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # BT line 
+  geom_point(data = forest_edges_HBI.man %>%
+               filter(e_form == "2" & plot_ID == my.p.id) %>% 
+               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = forest_edges_HBI.man %>%
+              filter(e_form == "2" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle BT
+  geom_point(data = forest_edges_HBI.man %>% 
+               filter(e_form == "2" & plot_ID == my.p.id) %>% 
+               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
+  geom_line(data = forest_edges_HBI.man %>% 
+              filter(e_form == "2" & plot_ID == my.p.id) %>% 
+              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # trees
+  geom_point(data =  trees_and_edges %>%  filter(plot_ID == my.p.id), 
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+  theme_bw()+ 
+  facet_wrap(~plot_ID) 
 
