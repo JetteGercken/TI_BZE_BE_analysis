@@ -181,38 +181,25 @@ azi <- function(x2, y2, x1, y1){
 
 # ------1.4.3. angle between 2 lines --------------------------------------------------------------------------
 # calculating angle between two lines at their point of intersection
-angle <- function(x3, y3, x1, y1, x2, y2, unit){
-  # x3 | y3 is the point of intersection
-  b1_1 = (y1-y3)/(x1-x3)
-  b1_2 = (y2-y3)/(x2-x3)
-  # https://studyflix.de/mathematik/schnittwinkel-berechnen-5408
-  angle.between.two.lines.rad = atan(abs((b1_1 - b1_2)/(1 + b1_1*b1_2)));
+angle.vectors <- function(x.0, y.0, x.1, y.1, x.2, y.2, unit){
+  # calculate vector from center/ turning point to respective other point on the line: https://studyflix.de/mathematik/vektor-berechnen-4349
+  x.a = x.1 - x.0
+  y.a = y.1 - y.0
+  x.b = x.2 - x.0
+  y.b = y.2 - y.0
+  # calculate ange betweern vectors: https://studyflix.de/mathematik/winkel-zwischen-zwei-vektoren-2251
+  scalar.porduct = x.a * x.b +  y.a * y.b
+  length.a = sqrt(abs(x.a)^2 + abs(y.a)^2)
+  length.b = sqrt(abs(x.b)^2 + abs(y.b)^2)
+  cos.minus.1 = (scalar.porduct)/(length.a * length.b)
+  angle.rad = acos(cos.minus.1)
+  angle.degrees = angle.rad*(180/pi)
+  angle.gon = angle.rad*(180/pi)*0.9
   switch(unit, 
-         # bogenmas in rad
-         angle.rad = angle.between.two.lines.rad, 
-         # transfer bogenmas in rad into Kreismaß in degrees 
-         # https://www.matheretter.de/wiki/bogenmass-umrechnen
-         angle.degrees = angle.between.two.lines.rad*(180/pi), 
-         # transfer degrees into gon
-         angle.gon = ((angle.between.two.lines.rad*(180/pi))/360)*400)
+         rad = angle.rad, 
+         degrees = angle.degrees, 
+         gon = angle.gon)
 }
-
-angle.vectors <- function(x1, y1, x2, y2, unit){
-  scalar.product = (x1*x2)+(y1*y2);
-  length.1 = sqrt(x1^2+y1^2);
-  length.2 = sqrt(x2^2+y2^2);
-  angle.cos = (scalar.product)/(abs(length.1)*abs(length.2));
-  angle = acos(angle.cos)
-   switch(unit,
-          length.2 = length.2,
-          scalar.product = scalar.product,
-          angle.cos=angle.cos, 
-          angle=angle,
-          degrees = angle,
-          gon = angle*0.9
-  )
-}
-
 
 # ----- 1.4.3. distance between two points --------------------------------
 distance <- function(x2, y2, x1, y1){
@@ -619,7 +606,15 @@ CircleSegmnent <- function(x1,y1,x2,y2,r){
 }
 
 
-triangle.area <- function(x.0, y.0, x1,y1,x2,y2){
+cone.area <- function(x.0, y.0, x1, y1, x2, y2, r){
+  angle.between.lines = angle.vectors(x.0, y.0, x1, y1, x2, y2, unit = "degrees")
+  cone.A = (pi*r^2)*angle.between.lines/360
+  return(cone.A)
+}
+  
+
+
+triangle.area <- function(x.0, y.0, x1, y1, x2, y2){
   # standart line equation parameters: onmicalculator.com
   A = y2-y1
   B = x2 - x1
@@ -627,7 +622,10 @@ triangle.area <- function(x.0, y.0, x1,y1,x2,y2){
   # shortest distance between center and AB line: chilimath.com
   h.triangle  = abs(A*x.0 + B*y.0 + C)/sqrt(A^2+B^2)
   g.triangle = distance(x1,y1,x2,y2)
-  A.triangle = (h.triangle/2)*g.triangle
+  switch(method, 
+         shortest.dist = (h.triangle/2)*g.triangle,
+         three.points = 0.5*abs((x1*(y2-y.0) + x2*(y.0 - y1) + x.0*(y.0-y2)))
+         )
   
   return(A.triangle)
   
@@ -635,9 +633,7 @@ triangle.area <- function(x.0, y.0, x1,y1,x2,y2){
 
 
 
-
-
-triangle.circle.intersection <- function(x1,y1,x2,y2,x3,y3,r){
+triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
   # center point of circle
   pt.circle <- sf::st_point(c(0,0))
   circle.poly <- sf::st_buffer(pt.circle, dist = r)

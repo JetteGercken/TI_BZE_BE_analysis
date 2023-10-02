@@ -348,14 +348,14 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   
   ## build triangle with 60 circle to test if MC lies inside or not
   # select the intersection coordinates for the triangle on AT line
-  x.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 60.00, x.a, y.a, x.t, y.t, coordinate = "x" );
+  x.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, c.r0, x.a, y.a, x.t, y.t, coordinate = "x" );
   # calculate y for AT triangle
-  y.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 60.00, x.a, y.a, x.t, y.t, coordinate = "y" );
+  y.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, c.r0, x.a, y.a, x.t, y.t, coordinate = "y" );
   #BT 
   # select the intersection coordinates for the triangle on BT line
-  x.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 60.00, x.b, y.b, x.t, y.t, coordinate = "x" );
+  x.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, c.r0, x.b, y.b, x.t, y.t, coordinate = "x" );
   # calculate y for BT triangle
-  y.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 60.00, x.b, y.b, x.t, y.t, coordinate = "y" );
+  y.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, c.r0, x.b, y.b, x.t, y.t, coordinate = "y" );
   
   ## build circle segment
   # calculate intersections with sampling circle (17,12,5m)
@@ -398,54 +398,28 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   
   # circle segment on AB or AT or BT side
   # calculate angle between the lines from sampling cirlce intersections to center
-    # azi_inter1_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
-    # azi_inter2_center = ifelse(e.form == 2 & t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
-    # # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-    # azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
   
-  angle_between_IC_lines = ifelse(e.form == 2 & t.dist <= c.r0, angle.vectors(x.t, y.t, x1, y1, x2, y2, unit = "degrees"), 
-                                  angle.vectors(c.x0, c.y0, x1, y1, x2, y2, unit = "degrees"))
+  # calcualte circle segment area: 
+  # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
+  c.cone.A = ifelse(e.form == 2 & t.dist <= c.r0, cone.area(x.t, y.t, x1, y1, x2, y2, (c.r0 - t.dist)),
+                    ifelse(e.form == 2 & t.dist > c.r0, cone.area(c.x0, c.y0, x1, y1, x2, y2, c.r0), NA)); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
+  
+  c.cone.A.bsite = ifelse(e.form == 2 & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", cone.area(c.x0, c.y0,  x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, c.r0), NA)
+  
+   triangle.A.asite = ifelse(e.form == 2 &  t.dist > c.r0, triangle.area(c.x0, c.y0, x1, y1, x2, y2, method = "three.points"), NA)
+   triangle.A.bsite = ifelse(e.form == 2 &  t.dist > c.r0  & i_status.AT == "two I" & i_status.BT == "two I", triangle.area(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, method = "three.points"), NA)
+  
+  # calculate circle segment trouhg withdrawing triangle from cone: 
+   circle.seg.A.asite = ifelse(e.form == 2 &  t.dist > c.r0, c.cone.A - triangle.A.asite, NA)
+   circle.seg.A.bsite = ifelse(e.form == 2 &  t.dist > c.r0  & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A.bsite -triangle.A.bsite, NA)
+   
+   circle.seg.A.e1 = ifelse(e.form == 1 & i_status.AB == "two I", CircleSegmnent(x1, y1, x2, y2, c.r0), 0)
+   
+   # calcualte circle area
+   c.A = pi*c.r0^2;
+   
   
 
-    # calcualte circle segment area: 
-  # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
-  c.cone.A = ifelse(e.form == 2 & t.dist <= c.r0, (pi*(c.r0-t.dist)^2) * angle_between_IC_lines/360, 
-                    (pi*c.r0^2)*angle_between_IC_lines/360); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
-  # calcualte circle area
-  c.A = pi*c.r0^2;
-  
-  # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-    # trianlge.A =  ifelse(e.form == 2 &  t.dist <= c.r0, 
-    #                      (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , 
-    #                      0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2)) ) ;
-   triangle.A = ifelse(e.form == 2 &  t.dist <= c.r0,
-                      triangle.area(x.t, y.t, x1, y1, x2, y2),
-                      triangle.area(c.x0, c.y0, x1, y1, x2, y2))
-  
-  # calculate circle segment trouhg withdrawing triangle from cone: 
-  angl = angle.vectors(c.x0, c.y0, x1, y1, x2, y2, unit = "degrees")
-  
-   c.seg.A = c.cone.A-trianlge.A
-   CircleSegmnent(x1, y1, x2, y2, 17.84)
-   all.edges.area.df %>% filter(id == 50005)
-  
-  # circle segment on BT side, if AT and BT side have intersection
-  # calculate angle between the lines from sampling cirlce intersections to center
-  azi_inter1.bsite_center = azi(x.1.bsite, y.1.bsite, c.x0, c.y0);
-  azi_inter2.bsite_center = azi(x.2.bsite, y.2.bsite, c.x0, c.y0);
-  # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-  azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
-  #angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
-  # calcualte circle segment area: 
-  c.cone.A.bsite = (pi*c.r0^2) *azi_between_IC_lines.bsite*0.9;  # angle_between_IC_lines.bsite , *0.9 or /400 because our azi (gon)is in gon not degrees 
-  # calcualte circle area
-  c.A.bsite = pi*c.r0^2;
-  # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A.bsite =  0.5*(x.1.bsite*(y.2.bsite-c.y0) + x.2.bsite*(c.y0-y.1.bsite) + c.x0*(c.y0-y.2.bsite)) ;
-  # calculate circle segment trouhg withdrawing triangle from cone: 
-  c.seg.A.bsite = c.cone.A.bsite-trianlge.A.bsite
-  
-  
   ## calculate coordiantes of the middle of thie line between 
   x_m_line = (x1 + x2)/2;
   y_m_line = (y1 + y2)/2;
@@ -487,20 +461,21 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   # edge.whole.circle.A = ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A, NA)
   
   # for edge form == 1 it´s always the circle segment, cause the trees in  
-  edge.area = ifelse(e.form == "1" & tree_status == "B" & i_status.AB == "two I", c.seg.A, 
+  edge.area = ifelse(e.form == "1" & tree_status == "B" & i_status.AB == "two I", circle.seg.A.e1, 
                      ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I"|
-                              e.form == "2" & tree_status == "B"&  t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", edge.2.line.A,
+                              e.form == "2" & tree_status == "B"&  t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", circle.seg.A.asite,
                             # t is inside circle so whole cone is the edge area
                             ifelse(e.form == "2" & tree_status == "B"&  t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A, 
                                    # both arms of triangle cut circle so triangle area is between the both circle segments
-                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.A - (c.seg.A.bsite + c.seg.A), 
+                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.A - (c.seg.A.bsite + circle.seg.A.asite), 
                                           # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
                                           # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
                                           ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" & 
                                                    p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
-                                                 0)))));
-  circle.area = c.A - edge.area; 
-  area = ifelse(tree_status == "A" | is.na(e.form), circle.area, edge.area);
+                                                 ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
+                                                        0))))));
+  rem.circle.area = c.A - edge.area; 
+  area = ifelse(tree_status == "A" | is.na(e.form), rem.circle.area, edge.area);
 
 
 
@@ -513,25 +488,7 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
   x.b = -5
   y.b = -1
   
-angle.vectors <- function(x.0, y.0, x.1, y.1, x.2, y.2, unit){
-  # calculate vector from center/ turning point to respective other point on the line: https://studyflix.de/mathematik/vektor-berechnen-4349
-  x.a = x.1 - x.0
-  y.a = y.1 - y.0
-  x.b = x.2 - x.0
-  y.b = y.2 - y.0
-  # calculate ange betweern vectors: https://studyflix.de/mathematik/winkel-zwischen-zwei-vektoren-2251
-  scalar.porduct = x.a * x.b +  y.a * y.b
-  length.a = sqrt(abs(x.a)^2 + abs(y.a)^2)
-  length.b = sqrt(abs(x.b)^2 + abs(y.b)^2)
-  cos.minus.1 = (scalar.porduct)/(length.a * length.b)
-  angle.rad = acos(cos.minus.1)
-  angle.degrees = angle.rad*(180/pi)
-  angle.gon = angle.rad*(180/pi)*0.9
-  switch(unit, 
-         rad = angle.rad, 
-         degrees = angle.degrees, 
-         gon = angle.gon)
-  }
+
   
   
 
