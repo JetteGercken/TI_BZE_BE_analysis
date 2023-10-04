@@ -777,7 +777,9 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
 # 3.2.1.2. creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
  ## loop to create list of polygones for edge form 1
- forest_edges_HBI.man.sub.e2 <- forest_edges_HBI.man%>% filter(e_form == 2) %>%  # nrow = 21
+ forest_edges_HBI.man.sub.e2 <- forest_edges_HBI.man %>%
+   filter(e_form == 2) %>%  # nrow = 21
+   filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") %>% 
    semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
  
  triangle.e2.list <- vector("list", length = length(forest_edges_HBI.man.sub.e2$plot_ID) )
@@ -1341,7 +1343,7 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id =   50073     
+p_id =    50112       
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+

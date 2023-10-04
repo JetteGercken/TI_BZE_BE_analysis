@@ -285,24 +285,28 @@ edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree
   # l.b0, l.b1 are the parameters of the line we assign the edges for
   #  xa, xb, xc, ya, yb, yc are the coordinates of the triangle corners that were used to identiy the "out" / "B" trees
   # c.seg.a means the area of the cirle segment (circle bow) or the circle segmetns per CCS, c.a means the area if the whole circle
+ 
+  # p_id = 50112
+  # e.form = forest_edges_HBI.man$e_form[forest_edges_HBI.man$plot_ID == p_id]
+  # dbh.cm = 35
+  # x.a = forest_edges_HBI.man$X_A[forest_edges_HBI.man$plot_ID == p_id]
+  # x.b = forest_edges_HBI.man$X_B[forest_edges_HBI.man$plot_ID == p_id]
+  # x.t = forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID == p_id]
+  # y.a = forest_edges_HBI.man$Y_A[forest_edges_HBI.man$plot_ID == p_id]
+  # y.b = forest_edges_HBI.man$Y_B[forest_edges_HBI.man$plot_ID == p_id]
+  # y.t = forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID == p_id]
+  # t.dist= forest_edges_HBI.man$T_dist[forest_edges_HBI.man$plot_ID == p_id]
+  # tree_status= "B"
   
+   
   # select the diameter of the circle depending on the trees diameter
   c.x0 = 0;
   c.y0 = 0; 
-  c.r0 =  ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
-                 ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62,
-                        ifelse(dbh.cm >= 30, 17.84, NA)))
+  c.r0 =   ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
+              ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62,
+                     ifelse(dbh.cm >= 30, 17.84, NA)))
   
-  # e.form = forest_edges_HBI.man$e_form[forest_edges_HBI.man$plot_ID == 50023]
-  # #dbh.cm = forest_edges_HBI.man$ [forest_edges_HBI.man$plot_ID == 50023]
-  #   x.a = forest_edges_HBI.man$X_A[forest_edges_HBI.man$plot_ID == 50023]
-  #   x.b= forest_edges_HBI.man$X_B[forest_edges_HBI.man$plot_ID == 50023]
-  #   x.t= forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID == 50023]
-  #   y.a = forest_edges_HBI.man$Y_A[forest_edges_HBI.man$plot_ID == 50023]
-  #   y.b = forest_edges_HBI.man$Y_B[forest_edges_HBI.man$plot_ID == 50023]
-  #   y.t = forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID == 50023]
-  #   t.dist= forest_edges_HBI.man$T_dist[forest_edges_HBI.man$plot_ID == 50023]
-  #   tree_status= "B"
+    
   # 
   
   ## calcualte slope and intercept of AT and BT line to calcualte intersections
@@ -445,7 +449,7 @@ edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree
                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
                            
                            e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I" & 
-                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X2_inter_MC, y2_inter_MC) == "B" &
                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line)|
                            
                            e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & 
@@ -453,9 +457,15 @@ edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree
                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
                            
                            e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & 
-                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X2_inter_MC, y2_inter_MC) == "B" &
                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
                          c.A - circle.seg.A.asite, circle.seg.A.asite);
+   
+   # if the middle point is not inside the triangle, but the edge for is 2 and there are 2 intersections for both arms, while the turning point is outisde the circle, 
+   # we have to calcualte the area on both sides of the lines and then deduct them from each other as they will both extend to the same circle segment
+   edge.A.e2.center.not.in.triangle = ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & 
+                                          p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "A",
+                                        abs(circle.seg.A.asite - circle.seg.A.bsite), NA) 
   
   # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
   # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
@@ -468,13 +478,15 @@ edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree
                               e.form == "2" & tree_status == "B"&  t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", edge.2.line.A,
                             # t is inside circle so whole cone is the edge area
                             ifelse(e.form == "2" & tree_status == "B"&  t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A, 
-                                   # both arms of triangle cut circle so triangle area is between the both circle segments
-                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.A - (circle.seg.A.bsite + circle.seg.A.asite), 
-                                          # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
-                                          # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
-                                          ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" & 
-                                                   p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
-                                                 ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
+                                   # both arms of triangle cut circle so triangle area is between the both circle segments anf center of cirlce is inside triangle
+                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A - (circle.seg.A.bsite + circle.seg.A.asite), 
+                                          # if the middle point is not inside the triangle, but the edge for is 2 and there are 2 intersections for both arms, while the turning point is outisde the circle, 
+                                          # we have to calcualte the area on both sides of the lines and then deduct them from each other as they will both extend to the same circle segment
+                                          ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "A", edge.A.e2.center.not.in.triangle,
+                                                        # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
+                                                        # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
+                                                        ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" &  p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
+                                                 #ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
                                                         0))))));
   rem.circle.area = c.A - edge.area; 
   area = ifelse(tree_status == "A" | is.na(e.form), rem.circle.area, edge.area);
@@ -482,42 +494,65 @@ return(area)
    }
 
 
-summary(jeremy.test.df %>% 
-  left_join(., 
-            forest_edges_HBI.man %>%  
-              filter(e_form == 2) %>% 
-  mutate(id = row_number()) %>%
-  group_by(id) %>%
-  mutate(
- # e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status
-  edge_A_m2 = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B")), 
-  by = c( "plot_ID",  "e_ID", "e_form")
+
+jeremy.test.df <- rbind(forest_edges_HBI.man %>%
+                          filter(e_form == 2 ) %>%
+                          mutate(id_func = row_number()) %>%
+                          group_by(id_func) %>%
+                          # test the edge form 2 function
+                          mutate(jeremy.test = triangle.circle.intersection(
+                            inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "x"), 
+                            inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "y"),
+                            inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_B, Y_B, X_T, Y_T, coordinate = "x"), 
+                            inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_B, Y_B, X_T, Y_T, coordinate = "y"),
+                            X_T, Y_T, 
+                            17.84
+                          ))%>% 
+                          ungroup() %>% 
+                          select(plot_ID, e_ID, e_form,inter_status_AB_17,  inter_status_AT_17, inter_status_BT_17, jeremy.test), 
+                        # test the CircleSegment function 
+                        forest_edges_HBI.man  %>%
+                          filter(e_form == 1) %>% 
+                          mutate(id_func = row_number()) %>%
+                          group_by(id_func) %>%
+                          mutate(jeremy.test = CircleSegmnent(X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17, 17.84))%>%
+                          ungroup() %>% 
+                          select(plot_ID, e_ID, e_form, inter_status_AB_17,  inter_status_AT_17, inter_status_BT_17, jeremy.test)
 ) %>% 
-  mutate(diff_A = jeremy.test - edge_A_m2, 
-         warn = ifelse(jeremy.test != edge_A_m2, "WARNING", "FINE")))
-
-jeremy.test.df %>% 
+  # check area function 
   left_join(., 
-            forest_edges_HBI.man %>%  
-              filter(e_form == 2) %>% 
-              mutate(id = row_number()) %>%
-              group_by(id) %>%
-              mutate(
-                # e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status
-                edge_A_m2 = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B")), 
-            by = c( "plot_ID",  "e_ID", "e_form")
-  ) %>% 
-  mutate(diff_A = jeremy.test - edge_A_m2, 
-         warn = ifelse(jeremy.test != edge_A_m2, "WARNING", "FINE")) %>% 
-  filter(warn == "WARNING") %>% 
-  select(plot_ID,  e_ID, e_form,edge_A_m2, jeremy.test, diff_A, inter_status_AB_17 ,inter_status_AT_17,   inter_status_BT_17  )
+            forest_edges_HBI.man %>% 
+              mutate(id_func = row_number()) %>%
+              group_by(id_func) %>%
+              mutate(area.func.test = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B")) %>% 
+              ungroup() %>%
+              select(plot_ID, e_ID, e_form, area.func.test), 
+            by = c("plot_ID", "e_ID", "e_form")) %>%
+  # check georef results
+  left_join(., 
+            all.edges.area.df %>% 
+              mutate(id = as.integer(id),
+                     e_id = as.integer(e_id),
+                     e_form = as.integer(e_form), 
+                     area_m2 = as.numeric(area_m2)) %>% 
+              select(id, e_id, e_form, area_m2), 
+            by = c(c("plot_ID" = "id"), c("e_ID"="e_id"), "e_form")) %>% 
+  mutate(diff_jeremy.circleseg_vs_area.func = jeremy.test - area.func.test, 
+         diff_jeremy.circleseg_vs_georef = jeremy.test - area_m2,
+         diff_area.func_vs_georef = area.func.test - area_m2) %>% 
+  mutate(warn_jeremy.circleseg_vs_area.func = ifelse(jeremy.test != area.func.test, "WARN", "FINE"), 
+         #warn_jeremy.circleseg_vs_georef = ifelse(jeremy.test != area_m2, "WARN", "FINE"), 
+         warn_area.func_vs_georef = ifelse( area.func.test != area_m2, "WARN", "FINE"))
 
-all.edges.area.df %>% filter(id == 50023 & shape == "edge")
-jeremy.test.df %>% filter(plot_ID == 50023)
-area  
+summary(jeremy.test.df)
 
-CircleSegmnent(x1,y1,x2,y2,c.r0)  
-triangle.circle.poly.intersection(x.AT.inter.triangle.60, y.AT.inter.triangle.60, x.BT.inter.triangle.60, y.BT.inter.triangle.60, x.t, y.t, c.r0)
+print(jeremy.test.df%>% 
+        filter(warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef > 15 |
+                 warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef < -15), n = 62)
+
+
+
+
 
 # ----- 2. visualization  -------------------------------------------------
 # ----- 2.1.   Living trees visualization forest edges -----------------------------------
@@ -1132,16 +1167,11 @@ ggplot() +
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-jeremy.test.df <- forest_edges_HBI.man %>% select(plot_ID, e_ID, e_form, 
-                                X_T, Y_T,
-                                X_A, Y_A,
-                                X_B, Y_B,
-                                b0_AT, b1_AT, 
-                                b0_BT, b1_BT) %>%
+jeremy.test.df <- rbind(forest_edges_HBI.man %>%
   filter(e_form == 2 ) %>%
-  #filter(plot_ID == 50023) %>% 
-  mutate(id = row_number()) %>%
-  group_by(id) %>%
+  mutate(id_func = row_number()) %>%
+  group_by(id_func) %>%
+    # test the edge form 2 function
   mutate(jeremy.test = triangle.circle.intersection(
     inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "x"), 
     inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "y"),
@@ -1149,88 +1179,55 @@ jeremy.test.df <- forest_edges_HBI.man %>% select(plot_ID, e_ID, e_form,
     inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_B, Y_B, X_T, Y_T, coordinate = "y"),
     X_T, Y_T, 
     17.84
-    ))
-
-triangle.circle.intersection(
-inter.for.triangle(forest_edges_HBI.man$b0_AT[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$b1_AT[forest_edges_HBI.man$plot_ID ==50023], 
-                   data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                   forest_edges_HBI.man$X_A[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_A[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID ==50023], coordinate = "x"),
-inter.for.triangle(forest_edges_HBI.man$b0_AT[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$b1_AT[forest_edges_HBI.man$plot_ID ==50023], 
-                   data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                   forest_edges_HBI.man$X_A[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_A[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID ==50023], coordinate = "y"),
-inter.for.triangle(forest_edges_HBI.man$b0_BT[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$b1_BT[forest_edges_HBI.man$plot_ID ==50023], 
-                   data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                   forest_edges_HBI.man$X_B[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_B[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID ==50023], coordinate = "x"),
-inter.for.triangle(forest_edges_HBI.man$b0_BT[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$b1_BT[forest_edges_HBI.man$plot_ID ==50023], 
-                   data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                   forest_edges_HBI.man$X_B[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_B[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID ==50023], 
-                   forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID ==50023], coordinate = "y"),
-forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID ==50023], 
-forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID ==50023], 
-17.84
-)
-
-triangle.circle.intersection(
-  inter.for.triangle(forest_edges_HBI.man$b0_AT, forest_edges_HBI.man$b1_AT, 
-                     data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                     forest_edges_HBI.man$X_A, forest_edges_HBI.man$Y_A, forest_edges_HBI.man$X_T, forest_edges_HBI.man$Y_T, coordinate = "x")
-  , 
-  inter.for.triangle(forest_edges_HBI.man$b0_AT, forest_edges_HBI.man$b1_AT, 
-                     data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                     forest_edges_HBI.man$X_A, forest_edges_HBI.man$Y_A, forest_edges_HBI.man$X_T, forest_edges_HBI.man$Y_T, coordinate = "y"),
-  inter.for.triangle(forest_edges_HBI.man$b0_BT, forest_edges_HBI.man$b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                     forest_edges_HBI.man$X_B, forest_edges_HBI.man$Y_B, forest_edges_HBI.man$X_T, forest_edges_HBI.man$Y_T, coordinate = "x"), 
-  inter.for.triangle(forest_edges_HBI.man$b0_BT, forest_edges_HBI.man$b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                     forest_edges_HBI.man$X_B, forest_edges_HBI.man$Y_B, forest_edges_HBI.man$X_T, forest_edges_HBI.man$Y_T, coordinate = "y"),
-  forest_edges_HBI.man$X_T, forest_edges_HBI.man$Y_T, 
-  17.84
-)
-
-test.50023 <- forest_edges_HBI.man %>% filter(plot_ID == 50023)
-x1 = inter.for.triangle(test.50023$b0_AT, test.50023$b1_AT, 
-                        data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                        test.50023$X_A, test.50023$Y_A, test.50023$X_T, test.50023$Y_T, coordinate = "x")
-y1 = inter.for.triangle(test.50023$b0_AT, test.50023$b1_AT, 
-                        data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                        test.50023$X_A, test.50023$Y_A, test.50023$X_T, test.50023$Y_T, coordinate = "y")
-x2 = inter.for.triangle(test.50023$b0_BT, test.50023$b1_BT, 
-                        data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                        test.50023$X_B, test.50023$Y_B, test.50023$X_T, test.50023$Y_T, coordinate = "x")
-y2 = inter.for.triangle(test.50023$b0_BT, test.50023$b1_BT, 
-                        data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , 
-                        test.50023$X_B, test.50023$Y_B, test.50023$X_T, test.50023$Y_T, coordinate = "y")
-triangle.circle.intersection(x1, y1, x2, y2, test.50023$X_T, test.50023$Y_T, 17.84)
-
-jeremy.test.df %>% 
-  left_join(., edges.area.df %>% filter(e_form == 2) %>% 
-              mutate(id = as.integer(id), 
+    ))%>% 
+    ungroup() %>% 
+    select(plot_ID, e_ID, e_form,inter_status_AB_17,  inter_status_AT_17, inter_status_BT_17, jeremy.test), 
+# test the CircleSegment function 
+   forest_edges_HBI.man  %>%
+    filter(e_form == 1) %>% 
+    mutate(id_func = row_number()) %>%
+    group_by(id_func) %>%
+  mutate(jeremy.test = CircleSegmnent(X1_inter_AB_17, Y1_inter_AB_17, X2_inter_AB_17, Y2_inter_AB_17, 17.84))%>%
+    ungroup() %>% 
+    select(plot_ID, e_ID, e_form, inter_status_AB_17,  inter_status_AT_17, inter_status_BT_17, jeremy.test)
+  ) %>% 
+  # check area function 
+  left_join(., 
+            forest_edges_HBI.man %>% 
+              mutate(id_func = row_number()) %>%
+              group_by(id_func) %>%
+              mutate(area.func.test = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B")) %>% 
+              ungroup() %>%
+              select(plot_ID, e_ID, e_form, area.func.test), 
+            by = c("plot_ID", "e_ID", "e_form")) %>%
+  # check georef results
+  left_join(., 
+            all.edges.area.df %>% 
+              mutate(id = as.integer(id),
                      e_id = as.integer(e_id),
                      e_form = as.integer(e_form), 
                      area_m2 = as.numeric(area_m2)) %>% 
               select(id, e_id, e_form, area_m2), 
             by = c(c("plot_ID" = "id"), c("e_ID"="e_id"), "e_form")) %>% 
-  mutate(area.diff= jeremy.test-area_m2)
+  mutate(diff_jeremy.circleseg_vs_area.func = jeremy.test - area.func.test, 
+         diff_jeremy.circleseg_vs_georef = jeremy.test - area_m2,
+         diff_area.func_vs_georef = area.func.test - area_m2) %>% 
+  mutate(warn_jeremy.circleseg_vs_area.func = ifelse(jeremy.test != area.func.test, "WARN", "FINE"), 
+         warn_jeremy.circleseg_vs_georef = ifelse(jeremy.test != area_m2, "WARN", "FINE"), 
+         warn_area.func_vs_georef = ifelse( area.func.test != area_m2, "WARN", "FINE"))
+
+summary(jeremy.test.df)
+
+jeremy.test.df %>% 
+filter(warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef > 5 |
+         warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef < -5)
+
 
 
 jeremy(0,1,1,0,1,1,2)
 plot(circle.poly)
 
-
+CircleSegmnent()
 
 pt.circle <- sf::st_point(c(0,0))
 circle.poly <- sf::st_buffer(pt.circle, dist = 0)

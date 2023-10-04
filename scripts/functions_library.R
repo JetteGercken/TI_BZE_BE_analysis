@@ -660,13 +660,28 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   #  xa, xb, xc, ya, yb, yc are the coordinates of the triangle corners that were used to identiy the "out" / "B" trees
   # c.seg.a means the area of the cirle segment (circle bow) or the circle segmetns per CCS, c.a means the area if the whole circle
   
+  # p_id = 50112
+  # e.form = forest_edges_HBI.man$e_form[forest_edges_HBI.man$plot_ID == p_id]
+  # dbh.cm = 35
+  # x.a = forest_edges_HBI.man$X_A[forest_edges_HBI.man$plot_ID == p_id]
+  # x.b = forest_edges_HBI.man$X_B[forest_edges_HBI.man$plot_ID == p_id]
+  # x.t = forest_edges_HBI.man$X_T[forest_edges_HBI.man$plot_ID == p_id]
+  # y.a = forest_edges_HBI.man$Y_A[forest_edges_HBI.man$plot_ID == p_id]
+  # y.b = forest_edges_HBI.man$Y_B[forest_edges_HBI.man$plot_ID == p_id]
+  # y.t = forest_edges_HBI.man$Y_T[forest_edges_HBI.man$plot_ID == p_id]
+  # t.dist= forest_edges_HBI.man$T_dist[forest_edges_HBI.man$plot_ID == p_id]
+  # tree_status= "B"
+  
+  
   # select the diameter of the circle depending on the trees diameter
   c.x0 = 0;
   c.y0 = 0; 
-  c.r0 = ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
-                ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62, 
-                       ifelse(dbh.cm >= 30, 17.84, NA)))
+  c.r0 =   ifelse(dbh.cm >= 7 & dbh.cm < 10, 5.64, 
+                  ifelse(dbh.cm >= 10 & dbh.cm < 30,  12.62,
+                         ifelse(dbh.cm >= 30, 17.84, NA)))
   
+  
+  # 
   
   ## calcualte slope and intercept of AT and BT line to calcualte intersections
   l.AB.b0 = ifelse(e.form == "1", intercept(x.a, y.a, x.b, y.b), NA);
@@ -710,14 +725,14 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   
   ## build triangle with 60 circle to test if MC lies inside or not
   # select the intersection coordinates for the triangle on AT line
-  x.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 60.00, x.a, y.a, x.t, y.t, coordinate = "x" );
+  x.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 300, x.a, y.a, x.t, y.t, coordinate = "x" );
   # calculate y for AT triangle
-  y.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 60.00, x.a, y.a, x.t, y.t, coordinate = "y" );
+  y.AT.inter.triangle.60 = inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 300, x.a, y.a, x.t, y.t, coordinate = "y" );
   #BT 
   # select the intersection coordinates for the triangle on BT line
-  x.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 60.00, x.b, y.b, x.t, y.t, coordinate = "x" );
+  x.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 300, x.b, y.b, x.t, y.t, coordinate = "x" );
   # calculate y for BT triangle
-  y.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 60.00, x.b, y.b, x.t, y.t, coordinate = "y" );
+  y.BT.inter.triangle.60 = inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 300, x.b, y.b, x.t, y.t, coordinate = "y" );
   
   ## build circle segment
   # calculate intersections with sampling circle (17,12,5m)
@@ -731,65 +746,55 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   x1 = ifelse(e.form == "1" & i_status.AB == "two I", x1.inter.AB, 
               ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I", x1.inter.AT, 
                      ifelse(e.form == "2" & t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", x1.inter.BT,
-                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, c.r0, x.a, y.a, x.t, y.t, coordinate = "x" ), 
+                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 300, x.a, y.a, x.t, y.t, coordinate = "x" ), 
                                    ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x1.inter.AT, 
                                           NA)))));
   x2 = ifelse(e.form == "1" & i_status.AB == "two I", x2.inter.AB, 
               ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I", x2.inter.AT, 
                      ifelse(e.form == "2" & t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", x2.inter.BT,
-                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, c.r0, x.b, y.b, x.t, y.t, coordinate = "x" ), 
+                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 300, x.b, y.b, x.t, y.t, coordinate = "x" ), 
                                    ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x2.inter.AT, 
                                           NA)))));
-  y1 = ifelse(e.form == "1" & i_status.AB == "two I", x1.inter.AB, 
+  y1 = ifelse(e.form == "1" & i_status.AB == "two I", y1.inter.AB, 
               ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I", y1.inter.AT, 
                      ifelse(e.form == "2" & t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", y1.inter.BT,
-                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, c.r0, x.a, y.a, x.t, y.t, coordinate = "y" ), 
+                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.AT.b0, l.AT.b1,  c.x0, c.y0, 300, x.a, y.a, x.t, y.t, coordinate = "y" ), 
                                    ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", y1.inter.AT, 
                                           NA)))));
   y2 = ifelse(e.form == "1" & i_status.AB == "two I", y2.inter.AB, 
               ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I", y2.inter.AT, 
                      ifelse(e.form == "2" & t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", y2.inter.BT,
-                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, c.r0, x.b, y.b, x.t, y.t, coordinate = "y" ), 
+                            ifelse(e.form == "2" & t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", inter.for.triangle(l.BT.b0, l.BT.b1,  c.x0, c.y0, 300, x.b, y.b, x.t, y.t, coordinate = "y" ), 
                                    ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", y2.inter.AT, 
                                           NA)))));
   # create another intersection pair for circles that are intersected by both arms of the triangle  
   x.1.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x1.inter.BT, NA);
   x.2.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x2.inter.BT, NA);
-  y.1.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x1.inter.BT, NA);
-  y.2.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", x2.inter.BT, NA);
+  y.1.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", y1.inter.BT, NA);
+  y.2.bsite = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", y2.inter.BT, NA);
   
-# circle segment on AB or AT or BT side
+  # circle segment on AB or AT or BT side
   # calculate angle between the lines from sampling cirlce intersections to center
-     azi_inter1_center = ifelse(t.dist <= c.r0, azi(x1, y1, x.t, y.t), azi(x1, y1, c.x0, c.y0));
-    azi_inter2_center = ifelse(t.dist <= c.r0, azi(x2, y2, x.t, y.t), azi(x2, y2, c.x0, c.y0));
-  # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-    azi_between_IC_lines = ifelse((azi_inter1_center-azi_inter2_center)<0, (azi_inter1_center-azi_inter2_center)*(-1), azi_inter1_center-azi_inter2_center);
-  #angle_between_IC_lines = ifelse(t.dist <= c.r0, angle(x.t, y.t, x1, y1, x2, y2, unit = "angle.degrees"), angle(c.x0, c.y0, x1, y1, x2, y2, unit = "angle.degrees"))
+  
   # calcualte circle segment area: 
   # if t is inside the circle we have to fraw a ne circle around T and the intersections by deductin tht distance between T to the center from the total radius of the circle
-  c.cone.A = ifelse(t.dist <= c.r0, (pi*(c.r0-t.dist)^2) * azi_between_IC_lines*0.9 , (pi*c.r0^2)*azi_between_IC_lines*0.9 ); #angle_between_IC_lines;  # *0.9 or /400 because our azi (gon)is in gon not degrees and function for circle segmetn demands degrees 
+  c.cone.A = ifelse(e.form == 2 & t.dist <= c.r0, triangle.circle.poly.intersection(x1, y1, x2, y2, x.t, y.t, c.r0),
+                    ifelse(e.form == 2 & t.dist > c.r0, cone.area(c.x0, c.y0, x1, y1, x2, y2, c.r0), NA)); 
+  c.cone.A.bsite = ifelse(e.form == 2 & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", 
+                          cone.area(c.x0, c.y0,  x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, c.r0), NA)
+  
+  # calcualte triangle between turning point or center of circle and the intersection with the respective cricle
+  triangle.A.asite = ifelse(e.form == 2 &  t.dist > c.r0, triangle.area(c.x0, c.y0, x1, y1, x2, y2, method = "three.points"), NA)
+  triangle.A.bsite = ifelse(e.form == 2 &  t.dist > c.r0  & i_status.AT == "two I" & i_status.BT == "two I", triangle.area(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, method = "three.points"), NA)
+  
+  # calculate circle segment trough withdrawing triangle from cone for edge form 2 where 
+  circle.seg.A.asite = ifelse(e.form == 2 &  t.dist > c.r0, c.cone.A - triangle.A.asite, NA)
+  circle.seg.A.bsite = ifelse(e.form == 2 &  t.dist > c.r0  & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A.bsite -triangle.A.bsite, NA)
+  
+  circle.seg.A.e1 = ifelse(e.form == 1 & i_status.AB == "two I", CircleSegmnent(x1, y1, x2, y2, c.r0), 0)
+  
   # calcualte circle area
   c.A = pi*c.r0^2;
-  # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A =  ifelse(t.dist <= c.r0, (0.5*(x1*(y2-y.t) + x2*(y.t-y1) + x.t*(y.t-y2))) , (0.5*(x1*(y2-c.y0) + x2*(c.y0-y1) + c.x0*(c.y0-y2))) ) ;
-  # calculate circle segment trouhg withdrawing triangle from cone: 
-  c.seg.A = c.cone.A-trianlge.A
-  
-  # circle segment on BT side, if AT and BT side have intersection
-  # calculate angle between the lines from sampling cirlce intersections to center
-      azi_inter1.bsite_center = azi(x.1.bsite, y.1.bsite, c.x0, c.y0);
-      azi_inter2.bsite_center = azi(x.2.bsite, y.2.bsite, c.x0, c.y0);
-  # to not receive negative angles, we have to deduct azi of intersection 1 from azi of intersection 2 and multiply it ith -1 in case it´s negative
-     azi_between_IC_lines.bsite = ifelse((azi_inter1.bsite_center-azi_inter2.bsite_center)<0, (azi_inter1.bsite_center-azi_inter2.bsite_center)*(-1), azi_inter1.bsite_center-azi_inter2.bsite_center);
-  #angle_between_IC_lines.bsite = ifelse(t.dist <= c.r0, angle(x.t, y.t, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"), angle(c.x0, c.y0, x.1.bsite, y.1.bsite, x.2.bsite, y.2.bsite, unit = "angle.degrees"))
-  # calcualte circle segment area: 
-  c.cone.A.bsite = (pi*c.r0^2) *azi_between_IC_lines.bsite*0.9;  # angle_between_IC_lines.bsite , *0.9 or /400 because our azi (gon)is in gon not degrees 
-  # calcualte circle area
-  c.A.bsite = pi*c.r0^2;
-  # calculate area of triangle between the intersections with the sampling circle and the center of the cirlce
-  trianlge.A.bsite =  0.5*(x.1.bsite*(y.2.bsite-c.y0) + x.2.bsite*(c.y0-y.1.bsite) + c.x0*(c.y0-y.2.bsite)) ;
-  # calculate circle segment trouhg withdrawing triangle from cone: 
-  c.seg.A.bsite = c.cone.A.bsite-trianlge.A.bsite
   
   
   ## calculate coordiantes of the middle of thie line between 
@@ -810,44 +815,55 @@ edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_st
   # and the middle point of the line is greater then the distanc between the intersection that is outside the triangle and by that inside the plot 
   # deduct the circle segment from the whole plot area (because the larger part of the plot belongs to category B)
   # if the itnersection that is element to the triangle lies on the shorter side of the line, use the circle segment / circle bows area as the edge area
-  B_trees_edge.a = ifelse(p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
-                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
-                            p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
-                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
-                          c.A - c.seg.A, c.seg.A); 
   
   # edge.1.A = ifelse(e.from == "1", c.seg.A, NA);
   ## return the area of the bigger or smaller circle segment, depending on which one of the both lies inside the triangle for edge form == 2 and only one arm intersecting the circle
-  edge.2.line.A = ifelse(e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+  edge.2.line.A = ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I" & 
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
-                           e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+                           
+                           e.form == "2" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I" & 
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X2_inter_MC, y2_inter_MC) == "B" &
                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line)|
-                           e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+                           
+                           e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & 
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
                            distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line) > distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) |
-                           e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X1_inter_MC, y1_inter_MC) == "B" &
+                           
+                           e.form == "2" & t.dist > c.r0 & i_status.AT != "two I" & i_status.BT == "two I" & 
+                           p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, X2_inter_MC, y2_inter_MC) == "B" &
                            distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) > distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line),
-                         c.A - c.seg.A, c.seg.A);
+                         c.A - circle.seg.A.asite, circle.seg.A.asite);
+  
+  # if the middle point is not inside the triangle, but the edge for is 2 and there are 2 intersections for both arms, while the turning point is outisde the circle, 
+  # we have to calcualte the area on both sides of the lines and then deduct them from each other as they will both extend to the same circle segment
+  edge.A.e2.center.not.in.triangle = ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & 
+                                              p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "A",
+                                            abs(circle.seg.A.asite - circle.seg.A.bsite), NA) 
   
   # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
   # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
   # edge.whole.circle.A = ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A, NA)
   
   # for edge form == 1 it´s always the circle segment, cause the trees in  
-  edge.area = ifelse(e.form == "1" & tree_status == "B" & i_status.AB == "two I", c.seg.A, 
+  edge.area = ifelse(e.form == "1" & tree_status == "B" & i_status.AB == "two I", circle.seg.A.e1, 
+                     # if only one side of triangle is intersection 
                      ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I"|
                               e.form == "2" & tree_status == "B"&  t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", edge.2.line.A,
                             # t is inside circle so whole cone is the edge area
                             ifelse(e.form == "2" & tree_status == "B"&  t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.cone.A, 
-                                   # both arms of triangle cut circle so triangle area is between the both circle segments
-                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I", c.A - (c.seg.A.bsite + c.seg.A), 
-                                          # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
-                                          # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
-                                          ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" & 
-                                                   p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
-                                                 0)))));
-  circle.area = c.A - edge.area; 
-  area = ifelse(tree_status == "A" | is.na(e.form), circle.area, edge.area);
-  
+                                   # both arms of triangle cut circle so triangle area is between the both circle segments anf center of cirlce is inside triangle
+                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A - (circle.seg.A.bsite + circle.seg.A.asite), 
+                                          # if the middle point is not inside the triangle, but the edge for is 2 and there are 2 intersections for both arms, while the turning point is outisde the circle, 
+                                          # we have to calcualte the area on both sides of the lines and then deduct them from each other as they will both extend to the same circle segment
+                                          ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "A", edge.A.e2.center.not.in.triangle,
+                                                 # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
+                                                 # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
+                                                 ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" &  p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
+                                                        #ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
+                                                        0))))));
+  rem.circle.area = c.A - edge.area; 
+  area = ifelse(tree_status == "A" | is.na(e.form), rem.circle.area, edge.area);
   return(area)
 }
 
