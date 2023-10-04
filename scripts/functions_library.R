@@ -646,9 +646,6 @@ triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
   #calculate area of intersection if intersection is not empty
   area.intresection <- sf::st_area(intersection.circle.trianlge)
   
-  #plot(circle.poly)
-  #lot(triangle.poly, add = T)
-  
   return(area.intresection)
 }
 

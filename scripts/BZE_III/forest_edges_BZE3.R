@@ -1341,13 +1341,14 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id =   50023
+p_id =   50073     
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
    geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == p_id], aes(alpha = 0))+
    geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == p_id], 
-           aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == p_id]))
+           aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == p_id]))+
+   ggtitle(p_id)
    
  # for all plots
  for(i in 1:length(unique(circle.poly.df$id))){
