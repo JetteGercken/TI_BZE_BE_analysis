@@ -825,20 +825,20 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    # select polar coordiantes of the points of the triangle corners via "inter_for_triangle"-function
    # for AT side
    AT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), slope(x.T, y.T, x.A, y.A), 
-                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*3, 
+                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10, 
                                        x.A, y.A, x.T, y.T, 
                                        coordinate = "x")                              # longitude, easting, RW, X
    AT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.A, y.A), slope(x.T, y.T, x.A, y.A), 
-                                       data_circle$x0[3], data_circle$y0[3],data_circle$rmax[3]*3, 
+                                       data_circle$x0[3], data_circle$y0[3],data_circle$rmax[3]*10, 
                                        x.A, y.A, x.T, y.T, 
                                        coordinate = "y")                              # latitude, northing, HW, y 
    # for BT side
    BT.triangle.x <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B),slope(x.T, y.T, x.B, y.B), 
-                                       data_circle$x0[3],data_circle$y0[3],data_circle$rmax[3]*3, 
+                                       data_circle$x0[3],data_circle$y0[3],data_circle$rmax[3]*10, 
                                        x.B, y.B, x.T, y.T, 
                                        coordinate = "x")                              # longitude, easting, RW, X
    BT.triangle.y <- inter.for.triangle(intercept(x.T, y.T, x.B, y.B), slope(x.T, y.T, x.B, y.B), 
-                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*3, 
+                                       data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10, 
                                        x.B, y.B, x.T, y.T, 
                                        coordinate = "y")                              # latitude, northing, HW, y 
 
@@ -1341,7 +1341,7 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id =   50059 
+p_id =   50023
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+

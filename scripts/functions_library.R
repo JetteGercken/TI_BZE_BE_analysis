@@ -595,11 +595,14 @@ CircleSegmnent <- function(x1,y1,x2,y2,r){
   A = y2-y1
   B = x2 - x1
   C = y1*B - A*x1
+  
+  # calcualte height of circle segment if edge form is 1 and height can be calculated from shortest distance
   # shortest distance between center and AB line: chilimath.com
   # center is always 0|0
   d = abs(C)/sqrt(A^2+B^2)
   # height of the cirlce regment between line and circle perimeter
   h = ifelse(d<=r, r-d, 0)
+  
   # calculate area of cirlce segment with heigth and radius : wikipedia.de
   area = r^2*acos(1-(h/r))-(r-h)*sqrt(r^2-(r-h)^2)
   return(area)
@@ -614,7 +617,7 @@ cone.area <- function(x.0, y.0, x1, y1, x2, y2, r){
   
 
 
-triangle.area <- function(x.0, y.0, x1, y1, x2, y2){
+triangle.area <- function(x.0, y.0, x1, y1, x2, y2, method){
   # standart line equation parameters: onmicalculator.com
   A = y2-y1
   B = x2 - x1
@@ -626,8 +629,6 @@ triangle.area <- function(x.0, y.0, x1, y1, x2, y2){
          shortest.dist = (h.triangle/2)*g.triangle,
          three.points = 0.5*abs((x1*(y2-y.0) + x2*(y.0 - y1) + x.0*(y.0-y2)))
          )
-  
-  return(A.triangle)
   
 }
 
