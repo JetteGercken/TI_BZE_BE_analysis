@@ -1033,7 +1033,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
     #i = 14
-    # i = which(grepl(50142, unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
+    # i = which(grepl(50080, unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
    
    # select plot ID of the respective circle 
    my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges$plot_ID)[i]
@@ -1176,7 +1176,8 @@ tree.status.list <- vector("list", length = length(trees.one.edge$tree_ID))
 tree.points.list <- vector("list", length = length(trees.one.edge$tree_ID))
 
 for (i in 1:length(trees.one.edge$tree_ID)){ 
-  # i = 1
+  #i = 1
+  #i = which(grepl(50080, unique(trees.one.edge$plot_ID)))
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.one.edge[i, "plot_ID"] 
@@ -1270,6 +1271,7 @@ tree.points.two.edges.list <- vector("list", length = length(trees.two.edges$tre
 
 for (i in 1:length(trees.two.edges$tree_ID)){ 
   # i = 1
+  #i = which(grepl(50080, (trees.two.edges$plot_ID)))
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.two.edges[i, "plot_ID"] 
@@ -1281,7 +1283,7 @@ for (i in 1:length(trees.two.edges$tree_ID)){
   my.inter.1 <- sf::st_as_sf(my.edges.df[1,])
   my.inter.2 <- sf::st_as_sf(my.edges.df[2,])
   
-  # assign crs
+   # assign crs
   my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # select UTM corrdinates of the plot center
@@ -1313,10 +1315,10 @@ for (i in 1:length(trees.two.edges$tree_ID)){
   # assing CRS to points
   sf::st_crs(tree.sf) <- my.utm.epsg
   
-  # print(plot(my.inter$geometry), 
-  #       plot(my.rem.circle$geometry, add = T), 
-  #       plot(tree.sf$geometry, add = T)
-  #       )
+   # print(plot(my.inter$geometry), 
+   #       plot(my.rem.circle$geometry, add = T), 
+   #       plot(tree.sf$geometry, add = T)
+   #       )
   
   inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
   inter.tree.edge.1 <- sf::st_intersection(tree.sf, my.inter.1)
@@ -1325,7 +1327,8 @@ for (i in 1:length(trees.two.edges$tree_ID)){
   tree_status <- ifelse(nrow(inter.tree.edge.1)!= 0 & nrow(inter.tree.edge.2)== 0 & nrow(inter.tree.circle)== 0,  "B", 
                         ifelse(nrow(inter.tree.edge.2)!= 0 & nrow(inter.tree.edge.1)== 0 & nrow(inter.tree.circle)== 0,  "C", 
                                ifelse(nrow(inter.tree.circle)!= 0 & nrow(inter.tree.edge.1)== 0 & nrow(inter.tree.edge.2)== 0,  "A",
-                               "warning")))
+                                      ifelse(nrow(inter.tree.circle)== 0 & nrow(inter.tree.edge.1)!= 0 & nrow(inter.tree.edge.2)!= 0,  "warning",
+                               "warning"))))
   
   tree.status.two.edges.list[[i]] <- as.data.frame(cbind(
     "id" = c(my.plot.id), 
@@ -1346,20 +1349,22 @@ tree.status.two.edges.df <- as.data.frame(tree.status.list.two.edges.final)
 tree.points.list.two.edges.final <- rbindlist(tree.points.two.edges.list)
 tree.points.two.edges.df <- as.data.frame(tree.points.list.two.edges.final)
 
-all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
- 
- 
+all.trees.points.df <- rbind(tree.points.one.edge.df,tree.points.two.edges.df) %>% distinct()
+
+
+
+all.trees.points.df %>% filter(id == 50080 & t_stat == "B")
  
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id =    50075       
+p_id = 50080      
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
    geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == p_id], aes(alpha = 0))+
-   geom_sf(data = tree.points.one.edge.df$geometry[tree.status.one.edge.df$id == p_id], 
-           aes(color = tree.points.one.edge.df$t_stat[tree.status.one.edge.df$id == p_id]))+
+   geom_sf(data = all.trees.points.df$geometry[all.trees.points.df$id == p_id], 
+           aes(color = all.trees.points.df$t_id[all.trees.points.df$id == p_id]))+
    ggtitle(p_id)
    
  # for all plots

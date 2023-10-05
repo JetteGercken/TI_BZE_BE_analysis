@@ -561,7 +561,6 @@ jeremy.test.df <- rbind(forest_edges_HBI.man %>%
               select(id, e_id, e_form, area_m2), 
             by = c(c("plot_ID" = "id"), c("e_ID"="e_id"), "e_form")) %>% 
   mutate(diff_jeremy.circleseg_vs_area.func = jeremy.test - area.func.test, 
-         diff_jeremy.circleseg_vs_georef = jeremy.test - area_m2,
          diff_area.func_vs_georef = area.func.test - area_m2) %>% 
   mutate(warn_jeremy.circleseg_vs_area.func = ifelse(jeremy.test != area.func.test, "WARN", "FINE"), 
          #warn_jeremy.circleseg_vs_georef = ifelse(jeremy.test != area_m2, "WARN", "FINE"), 
@@ -573,7 +572,7 @@ print(jeremy.test.df%>%
         filter(warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef > 15 |
                  warn_area.func_vs_georef == "WARN" & diff_area.func_vs_georef < -15), n = 62)
 
-
+jeremy.test.df%>% filter(plot_ID == 50080)
 
 
 
