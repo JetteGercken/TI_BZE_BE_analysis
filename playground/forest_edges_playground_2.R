@@ -278,7 +278,7 @@ write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
 
 # ----- checking out why area function doesn´t work -----------------------
 
-edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status){
+edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status, output){
   # x1| y1 and x2|y2 belong to the intersections of the line or two points on a line
   # c.x0, c.y0 are the center coordinates of the circle
   # c.r0 is the radius of the circle
@@ -488,9 +488,32 @@ edge.area <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree
                                                         ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" &  p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", c.A,
                                                  #ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
                                                         0))))));
+  edge.method = ifelse(e.form == "1" & tree_status == "B" & i_status.AB == "two I", "CircleSeg_e1", 
+                     # if only one side of triangle is intersection 
+                     ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT != "two I"|
+                              e.form == "2" & tree_status == "B"&  t.dist > c.r0 & i_status.BT == "two I" & i_status.AT != "two I", "e2_line_CirSeg_in_triangle",
+                            # t is inside circle so whole cone is the edge area
+                            ifelse(e.form == "2" & tree_status == "B"&  t.dist <= c.r0 & i_status.AT == "two I" & i_status.BT == "two I", "e2_cone", 
+                                   # both arms of triangle cut circle so triangle area is between the both circle segments anf center of cirlce is inside triangle
+                                   ifelse(e.form == "2" & tree_status == "B" & t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", "e2_aside_bside_minus_whole_cirlce", 
+                                          # if the middle point is not inside the triangle, but the edge for is 2 and there are 2 intersections for both arms, while the turning point is outisde the circle, 
+                                          # we have to calcualte the area on both sides of the lines and then deduct them from each other as they will both extend to the same circle segment
+                                          ifelse(e.form == "2" &  t.dist > c.r0 & i_status.AT == "two I" & i_status.BT == "two I" & p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "A", "e2.center.not.in.triangle_aside_minus_bside",
+                                                 # this is when the respective cirlce (could be also the inner cricle for edge type 1) doesn´t have intersections with the edge line but may still be located in the edge area
+                                                 # this is, however unlikely for edge type 1 because it assigns the edge area always to the smaller side of the circle so that a whole circle is unlikely to be inside of it
+                                                 ifelse(e.form == "2" & i_status.AT != "two I" & i_status.BT != "two I" &  p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, c.x0, c.y0) == "B", "whole_circle",
+                                                        #ifelse(e.form == "1" & tree_status == "B" & i_status.AB != "two I", c.A,
+                                                        "no edge area"))))))
+  
   rem.circle.area = c.A - edge.area; 
+  # there is a problem here because for plot with two edges, the remaining circle area will be reduced by the area of both edges, which the function cannot provide for now
+  # thus it could be smarter to just get the edge area returned per plot and circle and then reduce the remaining area by the area of the respective edges
   area = ifelse(tree_status == "A" | is.na(e.form), rem.circle.area, edge.area);
-return(area)
+  
+  switch(output, 
+         "edge.only" = edge.area,
+         "area_m2" = area, 
+         "method" = edge.method)
    }
 
 
@@ -500,7 +523,7 @@ jeremy.test.df <- rbind(forest_edges_HBI.man %>%
                           mutate(id_func = row_number()) %>%
                           group_by(id_func) %>%
                           # test the edge form 2 function
-                          mutate(jeremy.test = triangle.circle.intersection(
+                          mutate(jeremy.test = triangle.circle.poly.intersection(
                             inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "x"), 
                             inter.for.triangle(b0_AT, b1_AT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_A, Y_A, X_T, Y_T, coordinate = "y"),
                             inter.for.triangle(b0_BT, b1_BT, data_circle$x0[3], data_circle$y0[3], data_circle$rmax[3]*10 , X_B, Y_B, X_T, Y_T, coordinate = "x"), 
@@ -524,7 +547,7 @@ jeremy.test.df <- rbind(forest_edges_HBI.man %>%
             forest_edges_HBI.man %>% 
               mutate(id_func = row_number()) %>%
               group_by(id_func) %>%
-              mutate(area.func.test = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B")) %>% 
+              mutate(area.func.test = edge.area(e_form, 35, X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, "B", output = "area_m2")) %>% 
               ungroup() %>%
               select(plot_ID, e_ID, e_form, area.func.test), 
             by = c("plot_ID", "e_ID", "e_form")) %>%

@@ -263,8 +263,12 @@ trees_and_edges <-
                                        X_B, Y_B,  b0_BT, b1_BT)) %>% 
   mutate(DBH_cm = ifelse(DBH_h_cm != 130, (D_mm*(1.0+(0.0011*(DBH_h_cm-130))))/10, D_mm/10)) %>% 
   # ---- 1.1.2.4. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
-mutate(edge_A_method = edge.A.method(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT), 
-       plot_A =  edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT))
+ # this is necesarry to make the function work. why exactly remains unclear 
+  mutate(id_func = row_number()) %>%
+  group_by(id_func) %>% 
+  mutate(edge_A_method = edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "method"), 
+       plot_A =  edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "area_m2")) %>% 
+  ungroup()
 
 
 
@@ -369,7 +373,7 @@ ggplot() +
              #                summarize(n = n()) %>% 
              #                filter(n <= 1), 
              #              by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+             aes(X_tree, Y_tree, colour = edge_A_method))+
   theme_bw()+
   facet_wrap(~plot_ID)
 
@@ -442,7 +446,7 @@ ggplot() +
             aes(x= X_value, y = Y_value))+
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+# edge_A_method))+
+             aes(X_tree, Y_tree, colour =  edge_A_method))+
   theme_bw()+ 
   facet_wrap(~plot_ID)  
 
@@ -618,10 +622,9 @@ for(i in 1:length(forest_edges_HBI.man.sub$plot_ID)) {
   # select plot ID accordint to positioin in the list
   my.plot.id <- forest_edges_HBI.man.sub[i, "plot_ID"] 
   my.e.form <- forest_edges_HBI.man.sub[i, "e_form"]
-  #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
   
   # assign crs
-  my.utm.epsg <- 25833
+  my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # select UTM corrdinates of the plot center
   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -671,8 +674,8 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    my.e.id <- forest_edges_HBI.man.sub.e1[i, "e_ID"]
    my.e.form <- forest_edges_HBI.man.sub.e1[i, "e_form"]
    
-   # assign crs
-   my.utm.epsg <- 25833
+   ## assign crs
+   my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
    
    # select UTM corrdinates of the plot center by plot ID
    my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -798,7 +801,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
    
    # assign crs
-   my.utm.epsg <- 25833
+   my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
    
    # select UTM corrdinates of the plot center
    my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -903,12 +906,12 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  edge.poly.df <- rbind(triangle.e1.poly.df, triangle.e2.poly.df) # rows: 83
  # createa dataframe with plots that have only one forest edges
  forest_edges_HBI.man.sub <- forest_edges_HBI.man %>% # rows:84
-   # select only plots with a known edge form
-   filter(e_form == 1 | e_form == 2) %>%  # rows:84
+   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
+   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
    # remove plots that have two edges
-   anti_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 15 plots iwth 2 edges --> 30 rows -> 54 left
+   anti_join(forest_edges_HBI.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 14 plots with 2 edges --> 28 rows -> 53 left
    # remove plots that do now have a corresponding center coordiante in the HBI loc document
-   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 53 --> there are 2 plots without corresponding 
+   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding 
  
  edges.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
  inter.poly.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub$plot_ID)))
@@ -976,19 +979,22 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  
   
   }
+
  
  # list of areas
  edges.area.list.final <- rbindlist(edges.list)
  edges.area.df <- as.data.frame(edges.area.list.final)
 
+ # Fehler in rbindlist(inter.poly.list, fill = TRUE) : 
+ #   Class attribute on column 5 of item 2 does not match with column 4 of item 1.
  
  # list of polygones of forest edges 
  inter.poly.list.final <- rbindlist(inter.poly.list, fill=TRUE)
- inter.poly.one.edge.df <- as.data.frame(inter.poly.list.final)[,c(2, 1, 3, 7)]%>% arrange(id, e_id)
+ inter.poly.one.edge.df <- as.data.frame(inter.poly.list.final)[,c(2, 1, 3, 5)]%>% arrange(id, e_id)
 
  # list of polygones of remainign circles 
  rem.circle.poly.list.final <- rbindlist(remaining.circle.poly.list, fill = TRUE)
- rem.circle.poly.df <- as.data.frame(rem.circle.poly.list.final)[,c(2,1,3)]  %>% distinct()
+ rem.circle.poly.df <- as.data.frame(rem.circle.poly.list.final)[,c(2,1,4)]  %>% distinct()
  # list of multipolygones of remaining circles
  rem.circle.multipoly.list.final <- rbindlist(remaining.circle.multipoly.list)
  rem.circle.multipoly.df <- as.data.frame(rem.circle.multipoly.list.final)[,c(2,1,4)] %>% distinct()
@@ -1005,13 +1011,13 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  # dataprep for loop
  # createa dataframe with plots that have only one forest edges
  forest_edges_HBI.man.sub.2.edges <- forest_edges_HBI.man %>% # rows:84
-   # select only plots with a known edge form
-   filter(e_form == 1 | e_form == 2) %>%  # rows:84
+   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
+   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
    #filter(inter_status_AB_17 == "two I") %>% 
    # remove plots that have two edges
-   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 15 plots iwth 2 edges --> 30 rows -> 54 left
+   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 14 plots iwth 2 edges --> 28 rows
    # remove plots that do now have a corresponding center coordiante in the HBI loc document
-   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 53 --> there are 2 plots without corresponding 
+   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
  
  # prepare output lists
  # list to save areas in
@@ -1026,8 +1032,8 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  rem.circle.multipoly.2.edges.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
  
  for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))){ 
-    #i = 1
-    # i =  which(grepl(my.plot.id, circle.df$id))
+    #i = 14
+    # i = which(grepl(50142, unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
    
    # select plot ID of the respective circle 
    my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges$plot_ID)[i]
@@ -1140,7 +1146,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
  rem.circle.poly.two.edges.df <- as.data.frame(rem.circle.poly.two.edges.list.final)[,c(2,1,7)]  %>% distinct()
  # list of multipolygones of remaining circles
  rem.circle.multipoly.two.edges.list.final <- rbindlist(rem.circle.multipoly.2.edges.list)
- rem.circle.multipoly.two.edges.df <- as.data.frame(rem.circle.multipoly.two.edges.list.final)[,c(2,1, rem.circle.multipoly.two.edges.df$geometry)] %>% distinct()
+ rem.circle.multipoly.two.edges.df <- as.data.frame(rem.circle.multipoly.two.edges.list.final)[,c(2,1,15)] %>% distinct()
  # binding the both circle lists back together 
  rem.circle.two.edges.df <- if(nrow(rem.circle.poly.two.edges.df) != 0 && nrow(rem.circle.multipoly.two.edges.list.final) != 0){
    rbind(rem.circle.poly.two.edges.df, rem.circle.multipoly.two.edges.df)
@@ -1158,9 +1164,11 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
 
 trees.one.edge <- HBI_trees %>%
   # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
+  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>%
+                                            #& inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+              select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
-  anti_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
+  anti_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
   # remove plots that do now have a corresponding center coordiante in the HBI loc document
   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
@@ -1179,7 +1187,7 @@ for (i in 1:length(trees.one.edge$tree_ID)){
   my.inter <- sf::st_as_sf(inter.poly.one.edge.df %>% filter(id == my.plot.id) %>% distinct())
   
   # assign crs
-  my.utm.epsg <- 25833
+  my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # select UTM corrdinates of the plot center
   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -1249,9 +1257,11 @@ tree.points.one.edge.df <- as.data.frame(tree.points.list.one.edge.final)
 # intersection of trees with 2 edges
 trees.two.edges <- HBI_trees %>%
   # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
+  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% 
+              #& inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+              select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
+  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
   # remove plots that do now have a corresponding center coordiante in the HBI loc document
   semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
@@ -1272,7 +1282,7 @@ for (i in 1:length(trees.two.edges$tree_ID)){
   my.inter.2 <- sf::st_as_sf(my.edges.df[2,])
   
   # assign crs
-  my.utm.epsg <- 25833
+  my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # select UTM corrdinates of the plot center
   my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -1343,7 +1353,7 @@ all.trees.points <- rbind(tree.points.one.edge.df,tree.points.two.edges.df)
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id =    50112       
+p_id =    50075       
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
