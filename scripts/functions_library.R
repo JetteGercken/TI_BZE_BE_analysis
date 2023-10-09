@@ -323,6 +323,9 @@ intersection.status <- function(inter_x1, inter_x2) {
 }
 
 
+
+
+
 # ----- 1.7. tree to edge status  ---------------------------------------------------------
 # ----- 1.7.1. for straigt line  ---------------------------------------------------------
 # find the site of the line that has the  smaller half of the circle
@@ -344,7 +347,7 @@ intersection.status <- function(inter_x1, inter_x2) {
 # middle.point.to.line is a function that determines if the result of an implicit function has to be positive or negative to be outside the line 
 # thus if the edge is a line with two intersection we asssign the 
 
-p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.tree){
+p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.tree, output){
   # determin status of intersection: 
   i_status <-   ifelse(is.na(x1) & is.na(x2), " no I",      # if 0 solutions
                        ifelse(!is.na(x1) & !is.na(x2) & x1 == x2, "one I",            # if 1 solution
@@ -380,8 +383,12 @@ p.site.line <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0, l.b0, l.b1, x.tree, y.
                                           i_status == "two I" & Y_implicit_status_M_line == "negative" &  Y_tree_implicit < 0,
                                          # i_status != "two I",  
                                         "B", "A"); # if the line is crossing the plot by two intersections and there 
+  switch (output,
+    "tree_stat" = Y_implicit_status_tree_line, 
+    "x_short" = X_inter_MC_shorter_side, 
+    "y_short" = X_inter_MC_shorter_side
+  )
   
-  return(Y_implicit_status_tree_line)
 }
 
 
@@ -448,7 +455,7 @@ p.in.triangle <- function(xa, xb, xc, ya, yb, yc, xp, yp){
 # - this is necesarry because we can´t apply out susal procedure for line edges, where we just sort the trees into B if they are located in the smaller half of the circle and into A if they are located in the bigger half
 # - in case of a triangle shaped edge which affects the circle like a line shaped edge we have to find the side of the circle that reaches inside the triangle 
 
-p.site.triangle <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0,l.b0, l.b1, xa, xb, xc, ya, yb, yc, x.tree, y.tree){
+p.site.triangle <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0,l.b0, l.b1, xa, xb, xc, ya, yb, yc, x.tree, y.tree, output){
   # x1| y1 and x2|y2 belong to the intersections of the line or two points on a line
   # c.x0, c.y0 are the center coordinates of the circle
   # c.r0 is the radius of the circle
@@ -494,7 +501,10 @@ p.site.triangle <- function(x1, x2, y1, y2, c.x0, c.y0, c.r0,l.b0, l.b1, xa, xb,
                                      i_status == "two I" & Y_MC_implicit_status == "negative" &  Y_tree_implicit < 0,
                                    "B", "A");
   
-  return(Y_tree_implicit_status) 
+  switch(output, 
+         "tree_stat" = Y_tree_implicit_status, 
+         "x_inside_triangle" = X_inter_MC_inside_triangle, 
+         "y_inside_triangle" = Y_inter_MC_inside_triangle) 
 }
 
 
@@ -558,19 +568,21 @@ tree.status <- function(
   ## For edge form == 1 & for edge form == 2when there are only 2 intersections instead of 4  --> straight line 
   # assigne tree status depending on shorter/ longer side of circle for edge for 1
   # assigning tree status depending on inside/ outside triangle for edge side 2 
-  tree_status_AB_line = ifelse(edge_form == "1", p.site.line(x1.inter.AB, x2.inter.AB, y1.inter.AB, y2.inter.AB, c.x0, c.y0, c.r017, l.AB.b0, l.AB.b1, x.tree, y.tree),NA);
+  tree_status_AB_line = ifelse(edge_form == "1", p.site.line(x1.inter.AB, x2.inter.AB, y1.inter.AB, y2.inter.AB, c.x0, c.y0, c.r017, l.AB.b0, l.AB.b1, x.tree, y.tree, output = "tree_stat"),NA);
   tree_status_AT_line = p.site.triangle(x1.inter.AT, x2.inter.AT, y1.inter.AT, y2.inter.AT,
                                         c.x0, c.y0, c.r017,
                                         l.AT.b0, l.AT.b1,
                                         x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, 
                                         y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t,
-                                        x.tree, y.tree);
+                                        x.tree, y.tree, 
+                                        output = "tree_stat");
   tree_status_BT_line = p.site.triangle(x1.inter.BT, x2.inter.BT, y1.inter.BT, y2.inter.BT,
                                         c.x0, c.y0, c.r017,
                                         l.BT.b0, l.BT.b1,
                                         x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, 
                                         y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t,
-                                        x.tree, y.tree);
+                                        x.tree, y.tree, 
+                                        output = "tree_stat");
   ## for edge form 2
   # check if tree is located inside triangle: Beyericentrig triangle function
   tree_stat_triangle = p.in.triangle(x.AT.inter.triangle.60, x.BT.inter.triangle.60, x.t, y.AT.inter.triangle.60, y.BT.inter.triangle.60, y.t, x.tree, y.tree);
@@ -604,6 +616,9 @@ tree.status <- function(
 # this way we´ll just return the area per sampling circle 
 
 
+# new way to calculate circle segment that doesn't rely on comparing the distance of the center point of the line to the intersections of 
+# a line through the center of the line to the circle center
+# developed by Alexandr Chepowskii
 
 CircleSegmnent <- function(x1,y1,x2,y2,r){
   # standart line equation parameters: onmicalculator.com
@@ -649,7 +664,7 @@ triangle.area <- function(x.0, y.0, x1, y1, x2, y2, method){
 }
 
 
-
+# new approach to calcualte intersection area developed by Alexandr Chepowskii
 triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
   # center point of circle
   pt.circle <- sf::st_point(c(0,0))
@@ -664,6 +679,8 @@ triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
   
   return(area.intresection)
 }
+
+
 
 
 
