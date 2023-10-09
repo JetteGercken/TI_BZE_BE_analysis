@@ -6,7 +6,8 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. packages and functions --------------------------------------------
 
-source(paste0(getwd(), "/playground/functions_library_playground.R"))
+#source(paste0(getwd(), "/playground/functions_library_playground.R"))
+source(paste0(getwd(), "/scripts/functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -1166,7 +1167,7 @@ one.edge.tree.status <- vector("list", length = length(forest_edges_HBI.man.sub.
 
 for(i in 1:length(forest_edges_HBI.man.sub.1.edge$plot_ID)) {
   # i = 1
-  # i = which(grepl(50023, forest_edges_HBI.man.sub.1.edge$plot_ID))
+  # i = which(grepl(50026, forest_edges_HBI.man.sub.1.edge$plot_ID))
   c.x0 = 0
   c.y0 = 0
   c.r.inter = 60
@@ -1294,13 +1295,18 @@ for(i in 1:length(forest_edges_HBI.man.sub.1.edge$plot_ID)) {
   # create triangular polygone
   triangle.poly <- sf::st_polygon(list(poly.data))
   
+  
   # center point of circle
   pt.circle <- sf::st_point(c(0,0))
+ 
+  
   
   # create circle polygone
   circle.poly.17 <- sf::st_buffer(pt.circle, dist = 17.84)
   circle.poly.12 <- sf::st_buffer(pt.circle, dist = 12.62)
   circle.poly.5 <- sf::st_buffer(pt.circle, dist =  5.64)
+  plot(triangle.poly, main = my.plot.id)
+  plot(circle.poly.17, add = T)
   
   
   # intersection between circle and triangle
@@ -1312,9 +1318,9 @@ for(i in 1:length(forest_edges_HBI.man.sub.1.edge$plot_ID)) {
   remaining.circle.poly.12  <- if(isTRUE(nrow(inter.poly.12)==0)==TRUE){circle.poly.12}else{sf::st_difference(circle.poly.12, inter.poly.12)}
   remaining.circle.poly.5  <- if(isTRUE(nrow(inter.poly.5)==0)==TRUE){circle.poly.5}else{sf::st_difference(circle.poly.5, inter.poly.5)}
   
-  # print(plot(circle.poly.17, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 3")),
-  #       plot(inter.poly.17, col = "blue", add = T), 
-  #       plot(pt.trees, add = T))
+   # print(plot(circle.poly.17, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 3")),
+   #       plot(inter.poly.17, col = "blue", add = T), 
+   #       plot(pt.trees, add = T))
   
   
   # sort trees according to their allocation into remaining circle and intersection polygones
@@ -1335,9 +1341,9 @@ for(i in 1:length(forest_edges_HBI.man.sub.1.edge$plot_ID)) {
   
   
   # calculate area of intersection 
-  area.intresection.17 <- sf::st_area(intersection.circle.triangle.17)
-  area.intresection.12 <- sf::st_area(intersection.circle.triangle.12)
-  area.intresection.5 <- sf::st_area(intersection.circle.triangle.5)
+  area.intresection.17 <- sf::st_area(inter.poly.17)
+  area.intresection.12 <- sf::st_area(inter.poly.12)
+  area.intresection.5 <- sf::st_area(inter.poly.5)
   # calculate area of remaining circle
   area.rem.circle.17 <- sf::st_area(remaining.circle.poly.17)
   area.rem.circle.12 <- sf::st_area(remaining.circle.poly.12)
@@ -1387,10 +1393,12 @@ forest_edges_HBI.man.sub.2.edges <-  forest_edges_HBI.man %>%
 
 two.edges.area.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID))*18)
 two.edges.tree.status <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
+inter.poly.17.1.list<- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
+inter.poly.17.2.list<- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
 
 for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   # i = 3
-  # i = which(grepl(50086, forest_edges_HBI.man.sub.e1$plot_ID))
+  # i = which(grepl(50080,unique(forest_edges_HBI.man.sub.2.edges$plot_ID)))
   c.x0 = 0
   c.y0 = 0
   c.r.inter = 60
@@ -1481,12 +1489,36 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
   dist_C_inter_1_MC.1 = distance(X1_inter_MC.1, y1_inter_MC.1, x_m_line.1, y_m_line.1)
   dist_C_inter_2_MC.1 = distance(X2_inter_MC.1, y2_inter_MC.1, x_m_line.1, y_m_line.1) 
-  # find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
-  # creating the polar coordiantes of a turning point of a triangle by selecting the intersection of the 
-  # line from the middle of the AB.inter-ray and the circle center (MC_line) with 
-  # the 60m radius at the "shorter side" so the intersection of the MC_line with a 60m radius that has le lest distance to the MC point on the AB.inter-ray
-  X_inter_MC_shorter_side.1 = ifelse(dist_C_inter_1_MC.1 < dist_C_inter_2_MC.1, X1_inter_MC.1, X2_inter_MC.1) 
-  Y_inter_MC_shorter_side.1 = ifelse(dist_C_inter_1_MC.1 < dist_C_inter_2_MC.1, y1_inter_MC.1, y2_inter_MC.1)
+  # for e_form 1: find the x and y coordinate of the intersection on the shorter side , which is the side to exlcude from the plot 
+  # the intersection of a line through the middle point of the AB.intersection-ray and the center of the plot with a 60m circle (MC_line) is used to 
+  # create the polar coordiantes of a turning point of a triangle by selecting the rrespective intersection that 
+  # has the least distance to the MC point on the AB.inter-ray
+  # for e form 2: we poroceede similarly,just that the intersection of the MC lien we choose doesn´t have to be the one on the shorter side of the circle but 
+  # the side/ intersection that would normally lie inside a triangle with the extend of the AT- and BT- line intersection with a 60m circle radius and the turning pouint T (so the usual procedure to create a triangle)
+  X_inter_MC_shorter_side.1 = ifelse(my.e.form.1 == 1 & dist_C_inter_1_MC.1 < dist_C_inter_2_MC.1, X1_inter_MC.1, 
+         ifelse(my.e.form.1 == 1 & dist_C_inter_1_MC.1 > dist_C_inter_2_MC.1, X2_inter_MC.1, 
+                ifelse(my.e.form.1 == 2 & p.in.triangle(
+                  inter.for.triangle(intercept(x.T.1 , y.T.1 , x.A.1, y.A.1), slope(x.T.1 , y.T.1 , x.A.1, y.A.1), c.x0, c.y0, c.r.inter, x.A.1, y.A.1, x.T.1 , y.T.1, coordinate = "x"),
+                  inter.for.triangle(intercept(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), slope(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), c.x0, c.y0, c.r.inter, x.B.1 , y.B.1 , x.T.1 , y.T.1 , coordinate = "x"), 
+                  x.T.1,
+                  inter.for.triangle(intercept(x.T.1 , y.T.1 , x.A.1, y.A.1), slope(x.T.1 , y.T.1 , x.A.1, y.A.1), c.x0, c.y0, c.r.inter, x.A.1, y.A.1, x.T.1 , y.T.1 , coordinate = "y"),
+                  inter.for.triangle(intercept(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), slope(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), c.x0, c.y0, c.r.inter, x.B.1 , y.B.1 , x.T.1 , y.T.1 , coordinate = "y"), 
+                  y.T.1,
+                  intersection_line_circle(b0_MC.1, b1_MC.1, c.x0, c.y0, 17.84, coordinate = "x1"),
+                  intersection_line_circle(b0_MC.1, b1_MC.1, c.x0, c.y0, 17.84, coordinate = "y1")
+                ) == "B", X1_inter_MC.1,X2_inter_MC.1 )))
+  Y_inter_MC_shorter_side.1 = ifelse(my.e.form.1 == 1 & dist_C_inter_1_MC.1 < dist_C_inter_2_MC.1, y1_inter_MC.1, 
+                                     ifelse(my.e.form.1 == 1 & dist_C_inter_1_MC.1 > dist_C_inter_2_MC.1, y2_inter_MC.1, 
+                                            ifelse(my.e.form.1 == 2 & p.in.triangle(
+                                              inter.for.triangle(intercept(x.T.1 , y.T.1 , x.A.1, y.A.1), slope(x.T.1 , y.T.1 , x.A.1, y.A.1), c.x0, c.y0, c.r.inter, x.A.1, y.A.1, x.T.1 , y.T.1, coordinate = "x"),
+                                              inter.for.triangle(intercept(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), slope(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), c.x0, c.y0, c.r.inter, x.B.1 , y.B.1 , x.T.1 , y.T.1 , coordinate = "x"), 
+                                              x.T.1,
+                                              inter.for.triangle(intercept(x.T.1 , y.T.1 , x.A.1, y.A.1), slope(x.T.1 , y.T.1 , x.A.1, y.A.1), c.x0, c.y0, c.r.inter, x.A.1, y.A.1, x.T.1 , y.T.1 , coordinate = "y"),
+                                              inter.for.triangle(intercept(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), slope(x.T.1 , y.T.1 , x.B.1 , y.B.1 ), c.x0, c.y0, c.r.inter, x.B.1 , y.B.1 , x.T.1 , y.T.1 , coordinate = "y"), 
+                                              y.T.1,
+                                              intersection_line_circle(b0_MC.1, b1_MC.1, c.x0, c.y0, 17.84, coordinate = "x1"),
+                                              intersection_line_circle(b0_MC.1, b1_MC.1, c.x0, c.y0, 17.84, coordinate = "y1")
+                                            ) == "B", y1_inter_MC.1, y2_inter_MC.1)))
   
   # create dataframe to create polygone from it
   if(isTRUE(my.e.form.1 == 1 |
@@ -1503,7 +1535,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   
   # create triangular polygone
   triangle.poly.1 <- sf::st_polygon(list(poly.data.1))
-  plot(triangle.poly.1)
+
   
   ### polygone 2 
   # extract polar coordiantes of forest edge 1
@@ -1557,8 +1589,8 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
                                  my.edges.df$inter_status_BT_17[2] == "two I" &  
                                  my.edges.df$inter_status_AT_17[2] != "two I", intersection_line_circle(intercept(x.B.2, y.B.2, x.T.2, y.T.2), slope(x.B.2, y.B.2, x.T.2, y.T.2), c.x0, c.y0, c.r.inter, coordinate = "x2"),
                                inter.for.triangle(intercept(x.T.2, y.T.2, x.B.2, y.B.2), slope(x.T.2, y.T.2, x.B.2, y.B.2), c.x0, c.y0, c.r.inter, x.B.2, y.B.2, x.T.2, y.T.2, coordinate = "x"))))
-  
-  y2.2 <- ifelse(my.e.form == 1, intersection_line_circle(intercept(x.A.2, y.A.2, x.B.2, y.B.2), slope(x.A.2, y.A.2, x.B.2, y.B.2), c.x0, c.y0, c.r.inter, coordinate = "y2"),
+
+  y2.2 <- ifelse(my.e.form.2 == 1, intersection_line_circle(intercept(x.A.2, y.A.2, x.B.2, y.B.2), slope(x.A.2, y.A.2, x.B.2, y.B.2), c.x0, c.y0, c.r.inter, coordinate = "y2"),
                  # if the edge form is 2 bit only one side of the triangle intersects the circle, treat this side like a line and use the intersection sof the respective line (AT or BT) as x1 and x2
                  ifelse(my.e.form.2 == 2 & 
                           my.edges.df$inter_status_AT_17[2] == "two I" &  
@@ -1592,8 +1624,30 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   # for e form 2 we poroceede similarly,just that the intersection of the MC lien we choose doesn´t have to be the one on the shorter side of the circle but 
   # the side/ intersection that would normally lie inside a triangle with the extend of the AT- and BT- line intersection with a 60m circle radius and the turning pouint T (so the usual procedure to create a triangle)
   
-  X_inter_MC_shorter_side.2 = ifelse(dist_C_inter_1_MC.2 < dist_C_inter_2_MC.2, X1_inter_MC.2, X2_inter_MC.2) 
-  Y_inter_MC_shorter_side.2 = ifelse(dist_C_inter_1_MC.2 < dist_C_inter_2_MC.2, y1_inter_MC.2, y2_inter_MC.2)
+  X_inter_MC_shorter_side.2 = ifelse(my.e.form.2 == 1 & dist_C_inter_1_MC.2 < dist_C_inter_2_MC.2, X1_inter_MC.2, 
+                                     ifelse(my.e.form.2 == 1 & dist_C_inter_1_MC.2 > dist_C_inter_2_MC.2, X2_inter_MC.2, 
+                                            ifelse(my.e.form.2 == 2 & p.in.triangle(
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.A.2, y.A.2), slope(x.T.2 , y.T.2 , x.A.2, y.A.2), c.x0, c.y0, c.r.inter, x.A.2, y.A.2, x.T.2 , y.T.2, coordinate = "x"),
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), slope(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), c.x0, c.y0, c.r.inter, x.B.2 , y.B.2 , x.T.2 , y.T.2 , coordinate = "x"), 
+                                              x.T.2,
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.A.2, y.A.2), slope(x.T.2 , y.T.2 , x.A.2, y.A.2), c.x0, c.y0, c.r.inter, x.A.2, y.A.2, x.T.2 , y.T.2 , coordinate = "y"),
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), slope(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), c.x0, c.y0, c.r.inter, x.B.2 , y.B.2 , x.T.2 , y.T.2 , coordinate = "y"), 
+                                              y.T.2,
+                                              intersection_line_circle(b0_MC.2, b1_MC.2, c.x0, c.y0, 17.84, coordinate = "x1"),
+                                              intersection_line_circle(b0_MC.2, b1_MC.2, c.x0, c.y0, 17.84, coordinate = "y1")
+                                            ) == "B", X1_inter_MC.2,X2_inter_MC.2 )))
+  Y_inter_MC_shorter_side.2 = ifelse(my.e.form.2 == 1 & dist_C_inter_1_MC.2 < dist_C_inter_2_MC.2, y1_inter_MC.2, 
+                                     ifelse(my.e.form.2 == 1 & dist_C_inter_1_MC.2 > dist_C_inter_2_MC.2, y2_inter_MC.2, 
+                                            ifelse(my.e.form.2 == 2 & p.in.triangle(
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.A.2, y.A.2), slope(x.T.2 , y.T.2 , x.A.2, y.A.2), c.x0, c.y0, c.r.inter, x.A.2, y.A.2, x.T.2 , y.T.2, coordinate = "x"),
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), slope(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), c.x0, c.y0, c.r.inter, x.B.2 , y.B.2 , x.T.2 , y.T.2 , coordinate = "x"), 
+                                              x.T.2,
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.A.2, y.A.2), slope(x.T.2 , y.T.2 , x.A.2, y.A.2), c.x0, c.y0, c.r.inter, x.A.2, y.A.2, x.T.2 , y.T.2 , coordinate = "y"),
+                                              inter.for.triangle(intercept(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), slope(x.T.2 , y.T.2 , x.B.2 , y.B.2 ), c.x0, c.y0, c.r.inter, x.B.2 , y.B.2 , x.T.2 , y.T.2 , coordinate = "y"), 
+                                              y.T.2,
+                                              intersection_line_circle(b0_MC.2, b1_MC.2, c.x0, c.y0, 17.84, coordinate = "x1"),
+                                              intersection_line_circle(b0_MC.2, b1_MC.2, c.x0, c.y0, 17.84, coordinate = "y1")
+                                            ) == "B", y1_inter_MC.2, y2_inter_MC.2)))
   
   # create dataframe to create polygone from it
   if(isTRUE(my.e.form.2 == 1 |
@@ -1610,7 +1664,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   
   # create triangular polygone
   triangle.poly.2 <- sf::st_polygon(list(poly.data.2))
-  
+
   
   
   ### calcualte intersections with all 3 sampling circles
@@ -1621,6 +1675,11 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   circle.poly.17 <- sf::st_buffer(pt.circle, dist = 17.84)
   circle.poly.12 <- sf::st_buffer(pt.circle, dist = 12.62)
   circle.poly.5 <- sf::st_buffer(pt.circle, dist =  5.64)
+  # 
+  # print(plot(triangle.poly.1, main = my.plot.id),
+  # plot(triangle.poly.2, add = T),
+  # plot(circle.poly.17, add = T))
+  # 
   
   ###  circle 17 intersection between circle and triangle
   # poly 1
@@ -1648,7 +1707,7 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(isTRUE(length(inter.poly.17.2) == 0)==TRUE){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
-  
+  #plot(remaining.circle.17.1.and.2.poly)
   
   
   ###  circle 12 intersection between circle and triangle
@@ -1769,19 +1828,20 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
   # export binded area dataframes into final list
   two.edges.area.list[[i]] <- edge_area_df
   
-  ## save intersection polygones in list
-  # poly.1
-  inter.poly.1.list[[i]] <- if(nrow(inter.poly.1)!= 0){c("e_id" = my.e, "id" = my.poly.1$id, "e_form" = my.poly.1$e_form, inter.poly.1)
-  }else{c("e_id" = my.poly.1$e_id, "id" = my.poly.1$id, "e_form" = my.poly.1$e_form, my.poly.1)}
-  # poly.2
-  inter.poly.2.list[[i]] <- if(nrow(inter.poly.2)!= 0){c("e_id" = my.poly.2$e_id, "id" = my.poly.2$id, "e_form" = my.poly.2$e_form, inter.poly.2)
-  }else{c("e_id" = my.poly.2$e_id, "id" = my.poly.2$id, "e_form" = my.poly.2$e_form, my.poly.2)}
+  # ## save intersection polygones in list
+  # # poly.1
+  # inter.poly.17.1.list[[i]] <- if(length(inter.poly.17.1)!= 0){c("e_id" = my.e.id.1, "id" = my.plot.id, "e_form" = my.e.form.1, "geometry" = inter.poly.17.1)
+  # }else{c("e_id" = my.e.id.1, "id" = my.plot.id, "e_form" = my.e.form.1, "geometry" = triangle.poly.2)}
+  # # poly.2
+  # inter.poly.17.2.list[[i]] <- if(nrow(inter.poly.2)!= 0){c("e_id" = my.poly.2$e_id, "id" = my.poly.2$id, "e_form" = my.poly.2$e_form, inter.poly.2)
+  # }else{c("e_id" = my.poly.2$e_id, "id" = my.poly.2$id, "e_form" = my.poly.2$e_form, my.poly.2)}
+  # 
+  # ## save the reimaingf circle polygones in a list
+  # # create list wit polygones of the remaining cirlce when it´s only one polygone
+  # rem.circle.poly.2.edges.list[[i]] <- if(st_geometry_type(remaining.circle.1.and.2.poly)== "POLYGON"){c("e_id" = 0, remaining.circle.1.and.2.poly)}else{}
+  # # create list wit polygones of the remaining cirlce when it´s a multipoligone
+  # rem.circle.multipoly.2.edges.list[[i]] <- if(st_geometry_type(remaining.circle.1.and.2.poly)== "MULTIPOLYGON"){c("e_id" = 0, remaining.circle.1.and.2.poly)}else{}
   
-  ## save the reimaingf circle polygones in a list
-  # create list wit polygones of the remaining cirlce when it´s only one polygone
-  rem.circle.poly.2.edges.list[[i]] <- if(st_geometry_type(remaining.circle.1.and.2.poly)== "POLYGON"){c("e_id" = 0, remaining.circle.1.and.2.poly)}else{}
-  # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  rem.circle.multipoly.2.edges.list[[i]] <- if(st_geometry_type(remaining.circle.1.and.2.poly)== "MULTIPOLYGON"){c("e_id" = 0, remaining.circle.1.and.2.poly)}else{}
   
   
   
@@ -1797,21 +1857,21 @@ for(i in 1:length(unique(forest_edges_HBI.man.sub.2.edges$plot_ID)) ) {
     edge.2_tree_inter <- sf::st_intersection(inter.poly.17.2, pt.tree)
     rem_circ_tree_inter <- sf::st_intersection(remaining.circle.17.1.and.2.poly, pt.tree)
     # assign tree status depending on location in intersection poly 1, 2 or remainig circle
-    tree.status = ifelse(length(edge.1_tree_inter) != 0, "B",
-                         ifelse(length(edge.2_tree_inter) != 0, "C",
-                                ifelse(length(rem_circ_tree_inter) != 0, "A", "warning")))
+    tree.status = ifelse(isTRUE(length(edge.1_tree_inter) != 0), "B",
+                         ifelse(isTRUE(length(edge.2_tree_inter) != 0), "C",
+                                ifelse(isTRUE(length(rem_circ_tree_inter) != 0), "A", "warning")))
     my.trees.df$tree_stat_poly[[i]] <- tree.status
     
   }
   
-  
-  print(plot(circle.poly.17, col = "red", main = paste0(my.plot.id, "-", my.e.id.1, "-", my.e.id.2, "-", "circle 3")),
-        plot(inter.poly.17.1, col = "blue", add = T), 
-        plot(inter.poly.17.2, col = "green", add = T))
-  # print(plot(circle.poly.12, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 2")),
-  #       plot(inter.poly.12, col = "blue", add = T))
-  # print(plot(circle.poly.5, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 1")),
-  #       plot(inter.poly.5, col = "blue", add = T))
+  # 
+  # print(plot(circle.poly.17, col = "red", main = paste0(my.plot.id, "-", my.e.id.1, "-", my.e.id.2, "-", "circle 3")),
+  #       plot(inter.poly.17.1, col = "blue", add = T), 
+  #       plot(inter.poly.17.2, col = "green", add = T))
+  # # print(plot(circle.poly.12, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 2")),
+  # #       plot(inter.poly.12, col = "blue", add = T))
+  # # print(plot(circle.poly.5, col = "red", main = paste0(my.plot.id, "-", my.e.id, "circle 1")),
+  # #       plot(inter.poly.5, col = "blue", add = T))
   
   
   
@@ -1826,7 +1886,6 @@ two.edges.area.df <- as.data.frame(two.edges.area.final)
 
 two.edges.tree.status.final <- rbindlist(one.edge.tree.status)
 two.edges.tree.df <- as.data.frame(one.edge.tree.status.final)
-
 
 
 
