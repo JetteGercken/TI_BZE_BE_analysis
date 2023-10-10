@@ -1167,10 +1167,10 @@ one.edge.tree.status <- vector("list", length = length(forest_edges_HBI.man.sub.
 
 for(i in 1:length(forest_edges_HBI.man.sub.1.edge$plot_ID)) {
   # i = 1
-  # i = which(grepl(50026, forest_edges_HBI.man.sub.1.edge$plot_ID))
+  # i = which(grepl(50023, forest_edges_HBI.man.sub.1.edge$plot_ID))
   c.x0 = 0
   c.y0 = 0
-  c.r.inter = 60
+  c.r.inter = 120
   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
   my.plot.id <- forest_edges_HBI.man.sub.1.edge[i, "plot_ID"] 
@@ -3507,4 +3507,8 @@ geom_point(data = forest_edges_HBI.man %>%
              aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
   theme_bw()+ 
   facet_wrap(~plot_ID) 
+
+
+# case wise loops for forest edges areas and coordinates ------------------
+
 
