@@ -744,11 +744,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    triangle.e1.df <- as.data.frame(cbind("lon" = c(turning.east, AB.inter.1.east, AB.inter.2.east, turning.east),
                                         "lat" = c(turning.north, AB.inter.1.north, AB.inter.2.north,  turning.north),
                                         "id" = c(my.plot.id, my.plot.id, my.plot.id, my.plot.id),
-                                        "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id)))%>%
-    mutate(lat = as.integer(lat), 
-           lon = as.integer(lon)) %>% 
-    unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-    mutate(geometry = as.factor(geometry))
+                                        "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id)))
  
  # creating polygones in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
    triangle.e1.poly <- sfheaders::sf_polygon(obj = triangle.e1.df  ##### !!! change back to square.df if you want squares
@@ -861,13 +857,7 @@ forest_edges_HBI.man.sub.e1 <-  forest_edges_HBI.man%>% filter(e_form == 1) %>%
    triangle.e2.df <- as.data.frame(cbind("lon" = c(T.east, AT.triangle.east, BT.triangle.east, T.east),       # longitude, easting, RW, X
                                       "lat" = c(T.north, AT.triangle.north, BT.triangle.north, T.north),   # latitude, northing, HW, y
                                       "id" =  c(my.plot.id, my.plot.id, my.plot.id, my.plot.id), 
-                                      "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id )))%>%
-     mutate(lon = as.integer(lon),
-            lat = as.integer(lat)) %>%
-     unite("geometry", c(lon, lat), sep = " ", remove = FALSE)%>%
-     mutate(geometry = as.factor(geometry))
-     #select(geometry)
-   
+                                      "e_id" = c(my.e.id, my.e.id, my.e.id, my.e.id )))
    
     # createa polygone with triangle corners via sf package: https://r-spatial.github.io/sf/reference/st.html
    triangle.e2.poly <- sfheaders::sf_polygon(obj = triangle.e2.df
