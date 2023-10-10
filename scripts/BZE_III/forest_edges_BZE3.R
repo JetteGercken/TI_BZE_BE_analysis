@@ -1358,13 +1358,13 @@ all.trees.points.df %>% filter(id == 50080 & t_stat == "B")
 # 3.2.1.4. visualising loops results -----------------------------
 # for 1 plot
 # https://ggplot2.tidyverse.org/reference/ggsf.html
-p_id = 50080      
+p_id = 50058      
  ggplot() +
    geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id ==p_id], aes(alpha = 0))+
    geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == p_id], aes(alpha = 0))+
    geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == p_id], aes(alpha = 0))+
    geom_sf(data = all.trees.points.df$geometry[all.trees.points.df$id == p_id], 
-           aes(color = all.trees.points.df$t_id[all.trees.points.df$id == p_id]))+
+           aes(color = all.trees.points.df$t_stat[all.trees.points.df$id == p_id]))+
    ggtitle(p_id)
    
  # for all plots
