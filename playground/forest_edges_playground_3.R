@@ -721,6 +721,8 @@ inter.poly.2.list.nogeo <- vector("list", length = length(unique(forest_edges_HB
 rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
 # list to save the remaining circle MULTIpolygones per plot in
 rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+# list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
+intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
 
 for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){ 
   #i = 6
@@ -910,14 +912,13 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   remaining.circle.area.5 <- sf::st_area(remaining.circle.5.1.and.2.poly)
   # save area in dataframe
   inter.area.df.5 <- as.data.frame(
-    cbind("plot_ID" = c(my.plot.id, my.plot.id, my.plot.id), "e_ID" = c(my.e.id.1, my.e.id.2, 0),
+    cbind("plot_ID" = c(my.plot.id, my.plot.id, my.plot.id), 
+          "e_ID" = c(my.e.id.1, my.e.id.2, 0),
           #"e_form" = c(my.poly.1$e_form, my.poly.2$e_form, 0),"shape" = c("edge", "edge", "circle"),
-          "CCS_r_m" = c(c.r1, c.r1, c.r1), "inter_stat" = c(inter.status.poly.5.1, inter.status.poly.5.2, 0),
+          "CCS_r_m" = c(c.r1, c.r1, c.r1), 
+          "inter_stat" = c(inter.status.poly.5.1, inter.status.poly.5.2, 0),
           "area_m2" = c(inter.5.1.area, inter.5.2.area, remaining.circle.area.5)
     ))
-  
-  
-  
   
   
   
@@ -927,13 +928,21 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   edges.list.two.edges.nogeo[[i]] <- inter.area.df
   
   
+  # create list with those plot ID where the two edges intersect within the radius of 17.84m
+  intersection.between.edges.17 <- sf::st_intersection(
+    sf::st_intersection(my.poly.1, circle.17), # intersection poly 1 and cirlce 17
+    sf::st_intersection(my.poly.2, circle.17) # intersection poly 2 and cirlce 17
+  )
+  intersection.warning.edges <- ifelse(nrow(intersection.between.edges.17) == 0, NA, intersection.between.edges.17$plot_ID)
+  intersection.warning.edges.list.nogeo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
+  
+  
+  
   ## save intersection polygones in list
   # poly.1
-  inter.poly.1.list.nogeo[[i]] <- if(nrow(inter.poly.17.1)!= 0){c(inter.poly.17.1)
-  }else{c(my.poly.1)}
+  inter.poly.1.list.nogeo[[i]] <- if(nrow(inter.poly.17.1)!= 0){c(inter.poly.17.1)}else{c(my.poly.1)}
   # poly.2
-  inter.poly.2.list.nogeo[[i]] <- if(nrow(inter.poly.17.2)!= 0){c(inter.poly.17.2)
-  }else{c( my.poly.2)}
+  inter.poly.2.list.nogeo[[i]] <- if(nrow(inter.poly.17.2)!= 0){c(inter.poly.17.2)}else{c( my.poly.2)}
   
   ## save the reimaingf circle polygones in a list
   remaining.circle.17.1.and.2.poly$plot_ID <- my.plot.id
@@ -950,6 +959,10 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
 # save areas into dataframe
 edges.list.two.edges.final.nogeo <- rbindlist(edges.list.two.edges.nogeo)
 edges.area.two.edges.df.nogeo <- as.data.frame(edges.list.two.edges.final.nogeo)
+
+# save plot IDs with overlappig edges within the 17.84m circle into dataframe
+intersection.two.edges.warning.final.nogeo <- rbindlist(intersection.warning.edges.list.nogeo, fill=TRUE)
+intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame(intersection.two.edges.warning.final.nogeo))
 
 # save intersection polygones into dataframe 
 # list of polygones 1 of forest edges 
@@ -973,7 +986,9 @@ rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 
 }else{rem.circle.poly.two.edges.df.nogeo}
 
 
-all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo)
+
+# bind all edges area dataframes together
+all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2))
 
 
 
@@ -1190,26 +1205,42 @@ tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final
 tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
 tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
 
-all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo)# %>% distinct()
-all.trees.points.df.nogeo %>% filter(plot_ID == 50122)
-tree.points.one.edge.df.nogeo %>% filter(plot_ID == 50122)
-tree.points.two.edges.df.nogeo %>% filter(plot_ID == 50122)
+all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) %>% distinct()
+
+
+
+
+
 
 # for all plots
 for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
-  #i = 57
+  #i = 2
   # i = which(grepl(50122, unique(forest_edges_HBI.man$plot_ID)))
   my.plot.id = unique(forest_edges_HBI.man$plot_ID)[i]
   print(my.plot.id)
   
   c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
-  circle.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
-  
+  c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  c.poly.17 <- sf::st_buffer(c.pt, 17.84)
+  c.poly.12 <- sf::st_buffer(c.pt, 12.62)
+  c.poly.5 <- sf::st_buffer(c.pt, 5.64)
+ 
+
   
   print(ggplot() +
-          geom_sf())
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
+          geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+ 
+          geom_sf(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
+                  aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+          guides(color=guide_legend(title="tree status")))
+          
+  )
   
 }
 
