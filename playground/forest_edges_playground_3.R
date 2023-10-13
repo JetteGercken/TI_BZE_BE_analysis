@@ -1227,7 +1227,6 @@ for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
   c.poly.12 <- sf::st_buffer(c.pt, 12.62)
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
  
-
   
   print(ggplot() +
           ggtitle(my.plot.id)+
@@ -1240,7 +1239,6 @@ for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
                   aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
           guides(color=guide_legend(title="tree status")))
           
-  )
   
 }
 
