@@ -1369,7 +1369,8 @@ p_id = 50058
            geom_sf(data = triangle.e1.poly.df$geometry[triangle.e1.poly.df$id == my.plot.id], aes(alpha = 0))+
            geom_sf(data = triangle.e2.poly.df$geometry[triangle.e2.poly.df$id == my.plot.id], aes(alpha = 0))+
            geom_sf(data = circle.poly.df$geometry[circle.poly.df$id == my.plot.id], aes(alpha = 0))+
-           geom_sf(data = all.trees.points.df$geometry[all.trees.points.df$id == my.plot.id], aes(color = all.trees.points.df$t_stat[all.trees.points.df$id == my.plot.id])))
+           geom_sf(data = all.trees.points.df$geometry[all.trees.points.df$id == my.plot.id], aes(color = all.trees.points.df$t_stat[all.trees.points.df$id == my.plot.id]))+
+           guides(color=guide_legend(title="tree status")))
    
  }
  

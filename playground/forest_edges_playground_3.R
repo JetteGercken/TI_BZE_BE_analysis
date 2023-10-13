@@ -993,7 +993,7 @@ tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tr
 tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 
 for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
-  #i = 1
+  #i = 997
   #i = which(grepl(50080, unique(trees.one.edge$plot_ID)))
   
   # select plot ID accordint to positioin in the list
@@ -1014,7 +1014,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
       TRUE ~ NA))
   # assign stand category to the polygones depending on which one is bigger/ smaller
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
-  my.inter$stand <- area.plot.df$stand[area.plot.df$e_ID == 1]
+  my.inter$stand <- area.plot.df$stand[area.plot.df$e_ID == 1 | area.plot.df$e_ID == 2]
   
   # # assign crs
     #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
@@ -1098,7 +1098,7 @@ tree.points.two.edges.list.nogeo <- vector("list", length = length(trees.two.edg
 
 for (i in 1:length(trees.two.edges.nogeo$tree_ID)){ 
   # i = 1
-  #i = which(grepl(50080, (trees.two.edges$plot_ID)))
+  # i = which(grepl(50122, (trees.two.edges.nogeo$plot_ID)))[2]
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.two.edges.nogeo[i, "plot_ID"] 
@@ -1113,7 +1113,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # assign stand category to the polygones depending on which one is bigger/ smaller: 
   # bigger polygone/ polygone with greater area is assigned to category A, smaller area polygone is assigned to B
   area.plot.df <- edges.area.two.edges.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84) %>% 
-    arrange(area_m2) %>% 
+    arrange(as.numeric(area_m2)) %>% 
     mutate(stand = case_when(
       row_number()== 1 ~ "C",
       row_number()== 2 ~ "B",
@@ -1138,13 +1138,13 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
   
   # transform polar into cartesian coordiantes
-  tree.east <- my.center.easting + x.tree
-  tree.north <- my.center.northing + y.tree
+  tree.east <- x.tree  # + my.center.easting 
+  tree.north <- y.tree # + my.center.northing
   
   # save cartesian coordiantes in dataframe
   tree.coord.df <- as.data.frame(cbind(
-    "id" = c(my.plot.id), 
-    "t_id" = c(my.tree.id),
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id),
     "lon" = c(tree.east),
     "lat" = c(tree.north)
   ))
@@ -1155,11 +1155,11 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # assing CRS to points
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
-   # print(plot(my.rem.circle$geometry, col = "red"), 
-   #       plot(my.inter.2$geometry, add = T),
-   #       plot(my.inter.1$geometry, add = T), 
-   #       plot(tree.sf$geometry, add = T)
-   #       )
+    # print(plot(my.rem.circle$geometry, col = "red"), 
+    #       plot(my.inter.2$geometry, add = T),
+    #       plot(my.inter.1$geometry, add = T), 
+    #       plot(tree.sf$geometry, add = T)
+    #       )
   
   inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
   inter.tree.edge.1 <- sf::st_intersection(tree.sf, my.inter.1)
@@ -1190,13 +1190,42 @@ tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final
 tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
 tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
 
-all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) %>% distinct()
+all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo)# %>% distinct()
+all.trees.points.df.nogeo %>% filter(plot_ID == 50122)
+tree.points.one.edge.df.nogeo %>% filter(plot_ID == 50122)
+tree.points.two.edges.df.nogeo %>% filter(plot_ID == 50122)
+
+# for all plots
+for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
+  # https://ggplot2.tidyverse.org/reference/ggsf.html
+  
+  #i = 57
+  # i = which(grepl(50122, unique(forest_edges_HBI.man$plot_ID)))
+  my.plot.id = unique(forest_edges_HBI.man$plot_ID)[i]
+  print(my.plot.id)
+  
+  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  circle.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  
+  
+  print(ggplot() +
+          geom_sf())
+  
+}
 
 
 
-
-
-
+print(ggplot() +
+        ggtitle(paste0(my.plot.id, " - ", triangle.e1.poly.df.nogeo$e_form[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], " - " ,
+                       triangle.e2.poly.df.nogeo$e_form[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id]))+ 
+        geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
+        geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
+        geom_sf(data = circle.17$geometry, aes(alpha = 0))+
+        geom_sf(data = circle.12$geometry, aes(alpha = 0))+
+        geom_sf(data = circle.5$geometry, aes(alpha = 0))+
+        geom_sf(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
+                aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+        guides(color=guide_legend(title="tree status")))
 
 # -----1.1.3. loops based on area function over all 3 sampling circuits -----------------------
 # -----1.1.3.1, loop based on area function over 17m circuit -----------------------
