@@ -47,9 +47,9 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI 
 colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_status", 
+                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
                          "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-HBI_trees <- HBI_trees %>% select(plot_ID,  tree_ID ,  tree_status ,  multi_stem ,
+HBI_trees <- HBI_trees %>% select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
                                   Dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code , DBH_class ,  Kraft ,  
                                   C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm ,  DBH_cm )
 HBI_loc <- HBI_loc %>% select("ï..ToTraktId", "ToEckId", "K2_RW",
@@ -890,8 +890,8 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){
   my.poly <- sf::st_as_sf(edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id))
   
   # print the cirlce and edge polygone
-  # print(plot(circle.17, main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)), 
-  #       plot(my.poly, col = 0, add = T))
+   print(plot(circle.17, main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)), 
+         plot(my.poly, col = 0, add = T))
   
   
   #### 17m circle
@@ -1545,22 +1545,111 @@ tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final
 tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
 tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
 
-all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) %>% distinct()
+all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
 
 
 
-all.trees.points.df.nogeo %>% filter(t_stat == "warning")
+
+##### loop for trees that are not in a circle with edge or edge intersections#####
+trees.no.edge.nogeo <- anti_join(HBI_trees, all.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
+tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
+tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
+for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
+  #i =1
+  #i = which(grepl(50080, unique(trees.one.edge$plot_ID)))
+  
+  # select plot ID accordint to positioin in the list
+  my.plot.id <- trees.no.edge.nogeo[i, "plot_ID"] 
+  my.tree.id <- trees.no.edge.nogeo[i, "tree_ID"]
+  
+  # extract polar coordiantes of forest edge
+  # point A 
+  dist.tree <- trees.no.edge.nogeo[i, "Dist_cm"]/100 
+  azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
+  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  
+  # transform polar into cartesian coordiantes
+  tree.east <- x.tree  # + my.center.easting 
+  tree.north <- y.tree # + my.center.northing
+  
+  # save cartesian coordiantes in dataframe
+  tree.coord.df <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id),
+    "lon" = c(tree.east),
+    "lat" = c(tree.north)
+  ))
+  
+  # create sf point object from dataframe
+  #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
+  tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
+  # assing CRS to points
+  #sf::st_crs(tree.sf) <- my.utm.epsg
+  
+  # select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
+  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  
+  #### build circle
+  # circle data
+  c.x0 = 0 
+  c.y0 = 0
+  c.r3 = 17.84
+  c.r2 = 12.62
+  c.r1 = 5.64
+  # build polygon (circlular buffer) around center point
+  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
+  # center.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
+  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  circle.17 <- sf::st_buffer(circle.pt, c.r3)
+  circle.12 <- sf::st_buffer(circle.pt, c.r2)
+  circle.5 <- sf::st_buffer(circle.pt, c.r1)
+  
+  inter.tree.circle.17 <- sf::st_intersection(tree.sf, circle.17)
+  
+  tree_status <- ifelse(nrow(inter.tree.circle.17)!= 0,  "A", "warning")                                                                                            # if tree is nowhere
+  
+  tree.status.no.edge.list.nogeo[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id),
+    "lon" = c(tree.coord.df$lon),
+    "lat" = c(tree.coord.df$lat),
+    "t_stat" = c(tree_status)))
+  
+  tree.points.no.edge.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  
+  
+}
+
+# save tree corodiantes and status into dataframe
+tree.status.no.edges.final.nogeo <- rbindlist(tree.status.no.edge.list.nogeo)
+tree.status.no.edges.df.nogeo <- as.data.frame(tree.status.no.edges.final.nogeo)
+# save tree sf into dataframe
+tree.points.list.no.edges.final.nogeo <- rbindlist(tree.points.no.edge.list.nogeo)
+tree.points.list.no.edges.final.nogeo <- as.data.frame(tree.points.list.no.edges.final.nogeo)
 
 
-# for all plots
+# bind all tree dataframes (with & without edges together)
+all.trees.points.df.nogeo <- 
+  rbind(all.trees.points.df.nogeo , 
+        tree.points.list.no.edges.final.nogeo) %>% 
+  left_join(., trees_and_edges %>% 
+              select(plot_ID, tree_ID, DBH_cm), 
+            by = c("plot_ID", "tree_ID"))
+
+
+
+
+# visulaization  for all plots
 
 dev.off()
-for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
+for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
   # i = which(grepl(50133, unique(forest_edges_HBI.man$plot_ID)))
-  my.plot.id = unique(forest_edges_HBI.man$plot_ID)[i]
+  my.plot.id = unique(HBI_trees$plot_ID)[i]
   #print(my.plot.id)
   
   c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
@@ -1578,12 +1667,18 @@ for(i in 1:(nrow(forest_edges_HBI.man %>% select(plot_ID) %>% distinct()))){
           geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
           geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+ 
           geom_sf(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
-                  aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
-          guides(color=guide_legend(title="tree status")))
+                  aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
+                      size =  all.trees.points.df.nogeo$DBH_cm[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+          guides(color=guide_legend(title="tree status"))+
+          guides(size=guide_legend(title="DBH cm"))+
+          geom_sf_text(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
+                       aes(label = all.trees.points.df.nogeo$tree_ID[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+          xlim(-30, 30)+
+          ylim(-30, 30)
+        
+  )
   
 }
-
-
 
 
  
