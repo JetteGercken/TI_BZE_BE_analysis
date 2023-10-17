@@ -143,7 +143,7 @@ tree_inventory_status_9.df <- as.data.frame(tree_inventory_status_9.list)
 BZE3_trees <- BZE3_trees %>% 
   left_join(., tree_inventory_status_9.df, 
             by = c("plot_ID","tree_ID", "inv" )) %>% 
-  mutate(tree_inventory_status = ifelse(tree_inventory_status == -9 | is.na(tree_inventory_status),tree_inventory_status_new, tree_inventory_status)) %>% 
+  mutate(new_tree_inventory_status = ifelse(tree_inventory_status == -9 | is.na(tree_inventory_status),tree_inventory_status_new, tree_inventory_status)) %>% 
     select(-tree_inventory_status_new)
 
 
@@ -203,7 +203,7 @@ for (i in 1:length(BZE3_trees_4$tree_ID)) {
                                           my.tree.id == tree.id.nearest.neighbour, "yes", "no")
   
   # build dataset that enables to identify the tree in the dataset of the previous inventory
-  tree_inventory_status_4.list[[i]] <- as.data.frame(rbind(HBI_trees %>% filter(plot_ID == my.plot.id) %>% slice(closest.id), 
+  tree_inventory_status_4.list[[i]] <- as.data.frame(rbind(HBI_trees%>% filter(plot_ID == my.plot.id) %>% select(-tree_inventory_status_new) %>% slice(closest.id), 
                                                            BZE3_trees_4[i,]))
   
   print(ggplot()+ 
