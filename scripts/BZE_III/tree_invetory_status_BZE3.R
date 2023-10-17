@@ -146,3 +146,23 @@ BZE3_trees <- BZE3_trees %>%
   mutate(tree_inventory_status = ifelse(tree_inventory_status == -9 | is.na(tree_inventory_status),tree_inventory_status_new, tree_inventory_status)) %>% 
     select(-tree_inventory_status_new)
 
+
+# tree inventory status == 4 ---------------------------------------------
+# for trees that have the status 4 the tree should have not been assessed in the previous inventory 
+# what we have to do is find the tree in the previous inventory (so a tree that has the somewhat similar position and tree ID)
+# and remove it from the dataset 
+
+
+# tree inventory status == 1 ---------------------------------------------
+# for trees that have the status 1 in the second inventory there should be a tree 
+# with the same ID and species and an equal or higher dbh
+
+
+
+
+
+
+
+
+
+
