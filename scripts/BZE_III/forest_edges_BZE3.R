@@ -79,7 +79,7 @@ HBI_trees <- HBI_trees %>%
   left_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase")) %>% 
-  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, (D_mm*(1.0+(0.0011*(DBH_h_cm -130))))/10))
+  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
@@ -1332,7 +1332,7 @@ all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.no
 
 
 # 3.2.1.4. sorting trees into edge and remaining circle polygones ---------
-
+# 3.2.1.4.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
 trees.one.edge.nogeo <- HBI_trees %>%
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
@@ -1435,7 +1435,7 @@ tree.points.one.edge.df.nogeo <- as.data.frame(tree.points.list.one.edge.final.n
 
 
 
-
+# 3.2.1.4.2. plots with 2 edges: sorting trees into edge and remaining circle polygones ---------
 # intersection of trees with 2 edges
 trees.two.edges.nogeo <- HBI_trees %>%
   # filter only for trees that are located in plots with a forest edge
@@ -1549,8 +1549,7 @@ all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two
 
 
 
-
-##### loop for trees that are not in a circle with edge or edge intersections#####
+# 3.2.1.4.1. plots with no edge edge: sorting trees into circle ---------
 trees.no.edge.nogeo <- anti_join(HBI_trees, all.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
@@ -1640,9 +1639,7 @@ all.trees.points.df.nogeo <-
 
 
 
-
-# visulaization  for all plots
-
+# 3.2.1.5. visulaizing for all plot, edges, trees -------------------------
 dev.off()
 for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
