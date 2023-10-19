@@ -18,7 +18,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
-HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
  
 
 
@@ -56,8 +56,8 @@ BZE3_trees <- HBI_trees[1:10,] %>%
 # mutate two no 
 BZE3_trees <- rbind(
   BZE3_trees,
-  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 11, SP_code = "gki", azi_gon = azi_gon -10, D_mm = D_mm+30, Dist_cm= Dist_cm+30, tree_inventory_status = 0),
-  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 12, SP_code = , azi_gon = azi_gon +5, D_mm = D_mm+10, Dist_cm= Dist_cm+20, tree_inventory_status = 0)
+  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 11, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+30, tree_inventory_status = 0),
+  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 12, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+10, tree_inventory_status = 0)
   )
 
 # creating dataset with information about the concentric sampling circles
@@ -102,7 +102,7 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
   closest.id <- which.min( distance(x.tree.1, y.tree.1, x.tree.2, y.tree.2))
   
   # calculate or select the actual distance, species and dbh between the selected row/ coordiantes of tzhe nearest neighbout canidate from HBI and the given tree from BZE3
-  distance.point.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
+  distance.my.tree.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
   species.nearest.neighbour <- HBI_trees$SP_code[HBI_trees$plot_ID == my.plot.id][closest.id]
   dbh.nearest.neighbour <- HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id][closest.id]
   
@@ -111,8 +111,8 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
     # the distance is within a range of +/- 50cm, 
     # if the species is identical 
   # maybe also if the dbh is lower or equal? 
-  tree_inventory_status <- ifelse(distance.point.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour | 
-                                    distance.point.and.nearest.neighbour >= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour, 1, NA)
+  tree_inventory_status <- ifelse(distance.my.tree.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour | 
+                                    distance.my.tree.and.nearest.neighbour >= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour, 1, NA)
   
   # build dataset that links tree status with plot, tree and inventory ID so the tree remains indentifiable
   tree_inventory_status_9.list[[i]] <- as.data.frame(cbind(
@@ -139,6 +139,8 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
 }
 # safe list in dataframe
 tree_inventory_status_9.df <- as.data.frame(tree_inventory_status_9.list)
+# https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
+tree_inventory_status_9.df[,c(1,2)] <- lapply(tree_inventory_status_9.df[,c(1,2)], as.integer)
 
 # join the new tree inventory status in and replace -9s and NAs if possible
 BZE3_trees <- BZE3_trees %>% 
@@ -182,7 +184,7 @@ for (i in 1:length(BZE3_trees_4$tree_ID)) {
   closest.id <- which.min( distance(x.tree.1, y.tree.1, x.tree.2, y.tree.2))
   
   # calculate or select the actual distance, species and dbh between the selected row/ coordiantes of tzhe nearest neighbout canidate from HBI and the given tree from BZE3
-  distance.point.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
+  distance.my.tree.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
   species.nearest.neighbour <- HBI_trees$SP_code[HBI_trees$plot_ID == my.plot.id][closest.id]
   dbh.nearest.neighbour <- HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id][closest.id]
   tree.id.nearest.neighbour <- HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id][closest.id]
@@ -194,17 +196,18 @@ for (i in 1:length(BZE3_trees_4$tree_ID)) {
   # if the species is identical 
   # maybe also  dbh is lower or equal
   # if the tree id is identical
-  tree.found.in.inv.1.dataset <- ifelse(distance.point.and.nearest.neighbour <= 50 & 
+  tree.found.in.inv.1.dataset <- ifelse(distance.my.tree.and.nearest.neighbour <= 50 & 
                                           my.tree.spec == species.nearest.neighbour & 
                                           my.dbh.cm >= dbh.nearest.neighbour & 
                                           my.tree.id == tree.id.nearest.neighbour| 
-                                          distance.point.and.nearest.neighbour >= 50 & 
+                                          distance.my.tree.and.nearest.neighbour >= 50 & 
                                           my.tree.spec == species.nearest.neighbour & 
                                           my.dbh.cm >= dbh.nearest.neighbour  & 
                                           my.tree.id == tree.id.nearest.neighbour, "yes", "no")
   
-  # build dataset that enables to identify the tree in the dataset of the previous inventory
+  # build dataset that enables to identify the tree in the dataset of the previous inventory (HBI, inventory 1)
   tree_inventory_status_4.list[[i]] <- if(tree.found.in.inv.1.dataset == "yes"){
+   # https://dplyr.tidyverse.org/reference/slice.html 
     as.data.frame(rbind(HBI_trees%>% filter(plot_ID == my.plot.id) %>% slice(closest.id) %>% mutate(new_tree_inventory_status=NA),
                         BZE3_trees_4[i,]))}else{
                           as.data.frame(rbind(BZE3_trees_4[i,]))
@@ -239,7 +242,27 @@ HBI_trees <- HBI_trees %>%
 
 
 # tree inventory status == 6 ---------------------------------------------
-# for trees that have the status 6 a tree that was previously part of the inventory is not part of the inventory anymore but 
+# fortrees that have the status 6 a tree that was previously part of the inventory is not part of the inventory anymore but 
+# goal of this loop is therefore to find the tree IDs in the candidates dataset/ most recent inventory/ inventory 2
+# of those trees that are closest to my.tree (tree i with status 6) 
+# this is because the stem of my.tree (tree i with status 6) was assessed as one stem in the previous inventory, 
+# but is assessed as as tree with split stem/ multi-stem now, meaning the two parts of the tree are
+# assessed as newly inventoried tho there is a partner tree to tree i in the previous inventory
+# in from of the main branch of tree i 
+# 1. thus we first identify the partner tree of my.tree/ tree i in the previous inventory/ inventory 1 by: 
+      # closest position +/- 50cm distance to my.tree
+      # smalle or same diameter as my.tree
+      # same species as my.tree
+      # same ID as my.tree
+# 2. further we identify the two new trees (tree status == 0) in the recent inventory/ inventory 2 dataset 
+#    that originate from tree i/ my.tree with tree_status == 6 
+# 3. then we check which of these two new trees is closest to the original tree i/ my.tree by: 
+      # closest position
+      # tree status == 0 
+      # tree species of candidate and original tree match
+# 4. after that we partner the closest candidate originating from tree i/ my.tree with the potential partner tree from 
+#    the previous inventory if there is one
+
 
 BZE3_trees_6 <- BZE3_trees %>% filter(tree_inventory_status == 6)
 tree_inventory_status_6.list <- vector(mode = "list", length = length(BZE3_trees_6$tree_ID))
@@ -266,11 +289,12 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   dist.tree.1 <- HBI_trees$Dist_cm[HBI_trees$plot_ID == my.plot.id]/100
   x.tree.1 <- dist.tree.1*sin(azi.tree.1)       # this is: easting, longitude, RW
   y.tree.1 <- dist.tree.1*cos(azi.tree.1)       # this is: northing, latitude, HW 
-  # select the row number of the tree point in the HBI (previous inventory, inventory 1) dataframe of the same plot ID,
-  # which has the smallest distance to the given tree corodinates from BZE3 (inventory 2)
+  # select the row number of the tree point in the HBI (previous inventory, inventory 1) dataframe 
+  # of the same plot ID, which has the smallest distance to the given my.tree corodinates from BZE3 (inventory 2)
   closest.id <- which.min(distance(x.tree.1, y.tree.1, x.tree.2, y.tree.2))
+  
   # calculate or select the actual distance, species and dbh between the selected row/ coordiantes of tzhe nearest neighbout canidate from HBI and the given tree from BZE3
-  distance.point.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
+  distance.my.tree.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
   species.nearest.neighbour <- HBI_trees$SP_code[HBI_trees$plot_ID == my.plot.id][closest.id]
   dbh.nearest.neighbour <- HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id][closest.id]
   tree.id.nearest.neighbour <- HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id][closest.id]
@@ -281,55 +305,66 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
       # if the species is identical 
       # maybe also  dbh is lower or equal
       # if the tree id is identical
-  tree.found.in.inv.1.dataset <- ifelse(distance.point.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & 
+  my.tree.found.in.inv.1.dataset <- ifelse(distance.my.tree.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & 
                                           my.dbh.cm >= dbh.nearest.neighbour & my.tree.id == tree.id.nearest.neighbour| 
-                                          distance.point.and.nearest.neighbour >= 50 & my.tree.spec == species.nearest.neighbour & 
+                                          distance.my.tree.and.nearest.neighbour >= 50 & my.tree.spec == species.nearest.neighbour & 
                                           my.dbh.cm >= dbh.nearest.neighbour  & my.tree.id == tree.id.nearest.neighbour, 
                                         "yes", "no") 
   
 # find partner trees in the same inventory dataset (bze3, inventory 2, most recent inventory): 
-  # narrow down the closest two trees dataset 
+  # narrow down the closest two trees dataset by selecting from BZE3/ inventory 2/ most recent inventory:  
+    # trees of the same plot_ID, 
+    # trees with different tree_ID then my.tree.id
+    # trees with same species as my.tree.spec
+    # trees with inventory status 0
   closest.trees.canidates.2 <- BZE3_trees %>% 
     filter(plot_ID == my.plot.id & tree_ID != my.tree.id & SP_code == my.tree.spec & tree_inventory_status == 0)
   
-  # calcualte cartesian coordiantes of all trees at the plot
+  # calcualte cartesian coordiantes of all potential partner trees of my.tree at the plot
   azi.all.trees.2 <- as.numeric(closest.trees.canidates.2$azi_gon)
-  dist.all.trees.2 <- as.numeric(closest.trees.canidates.2$Dist_cm)/100
+  dist.all.trees.2 <- as.numeric(closest.trees.canidates.2$Dist_cm)/100 # divide by 100 to transform into m 
   x.all.trees.2 <- dist.all.trees.2*sin(azi.all.trees.2)       # this is: easting, longitude, RW
   y.all.trees.2 <- dist.all.trees.2*cos(azi.all.trees.2)       # this is: northing, latitude, HW 
-  
+  # find the tree IDs in the canidates dataset/ current inventory/ inventory 2/ BZE3 dataset 
+  # of the trees that are closest/ originating from my.tree (tree i with status 6) 
+  # closest
   closest.id.1 <- (as.data.frame(cbind(
     d = distance(x.all.trees.2, y.all.trees.2, x.tree.2, y.tree.2),
-    id = BZE3_trees$tree_ID[HBI_trees$plot_ID == my.plot.id])) %>%
+    t_id = c(closest.trees.canidates.2$tree_ID))) %>%
       arrange(d))[1,2]
+  # second closest
   closest.id.2 <- (as.data.frame(cbind(
     d = distance(x.all.trees.2, y.all.trees.2, x.tree.2, y.tree.2),
-    id = BZE3_trees$tree_ID[HBI_trees$plot_ID == my.plot.id])) %>%
+    t_id = c(closest.trees.canidates.2$tree_ID))) %>%
       arrange(d))[2,2]
   # select the info of the two clostest trees in one dataframe  
-  closest.trees.df <- BZE3_trees[BZE3_trees$plot_ID == my.plot.id][c(closest.id.1, closest.id.2),]
-  # check if the clostest trees can really be the trees originatinf from tree i (status 6) by species
-  closest.id.1 <- if(clostet.tree.df$SP_code[1] == my.tree.spec){closest.id.1}else{NA}
-  closest.id.2 <- if(clostet.tree.df$SP_code[2] == my.tree.spec){closest.id.2}else{NA}
-  
+  closest.trees.df <- BZE3_trees %>% filter(plot_ID == my.plot.id & tree_ID %in% c(closest.id.1, closest.id.2))
   # select the tree among the two closest trees in BZE3/invenotry 2/ recent inventory 
   # that has the most similar diameter to the one of the tree from HBI/ inventory / previous inventory
-  closest.tree.2 <- closest.trees.df[which.min(abs(closest.trees.df$DBH_cm - dbh.nearest.neighbour)),]
+  closest.tree.2.df <- closest.trees.df[which.min(abs(closest.trees.df$DBH_cm - dbh.nearest.neighbour)),]
   
-  # check if the coordinates, dbh, and species 
-  
-  
-  # build dataset that enables to identify the tree in the dataset of the previous inventory
+  # build dataset that enables to identify partner tree of my.tree in the previous inventory, my.tree, 
+  # and closest.tree in most recent inventory dataset that 
   tree_inventory_status_6.list[[i]] <- if(tree.found.in.inv.1.dataset == "yes"){
-    as.data.frame(rbind(HBI_trees%>% filter(plot_ID == my.plot.id) %>% slice(closest.id) %>% mutate(new_tree_inventory_status=NA),
-                        BZE3_trees_6[i,]))}else{
-                          as.data.frame(rbind(BZE3_trees_6[i,]))
-                        }
+    as.data.frame(rbind(
+      # partner tree of my.tree in previous inventory (HBI/ inventory 1)
+      HBI_trees %>% filter(plot_ID == my.plot.id) %>% slice(closest.id) %>% 
+        mutate(new_tree_inventory_status=tree_inventory_status,
+               # we have to change the tree ID to the one of the potential partner tree 
+               # originating from my.tree that´s still labled status == 0 in the current inventory dataset
+               tree_ID = closest.tree.2.df$tree_ID),
+      # my.tree row --> this one has to be removed later 
+      BZE3_trees_6[i,],
+      # newly inventoried tree that most likely originates from my.tree and matches best with partner tree
+      # --> here we have to change the new tree ID to 1, as the tree has a partner tree in 
+      closest.tree.2.df %>% mutate(new_tree_inventory_status == 1)
+      ))}else{as.data.frame(rbind(BZE3_trees_6[i,]))}
   
   print(ggplot()+ 
           geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
           geom_point(aes(x.tree.1, y.tree.1, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
-          geom_point(aes(x.tree.2, y.tree.2, size =my.dbh.cm, color= "red"))+ 
+          geom_point(aes(x.tree.2, y.tree.2, size =my.dbh.cm, color= "my tree"))+ 
+          geom_point(aes(x.all.trees.2, y.all.trees.2, size = closest.trees.canidates.2$DBH_cm, color = "BZE3 nearest neighbours"))+
           guides(color=guide_legend(title="tree from inv. 2"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_text(aes(x.tree.1, y.tree.1), 
@@ -337,6 +372,9 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
                     nudge_x=0.45, nudge_y=0.1,check_overlap=T)+
           geom_text(aes(x.tree.2, y.tree.2), 
                     label= BZE3_trees_6$tree_ID[BZE3_trees_6$plot_ID == my.plot.id & BZE3_trees_6$tree_ID == my.tree.id],
+                    nudge_x=0.45, nudge_y=0.1, check_overlap=T)+
+          geom_text(aes(x.all.trees.2, y.all.trees.2), 
+                    label= closest.trees.canidates.2$tree_ID,
                     nudge_x=0.45, nudge_y=0.1, check_overlap=T)
   )
   
