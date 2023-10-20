@@ -32,6 +32,7 @@ HBI_trees <- HBI_trees %>%
   select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) %>% 
   mutate(inv = "HBI",
+         inv_year = 2012, 
          DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
 
 # create practice dataset from HBI data
@@ -51,13 +52,14 @@ BZE3_trees <- HBI_trees[1:10,] %>%
                                            row_number() == 10 ~ 7,
                                            TRUE ~ NA)) %>% 
   mutate(inv = "BZE3",
+         inv_year = 2023, 
          DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_BWI(as.numeric(D_mm), as.numeric(DBH_h_cm))))
 
 # mutate two no 
 BZE3_trees <- rbind(
   BZE3_trees,
-  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 11, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+30, tree_inventory_status = 0),
-  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 12, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+10, tree_inventory_status = 0)
+  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 27, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+30, tree_inventory_status = 0),
+  BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 28, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+10, tree_inventory_status = 0)
   )
 
 # creating dataset with information about the concentric sampling circles
@@ -111,15 +113,16 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
     # the distance is within a range of +/- 50cm, 
     # if the species is identical 
   # maybe also if the dbh is lower or equal? 
-  tree_inventory_status <- ifelse(distance.my.tree.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour | 
+  tree_inventory_status_2 <- ifelse(distance.my.tree.and.nearest.neighbour <= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour | 
                                     distance.my.tree.and.nearest.neighbour >= 50 & my.tree.spec == species.nearest.neighbour & my.dbh.cm >= dbh.nearest.neighbour, 1, NA)
   
+  tree_inventory_status_1 <- ifelse(!is.na(tree_inventory_status_2), 0, NA)
   # build dataset that links tree status with plot, tree and inventory ID so the tree remains indentifiable
   tree_inventory_status_9.list[[i]] <- as.data.frame(cbind(
-    "plot_ID" = c(my.plot.id),
-    "tree_ID" = c(my.tree.id),
-    "inv" = c(my.inv),
-    "tree_inventory_status_new" = c(tree_inventory_status)
+    "plot_ID" = c(my.plot.id, HBI_trees$plot_ID[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "tree_ID" = c(my.tree.id, HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "inv" = c(my.inv, HBI_trees$inv[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "tree_inventory_status_new" = c(tree_inventory_status_2, tree_inventory_status_1)
     ))
 
   print(ggplot()+ 
@@ -148,6 +151,13 @@ BZE3_trees <- BZE3_trees %>%
             by = c("plot_ID","tree_ID", "inv" )) %>% 
   mutate(new_tree_inventory_status = ifelse(tree_inventory_status == -9 | is.na(tree_inventory_status),tree_inventory_status_new, tree_inventory_status)) %>% 
     select(-tree_inventory_status_new)
+
+
+HBI_trees <- HBI_trees %>% 
+  left_join(., tree_inventory_status_9.df, 
+            by = c("plot_ID","tree_ID", "inv" )) %>% 
+  mutate(new_tree_inventory_status = ifelse(tree_inventory_status == -9 | is.na(tree_inventory_status),tree_inventory_status_new, tree_inventory_status)) %>% 
+  select(-tree_inventory_status_new)
 
 
 # tree inventory status == 4 ---------------------------------------------
@@ -352,12 +362,17 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
         mutate(new_tree_inventory_status=tree_inventory_status,
                # we have to change the tree ID to the one of the potential partner tree 
                # originating from my.tree that´s still labled status == 0 in the current inventory dataset
-               tree_ID = closest.tree.2.df$tree_ID),
+               old_tree_ID = tree_ID,
+               tree_ID = closest.tree.2.df$tree_ID, 
+               tree_type_status_6 = "partner_tree_inv_1"),
       # my.tree row --> this one has to be removed later 
-      BZE3_trees_6[i,],
+      BZE3_trees_6[i,] %>% mutate(tree_type_status_6 = "my_tree_inv_2", 
+                                  old_tree_ID = tree_ID,),
       # newly inventoried tree that most likely originates from my.tree and matches best with partner tree
       # --> here we have to change the new tree ID to 1, as the tree has a partner tree in 
-      closest.tree.2.df %>% mutate(new_tree_inventory_status == 1)
+      closest.tree.2.df %>% mutate(new_tree_inventory_status = 1, 
+                                   tree_type_status_6 = "clostest_tree_inv_2", 
+                                   old_tree_ID = tree_ID)
       ))}else{as.data.frame(rbind(BZE3_trees_6[i,]))}
   
   print(ggplot()+ 
@@ -380,22 +395,116 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   
 }
 # safe list in dataframe
-tree_inventory_status_4.df <- as.data.frame(tree_inventory_status_4.list)
+tree_inventory_status_6.df <- as.data.frame(tree_inventory_status_6.list)
 
-# remove 
-BZE3_trees <- BZE3_trees %>% 
-  anti_join(., tree_inventory_status_4.df, 
-            by = c("plot_ID","tree_ID", "inv" ))
-
-HBI_trees <- HBI_trees %>% 
-  anti_join(., tree_inventory_status_4.df, 
-            by = c("plot_ID","tree_ID", "inv" ))
-
-
-
-
-
-
+# remove my.tree with status 6 from recent inventory dataframe, 
+# as well the tree identified as the closest tree in the original dataset 
+# to then rbind it back in from the tree_inventory_status_6.df --> this serves like an update 
+# of those trees that represent the partner of the partner or the origianl tree with status 6 in the previous inventory 
+BZE3_trees <- rbind(BZE3_trees %>% 
+  anti_join(., tree_inventory_status_6.df %>% 
+              filter(tree_type_status_6 %in% c("my_tree_inv_2", "clostest_tree_inv_2")),
+            by = c("plot_ID", c("tree_ID" = "old_tree_ID") , "inv" )), 
+  tree_inventory_status_6.df %>% 
+    filter(tree_type_status_6 == "clostest_tree_inv_2") %>% 
+    select(-c(tree_type_status_6, old_tree_ID))) %>% 
+  arrange(plot_ID, tree_ID)
 
 
+HBI_trees <- rbind(HBI_trees %>% 
+  anti_join(., tree_inventory_status_6.df %>% filter(tree_type_status_6 == "partner_tree_inv_1"), 
+            by = c("plot_ID",c("tree_ID" = "old_tree_ID"), "inv" )), 
+  tree_inventory_status_6.df %>% 
+    filter(tree_type_status_6 == "partner_tree_inv_1") %>% 
+    select(-c(tree_type_status_6, old_tree_ID))) %>% 
+  arrange(plot_ID, tree_ID)
 
+
+
+
+
+# tree inventory status == 5 ----------------------------------------------
+# this inventory status means that the tree should have been assessed in the previous 
+# invenotry but wasn´t
+# thus we have to calculate how much the tree of that species at that plot would have grown 
+# between the previous and current inventory, then deduct it from the diameter of the 
+# respective tree in the current inventory and add the tree to the previous inventory with
+# the same ID, tree status 0 and the reduced diameter
+# for this inventory status 
+
+## calculate averange annual diameter growth per single tree per species and plot 
+HBI_growth <- HBI_trees %>% 
+  filter(new_tree_inventory_status %in% c(0, 1, -9))%>% 
+  rename(HBI_DBH_cm = DBH_cm) %>% 
+  select(plot_ID, tree_ID, SP_code, HBI_DBH_cm)
+BZE3_growth <- BZE3_trees %>% 
+  filter(new_tree_inventory_status %in% c(1, -9)) %>% 
+  rename(BZE3_DBH_cm = DBH_cm) %>% 
+  select(plot_ID, tree_ID, SP_code, HBI_DBH_cm)
+
+growth.df <- left_join(HBI_trees %>% 
+                        # select trees that were newly inventored, repeated inventory, or unknown status
+                        filter(new_tree_inventory_status %in% c(0, 1, -9))%>% 
+                        rename(HBI_DBH_cm = DBH_cm) %>% 
+                        rename(HBI_inv_year = inv_year) %>% 
+                        select(plot_ID, tree_ID, HBI_inv_year, SP_code, HBI_DBH_cm), 
+                      # select trees that are repeatedly inventory, or unknown status
+                      BZE3_trees %>% 
+                        filter(new_tree_inventory_status %in% c(1, -9)) %>% 
+                        rename(BZE3_DBH_cm = DBH_cm) %>% 
+                        rename(BZE3_inv_year = inv_year) %>% 
+                        select(plot_ID, tree_ID, BZE3_inv_year, SP_code, BZE3_DBH_cm), 
+                      by = c("plot_ID", "tree_ID", "SP_code")) %>% 
+  mutate(DBH_growth_cm = BZE3_DBH_cm-HBI_DBH_cm, 
+         age_period = BZE3_inv_year-HBI_inv_year, 
+         annual_growth_cm = DBH_growth_cm/age_period) %>% 
+  group_by(plot_ID, SP_code) %>% 
+  summarize(average_age_period_years = mean(age_period), 
+            avg_annual_DBH_growth_cm = mean(annual_growth_cm))
+
+
+                      
+
+BZE3_trees_5 <- BZE3_trees %>% filter(tree_inventory_status == 5)
+tree_inventory_status_5.list <- vector(mode = "list", length = length(BZE3_trees_5$tree_ID))
+
+for (i in 1:length(BZE3_trees_5$tree_ID)) {
+  # i = 1
+  
+  my.plot.id <- BZE3_trees_5[i, "plot_ID"]
+  my.tree.id <- BZE3_trees_5[i, "tree_ID"]
+  my.tree.spec <- BZE3_trees_5[i, "SP_code"]
+  my.inv.year <- BZE3_trees_5[i, "inv_year"]
+  inv.year.1 <- HBI_trees %>% 
+    filter(plot_ID == my.plot.id & SP_code == my.tree.spec) %>% 
+    group_by(plot_ID) %>% 
+    summarise(year = mean(inv_year)) %>% 
+    dplyr::pull(year)
+  
+  annual.growth.cm <- growth.df$avg_annual_DBH_growth_cm[growth.df$plot_ID == my.plot.id & growth.df$SP_code == my.tree.spec]
+  years.passed.between.inv.1.and.2 <- my.inv.year - inv.year.1
+  
+  tree_inventory_status_5.list <- as.data.frame(
+    rbind(BZE3_trees_5[i,] %>% mutate(new_tree_inventory_status = 1),
+          BZE3_trees_5[i,] %>% mutate(DBH_cm = DBH_cm-annual.growth.cm*years.passed.between.inv.1.and.2, 
+                                      inv= "HBI",
+                                      inv_year =  inv.year.1,
+                                      new_tree_inventory_status = 0)))
+  
+}
+# safe list in dataframe
+tree_inventory_status_5.df <- as.data.frame(tree_inventory_status_5.list)
+
+# remove trees with inventory status 5 that match with trees in the tree_inventory_status_5.df 
+BZE3_trees <- rbind(BZE3_trees %>% 
+  anti_join(., tree_inventory_status_5.df, 
+            by = c("plot_ID","tree_ID", "inv", "tree_inventory_status" )), 
+  # then bind in the corrected data of that tree, with new tree_inventory_status == 1
+  tree_inventory_status_5.df %>% filter(inv == "BZE3")
+  )
+
+# add tree with corrected diameter and otherwise identical to HBI dataset 
+HBI_trees <- rbind(HBI_trees, 
+                   tree_inventory_status_5.df %>% filter(inv == "HBI")
+                   )
+                   
