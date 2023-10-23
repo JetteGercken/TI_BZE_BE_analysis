@@ -506,5 +506,5 @@ BZE3_trees <- rbind(BZE3_trees %>%
 # add tree with corrected diameter and otherwise identical to HBI dataset 
 HBI_trees <- rbind(HBI_trees, 
                    tree_inventory_status_5.df %>% filter(inv == "HBI")
-                   )
+)
                    
