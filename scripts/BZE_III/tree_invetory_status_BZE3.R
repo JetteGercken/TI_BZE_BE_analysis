@@ -508,3 +508,27 @@ HBI_trees <- rbind(HBI_trees,
                    tree_inventory_status_5.df %>% filter(inv == "HBI")
 )
  
+
+
+
+
+# remove trees that are not part of invenotry anymore ---------------------
+# only pass on trees for analysis that are processed through new_invntory_status and labelled as 
+# new, repeated or unknown inventory
+# we can only do this after the trees with inventory status 4, 5 and 6 have been processed
+
+HBI_trees_update <- HBI_trees %>% filter(new_tree_inventory_status %in% c(0, 1, -9, -1))
+
+
+
+# tree inventory status == 2 ----------------------------------------------
+# here we  calculate how much volume was removed from the inital plot 
+# therefore we have to calculate the volume... which requires: 
+  # tapeS species codes
+  # DBH at 1.3m for all trees 
+  # estimated heights for all trees 
+# thus we have to estimate the heights first
+
+
+
+
