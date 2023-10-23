@@ -121,6 +121,12 @@ DBH_c_function <- function(dbh){
   return(DBH_c)
 }
 
+DBH_BWI <- function(d.mm, d.h.cm){
+  # source: BWI Methodikband, 5.2.1.1. - BHD bei Probebäumen mit geänderter Messhöhe - Regressionsverfahren
+  dbh_cm = (d.mm*(1.0+(0.0011*(d.h.cm -130))))/10 # diveided by 10 to return cm
+  return(dbh_cm)
+}
+
 # ----- 1.3 age class ----------------------------------------------------------
 # defining age classes from 1 to 160 in steps of 20
 # this is a preparation fot the comparison with carbon stocks calcualted by te
