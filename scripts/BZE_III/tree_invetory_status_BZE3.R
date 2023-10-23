@@ -507,4 +507,4 @@ BZE3_trees <- rbind(BZE3_trees %>%
 HBI_trees <- rbind(HBI_trees, 
                    tree_inventory_status_5.df %>% filter(inv == "HBI")
 )
-                   
+ 
