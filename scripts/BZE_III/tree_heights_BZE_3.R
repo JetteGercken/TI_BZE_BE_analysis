@@ -46,10 +46,11 @@ plot_areas_HBI[,c(1,2, 3, 4)] <- lapply(plot_areas_HBI[,c(1,2, 3, 4)], as.numeri
 
 # 1. joining in external info  -------------------------------------------------
 
-HBI_trees <- HBI_trees %>%
+trees_total <- HBI_trees %>%
 # add inventory info -----------------------------------------------------
   mutate(inv = "HBI",
          inv_year = 2012) %>% 
+  # here we would actually rbind the both inventory datasets together 
 # join in species codes --------------------------------------------------
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
@@ -63,8 +64,9 @@ HBI_trees <- HBI_trees %>%
          BA_m2 = c_A(DBH_cm/2)*0.0001) %>% 
 # join in tree stand info ---------------------------------------------------------
   left_join(., stand_info_HBI_trees %>% 
-              select(plot_ID, tree_ID, t_stat), 
-            by = c("plot_ID", "tree_ID"), 
+              mutate(inv = "HBI") %>% 
+              select(plot_ID, tree_ID, inv, t_stat), 
+            by = c("plot_ID", "tree_ID", "inv"), 
             multiple = "all") %>% 
   rename(stand = t_stat) %>% 
   filter(stand != "warning") %>% 
@@ -74,8 +76,9 @@ HBI_trees <- HBI_trees %>%
                              DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
                              DBH_cm >= 30 ~ 17.84, 
                              TRUE ~ NA)) %>% 
-  left_join(., plot_areas_HBI,
-            by = c("plot_ID", "CCS_r_m", "stand")) %>% 
+  left_join(., plot_areas_HBI %>% 
+              mutate(inv = "HBI"),
+            by = c("plot_ID", "CCS_r_m", "inv", "stand")) %>% 
   mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
          plot_A_ha = as.numeric(area_m2)/10000)
 
