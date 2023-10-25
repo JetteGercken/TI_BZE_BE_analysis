@@ -86,10 +86,13 @@ trees_total <- HBI_trees %>%
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-HBI_trees %>% 
+SP_NAs_HBI <- HBI_trees %>% 
   anti_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
+
+if(nrow(SP_NAs_HBI) != 0){print("There are species names or codes in HBI dataset that do not match
+                                the species names and codes listed in x_bart")}else{""}
 
 # BZE3_trees <- BZE3_trees %>% 
 #   mutate(inventory = "HBI") %>% 
