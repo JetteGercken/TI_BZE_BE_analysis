@@ -19,14 +19,12 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
-# BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
+# HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+# here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
-# BZE3 locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the third national soil inventory
+# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 
-
-# BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
-# BZE3_trees <- read.delim(file = here("data/input/BZE3/BZE3_trees_total.csv"), sep = ";", dec = ",")
 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 
@@ -38,12 +36,6 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
                           y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
                           r0 = c(5.64, 12.62, 17.84), # darius in m
                           rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
-
-# REGENERATION 
-
-
-# DEADWOOD
-
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI 
@@ -62,10 +54,6 @@ colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "HW_MED",  "LAT_MED",  "LON_MED", 
                        "LAT_MEAN", "LON_MEAN") 
 
-
-
-# BZE3
-
 # Forest edges 
 colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                                 "A_dist", "A_azi",  "B_dist", "B_azi", 
@@ -76,33 +64,7 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1.1. species & inventory names ----------------------------------------------
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>% 
-  mutate(inventory = "HBI") %>% 
-  left_join(SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase")) %>% 
-  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
-
-
-# check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-HBI_trees %>% 
-  anti_join(SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase"))
-
-
-# ----- 1.1.1.2. BZE3 species & inventory names ----------------------------------------------
-# BZE3_trees <- BZE3_trees %>% 
-#   mutate(inventory = "BZE3") %>% 
-#   left_join(., SP_names_com_ID_tapeS %>% 
-#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#             by = c("SP_code" = "char_code_ger_lowcase"))
-# 
-# 
-# # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-# BZE3_trees %>% 
-#   anti_join(., SP_names_com_ID_tapeS %>% 
-#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#             by = c("SP_code" = "char_code_ger_lowcase"))
+ mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
 
 
 
@@ -255,6 +217,8 @@ trees_and_edges <-
                      X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
                      X_inter_AT_triangle_60, X_inter_BT_triangle_60, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60),
             by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
+  # the following two functions work, however the processign through loops and polygoens which follows under section 3
+  # works better and more efficient & precise
   mutate(t_status_AB_ABT = tree.status(e_form,
                                        0, 0, data_circle$r0[3],
                                        b0_AB, b1_AB,
@@ -1361,8 +1325,7 @@ rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 
 
 # bind all edges area dataframes together
 all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2))
-# export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv(all.edges.area.df.nogeo, paste0(out.path.BZE3,"all_edges_rem_circles_area.csv"))
+
 
 
 
@@ -1668,17 +1631,58 @@ tree.points.no.edges.df.nogeo <- as.data.frame(tree.points.list.no.edges.final.n
 # bind all tree point.sf dataframes (with & without edges together)
 all.trees.points.df.nogeo <- 
   rbind(all.trees.points.df.nogeo , 
-        tree.points.no.edges.df.nogeo) %>% 
+        tree.points.no.edges.df.nogeo %>% 
   left_join(., trees_and_edges %>% 
               select(plot_ID, tree_ID, DBH_cm), 
-            by = c("plot_ID", "tree_ID"))
+            by = c("plot_ID", "tree_ID"), 
+            multiple = "all"))
 
 all.trees.status.df <- 
   rbind(tree.status.no.edges.df.nogeo, 
         tree.status.one.edge.df.nogeo, 
         tree.status.two.edges.df.nogeo)
-# export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
+
+
+# 3.3. join tree stand status and plot areas into trees dataset -------------------------------------------------------------------
+
+# harmonize strings of all.trees.status.df and   
+# https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
+all.trees.status.df[,c(1,2, 3, 4)] <- lapply(all.trees.status.df[,c(1,2, 3, 4)], as.numeric)
+all.edges.area.df.nogeo[,c(1,2, 3, 5)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 5)], as.numeric)
+
+
+HBI_trees_update_2 <- HBI_trees%>% 
+ # join in stand of each tree
+  left_join(., all.trees.status.df %>% 
+              select(plot_ID, tree_ID, t_stat),
+            by = c("plot_ID", "tree_ID"),
+            multiple = "all") %>% 
+  rename(stand = t_stat) %>% 
+  # then join in plot area the tree reffers to due to it´s DBH which determines the sampling circuit it was found in 
+  # asssing corect samling circle diameter according to DBH of the tree to be able to join in the right plot area
+  mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
+                             DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
+                             DBH_cm >= 30 ~ 17.84, 
+                             TRUE ~ NA)) %>% 
+  left_join(., all.edges.area.df.nogeo %>% 
+              select(plot_ID, e_ID, CCS_r_m, stand, area_m2),
+             by = c("plot_ID", "e_ID", "CCS_r_m", "stand")) %>% 
+  # if there was no plot area claualted due to the fact that there is no edger at the plot, 
+  # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
+  mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
+         plot_A_ha = as.numeric(area_m2)/10000, # dividedd by 10 000 to transform m2 into hectar
+         inv = "HBI")
+colnames(HBI_trees_update_2)
+
+# exporting data ----------------------------------------------------------
+# exporting tree and edge/ plot area data
+write.csv(HBI_trees_update_2, paste0(out.path.BZE3,"HBI_trees_update_2.csv"))
+write.csv(trees_and_edges, paste0(out.path.BZE3,"LT_edges_HBI.csv"))
+# export areas and stand info of all sampling circuits, edges and remaining circles
 write.csv(all.trees.status.df, paste0(out.path.BZE3,"all_trees_status.csv"))
+# export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
+write.csv(all.edges.area.df.nogeo, paste0(out.path.BZE3,"all_edges_rem_circles_area.csv"))
+
 
 
 

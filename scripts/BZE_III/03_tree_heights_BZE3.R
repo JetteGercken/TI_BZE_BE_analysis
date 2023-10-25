@@ -21,6 +21,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+# here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
+# tree data
 HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # stand info od individual trees 
 stand_info_HBI_trees <-  read.delim(file = here("output/out_data/out_data_BZE/all_trees_status.csv"), sep = ",", dec = ",")
@@ -222,7 +224,7 @@ coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coe
 #calcualte the height and diameter of a stem reprensenting the mean basal area 
 # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
 Hg_Dg_trees_total.df <- trees_total %>%                              
-  group_by(plot_ID,stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
+  group_by(inv, plot_ID,stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
   summarise(no_trees_CC = n(),
             BA_CC = sum(BA_m2),                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
             CC_A_ha = mean(plot_A_ha),                   # mean area in ha per sampling circuit
@@ -230,7 +232,7 @@ Hg_Dg_trees_total.df <- trees_total %>%
             no_trees_CC_ha = no_trees_CC/CC_A_ha,
             mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
             mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
-  group_by(plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
+  group_by(inv, plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
   summarize(no_trees_ha = sum(no_trees_CC_ha),                                # calculate number of trees per plot
             BA_m2_ha = sum(BA_CC_m2_ha),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
             mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
@@ -242,10 +244,55 @@ Hg_Dg_trees_total.df <- trees_total %>%
 
 
 
+# 2.3. height calculation -------------------------------------------------
+# 2.3.1. height calculation HBI -------------------------------------------------
 HBI_trees <-     # this should actually be the BZE3 Datset 
   trees_total %>% 
   filter(inv=="HBI")%>% 
+## joining coefficients and Hg-Dg-data in
   unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% select(SP_code, R2),               # joing R2 from coeff_SP data set -> R2.y
+            by = "SP_code") %>% 
+  # this is joins in a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
+  left_join(., Hg_Dg_trees_total.df,
+            by = c("inv", "plot_ID", "stand", "SP_code", "C_layer")) %>% 
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+  # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+                         # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                         # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                         # 0.75 then use the SP_P models
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na but there is a h_g and d_G
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                         # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
+                         TRUE ~ H_m))
+
+# select columns that should enter the next step of data processing
+HBI_trees_update_3 <- HBI_trees%>%  
+  select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
+         SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
+         DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+         CCS_r_m, plot_A_ha)
+
+# 2.3.2. height calculation BZE -------------------------------------------------
+BZE3_trees <-     # this should actually be the BZE3 Datset 
+  trees_total %>% 
+  filter(inv=="BZE3")%>% 
+## 2.3.1. joining coefficients and Hg-Dg-data in 
+unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
   left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
               select(plot_ID, SP_code, R2) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
@@ -275,10 +322,20 @@ HBI_trees <-     # this should actually be the BZE3 Datset
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
                          TRUE ~ H_m))
 
-# ---- 1.1.2.6. exporting height coefficient dataset --------------------------
 
-write.csv(coeff_H_comb, "output/out_data/coeff_H_BZE.csv")
+BZE3_trees_update_3 <- BZE3_trees%>%  
+  select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
+         SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
+         DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+         CCS_r_m, plot_A_ha)
 
 
+# ---- 1.1.2.6. exporting dataset --------------------------
+# height nls coefficients
+write.csv(coeff_H_comb, paste0(out.path.BZE3,"coeff_H_HBI_BZE.csv"))
+# HBI dataset including estimated heights
+write.csv(HBI_trees_update_3, paste0(out.path.BZE3,"HBI_trees_update_3.csv"))
+# BZE3 dataset including estimated heights
+write.csv(BZE3_trees_update_3, paste0(out.path.BZE3,"BZE3_trees_update_3.csv"))
 
 
