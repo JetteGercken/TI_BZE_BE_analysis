@@ -1,6 +1,6 @@
 
 # Thuenen Institute - Bodenschutz und Waldzustand
-# Analysis of the forest inventory accompanying the peat land soil inventory
+# Analysis of the forest inventory accompanying the the national soil inventory
   # estimating missing tree heights based on sampled height and diameter pairs
   # via nls per plot and species or just species and via SLOBODA and CURTIS
 
@@ -9,7 +9,7 @@
 # ----- 0.1. packages and functions --------------------------------------------
 
 
-source(paste0(getwd(), "/scripts/functions_library.R"))
+source(paste0(getwd(), "/scripts/00_functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -23,11 +23,13 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
 # tree data
-HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+#HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+ HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_2.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) 
+HBI_trees$plot_A_ha <- as.numeric(HBI_trees$plot_A_ha)
 
 # stand info od individual trees 
-stand_info_HBI_trees <-  read.delim(file = here("output/out_data/out_data_BZE/all_trees_status.csv"), sep = ",", dec = ",")
-plot_areas_HBI <- read.delim(file = here("output/out_data/out_data_BZE/all_edges_rem_circles_area.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+stand_info_HBI_trees <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_all_trees_stand.csv"), sep = ",", dec = ",")
+plot_areas_HBI <- read.delim(file = here("output/out_data/out_data_BZE/HBI_all_edges_rem_circles_area.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
   
 
 # species names & codes 
@@ -37,25 +39,32 @@ SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.cs
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 # HBI 
-colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
-                         "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-HBI_trees <- HBI_trees %>% 
-  select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
-         SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) 
+# colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
+#                          "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
+#                          "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
+# HBI_trees <- HBI_trees %>% 
+#   select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
+#          SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) 
  
 # harmonize strings of plot_area_HBI  
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 plot_areas_HBI[,c(1,2, 3, 4)] <- lapply(plot_areas_HBI[,c(1,2, 3, 4)], as.numeric)
 
+HBI_trees[,c("plot_A_ha", "area_m2", 
+             "X_tree",  "Y_tree",
+             "DBH_cm", "dist_m", 
+             "CCS_r_m")] <- lapply(HBI_trees[,c("plot_A_ha", "area_m2", 
+                                                "X_tree",  "Y_tree",
+                                                "DBH_cm", "dist_m", 
+                                                "CCS_r_m")], as.numeric)
 
 
 # 1. joining in external info  -------------------------------------------------
 
 trees_total <- HBI_trees %>%
 # add inventory info -----------------------------------------------------
-  mutate(inv = "HBI",
-         inv_year = 2012) %>% 
+  mutate(#inv_year = 2012, # this shoukd not be necesarry cause it´s included in the data already as they come from  update 2
+         inv = inv_name(inv_year)) %>% 
   # here we would actually rbind the both inventory datasets together 
 # join in species codes --------------------------------------------------
   left_join(., SP_names_com_ID_tapeS %>% 
@@ -68,26 +77,26 @@ trees_total <- HBI_trees %>%
   #  apply regression of BWI (5.5.1.2.) for DBH estimation when mesasuring height differs from 1.3 m 
   mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)),
          DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm), DBH_class), 
-         BA_m2 = c_A(DBH_cm/2)*0.0001) %>% # *0.0001 to convert cm2 in m2
+         BA_m2 = c_A(DBH_cm/2)*0.0001) #%>% # *0.0001 to convert cm2 in m2
 # join in tree stand info ---------------------------------------------------------
-  left_join(., stand_info_HBI_trees %>% 
-              mutate(inv = "HBI") %>% 
-              select(plot_ID, tree_ID, inv, t_stat), 
-            by = c("plot_ID", "tree_ID", "inv"), 
-            multiple = "all") %>% 
-  rename(stand = t_stat) %>% 
-  filter(stand != "warning") %>% 
+  # left_join(., stand_info_HBI_trees %>% 
+  #             mutate(inv = "HBI") %>% 
+  #             select(plot_ID, tree_ID, inv, t_stat), 
+  #           by = c("plot_ID", "tree_ID", "inv"), 
+  #           multiple = "all") %>% 
+  # rename(stand = t_stat) %>% 
+  # filter(stand != "warning") %>% 
 # join in plot area depednign on diameter of tree and stand of tree ---------------
   # asssing corect samling circle diameter according to DBH of the tree
-  mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
-                             DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
-                             DBH_cm >= 30 ~ 17.84, 
-                             TRUE ~ NA)) %>% 
-  left_join(., plot_areas_HBI %>% 
-              mutate(inv = "HBI"),
-            by = c("plot_ID", "CCS_r_m", "inv", "stand")) %>% 
-  mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
-         plot_A_ha = as.numeric(area_m2)/10000)
+  # mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
+  #                            DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
+  #                            DBH_cm >= 30 ~ 17.84, 
+  #                            TRUE ~ NA)) %>% 
+  # left_join(., plot_areas_HBI %>% 
+  #             mutate(inv = "HBI"),
+  #           by = c("plot_ID", "CCS_r_m", "inv", "stand")) %>% 
+  # mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2)) 
+         #plot_A_ha = as.numeric(area_m2)/10000)
 
 
 
@@ -225,7 +234,7 @@ coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coe
 #calcualte the height and diameter of a stem reprensenting the mean basal area 
 # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
 Hg_Dg_trees_total.df <- trees_total %>%                              
-  group_by(inv, plot_ID,stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
+  group_by(inv, plot_ID, stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
   summarise(no_trees_CC = n(),
             BA_CC = sum(BA_m2),                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
             CC_A_ha = mean(plot_A_ha),                   # mean area in ha per sampling circuit
@@ -268,7 +277,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
                               is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
                               TRUE ~ "sampled")) %>% 
   # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
-  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
                          # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
                          # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
                          # 0.75 then use the SP_P models
@@ -279,7 +288,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
-                         TRUE ~ H_m)) %>% 
+                         TRUE ~ H_m))) %>% 
 # select columns that should enter the next step of data processing
   select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
@@ -307,7 +316,7 @@ BZE3_trees_update_3 <-  trees_total %>%
                               is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
                               TRUE ~ "sampled")) %>% 
   # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
-  mutate(H_m = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
                          # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
                          # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
                          # 0.75 then use the SP_P models
@@ -318,7 +327,7 @@ BZE3_trees_update_3 <-  trees_total %>%
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
-                         TRUE ~ H_m))%>%  
+                         TRUE ~ H_m)))%>%  
   select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
          DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
@@ -327,10 +336,11 @@ BZE3_trees_update_3 <-  trees_total %>%
 
 # ---- 1.1.2.6. exporting dataset --------------------------
 # height nls coefficients
-write.csv(coeff_H_comb, paste0(out.path.BZE3,"coeff_H_HBI_BZE.csv"))
+write.csv(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_update_3$inv)[1], unique(BZE3_trees_update_3$inv)[1], sep = "_"), ".csv"))
+                               
 # HBI dataset including estimated heights
-write.csv(HBI_trees_update_3, paste0(out.path.BZE3,"HBI_trees_update_3.csv"))
+write.csv(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
 # BZE3 dataset including estimated heights
-write.csv(BZE3_trees_update_3, paste0(out.path.BZE3,"BZE3_trees_update_3.csv"))
+write.csv(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
 
 

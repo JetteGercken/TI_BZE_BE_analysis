@@ -1,6 +1,6 @@
 
 # Thuenen Institute - Bodenschutz und Waldzustand
-# Analysis of the forest inventory accompanying the peat land soil inventory
+# Analysis of the forest inventory accompanying the  national soil inventory
 # forest edges  
 
 # ----- 0. SETUP ---------------------------------------------------------------
@@ -22,7 +22,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
-# HBI_trees_update <- read.delim(file = here("output/out_data/out_data_BZE/pre_trees_update_1.csv"), sep = ",", dec = ",")
+# HBI_trees_update <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ",", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 
@@ -1671,28 +1671,26 @@ HBI_trees_update_2 <- HBI_trees%>%
   # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
   mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
          plot_A_ha = as.numeric(area_m2)/10000, # dividedd by 10 000 to transform m2 into hectar
-         inv = "HBI")
-colnames(HBI_trees_update_2)
+         inv_year = 2012, ##### this will have to beremoved afterwards, when update 1 ia porperly prepared 
+         inv = inv_name(inv_year))
+
 
 
 # 3.3.1.2.  binding datasets together ----------------------------------------------------------
-# 
-  all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
- all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo, inter.poly.two.edges.df.nogeo)
- all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo)
+all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
+all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo, inter.poly.two.edges.df.nogeo)
+all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo)
 
 
 # 3.3.2. exporting data ---------------------------------------------------
 
 # exporting tree and edge/ plot area data
-
 write.csv(HBI_trees_update_2, paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "trees_update_2", sep = "_"), ".csv"))
 write.csv(trees_and_edges,paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "all_trees_stand", sep = "_"), ".csv"))
-
 # export areas and stand info of all sampling circuits, edges and remaining circles
 write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
           
@@ -1700,10 +1698,9 @@ write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees
 # export list of plots where the edge polygones intersect within the 17.84 radius
 write.csv(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
           
-
-# exporting edge triangle polygones: 
+# exporting edge triangle polygones
 write.csv(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
-# exporting edge intersection polygones: 
+# exporting edge intersection polygones 
 write.csv(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # exporting all remaining circles
 write.csv(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_2$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))

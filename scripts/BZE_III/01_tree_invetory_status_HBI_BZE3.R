@@ -1,6 +1,7 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
-# Analysis of the forest inventory accompanying the peat land soil inventory
-# sorting trees according to tree 
+# Analysis of the forest inventory accompanying the national soil inventory
+# sorting trees according to tree inventory status (baumkennzahl)
+
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
@@ -22,16 +23,14 @@ HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", 
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
  
 
-
-
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 # HBI / pre
 ## pre info 
 HBI_inv_info <- HBI_inv_info %>% select(bund_nr, datum, hbi_status )
 colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
-HBI_inv_info$date <- as.Date(pre_inv_info$date)
-HBI_inv_info$inv_year <- as.numeric(format(pre_inv_info$date, "%Y"))
+HBI_inv_info$date <- as.Date(HBI_inv_info$date)
+HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
 # this line can be removed later
 HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year))
 
@@ -42,13 +41,13 @@ colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
 HBI_trees <- HBI_trees %>% 
   select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) %>% 
-  mutate(inv = "HBI",
+  left_join(., HBI_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year"), 
+            by = "plot_ID") %>% 
+  mutate(inv = inv_name(inv_year),
          DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)), 
          # these two columns are meant to prepare for the comming data sorting
          old_tree_ID = tree_ID, 
-         new_tree_inventory_status = tree_inventory_status) %>% 
-  left_join(., pre_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year"), 
-            by = "plot_ID")
+         new_tree_inventory_status = tree_inventory_status) 
 
 # create practice BZE3/ post dataset from HBI/ pre data
 BZE3_trees <-HBI_trees[1:10,] %>% 
@@ -66,10 +65,9 @@ BZE3_trees <-HBI_trees[1:10,] %>%
                                            row_number() == 9 ~ 6,
                                            row_number() == 10 ~ 7,
                                            TRUE ~ NA)) %>% 
-  mutate(inv = "BZE3", 
-         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_BWI(as.numeric(D_mm), as.numeric(DBH_h_cm))), 
-         inv_year = ifelse(inv == "BZE3" & inv_year <2012, 2023, inv_year))
-
+  mutate(inv_year = 2023, 
+         inv = inv_name(inv_year), 
+         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_BWI(as.numeric(D_mm), as.numeric(DBH_h_cm))))
 # mutate two new trees to simulate a case of tree_inventory_status == 6
 BZE3_trees <- rbind(
   BZE3_trees,
@@ -544,8 +542,10 @@ BZE3_trees <- rbind(BZE3_trees %>%
 
 # add tree with corrected diameter and otherwise identical to HBI dataset 
 HBI_trees <- rbind(HBI_trees, 
-                   tree_inventory_status_5.df %>% filter(inv == "HBI")
-) %>% arrange(plot_ID, tree_ID)
+                   tree_inventory_status_5.df %>% 
+                     filter(inv == "HBI") %>% 
+                     arrange(plot_ID, tree_ID)
+                   )
  
 
 

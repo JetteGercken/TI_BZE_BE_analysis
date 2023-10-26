@@ -621,7 +621,7 @@ tree.status <- function(
 # this function should eable us to skip the part where we have to calcualte the intersections etc. for each circle and line
 # this way we´ll just return the area per sampling circle 
 
-
+# ----- 1.8.1.1. geometrical forms areas  ----------------------------------------------------------------------------
 # new way to calculate circle segment that doesn't rely on comparing the distance of the center point of the line to the intersections of 
 # a line through the center of the line to the circle center
 # developed by Alexandr Chepowskii
@@ -670,6 +670,9 @@ triangle.area <- function(x.0, y.0, x1, y1, x2, y2, method){
 }
 
 
+
+# ----- 1.8.1.2. triangle cirlce intersection area via polygone  ----------------------------------------------------------------------------
+
 # new approach to calcualte intersection area developed by Alexandr Chepowskii
 triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
   # center point of circle
@@ -687,9 +690,7 @@ triangle.circle.poly.intersection <- function(x1,y1,x2,y2,x3,y3,r){
 }
 
 
-
-
-
+# ----- 1.8.2. final dge area  ----------------------------------------------------------------------------
 
 edge.A <- function(e.form, dbh.cm, x.a, x.b, x.t, y.a, y.b, y.t, t.dist, tree_status, output){
   # x1| y1 and x2|y2 belong to the intersections of the line or two points on a line
@@ -943,8 +944,8 @@ f = function(x,y,a,b){
   return(answer)}
 
 
-# ---- 1.3.2.2. einheitshoehenkurve------------------------------------------------------
-# ---- 1.3.2.2.1. Sloboda ------------------------------------------------------
+# ---- 1.9.2. einheitshoehenkurve------------------------------------------------------
+# ---- 1.9.2.1. Sloboda ------------------------------------------------------
 ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   k0 <- c(fi = 0.183, ta = 0.079, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
   k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
@@ -967,7 +968,7 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   return(h_pred)#*f_red)
 }
 
-# ---- 1.3.2.2.2. Curtis ------------------------------------------------------
+# ---- 1.9.2.2. Curtis ------------------------------------------------------
 # --> this one is only applied when there is literally not information to calculate the height, 
 # except of the diameter
 h_curtis <- function(spec, d) {
@@ -979,8 +980,8 @@ h_curtis <- function(spec, d) {
   return((b0[tolower(spec)] + b1[tolower(spec)]*1/d + b2[tolower(spec)]*1/d^2)/10)   # divide by 10 to transform dm into meters
 }
 
-# ---- 1.3.2.3. self-fitted nls height models ------------------------------------------------------
-# ---- 1.3.2.3.1. species- & plot-wise self-fitted nls models ------------------------------------------------------
+# ---- 1.9.3. self-fitted nls height models ------------------------------------------------------
+# ---- 1.9.3.1. species- & plot-wise self-fitted nls models ------------------------------------------------------
 # self made nls models for heights per species across all plots
 h_nls_SP <- function(spec, d){
   # https://statisticsglobe.com/convert-data-frame-column-to-a-vector-in-r
@@ -989,7 +990,7 @@ h_nls_SP <- function(spec, d){
   b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
   return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
-# ---- 1.3.2.3.2. species-wise self-fitted nls models ------------------------------------------------------
+# ---- 1.9.3.2. species-wise self-fitted nls models ------------------------------------------------------
 # self mase nls models for heights per species per plot
 h_nls_SP_P <- function(plot_spec, d) {
   # because I cannot combine 3 variabels in one vector, 
@@ -999,4 +1000,14 @@ h_nls_SP_P <- function(plot_spec, d) {
   return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
 }
 
+
+# 1.10. select the correct inventory name -------------------------------------------------------------------
+# https://www.geeksforgeeks.org/check-if-a-numeric-value-falls-between-a-range-in-r-programming-between-function/
+inv_name <- function(inv.year){
+  inv <- ifelse(between(inv.year, 2011, 2013), "HBI", 
+                ifelse(between(inv.year, 2023, 2025), "BZE3",
+                       ifelse(between(inv.year, 2033, 2035) , "BZE4", "BZE5"
+         )));
+  return(inv)
+}
 
