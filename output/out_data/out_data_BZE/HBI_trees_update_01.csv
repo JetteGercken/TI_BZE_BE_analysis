@@ -1,0 +1,4 @@
+"","plot_ID","tree_ID","tree_inventory_status","multi_stem","Dist_cm","azi_gon","age","age_meth","SP_code","DBH_class","Kraft","C_layer","H_dm","C_h_dm","D_mm","DBH_h_cm","DBH_cm","inv","inv_year","new_tree_inventory_status"
+"1",50001,1,1,NA,409,157,72,6,"gki",NA,2,1,NA,NA,540,130,54,"HBI",2012,"1"
+"2",50001,27,-9,NA,1611,274,72,6,"gki",NA,2,1,NA,NA,343,130,34.3,"HBI",2012,"-9"
+"3",50001,8,5,NA,1262,272,72,6,"gki",NA,2,1,NA,NA,378,130,36.8,"HBI",2012,"0"

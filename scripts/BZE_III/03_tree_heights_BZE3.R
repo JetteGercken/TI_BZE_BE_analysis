@@ -24,6 +24,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
 # tree data
 HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+
 # stand info od individual trees 
 stand_info_HBI_trees <-  read.delim(file = here("output/out_data/out_data_BZE/all_trees_status.csv"), sep = ",", dec = ",")
 plot_areas_HBI <- read.delim(file = here("output/out_data/out_data_BZE/all_edges_rem_circles_area.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
@@ -246,7 +247,7 @@ Hg_Dg_trees_total.df <- trees_total %>%
 
 # 2.3. height calculation -------------------------------------------------
 # 2.3.1. height calculation HBI -------------------------------------------------
-HBI_trees <-     # this should actually be the BZE3 Datset 
+HBI_trees_update_3 <-     # this should actually be the BZE3 Datset 
   trees_total %>% 
   filter(inv=="HBI")%>% 
 ## joining coefficients and Hg-Dg-data in
@@ -278,21 +279,18 @@ HBI_trees <-     # this should actually be the BZE3 Datset
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
-                         TRUE ~ H_m))
-
+                         TRUE ~ H_m)) %>% 
 # select columns that should enter the next step of data processing
-HBI_trees_update_3 <- HBI_trees%>%  
   select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
          DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
          CCS_r_m, plot_A_ha)
 
 # 2.3.2. height calculation BZE -------------------------------------------------
-BZE3_trees <-     # this should actually be the BZE3 Datset 
-  trees_total %>% 
+BZE3_trees_update_3 <-  trees_total %>% 
   filter(inv=="BZE3")%>% 
 ## 2.3.1. joining coefficients and Hg-Dg-data in 
-unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
   left_join(.,coeff_H_SP_P %>%                                              # joining R2 from coeff_SP_P -> R2.x
               select(plot_ID, SP_code, R2) %>% 
               unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
@@ -320,10 +318,7 @@ unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # crea
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
-                         TRUE ~ H_m))
-
-
-BZE3_trees_update_3 <- BZE3_trees%>%  
+                         TRUE ~ H_m))%>%  
   select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
          DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
