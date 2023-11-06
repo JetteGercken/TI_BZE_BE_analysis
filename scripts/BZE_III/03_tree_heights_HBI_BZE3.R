@@ -57,7 +57,9 @@ HBI_trees[,c("plot_A_ha", "area_m2",
                                                 "X_tree",  "Y_tree",
                                                 "DBH_cm", "dist_m", 
                                                 "CCS_r_m")], as.numeric)
-
+# change -2 in H_dm and C_h_dm to NA
+# https://stackoverflow.com/questions/14737773/replacing-occurrences-of-a-number-in-multiple-columns-of-data-frame-with-another
+HBI_trees[,c("H_dm","C_h_dm")][HBI_trees[,c("H_dm","C_h_dm")]== -2] <- NA
 
 # 1. joining in external info  -------------------------------------------------
 
@@ -290,10 +292,11 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
                          TRUE ~ H_m))) %>% 
 # select columns that should enter the next step of data processing
-  select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
-         SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
+  select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
+         SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
          DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
          CCS_r_m, plot_A_ha)
+
 
 # 2.3.2. height calculation BZE -------------------------------------------------
 BZE3_trees_update_3 <-  trees_total %>% 
@@ -308,7 +311,7 @@ BZE3_trees_update_3 <-  trees_total %>%
             by = "SP_code") %>% 
   # this is joins in a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
   left_join(., Hg_Dg_trees_total.df,
-            by = c("plot_ID", "stand", "SP_code", "C_layer")) %>% 
+            by = c("plot_ID", "inv","stand", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
          H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.7 ~ "coeff_SP_P", 
                               is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
@@ -328,8 +331,8 @@ BZE3_trees_update_3 <-  trees_total %>%
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
                          TRUE ~ H_m)))%>%  
-  select(plot_ID,  stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
-         SP_code, Chr_code_ger, tpS_ID, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, 
+  select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
+         SP_code, Chr_code_ger, tpS_ID,  LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK, 
          DBH_class,  Kraft, C_layer, H_dm, H_m,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
          CCS_r_m, plot_A_ha)
 

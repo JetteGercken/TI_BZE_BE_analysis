@@ -1011,3 +1011,109 @@ inv_name <- function(inv.year){
   return(inv)
 }
 
+
+
+
+# 1.11. Biomass functions -------------------------------------------------
+
+# reference: 
+# Wutzler, Thomas & Wirth, Christian & Schumacher, Jens. (2008). 
+# Generic biomass functions for Common beech (Fagus sylvatica) in Central Europe: 
+# Predictions and components of uncertainty. 
+# Canadian Journal of Forest Research - Journal Canadien de la Recherche Forestiere, 
+# v.38, 1661-1675 (2008). 38. 10.1139/X07-194. 
+
+### foliage of broadleaved trees according to Wutzler et al. 2008
+# to aply this function the Oberhoehe and the elevation above sea level are required
+
+# DHC 4c model
+Wutzler_fB_L <- function(d, h, alt, si){   # DHC 4c model
+  b = 0;
+  b0 = 0.0561;
+  b1 = 2.07;
+  b2 = (-1.09);
+  bssi = 0.0137;
+  bsalt = (-0.00000329);
+  # from marks file: ((b0 + bsalt*alt) * DBH^(b1+bsi*SI) * H^b2
+  # from Wutzler 2008, Annex 3: 
+  #         biomass = (b0 + 0+ bssi*si+ bsalt*atitude)*(DBH^b1)*(H^b2)
+  return(# so its either this: (b0 + 0 + bssi*SI + bsalt*alt)*d^b1*h^b2) 
+    # or this from Mark: 
+    (b0+bsalt*alt)*d^(b1+bssi*si)*h^b2)
+}
+
+#DH3, 4a Model, table: 4   
+Wutzler_fB_L1 <- function(d, h){  #DH3 4a Model 
+  b0 = 0.0377;
+  b1 = 2.43;
+  b2 = (-0.913);
+  return(b0*d^b1*h^b2)
+}
+
+## belowground phytomass GHGI
+GHGI_bB <- function(spec, d){
+  # function for soft hard woods requires DBH in mm, 
+  # thus we have to transform input DBH in cm into DBH in mm by dividing by 10
+  dbh <- ifelse(spec != "shw", d, d*10);
+  b0 <- c(fi = 0.003720, ki = 0.006089, bu = 0.018256, ei= 0.028000, shw = 0.000010);#shwr =0.000010, shwrs = 0.000116);
+  b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw = 2.529000); #shwr =2.529000, shwrs = 2.290300);
+  # this would return the root + stump biomas for soft hardwoods but only the root biomass for all other species groups
+  # ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))
+  return(b0[spec]*d^b1[spec]) 
+}
+
+
+# ----- 1.3.6. Nitrogen stock  --------------------------------------------
+# nitrogen stock for woody compartiments
+N_all_com <- function(B, N_spec_rumpf, N_spec_f, N_spec_Jacobsen, comp.trees , comp.function){
+  n_con_w <- N_con_w %>%  filter(compartiment != "f") %>% dplyr::pull(N_con, SP_com);
+  n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
+  # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
+  # proably I will also have to assign new species groups to acces the foliage dataset correctly
+  n_con_bg_mgg <- c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, 
+                    KIN = 1.76, BI = 3.7, LA = 2.8);
+  # divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
+  n_con_bg <- n_con_bg_mgg/1000;
+  # unite the compartiment and species to select the correct nitrogen content
+  SP_compart_Rumpf <- paste0(N_spec_rumpf, "_", comp.trees);
+   
+  switch(
+    comp.function, 
+    f = B*n_con_f[N_spec_f], 
+    stw = B*n_con_w[SP_compart_Rumpf], 
+    stb = B*n_con_w[SP_compart_Rumpf], 
+    sw = B*n_con_w[SP_compart_Rumpf], 
+    sb = B*n_con_w[SP_compart_Rumpf], 
+    fwb = B*n_con_w[SP_compart_Rumpf], 
+    f = B*n_con_w[SP_compart_Rumpf],   
+    ag.not.foliage =  B*n_con_w[SP_compart_Rumpf], 
+    bg = B*n_con_bg[N_spec_Jacobsen]
+  )
+  
+}
+
+
+# ----- 1.3.6.1. NItrogen stock foliage -----------------------------------------
+N_f <- function(B_compartiment, spec){
+  n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
+  return(B_compartiment*n_con_f[spec])
+}
+
+
+# nitrogen stock belowground ----------------------------------------------
+
+# source: 
+# Jacobsen et al. 2003; 
+# Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
+# Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
+# Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
+# Niedersächsische Forstliche Versuchsanstalt;
+# N Gehalte Grobwurzeln (D > 2mm), Tab. 7
+N_bg <- function(B_compartiment, N_bg_spec){
+  n_con_bg_mgg <- c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, 
+                    KIN = 1.76, BI = 3.7, LA = 2.8);
+  # divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
+  n_con_bg <- n_con_bg_mgg/1000;
+  return(B_compartiment*n_con_bg[N_bg_spec])
+}
+

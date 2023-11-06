@@ -64,7 +64,9 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1.1. species & inventory names ----------------------------------------------
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>% 
- mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
+ mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)), 
+        inv_year = 2012, 
+        inv = inv_name(inv_year))
 
 
 
@@ -1542,12 +1544,12 @@ tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final
 tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
 tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
 
-all.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
+two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
 
 
 
 # 3.2.2.3 plots with no edge edge: sorting trees into circle ---------
-trees.no.edge.nogeo <- anti_join(HBI_trees, all.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
+trees.no.edge.nogeo <- anti_join(HBI_trees, two.and.one.edge.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
@@ -1628,12 +1630,14 @@ tree.points.no.edges.df.nogeo <- as.data.frame(tree.points.list.no.edges.final.n
 
 # bind all tree point.sf dataframes (with & without edges together)
 all.trees.points.df.nogeo <- 
-  rbind(all.trees.points.df.nogeo , 
-        tree.points.no.edges.df.nogeo %>% 
+  rbind(two.and.one.edge.trees.points.df.nogeo , 
+        tree.points.no.edges.df.nogeo) %>% 
   left_join(., trees_and_edges %>% 
               select(plot_ID, tree_ID, DBH_cm), 
             by = c("plot_ID", "tree_ID"), 
-            multiple = "all"))
+            multiple = "all")
+
+
 
 all.trees.status.df <- 
   rbind(tree.status.no.edges.df.nogeo, 
@@ -1670,9 +1674,9 @@ HBI_trees_update_2 <- HBI_trees%>%
   # if there was no plot area claualted due to the fact that there is no edger at the plot, 
   # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
   mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
-         plot_A_ha = as.numeric(area_m2)/10000, # dividedd by 10 000 to transform m2 into hectar
-         inv_year = 2012, ##### this will have to beremoved afterwards, when update 1 ia porperly prepared 
-         inv = inv_name(inv_year))
+         plot_A_ha = as.numeric(area_m2)/10000)#, # dividedd by 10 000 to transform m2 into hectar
+         #inv_year = 2012, ##### this will have to beremoved afterwards, when update 1 ia porperly prepared 
+         #inv = inv_name(inv_year))
 
 
 
