@@ -23,29 +23,17 @@ trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3
 # trees %>% filter(H_m <0)
 
 # import nitrogen content datasets
-# nitrogen content in foliage based on nitrgen content in leafe
+# nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
 N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
+# nitrogen content in woody compartiments and needles 
+#  Reference: 
+# Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
+# https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, Tab.: 3.2 - 3.6, S. 10
 N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
 
 # 0.4 data preparation ---------------------------------------------------------
 
 trees <- trees %>% mutate(H_m = as.numeric(H_m))
-
-# trees.comp.list <- vector("list", length = length(trees$X))
-# 
-# for (i in 1:length(trees$X)) {
-#   # select every single row of the dataframe and repeat it as many times as we have compartiments
-#   df <- trees[i,]
-#   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
-#   # https://stackoverflow.com/questions/11121385/repeat-rows-of-a-data-frame
-#   df <- cbind(df[rep(seq_len(nrow(df)), each = length(comp)), ], 
-#               comp)
-#   trees.comp.list[[i]] <- df
-# }
-# trees.comp.final <- rbindlist(trees.comp.list)
-# trees <- as.data.frame(trees.comp.final)
-
-
 
 # hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
 N_con_w <- N_con_w %>% 
@@ -66,7 +54,9 @@ N_con_f <- N_con_f %>%
 # Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
 # Niedersächsische Forstliche Versuchsanstalt;
 # N Gehalte Grobwurzeln (D > 2mm), Tab. 7
-N_con_bg <- as.data.frame(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, KIN = 1.76, BI = 3.7, LA = 2.8)/1000
+N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" , "BI" , "LA"), 
+                                "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
+                                "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
 
 # 1. calculations ---------------------------------------------------------
 
@@ -203,8 +193,89 @@ trees <- trees %>% left_join(.,
                     multiple = "all") 
 
 # 1.2. Nitrogen calculation -----------------------------------------------
+# 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
+N.ag.bg.kg.df <- trees %>%
+  filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
+  mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
+  select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
+
+# 1.2.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
+N.total.kg.df <- 
+  rbind(
+    # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
+    N.ag.bg.kg.df %>% 
+      group_by(plot_ID, tree_ID, inv, inv_year) %>% 
+      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      mutate(compartiment = "total") %>% 
+      select("plot_ID", "tree_ID", "inv", 
+             "inv_year", "compartiment", "N_kg_tree"),
+    # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
+    N.ag.bg.kg.df%>% 
+      filter(compartiment != "bg") %>%  # select only aboveground compartiments by exxlduing bg compartiment from N.ab.bg. dataframe 
+      group_by(plot_ID, tree_ID, inv, inv_year) %>% 
+      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      mutate(compartiment = "ag")%>% 
+      select("plot_ID", "tree_ID", "inv", 
+             "inv_year", "compartiment", "N_kg_tree"))
 
 
+# 1.2.3. join Nitrogen stocks into tree dataset -----------------------------------
+trees <- trees %>% left_join(., 
+                             rbind(N.ag.bg.kg.df , 
+                                   N.total.kg.df), 
+                             by = c("plot_ID", "tree_ID", "inv", "inv_year", "compartiment"), 
+                             multiple = "all") 
+
+
+
+# 1.3. carbon stock per tree & compartiment -------------------------------------------------------
+trees <- trees %>% 
+  mutate(C_kg_tree = carbon(B_kg_tree))
+
+
+# data export ---------------------------------------------------------------------------------------------
+as.list(colnames(trees))
+
+# HBI dataset including estimated heights
+write.csv(HBI_trees_update_4, paste0(out.path.BZE3, paste(unique(HBI_trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
+
+
+
+
+
+
+
+# NOTES:  -----------------------------------------------------------------
+
+
+# this was meant to create a columnwith the compartiments before adding the biomass in them but it took a lot of time and was after all not necesarry as
+# one can also introduce the column with in the loop
+ trees.comp.list <- vector("list", length = length(trees$X))
+ 
+ for (i in 1:length(trees$X)) {
+   # select every single row of the dataframe and repeat it as many times as we have compartiments
+   df <- trees[i,]
+   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
+   # https://stackoverflow.com/questions/11121385/repeat-rows-of-a-data-frame
+   df <- cbind(df[rep(seq_len(nrow(df)), each = length(comp)), ], 
+               comp)
+   trees.comp.list[[i]] <- df
+ }
+ trees.comp.final <- rbindlist(trees.comp.list)
+ trees <- as.data.frame(trees.comp.final)
+
+
+## this was a trial of the previous N_all_com function that still involved a switch for foliage, belowgornd and aboveground woody compartiments
+ trees[1:500,] %>% mutate(
+   N_kg_test = case_when(
+     compartiment == "ndl" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment , comp.function = "f"), 
+     compartiment == "bg" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment , comp.function = "bg"), 
+     !(compartiment %in% ("ag, total, ndl, bg")) ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment , comp.function = "ag.not.foliage"),
+     TRUE ~ 0)
+ )
+ 
+
+## this is a loop to calculate the nitrogen stocks but it takes so much more time then using a function and mutate, that is just doesnt make sense to apply it
 
 N.ag.kg.list <- vector("list", length = nrow(unique(trees[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
@@ -232,67 +303,36 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   n_con_f <-  N_con_f[N_con_f$N_f_SP_group_MoMoK == my.tree.N.SP.f,][, c("N_con", "compartiment")]
   ## belowground compartiment
   # proably I will also have to assign new species groups since those were only created for MoMoK
-  n_con_bg <- n_con_bg[my.tree.N.SP.bg]# divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
- 
+  n_con_bg <- N_con_bg[N_con_bg$SP_group == my.tree.N.SP.bg,][, c("N_con", "compartiment")]
+  
   # calculate niotrogen stock per tree per compartiment
-  N_kg_tree.df <- rbind(
+  N.df <- rbind(
     ## stock in woody compartiments: merge biomass and content together by compartiment and 
     merge(my.tree.bio, n_con_w, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
-    merge(my.tree.bio, n_con_f, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)))
-  
-  N_kg_tree.w <- merge(my.tree.bio, n_con_w, by="compartiment")$B_kg_tree * as.numeric(merge(my.tree.bio, n_con_w, by="compartiment")$N_con)
-  # my.tree.bio$B_kg_tree[my.tree.bio$compartiment %in% c(my.tree.comp.N.w)]*as.numeric(n_con_w$N_con[n_con_w$compartiment %in% c(my.tree.comp.N.w)])
-
-   
-  merg.N.w.bio <- merge(my.tree.bio, n_con_w, by="compartiment")
-  merg.N.w.bio$N_kg_tree <- merg.N.w.bio$B_kg_tree*as.numeric(merg.N.w.bio$N_con)
-  # calculate Nitrogen per compartiment
-
+    merge(my.tree.bio, n_con_f, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
+    merge(my.tree.bio, n_con_bg, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con))
+  )
   
   
   N.info.df <- as.data.frame(cbind(
-    "plot_ID" = c(as.integer(trees$plot_ID[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id])), 
-    "tree_ID" = c(as.integer(trees$tree_ID[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id])), 
-    "inv" = c(trees$inv[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id]), 
-    "inv_year" = c(as.integer(trees$inv_year[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id])),
-    "LH_NH" = c(trees$LH_NH[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id]),
-    "compartiment" = c(bio.df$compartiment),
-    "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
-  ) ) %>% 
-    # if the tree is a broadleafed tree Tapes cannot calculate the foliage mass, 
-    # thus we calculate this subsequently trough the biomass function by Wutzler (2008)
-    mutate(N_kg_tree = ifelse(compartiment == "ndl" & LH_NH == "LB", 
-                              Wutzler_fB_L1(as.numeric(Dm), as.numeric(Ht)),
-                              B_kg_tree)) %>% 
-    dplyr::select(-c("LH_NH"))
+    "plot_ID" = c(rep(my.plot.id, times = length(N.df$compartiment))), 
+    "tree_ID" = c(rep(my.tree.id, times = length(N.df$compartiment))), 
+    "inv" = c(rep(unique(trees$inv[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id]), times = length(N.df$compartiment))), 
+    "inv_year" =  c(rep(unique(trees$inv_year[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id]), times = length(N.df$compartiment))),
+    "compartiment" = c(N.df$compartiment),
+    "N_kg_tree" = c(as.numeric(N.df$N_kg_tree))
+  ))
   
-  N.ag.kg.list[[i]] <- N.info.df
+  N.ag.bg.kg.list[[i]] <- N.info.df
   
   
 }
-N.ag.kg.final <- rbindlist(N.ag.kg.list)
-N.ag.kg.df <- as.data.frame(N.ag.kg.final)
-
-
-rbind(bio.bg.kg.df, bio.bg.kg.df) %>% 
-  mutate(N_kg_tree = case_when(
-    comp == "bg" ~ N_N_all_com
-  ))
-
-
-# data export -------------------------------------------------------------
-
-# HBI dataset including estimated heights
-write.csv(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
+N.ag.bg.kg.final <- rbindlist(N.ag..bg.kg.list)
+N.ag.bg.kg.df <- as.data.frame(N.ag.bg.kg.final)
 
 
 
 
-
-
-
-
-# NOTES:  -----------------------------------------------------------------
 
 ifelse(my.tree.bio$compartiment == "f", N_all_com (my.tree.bio$B_kg_tree[my.tree.bio$compartiment == "ndl"], 
                                                    my.tree.N.SP.w, 
@@ -328,3 +368,13 @@ N.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>%
   pivot_longer(cols = stw:ndl,
                names_to = "compartiment", 
                values_to = "B_kg_tree")
+
+
+## divenrent ways to calcualte nitrogen content in multiple woody compartiments
+# N_kg_tree.w <- merge(my.tree.bio, n_con_w, by="compartiment")$B_kg_tree * as.numeric(merge(my.tree.bio, n_con_w, by="compartiment")$N_con)
+# my.tree.bio$B_kg_tree[my.tree.bio$compartiment %in% c(my.tree.comp.N.w)]*as.numeric(n_con_w$N_con[n_con_w$compartiment %in% c(my.tree.comp.N.w)])
+
+
+merg.N.w.bio <- merge(my.tree.bio, n_con_w, by="compartiment")
+merg.N.w.bio$N_kg_tree <- merg.N.w.bio$B_kg_tree*as.numeric(merg.N.w.bio$N_con)
+# calculate Nitrogen per compartiment

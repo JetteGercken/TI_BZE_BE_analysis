@@ -1063,25 +1063,31 @@ GHGI_bB <- function(spec, d){
 }
 
 
-# ----- 1.3.6. Nitrogen stock  --------------------------------------------
+# ----- 1.12. Nitrogen stock  --------------------------------------------
 # nitrogen stock for woody compartiments
-N_all_com <- function(B, N_spec_rumpf, N_spec_f, N_spec_Jacobsen, comp.trees , comp.function){
-  n_con_w <- N_con_w %>%  filter(compartiment != "f") %>% dplyr::pull(N_con, SP_com);
+N_all_com <- function(B, N_spec_w_rumpf, N_spec_f_BZE, N_spec_bg_Jacobsen, comp.trees){
+  n_con_w <- N_con_w  %>%  filter(compartiment != "ndl") %>% unite("SP_com", SP_BWI:compartiment, remove = FALSE)%>% dplyr::pull(N_con, SP_com);
   n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
   # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
   # proably I will also have to assign new species groups to acces the foliage dataset correctly
-  n_con_bg_mgg <- c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, KIN = 1.76, BI = 3.7, LA = 2.8);
-  # divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
-  n_con_bg <- as.numeric(n_con_bg_mgg)/1000;
+  n_con_bg <- c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, KIN = 1.76, BI = 3.7, LA = 2.8)/1000;# divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
   # unite the compartiment and species to select the correct nitrogen content
-  SP_compart_Rumpf <- paste0(N_spec_rumpf, "_", comp.trees);
-   
-  switch(
-    comp.function, 
-    f = as.numeric(B)*as.numeric(n_con_f)[N_spec_f], 
-    ag.not.foliage =  as.numeric(B)*as.numeric(n_con_w)[SP_compart_Rumpf], 
-    bg = as.numeric(B)*as.numeric(n_con_bg)[N_spec_Jacobsen]
-  )
+  SP_compart_Rumpf <- paste0(N_spec_w_rumpf, "_", comp.trees);
   
+ # calculate nitrogen content in the aboveground and belowground compartiments but without sums (total or total aboveground N) 
+  N <- case_when(
+    comp.trees == "ndl" ~ as.numeric(B)*as.numeric(n_con_f[N_spec_f_BZE]), 
+    comp.trees == "bg" ~ as.numeric(B)*as.numeric(n_con_bg[N_spec_bg_Jacobsen]), 
+    !(comp.trees %in% ("ag, total, ndl, bg")) ~ as.numeric(B)*as.numeric(n_con_w[SP_compart_Rumpf]),
+    TRUE ~ NA)
+  
+  return(N)
+}
+
+
+# 1.13. carbon stock ------------------------------------------------------
+carbon <- function(B){
+ C <- B*0.5;
+ return(C)
 }
 
