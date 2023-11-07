@@ -22,28 +22,12 @@ trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3
 # HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/BI_trees_update_3.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # trees %>% filter(H_m <0)
 
+# import nitrogen content datasets
+# nitrogen content in foliage based on nitrgen content in leafe
+N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
+N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
 
 # 0.4 data preparation ---------------------------------------------------------
-# colnames HBI
-# colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-#                          "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
-#                          "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-# HBI_trees <- HBI_trees %>% select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
-#                                   Dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code , DBH_class ,  Kraft ,  
-#                                   C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm ,  DBH_cm )
-
-
-
-# create column for with compartiments
-  # here we create a column with compartiments, so that we can apply the tprBiomass fucntion without having to pivot the whola dataset later
-  # we eill only create the categories: 
-    # stw (=stump wood), 
-    # stb (=stump bark), 
-    # sw (=solid wood with diameter above 7cm over bark), 
-    # sb (=bark of component sw), 
-    # fwb (=fine wood incl. bark) 
-    # ndl (=needles)
-
 
 trees <- trees %>% mutate(H_m = as.numeric(H_m))
 
@@ -61,6 +45,28 @@ trees <- trees %>% mutate(H_m = as.numeric(H_m))
 # trees.comp.final <- rbindlist(trees.comp.list)
 # trees <- as.data.frame(trees.comp.final)
 
+
+
+# hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
+N_con_w <- N_con_w %>% 
+  mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
+                                  compartiment == "swb" ~ "sb", 
+                                  compartiment == "stwb" ~"stb",
+                                  compartiment == "fw" ~ "fwb", 
+                                  TRUE ~ compartiment))
+N_con_f <- N_con_f %>% 
+  mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
+                                  TRUE ~ compartiment))
+
+# belowground biomass notrogen contents in percent (mgg/1000)
+# reference: 
+# Jacobsen et al. 2003; 
+# Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
+# Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
+# Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
+# Niedersächsische Forstliche Versuchsanstalt;
+# N Gehalte Grobwurzeln (D > 2mm), Tab. 7
+N_con_bg <- as.data.frame(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, KIN = 1.76, BI = 3.7, LA = 2.8)/1000
 
 # 1. calculations ---------------------------------------------------------
 
@@ -186,15 +192,6 @@ bio.total.kg.df[,c(1,2, 4, 6)] <- lapply(bio.total.kg.df[,c(1,2,4, 6)], as.numer
 bio.ag.kg.df[,c(1,2, 4, 6)] <- lapply(bio.ag.kg.df[,c(1,2,4, 6)], as.numeric)
 bio.bg.kg.df[,c(1,2, 4, 6)] <- lapply(bio.bg.kg.df[,c(1,2,4, 6)], as.numeric)
 
-# the foliage compartiment in all foliage dataset is, unlike in tapeS called "f" instead of "ndl"
-# this is why we are going to change the name from "ndl" to "f" after having completed the calculations 
-# with tapeS
-# bio.ag.kg.df <- bio.ag.kg.df %>% 
-#   mutate(compartiment = case_when(compartiment == "ndl" ~ "f", 
-#                              compartiment == "sb" ~ "swb", 
-#                              compartiment == "stb" ~"stwb",
-#                              TRUE ~ compartiment))
-
 
 # 1.1.4. join biomass into tree dataset -----------------------------------
 
@@ -220,81 +217,37 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   my.tree.id <- unique(trees[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
   
   # select aboveground biomass compartiments and belowgroung biomass for the respective tree in the respective plot
-  my.tree.bio <- trees[trees$plot_ID == my.plot.id & 
-                         trees$tree_ID == my.tree.id &
-                         !(trees$compartiment %in% c("ag", "total")), ][, c("compartiment", "B_kg_tree")]
+  my.tree.bio <- trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id & !(trees$compartiment %in% c("ag", "total")), ][, c("compartiment", "B_kg_tree")]
   # species group for the woody compartiments according to Rumpf et al. 2018
-  my.tree.N.SP.w <- trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_SP_group"]
-  my.tree.N.SP.f <- trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_f_SP_group_MoMoK"]
-  my.tree.N.SP.bg <- trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_bg_SP_group"]
+  my.tree.N.SP.w <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_SP_group"])
+  my.tree.N.SP.f <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_f_SP_group_MoMoK"])
+  my.tree.N.SP.bg <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_bg_SP_group"])
+  # save woody compartiments in list to select them easier later
+  my.tree.comp.N.w  <- my.tree.bio$compartiment[!(my.tree.bio$compartiment %in% c("ndl", "bg"))]
   
+  # select the nitrogen content of the compartiments and species of the respective tree i by nitorgen species group and compartiment
+  ## woody compartiments
+  n_con_w <- N_con_w[N_con_w$SP_BWI == my.tree.N.SP.w & N_con_w$compartiment %in% c(my.tree.comp.N.w),][, c("N_con", "compartiment")]
+  ## foliage compartiment
+  n_con_f <-  N_con_f[N_con_f$N_f_SP_group_MoMoK == my.tree.N.SP.f,][, c("N_con", "compartiment")]
+  ## belowground compartiment
+  # proably I will also have to assign new species groups since those were only created for MoMoK
+  n_con_bg <- n_con_bg[my.tree.N.SP.bg]# divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
+ 
+  # calculate niotrogen stock per tree per compartiment
+  N_kg_tree.df <- rbind(
+    ## stock in woody compartiments: merge biomass and content together by compartiment and 
+    merge(my.tree.bio, n_con_w, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
+    merge(my.tree.bio, n_con_f, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)))
   
-  n_con_w <- N_con_w %>% 
-    mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
-                                    compartiment == "swb" ~ "sb", 
-                                    compartiment == "stwb" ~"stb",
-                                    compartiment == "fw" ~ "fwb", 
-                                    TRUE ~ compartiment))
-    filter(compartiment %in% c(my.tree.bio$compartiment) & 
-                                   compartiment != "f" &
-                                    SP_BWI == my.tree.N.SP.w[1]) %>% dplyr::pull(N_con, SP_com);
-  n_con_f <- N_con_f %>% dplyr::pull(N_con, N_f_SP_group_MoMoK) 
-  # this function may have to be be adapted to the new dataset of the NSI which provides accurate N cocntents for all species and foliage
-  # proably I will also have to assign new species groups to acces the foliage dataset correctly
-  n_con_bg <- (c(EI = 3.71, BU = 3.03, FI = 4.14, KI = 1.77, 
-                    KIN = 1.76, BI = 3.7, LA = 2.8))/1000; # divide concentration in mg per g by 1000 to get concentration in percent/ decimal number of percent 
-  # unite the compartiment and species to select the correct nitrogen content
-  SP_compart_Rumpf <- paste0(my.tree.N.SP.w, "_", my.tree.bio$compartiment);
-  
-  switch(
-    comp.function, 
-    f = B*n_con_f[N_spec_f], 
-    stw = B*n_con_w[SP_compart_Rumpf], 
-    stb = B*n_con_w[SP_compart_Rumpf], 
-    sw = B*n_con_w[SP_compart_Rumpf], 
-    sb = B*n_con_w[SP_compart_Rumpf], 
-    fwb = B*n_con_w[SP_compart_Rumpf], 
-    f = B*n_con_w[SP_compart_Rumpf],   
-    ag.not.foliage =  B*n_con_w[SP_compart_Rumpf], 
-    bg = B*n_con_bg[N_spec_Jacobsen]
-  )
-  
-  
+  N_kg_tree.w <- merge(my.tree.bio, n_con_w, by="compartiment")$B_kg_tree * as.numeric(merge(my.tree.bio, n_con_w, by="compartiment")$N_con)
+  # my.tree.bio$B_kg_tree[my.tree.bio$compartiment %in% c(my.tree.comp.N.w)]*as.numeric(n_con_w$N_con[n_con_w$compartiment %in% c(my.tree.comp.N.w)])
+
+   
+  merg.N.w.bio <- merge(my.tree.bio, n_con_w, by="compartiment")
+  merg.N.w.bio$N_kg_tree <- merg.N.w.bio$B_kg_tree*as.numeric(merg.N.w.bio$N_con)
   # calculate Nitrogen per compartiment
-  ifelse(my.tree.bio$compartiment == "f", N_all_com (my.tree.bio$B_kg_tree, 
-                                                     my.tree.N.SP.w, 
-                                                     my.tree.N.SP.f, 
-                                                     my.tree.N.SP.bg, 
-                                                     my.tree.bio$compartiment, 
-                                                     comp.function = "f"), 
-         ifelse(my.tree.bio$compartiment == "bg", N_all_com(my.tree.bio$B_kg_tree, 
-                                                             my.tree.N.SP.w, 
-                                                             my.tree.N.SP.f, 
-                                                             my.tree.N.SP.bg, 
-                                                             my.tree.bio$compartiment, 
-                                                             comp.function = "bg"), 
-                ifelse(!(my.tree.bio$compartiment %in% c("f", "bg")), N_all_com(my.tree.bio$B_kg_tree, 
-                                                                   my.tree.N.SP.w, 
-                                                                   my.tree.N.SP.f, 
-                                                                   my.tree.N.SP.bg, 
-                                                                   my.tree.bio$compartiment, 
-                                                                   comp.function = "ag.not.foliage"), 
-                       NA)))
-  
-  
-  N_all_com (my.tree.bio$B_kg_tree, 
-             my.tree.N.SP.w, 
-             my.tree.N.SP.f, 
-             my.tree.N.SP.bg, 
-             my.tree.bio$compartiment, 
-             comp.function = as.list(my.tree.bio$compartiment))
-    
-  N_all_com (B, N_spec_rumpf, N_spec_f, N_spec_Jacobsen, comp, tree.part)
-  
-  N.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>% 
-    pivot_longer(cols = stw:ndl,
-                 names_to = "compartiment", 
-                 values_to = "B_kg_tree")
+
   
   
   N.info.df <- as.data.frame(cbind(
@@ -331,3 +284,47 @@ rbind(bio.bg.kg.df, bio.bg.kg.df) %>%
 
 # HBI dataset including estimated heights
 write.csv(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
+
+
+
+
+
+
+
+
+# NOTES:  -----------------------------------------------------------------
+
+ifelse(my.tree.bio$compartiment == "f", N_all_com (my.tree.bio$B_kg_tree[my.tree.bio$compartiment == "ndl"], 
+                                                   my.tree.N.SP.w, 
+                                                   my.tree.N.SP.f, 
+                                                   my.tree.N.SP.bg, 
+                                                   my.tree.bio$compartiment[my.tree.bio$compartiment == "ndl"], 
+                                                   comp.function = "f"), 
+       ifelse(my.tree.bio$compartiment == "bg", N_all_com(my.tree.bio$B_kg_tree[my.tree.bio$compartiment == "bg"], 
+                                                          my.tree.N.SP.w, 
+                                                          my.tree.N.SP.f, 
+                                                          my.tree.N.SP.bg, 
+                                                          my.tree.bio$compartiment[my.tree.bio$compartiment == "bg"], 
+                                                          comp.function = "bg"), 
+              ifelse(!(my.tree.bio$compartiment %in% c("f", "bg")), N_all_com(my.tree.bio$B_kg_tree, 
+                                                                              my.tree.N.SP.w, 
+                                                                              my.tree.N.SP.f, 
+                                                                              my.tree.N.SP.bg, 
+                                                                              my.tree.bio$compartiment, 
+                                                                              comp.function = "ag.not.foliage"), 
+                     0)))
+
+
+N_all_com (my.tree.bio$B_kg_tree, 
+           my.tree.N.SP.w, 
+           my.tree.N.SP.f, 
+           my.tree.N.SP.bg, 
+           my.tree.bio$compartiment, 
+           comp.function = as.list(my.tree.bio$compartiment))
+
+N_all_com (B, N_spec_rumpf, N_spec_f, N_spec_Jacobsen, comp, tree.part)
+
+N.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>% 
+  pivot_longer(cols = stw:ndl,
+               names_to = "compartiment", 
+               values_to = "B_kg_tree")

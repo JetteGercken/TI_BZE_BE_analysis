@@ -1848,7 +1848,8 @@ N_con_f %>%
   select(name, N_f_SP_group_MoMoK, compartiment, SP_com, LH_NH, N_mean_gkg, N_con)) # establish correct order for rbind
   
   
-
+write.csv(N_con_f, paste0(momok.out.home, "N_con_foliage_MOMOK.csv")) 
+write.csv(N_con_w, paste0(momok.out.home, "N_con_wood_Rumpf.csv")) 
 
 # ----- 1.4.5. MoMoK site info dataset data wrangling ----------------------------------------
 # assign expected growth bahaviour according to species and hydrological status
@@ -3869,6 +3870,9 @@ rbind(
 write.csv(legend_col_names, paste0(momok.out.home, "legend_MoMoK.csv")) 
 
 
+
+
+# EXPORTING AND COPYING ---------------------------------------------------
 
 
 # save everything exportet to the output folder also to a folder on the server
