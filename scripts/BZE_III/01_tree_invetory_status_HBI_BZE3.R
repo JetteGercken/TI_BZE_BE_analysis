@@ -557,9 +557,10 @@ HBI_trees <- rbind(HBI_trees,
 # we can only do this after the trees with inventory status 4, 5 and 6 have been processed
 
 HBI_trees_update_01 <- HBI_trees %>% filter(new_tree_inventory_status %in% c(0, 1, -9, -1))
-HBI_trees_removed <- HBI_trees %>% filter(new_tree_inventory_status %in% c(7, 3, 2))
-BZE3_trees_update_01 <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(0, 1, -9, -1))
-BZE3_trees_removed <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(7, 3, 2))
+HBI_trees_removed <- HBI_trees %>% filter(!(new_tree_inventory_status %in% c(0, 1, -9, -1)))
+
+BZE3_trees_update_01 <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(0, 1))
+BZE3_trees_removed <- BZE3_trees %>% filter(!(new_tree_inventory_status %in% c(0, 1)))
 
 
 write.csv(HBI_trees_update_01, paste0(out.path.BZE3, paste(unique(HBI_trees_update_01$inv)[1], "trees", "update", "1", sep = "_"), ".csv"))
