@@ -234,7 +234,8 @@ trees <- trees %>%
 
 
 # data export ---------------------------------------------------------------------------------------------
-as.list(colnames(trees))
+HBI_trees_update_4 <- trees %>% select(- c("Chr_code_ger", "H_SP_group","BWI_SP_group" , "Bio_SP_group",
+                                           "N_SP_group", "N_bg_SP_group", "N_f_SP_group_MoMoK"))
 
 # HBI dataset including estimated heights
 write.csv(HBI_trees_update_4, paste0(out.path.BZE3, paste(unique(HBI_trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))

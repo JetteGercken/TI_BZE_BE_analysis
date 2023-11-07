@@ -20,43 +20,30 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
-# hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-# here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
-# tree data
-#HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
- HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_2.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) 
-HBI_trees$plot_A_ha <- as.numeric(HBI_trees$plot_A_ha)
+# hbi BE dataset: 
+  # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+  # here we import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to the original tree data
+  #HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_2.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) 
+
 
 # stand info od individual trees 
 stand_info_HBI_trees <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_all_trees_stand.csv"), sep = ",", dec = ",")
 plot_areas_HBI <- read.delim(file = here("output/out_data/out_data_BZE/HBI_all_edges_rem_circles_area.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
   
-
 # species names & codes 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 
 
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
-# HBI 
-# colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-#                          "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
-#                          "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-# HBI_trees <- HBI_trees %>% 
-#   select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
-#          SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) 
- 
 # harmonize strings of plot_area_HBI  
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 plot_areas_HBI[,c(1,2, 3, 4)] <- lapply(plot_areas_HBI[,c(1,2, 3, 4)], as.numeric)
 
-HBI_trees[,c("plot_A_ha", "area_m2", 
-             "X_tree",  "Y_tree",
-             "DBH_cm", "dist_m", 
-             "CCS_r_m")] <- lapply(HBI_trees[,c("plot_A_ha", "area_m2", 
-                                                "X_tree",  "Y_tree",
-                                                "DBH_cm", "dist_m", 
-                                                "CCS_r_m")], as.numeric)
+HBI_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
+             "DBH_cm", "dist_m","CCS_r_m")] <- lapply(HBI_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
+                                                "DBH_cm", "dist_m",  "CCS_r_m")], as.numeric)
 # change -2 in H_dm and C_h_dm to NA
 # https://stackoverflow.com/questions/14737773/replacing-occurrences-of-a-number-in-multiple-columns-of-data-frame-with-another
 HBI_trees[,c("H_dm","C_h_dm")][HBI_trees[,c("H_dm","C_h_dm")]== -2] <- NA
@@ -67,7 +54,7 @@ trees_total <- HBI_trees %>%
 # add inventory info -----------------------------------------------------
   mutate(#inv_year = 2012, # this shoukd not be necesarry cause it´s included in the data already as they come from  update 2
          inv = inv_name(inv_year)) %>% 
-  # here we would actually rbind the both inventory datasets together 
+  # !!!!!! # CAUTION: here we would actually rbind the both inventory datasets together ####!!!!!!###
 # join in species codes --------------------------------------------------
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
@@ -80,49 +67,17 @@ trees_total <- HBI_trees %>%
   mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)),
          DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm), DBH_class), 
          BA_m2 = c_A(DBH_cm/2)*0.0001) #%>% # *0.0001 to convert cm2 in m2
-# join in tree stand info ---------------------------------------------------------
-  # left_join(., stand_info_HBI_trees %>% 
-  #             mutate(inv = "HBI") %>% 
-  #             select(plot_ID, tree_ID, inv, t_stat), 
-  #           by = c("plot_ID", "tree_ID", "inv"), 
-  #           multiple = "all") %>% 
-  # rename(stand = t_stat) %>% 
-  # filter(stand != "warning") %>% 
-# join in plot area depednign on diameter of tree and stand of tree ---------------
-  # asssing corect samling circle diameter according to DBH of the tree
-  # mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
-  #                            DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
-  #                            DBH_cm >= 30 ~ 17.84, 
-  #                            TRUE ~ NA)) %>% 
-  # left_join(., plot_areas_HBI %>% 
-  #             mutate(inv = "HBI"),
-  #           by = c("plot_ID", "CCS_r_m", "inv", "stand")) %>% 
-  # mutate(area_m2 = ifelse(stand == "A" & is.na(e_ID) & is.na(area_m2), c_A(CCS_r_m), area_m2)) 
-         #plot_A_ha = as.numeric(area_m2)/10000)
-
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-SP_NAs_HBI <- HBI_trees %>% 
+SP_NAs <- HBI_trees %>% 
   anti_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
 
-if(nrow(SP_NAs_HBI) != 0){print("There are species names or codes in HBI dataset that do not match
+if(nrow(SP_NAs_HBI) != 0){print("There are species names or codes in the trees dataset that do not match
                                 the species names and codes listed in x_bart")}else{"all fine"}
 
-# BZE3_trees <- BZE3_trees %>% 
-#   mutate(inventory = "HBI") %>% 
-#   left_join(., SP_names_com_ID_tapeS %>% 
-#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#             by = c("SP_code" = "char_code_ger_lowcase"))
-# 
-# 
-# # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-# BZE3_trees %>% 
-#   anti_join(., SP_names_com_ID_tapeS %>% 
-#               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#             by = c("SP_code" = "char_code_ger_lowcase"))
 
 
 
