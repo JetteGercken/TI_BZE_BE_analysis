@@ -706,7 +706,7 @@ forest_edges_HBI.man.sub.e2.nogeo <- forest_edges_HBI.man %>%
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
 
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) )
-triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID)*4 )
+triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID))
 
 for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
   # i = 1
