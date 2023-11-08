@@ -1,1 +1,7 @@
-"","plot_ID","tree_ID","tree_inventory_status","multi_stem","Dist_cm","azi_gon","age","age_meth","SP_code","DBH_class","Kraft","C_layer","H_dm","C_h_dm","D_mm","DBH_h_cm","DBH_cm","plot_inventory_status","inv_year","inv","old_tree_ID","new_tree_inventory_status"
+"","plot_ID","tree_ID","tree_inventory_status","multi_stem","Dist_cm","azi_gon","age","age_meth","SP_code","DBH_class","Kraft","C_layer","H_dm","C_h_dm","D_mm","DBH_h_cm","DBH_cm","plot_inventory_status","inv_year","inv","dist_m","X_tree","Y_tree","e_ID","e_type","e_form","stand","CCS_r_m","inter_stat","area_m2","plot_A_ha"
+"1",50006,32,-9,NA,2043,252,69,6,"pa",NA,1,1,387,147,919,130,91.9,-9,2012,"HBI",20.43,12.7281394708046,15.9805934061206,1,1,1,"warning",17.84,NA,NA,NA
+"2",50024,9,-9,NA,1892,310,168,6,"rbu",NA,2,1,339,136,830,130,83,-9,2012,"HBI",18.92,16.0987950693689,-9.93957732071464,1,3,2,"warning",17.84,NA,NA,NA
+"3",50024,10,-9,NA,1977,95,168,6,"rbu",NA,2,1,NA,NA,816,130,81.6,-9,2012,"HBI",19.77,13.5080841003331,14.4355313008676,1,3,2,"warning",17.84,NA,NA,NA
+"4",50063,37,-9,NA,2649,361,161,5,"rbu",NA,2,1,345,56,1090,130,109,-9,2012,"HBI",26.49,7.40094982498501,-25.4351340017711,1,3,1,"warning",17.84,NA,NA,NA
+"5",50063,37,-9,NA,2649,361,161,5,"rbu",NA,2,1,345,56,1090,130,109,-9,2012,"HBI",26.49,7.40094982498501,-25.4351340017711,2,3,1,"warning",17.84,NA,NA,NA
+"6",50064,15,-9,NA,2026,191,109,5,"rbu",NA,2,1,345,72,1025,150,104.755,-9,2012,"HBI",20.26,12.0528471918285,-16.2848541464279,1,1,1,"warning",17.84,NA,NA,NA

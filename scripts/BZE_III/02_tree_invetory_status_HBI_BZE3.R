@@ -19,8 +19,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
-HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+# after they have been sorted into stands according to the forest edge data in script "01_forest_edges_HBI.R" or "01_forest_edges_BZE3.R" 
+HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+# HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
  
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
@@ -32,7 +33,8 @@ colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 HBI_inv_info$date <- as.Date(HBI_inv_info$date)
 HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
 # this line can be removed later
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year))
+HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
+                                        inv = inv_name(inv_year))
 
 colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
                          "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
@@ -41,7 +43,7 @@ colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
 HBI_trees <- HBI_trees %>% 
   select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
          SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) %>% 
-  left_join(., HBI_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year"), 
+  left_join(., HBI_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
             by = "plot_ID") %>% 
   mutate(inv = inv_name(inv_year),
          DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)), 
@@ -556,15 +558,15 @@ HBI_trees <- rbind(HBI_trees,
 # new, repeated or unknown inventory
 # we can only do this after the trees with inventory status 4, 5 and 6 have been processed
 
-HBI_trees_update_01 <- HBI_trees %>% filter(new_tree_inventory_status %in% c(0, 1, -9, -1))
+HBI_trees_update_02 <- HBI_trees %>% filter(new_tree_inventory_status %in% c(0, 1, -9, -1))
 HBI_trees_removed <- HBI_trees %>% filter(!(new_tree_inventory_status %in% c(0, 1, -9, -1)))
 
-BZE3_trees_update_01 <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(0, 1))
+BZE3_trees_update_02 <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(0, 1))
 BZE3_trees_removed <- BZE3_trees %>% filter(!(new_tree_inventory_status %in% c(0, 1)))
 
 
-write.csv(HBI_trees_update_01, paste0(out.path.BZE3, paste(unique(HBI_trees_update_01$inv)[1], "trees", "update", "1", sep = "_"), ".csv"))
-write.csv(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_01$inv)[1], "trees", "removed", "1", sep = "_"), ".csv"))
-write.csv(BZE3_trees_update_01,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_01$inv)[1], "trees", "update","1", sep = "_"), ".csv"))
-write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_01$inv)[1], "trees", "update","1", sep = "_"), ".csv"))
+write.csv(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "update", "2", sep = "_"), ".csv"))
+write.csv(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "removed", "2", sep = "_"), ".csv"))
+write.csv(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
+write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
 
