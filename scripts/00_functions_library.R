@@ -99,6 +99,58 @@ require(sfheaders)
 here::here()
 
 
+# ----- 0.4 import parameters etc. for functions --------------------------
+
+# ----- 0.4.1. diameter correction Dahm parameters ------------------------
+DBH_region <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_region.csv"), sep = ";", dec = ",")
+DBH_region <- DBH_region %>% select(ï..ICode, KurzD,  LangD, Region)
+colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG", "region")
+
+DBH_SP <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_species.csv"), sep = ";", dec = ",")
+DBH_SP<- DBH_SP %>% select("ï..ICode", "KurzD", "Gattung", "Art", "ba_BWI1")
+colnames(DBH_SP) <- c("icode_spec", "Chr_code_ger", "bot_genus", "bot_species", "SP_BWI1")
+
+DBH_tan <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_tangenz.csv"), sep = ";", dec = ",")
+colnames(DBH_tan) <- c("SP_BWI1", "icode", "region", "tangenz")
+
+
+
+
+
+
+# ----- 0.4.2. nitrogen content datasets ----------------------------------
+## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
+  # import
+N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
+  # harmonize N_con_f compartiment names with trees compartiments names, which are based on TapeS compartiment names
+N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl",
+                                                       TRUE ~ compartiment))
+## nitrogen content in woody compartiments and needles 
+  # reference: 
+  # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
+  # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, 
+  # Tab.: 3.2 - 3.6, S. 10
+  # import
+N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
+  # hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
+N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
+                                                       compartiment == "swb" ~ "sb", 
+                                                       compartiment == "stwb" ~"stb",
+                                                       compartiment == "fw" ~ "fwb", 
+                                                       TRUE ~ compartiment))
+
+## belowground biomass notrogen contents in percent (mgg/1000)
+  # reference: 
+  # Jacobsen et al. 2003; 
+  # Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
+  # Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
+  # Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
+  # Niedersächsische Forstliche Versuchsanstalt;
+  # N Gehalte Grobwurzeln (D > 2mm), Tab. 7
+  # import
+N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" , "BI" , "LA"), 
+                                "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
+                                "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
 
 # ----- 1. Functions -----------------------------------------------------------
 
@@ -121,10 +173,37 @@ DBH_c_function <- function(dbh){
   return(DBH_c)
 }
 
+
+# conversion of DBH from not-breastheight to brestheight diameter via BWI method
+# source: BWI Methodikband, 5.2.1.1. - BHD bei Probebäumen mit geänderter Messhöhe - Regressionsverfahren
+#         BWI Regressionsgleichung bereitgestellt von Heino Polley, verwendet in Datenerfassungssoftware 2002, 2008 und 2012
 DBH_BWI <- function(d.mm, d.h.cm){
-  # source: BWI Methodikband, 5.2.1.1. - BHD bei Probebäumen mit geänderter Messhöhe - Regressionsverfahren
   dbh_cm = (d.mm*(1.0+(0.0011*(d.h.cm -130))))/10 # diveided by 10 to return cm
   return(dbh_cm)
+}
+
+# correcting diameter that was not measured at 1.3m (Breastheight)
+# Refference: \\wo-sfs-001v-ew\INSTITUT\a7bze\ZZ_BZE3_Bestand\Erfassungssoftware\BHD_Umrechung
+#               Brusthöhendurchmesser bei abweichender Meßhöhe nach Abholzigkeitsfunktion lt. Stefan Dahm 
+#             tabes required to perfom linkage between trees dataset and tangenz dataste: x_ba.Ba_BWI1, x_bl.Region, [k_Tangenz (Ba_Bwi1, Region)].Ba_BWI1+Region bwi.xyk1.k_tangenz 
+DBH_Dahm <- function(ld.bze, d.mm, d.h.cm, SP_code){
+  # we have to do two things: 
+  # link the species with the right ICode by their BWI_SP_oode
+  # link the plot ID with the state it´s situated in and the state with the region code
+  
+  ## select thh correct tangenz accordint to species and
+  # select the ba_BWI1 sep
+  sp_tan <-DBH_SP$ba_BWI1[which(DBH_SP$Chr_code_ger == SP_code)]
+  #select the state the plt is stuated in by plot ID in plot-to-state-table
+  ld <- bze.ld_to_bl.code.df[which(grepl(plot.id, bze.ld_to_bl.code.df$ld_plots))]
+  # select the region belonign to the state that belongs to the plot_ID from DBH_region dataset 
+  reg_tan <- DBH_region$region[which(grepl(ld, DBH_region$KurzD))]
+  # select the tangenz belonging to the reion and species from DBH_tan dataset
+  tangenz <- DBH_tan$tangenz[which(DBH_tan$SP_BWI1 == sp_tan & DBH_tan$region == reg_tan)]
+ # calcualte DBH according to function by Stefan Dahm
+  dbh.dahm = (d.mm)+2*((d.h.cm)-130)/tangenz 
+  
+  return(dbh.dahm)
 }
 
 # ----- 1.3 age class ----------------------------------------------------------
