@@ -103,12 +103,15 @@ here::here()
 
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
 DBH_region <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_region.csv"), sep = ";", dec = ",")
-DBH_region <- DBH_region %>% select(ï..ICode, KurzD,  LangD, Region)
+DBH_region <- DBH_region %>% dplyr::select(ï..ICode, KurzD,  LangD, Region)
 colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG", "region")
 
 DBH_SP <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_species.csv"), sep = ";", dec = ",")
-DBH_SP<- DBH_SP %>% select("ï..ICode", "KurzD", "Gattung", "Art", "ba_BWI1")
+DBH_SP<- DBH_SP %>% dplyr::select("ï..ICode", "KurzD", "Gattung", "Art", "ba_BWI1")
 colnames(DBH_SP) <- c("icode_spec", "Chr_code_ger", "bot_genus", "bot_species", "SP_BWI1")
+# remove empty space from species codes https://www.statology.org/r-remove-spaces-from-string/
+DBH_SP$Chr_code_ger <- gsub(" ", "", DBH_SP$Chr_code_ger)
+DBH_SP$SP_BWI1 <- gsub(" ", "", DBH_SP$SP_BWI1)
 
 DBH_tan <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_tangenz.csv"), sep = ";", dec = ",")
 colnames(DBH_tan) <- c("SP_BWI1", "icode", "region", "tangenz")
@@ -186,25 +189,34 @@ DBH_BWI <- function(d.mm, d.h.cm){
 # Refference: \\wo-sfs-001v-ew\INSTITUT\a7bze\ZZ_BZE3_Bestand\Erfassungssoftware\BHD_Umrechung
 #               Brusthöhendurchmesser bei abweichender Meßhöhe nach Abholzigkeitsfunktion lt. Stefan Dahm 
 #             tabes required to perfom linkage between trees dataset and tangenz dataste: x_ba.Ba_BWI1, x_bl.Region, [k_Tangenz (Ba_Bwi1, Region)].Ba_BWI1+Region bwi.xyk1.k_tangenz 
-DBH_Dahm <- function(ld.bze, d.mm, d.h.cm, SP_code){
+DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
   # we have to do two things: 
   # link the species with the right ICode by their BWI_SP_oode
   # link the plot ID with the state it´s situated in and the state with the region code
   
   ## select thh correct tangenz accordint to species and
   # select the ba_BWI1 sep
-  sp_tan <-DBH_SP$ba_BWI1[which(DBH_SP$Chr_code_ger == SP_code)]
-  #select the state the plt is stuated in by plot ID in plot-to-state-table
-  ld <- bze.ld_to_bl.code.df[which(grepl(plot.id, bze.ld_to_bl.code.df$ld_plots))]
+  sp_tan <- as.character(DBH_SP$SP_BWI1[DBH_SP$Chr_code_ger == spec])
+  # determine ld based on plot ID
+  # determine state the plot is located in by it´s plot ID
+    # for plots with 5 digits it´s the first number, for plots with 6 the first two 
+    # these numbers comply with the column icode_reg in the DBH_region dataset so that the extracted country code can be immediately translated into 
+    # the DBH tangez region 
+    # https://www.geeksforgeeks.org/count-number-of-characters-in-string-in-r/
+    # https://stackoverflow.com/questions/61954941/extract-first-x-digits-of-n-digit-numbers
+  ld_icode <- ifelse(str_length(plot.id) == 5, substr(plot.id, 1, 1), substr(plot.id, 1, 2))
+  #ld <- DBH_region$icode_reg[which(grepl(ld_plot, DBH_region$icode_reg))]
   # select the region belonign to the state that belongs to the plot_ID from DBH_region dataset 
-  reg_tan <- DBH_region$region[which(grepl(ld, DBH_region$KurzD))]
+  reg_tan <- DBH_region$region[which(DBH_region$icode_reg == ld_icode)]
   # select the tangenz belonging to the reion and species from DBH_tan dataset
-  tangenz <- DBH_tan$tangenz[which(DBH_tan$SP_BWI1 == sp_tan & DBH_tan$region == reg_tan)]
+  tangenz <- DBH_tan$tangenz[DBH_tan$SP_BWI1 == as.character(sp_tan) & DBH_tan$region == reg_tan]
  # calcualte DBH according to function by Stefan Dahm
   dbh.dahm = (d.mm)+2*((d.h.cm)-130)/tangenz 
   
   return(dbh.dahm)
 }
+
+
 
 # ----- 1.3 age class ----------------------------------------------------------
 # defining age classes from 1 to 160 in steps of 20

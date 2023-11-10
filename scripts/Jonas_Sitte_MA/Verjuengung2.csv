@@ -1,0 +1,104 @@
+MoMoK_Nr;Name;Bundeland;Datum;LfdNr;Baumart 
+21020;Krummsee;SH;04.05.2023;1;Alnus glutinosa
+21020;Krummsee;SH;04.05.2023;2;Fagus sylvatica
+21020;Krummsee;SH;04.05.2023;3;Salix caprea
+21030;Schwonau;SH;03.05.2023;1;Acer pseudoplatanus
+21030;Schwonau;SH;03.05.2023;2;Alnus glutinosa
+21030;Schwonau;SH;03.05.2023;3;Sambucus nigra
+23060;Wildenkiel 1;NS;05.06.2023;1;Crataegus sp.
+23060;Wildenkiel 1;NS;05.06.2023;2;Picea abies
+23060;Wildenkiel 1;NS;05.06.2023;3;Quercus robur
+23061;Wildenkiel 2;NS;05.06.2023;1;Picea abies
+23061;Wildenkiel 2;NS;05.06.2023;2;Sorbus aucuparia
+23150;Wildenloh;NS;29.06.2023;1;Betula pubescens
+23150;Wildenloh;NS;29.06.2023;2;Picea abies
+23150;Wildenloh;NS;29.06.2023;3;Pinus strobus
+23150;Wildenloh;NS;29.06.2023;4;Sorbus aucuparia
+23170;Holzurburg;NS;28.06.2023;1;Betula pubescens
+23170;Holzurburg;NS;28.06.2023;2;Picea abies
+23170;Holzurburg;NS;28.06.2023;3;Prunus padus
+23170;Holzurburg;NS;28.06.2023;4;Quercus robur
+25100;Ebbemoor;NRW;04.07.2023;1;Alnus glutinosa
+25100;Ebbemoor;NRW;04.07.2023;2;Betula pubescens
+25100;Ebbemoor;NRW;04.07.2023;3;Picea abies
+26010;Brander Bruch/Muenden;RP;07.06.2023;1;Picea abies
+26010;Brander Bruch/Muenden;RP;07.06.2023;2;Sorbus aucuparia
+26020;Ellerhorst/Muenden;HE;07.06.2023;1;Alnus glutinosa
+26020;Ellerhorst/Muenden;HE;07.06.2023;2;Fagus sylvatica
+26020;Ellerhorst/Muenden;HE;07.06.2023;3;Frangula alnus
+26020;Ellerhorst/Muenden;HE;07.06.2023;4;Picea abies
+26020;Ellerhorst/Muenden;HE;07.06.2023;5;Quercus robur
+26020;Ellerhorst/Muenden;HE;07.06.2023;6;Sorbus aucuparia
+26030;Kraemersgrund/Wetter;HE;07.08.2023;1;Acer pseudoplatanus
+26030;Kraemersgrund/Wetter;HE;07.08.2023;2;Alnus glutinosa
+26030;Kraemersgrund/Wetter;HE;07.08.2023;3;Carpinus betulus
+26030;Kraemersgrund/Wetter;HE;07.08.2023;4;Frangula alnus
+26030;Kraemersgrund/Wetter;HE;07.08.2023;5;Picea abies
+26030;Kraemersgrund/Wetter;HE;07.08.2023;6;Sambucus nigra
+27011;Landstuhler Bruch;RP;09.08.2023;1;Alnus glutinosa
+27011;Landstuhler Bruch;RP;09.08.2023;2;Picea abies
+27040;Palmbruch/Morbach;RP;13.02.2023;1;Betula pubescens
+27040;Palmbruch/Morbach;RP;13.02.2023;2;Picea abies
+28040;Hockenheimer Rheinbogen;BW;10.08.2023;1;Alnus glutinosa
+28040;Hockenheimer Rheinbogen;BW;10.08.2023;2;Salix caprea
+29080;Filzwald/Klingbrunn Bhf;BY;12.10.2022;1;Picea abies
+29090;Klosterfilz/Skt. Oswald;BY;11.10.2022;1;Picea abies
+29090;Klosterfilz/Skt. Oswald;BY;11.10.2022;2;Pinus mugo
+32010;Buxpfuhl/Melchow;BB;19.05.2022;1;Acer pseudoplatanus
+32010;Buxpfuhl/Melchow;BB;19.05.2022;2;Alnus glutinosa
+32010;Buxpfuhl/Melchow;BB;19.05.2022;3;Quercus robur
+32010;Buxpfuhl/Melchow;BB;19.05.2022;4;Salix caprea
+32020;Postluch/Britz;BB;24.05.2022;1;Alnus glutinosa
+32020;Postluch/Britz;BB;24.05.2022;2;Quercus robur
+32050;Stromtrasse/Spechti;BB;03.05.2022;1;Betula pendula
+32050;Stromtrasse/Spechti;BB;03.05.2022;2;Pinus sylvestris
+32070;Hellsee/Biesenthal;BB;04.07.2022;1;Alnus glutinosa
+32070;Hellsee/Biesenthal;BB;04.07.2022;2;Betula pubescens
+32070;Hellsee/Biesenthal;BB;04.07.2022;3;Corylus avellana
+32070;Hellsee/Biesenthal;BB;04.07.2022;4;Crataegus leavigata
+32070;Hellsee/Biesenthal;BB;04.07.2022;5;Euonymus europeus
+32070;Hellsee/Biesenthal;BB;04.07.2022;6;Fagus sylvatica
+32070;Hellsee/Biesenthal;BB;04.07.2022;7;Fraxinus excelsior
+32070;Hellsee/Biesenthal;BB;04.07.2022;8;Ribes nigrum
+32070;Hellsee/Biesenthal;BB;04.07.2022;9;Ribes rubrum
+32070;Hellsee/Biesenthal;BB;04.07.2022;10;Salix spp.
+32070;Hellsee/Biesenthal;BB;04.07.2022;11;Viburnum opulus
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;1;Fagus sylvatica
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;2;Frangula alnus
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;3;Pinus sylvestris
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;4;Prunus serotina
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;5;Quercus robur
+32080;Ploetzensee/Biesenthal;BB;03.08.2022;6;Sorbus aucuparia
+32090;Pfauenfliess/Biesenthal;BB;29.06.2022;1;Alnus glutinosa
+33010;Paelitzsee/Pelzkuhl;MV;16.08.2022;1;Alnus glutinosa
+33010;Paelitzsee/Pelzkuhl;MV;16.08.2022;2;Quercus robur
+33040;Drewensee/Priepert;MV;06.09.2022;1;Alnus glutinosa
+33040;Drewensee/Priepert;MV;06.09.2022;2;Picea abies
+33040;Drewensee/Priepert;MV;06.09.2022;3;Pinus sylvestris
+33040;Drewensee/Priepert;MV;06.09.2022;4;Sorbus aucuparia
+33050;Raetzsee/Fleeth;MV;10.08.2022;1;Alnus glutinosa
+33050;Raetzsee/Fleeth;MV;10.08.2022;2;Frangula alnus
+33050;Raetzsee/Fleeth;MV;10.08.2022;3;Sorbus aucuparia
+33050;Raetzsee/Fleeth;MV;10.08.2022;4;Viburnum opulus
+33300;Buchenhorst;MV;07.09.2022;1;Alnus glutinosa
+33300;Buchenhorst;MV;07.09.2022;2;Alnus incana
+33300;Buchenhorst;MV;07.09.2022;3;Carpinus betulus
+33300;Buchenhorst;MV;07.09.2022;4;Fraxinus excelsior
+33300;Buchenhorst;MV;07.09.2022;5;Quercus robur
+34010;Gr. Eisenstrassenmoor/Johanngeorgenstadt;SN;24.08.2022;1;Betula spp.
+34010;Gr. Eisenstrassenmoor/Johanngeorgenstadt;SN;24.08.2022;2;Picea abies
+34010;Gr. Eisenstrassenmoor/Johanngeorgenstadt;SN;24.08.2022;3;Sorbus aucuparia
+34020;Friedrichsheider Hochmoor/Erlabrunn;SN;13.09.2022;1;Picea abies
+34020;Friedrichsheider Hochmoor/Erlabrunn;SN;13.09.2022;2;Pinus mugo
+34030;Steinbach/Steinbach;SN;24.08.2022;1;Betula spp.
+34030;Steinbach/Steinbach;SN;24.08.2022;2;Picea abies
+34030;Steinbach/Steinbach;SN;24.08.2022;3;Sorbus aucuparia
+34040;Milchbach/Erlabrunn;SN;14.09.2022;1;Abies alba
+34040;Milchbach/Erlabrunn;SN;14.09.2022;2;Picea abies
+34040;Milchbach/Erlabrunn;SN;14.09.2022;3;Sorbus aucuparia
+35500;Jaevenitzer Moor/Gardelegen;ST;19.10.2022;1;Betula pubescens
+35500;Jaevenitzer Moor/Gardelegen;ST;19.10.2022;2;Quercus robur
+36010;Siegmundsburg;TH;23.08.2023;1;Picea abies
+36010;Siegmundsburg;TH;23.08.2023;2;Sorbus aucuparia
+36041;Sommerbachskopf 2;TH;23.08.2023;1;Picea abies
+36041;Sommerbachskopf 2;TH;23.08.2023;2;Sorbus aucuparia

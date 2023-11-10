@@ -22,16 +22,11 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
-# HBI_trees_update <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ",", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI point info
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-
-
-
-#SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
-
+# HBI forest edges (Waldränder) info
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 
 # creating dataset with information about the concentric sampling circles
@@ -45,11 +40,11 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
                          "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
                          "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-HBI_trees <- HBI_trees %>% select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
+HBI_trees <- HBI_trees %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
                                   Dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code , DBH_class ,  Kraft ,  
                                   C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm ,  DBH_cm )
 # HBI locations
-HBI_loc <- HBI_loc %>% select("ï..ToTraktId", "ToEckId", "K2_RW",
+HBI_loc <- HBI_loc %>% dplyr::select("ï..ToTraktId", "ToEckId", "K2_RW",
                               "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                               "HW_MED",  "LAT_MED",  "LON_MED", 
                               "LAT_MEAN", "LON_MEAN")
@@ -59,7 +54,7 @@ colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "LAT_MEAN", "LON_MEAN") 
 
 # HBI point/ inventory info
-HBI_inv_info <- HBI_inv_info %>% select(bund_nr, datum, hbi_status )
+HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, hbi_status )
 colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 HBI_inv_info$date <- as.Date(HBI_inv_info$date)
@@ -78,10 +73,12 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1.1. species & inventory names ----------------------------------------------
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>% 
-  left_join(., HBI_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
+  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
             by = "plot_ID") %>% 
   mutate(inv = inv_name(inv_year),
-         DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)))
+         DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, SP_code)))
+
+
 
 
 
