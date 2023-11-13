@@ -28,6 +28,9 @@ HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep =
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # HBI forest edges (Waldränder) info
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+# species names & codes 
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+
 
 # creating dataset with information about the concentric sampling circles
 data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
@@ -72,11 +75,26 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1. LIVING TREES -------------------------------------------------
 # ----- 1.1.1. species & inventory names ----------------------------------------------
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
-HBI_trees <- HBI_trees %>% 
+HBI_trees <- HBI_trees %>%
+  # join in inventory info
   left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-            by = "plot_ID") %>% 
-  mutate(inv = inv_name(inv_year),
-         DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, SP_code)))
+            by = "plot_ID")  %>% 
+  # join in the species names from x_bart to ensure the Dahm DBH correction function
+  left_join(., SP_names_com_ID_tapeS %>% 
+              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+            by = c("SP_code" = "char_code_ger_lowcase"))%>% 
+  mutate(DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing 
+         # cakcukate corrected BDH if measuringheight != 1.3m
+         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, BWI))) 
+
+# check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
+SP_NAs <- HBI_trees %>% 
+  anti_join(SP_names_com_ID_tapeS %>% 
+              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+            by = c("SP_code" = "char_code_ger_lowcase"))
+
+if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees dataset that do not match
+                                the species names and codes listed in x_bart")}else{"all fine"}
 
 
 
@@ -1049,7 +1067,7 @@ rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique
 intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
 
 for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){ 
-  #i = 6
+  #i = 1
   # i = which(grepl(50009, unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -1717,33 +1735,34 @@ HBI_trees_update_1 <- HBI_trees_update_1 %>% filter(stand != "warning")
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
-all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo, inter.poly.two.edges.df.nogeo)
+all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo %>% unnest(geometry), inter.poly.two.edges.df.nogeo%>% unnest(geometry))
 all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo)
+
 
 
 # 3.3.2. exporting data ---------------------------------------------------
 
 # exporting tree and edge/ plot area data
-write.csv(HBI_trees_update_1, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "trees_update_1", sep = "_"), ".csv"))
-write.csv(HBI_trees_removed_1, paste0(out.path.BZE3, paste(unique(HBI_trees_removed_1$inv)[1], "trees_removed_1", sep = "_"), ".csv"))
-write.csv(trees_and_edges,paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
+write.csv2(HBI_trees_update_1, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "trees_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_trees_removed_1, paste0(out.path.BZE3, paste(unique(HBI_trees_removed_1$inv)[1], "trees_removed_1", sep = "_"), ".csv"))
+write.csv2(trees_and_edges,paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
-write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_trees_stand", sep = "_"), ".csv"))
+write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_trees_stand", sep = "_"), ".csv"))
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
+write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
           
 
 # export list of plots where the edge polygones intersect within the 17.84 radius
-write.csv(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
+write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
           
 # exporting edge triangle polygones
-write.csv(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
 # exporting edge intersection polygones 
-write.csv(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # exporting all remaining circles
-write.csv(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+write.csv2(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 
 
 

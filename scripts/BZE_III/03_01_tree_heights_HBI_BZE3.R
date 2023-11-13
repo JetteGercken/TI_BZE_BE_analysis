@@ -24,14 +24,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
   # here we import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to the original tree data
 # currently we can´t tho, cause the sorting regarding tree inventory status is just a simulation at the moment so the data are manipulated
-HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) 
-
-# species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE) 
 
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
-
 HBI_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
              "DBH_cm", "dist_m","CCS_r_m")] <- lapply(HBI_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
                                                 "DBH_cm", "dist_m",  "CCS_r_m")], as.numeric)
@@ -42,32 +38,13 @@ HBI_trees[,c("H_dm","C_h_dm")][HBI_trees[,c("H_dm","C_h_dm")]== -2] <- NA
 # 1. joining in external info  -------------------------------------------------
 
 trees_total <- HBI_trees %>%
-# add inventory info -----------------------------------------------------
-  mutate(#inv_year = 2012, # this shoukd not be necesarry cause it´s included in the data already as they come from  update 2
-         inv = inv_name(inv_year)) %>% 
-  # !!!!!! # CAUTION: here we would actually rbind the both inventory datasets together ####!!!!!!###
-# join in species codes --------------------------------------------------
-  left_join(., SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase")) %>% 
+ # !!!!!! # CAUTION: here we would actually rbind the both inventory datasets together ####!!!!!!###
 # calcualte diameter and change units -----------------------------------
   mutate(H_m = H_dm/10, 
-         DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing
          DBH_h_m = DBH_h_cm/100) %>%                               # change unit of DBH measuring height from cm into m by dividing by 100  
   #  apply regression of BWI (5.5.1.2.) for DBH estimation when mesasuring height differs from 1.3 m 
-  mutate(DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)),
-         DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm), DBH_class), 
+  mutate(DBH_class = ifelse(is.na(DBH_class), DBH_c_function(DBH_cm), DBH_class), 
          BA_m2 = c_A(DBH_cm/2)*0.0001) #%>% # *0.0001 to convert cm2 in m2
-
-
-# check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-SP_NAs <- HBI_trees %>% 
-  anti_join(SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase"))
-
-if(nrow(SP_NAs_HBI) != 0){print("There are species names or codes in the trees dataset that do not match
-                                the species names and codes listed in x_bart")}else{"all fine"}
 
 
 
@@ -285,11 +262,11 @@ BZE3_trees_update_3 <-  trees_total %>%
 
 # ---- 1.1.2.6. exporting dataset --------------------------
 # height nls coefficients
-write.csv(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_update_3$inv)[1], unique(BZE3_trees_update_3$inv)[1], sep = "_"), ".csv"))
+write.csv2(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_update_3$inv)[1], unique(BZE3_trees_update_3$inv)[1], sep = "_"), ".csv"))
                                
 # HBI dataset including estimated heights
-write.csv(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
+write.csv2(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
 # BZE3 dataset including estimated heights
-write.csv(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
+write.csv2(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "trees_update_3", sep = "_"), ".csv"))
 
 

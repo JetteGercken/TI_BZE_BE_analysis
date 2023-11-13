@@ -1,179 +1,147 @@
 bund_nr,ld_standort_methode,ld_standort,ld_wh_stufe,ld_n_stufe,vornachnutz,egart,vorbesttyp,histnutz,anzkalk,kulissekalk
-120001,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120002,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120003,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120004,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120005,sea95,K2lf,T2,K,50,4,99,-9,0,-9
-120006,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120007,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120008,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120009,sea95,M1m,T1,M,50,2,99,-9,0,-9
-120010,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120011,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120012,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120013,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120014,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120015,sea95,NK2m,N2,K,50,2,99,-9,0,-9
-120016,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120017,sea95,K2t,T2,K,50,5,99,-9,0,-9
-120018,sea95,M3t,T3,M,50,4,99,-9,0,-9
-120019,sea95,A2t,T2,A,50,4,99,-9,0,-9
-120020,sea95,K2t,T2,K,50,2,99,-9,0,-9
-120021,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120022,sea95,Z3t,T3,Z,50,2,99,-9,0,-9
-120023,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120024,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120025,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120026,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120027,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120028,sea95,Z1t,T1,Z,50,2,99,-9,0,-9
-120029,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120030,sea95,Z2t,T2,Z,50,3,99,-9,0,-9
-120031,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120032,sea95,Z2t,T2,Z,50,3,99,-9,0,-9
-120033,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120034,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120035,sea95,Z3t,T3,Z,50,2,99,-9,0,-9
-120036,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120037,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120038,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120039,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120040,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120041,sea95,Z1t,T1,Z,50,4,99,-9,0,-9
-120042,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120043,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120044,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120045,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120046,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120047,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120048,sea95,K2t,T2,K,50,2,99,-9,0,-9
-120049,sea95,K2m,T2,K,50,2,99,-9,0,-9
-120050,sea95,M2m,T2,M,50,3,99,-9,0,-9
-120051,sea95,K2m,T2,K,50,5,99,-9,0,-9
-120052,sea95,K2m,T2,K,50,5,99,-9,0,-9
-120053,sea95,K2m,T2,K,50,3,99,-9,0,-9
-120054,sea95,Z2m,T2,Z,50,5,99,-9,0,-9
-120055,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120056,sea95,K2m,T2,K,50,2,99,-9,0,-9
-120057,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120058,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120059,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120060,sea95,K2t,T2,K,50,2,99,-9,0,-9
-120061,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120062,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120063,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120064,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120065,sea95,K1m,T1,K,50,2,99,-9,0,-9
-120066,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120067,sea95,K2m,T2,K,50,2,99,-9,0,-9
-120068,sea95,M2m,T2,M,50,3,99,-9,0,-9
-120069,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120070,sea95,A1m,T1,A,50,2,99,-9,0,-9
-120071,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120072,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120073,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120074,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120075,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120076,sea95,M2m,T2,M,50,1,99,-9,0,-9
-120077,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120078,sea95,M2m,T2,M,50,4,99,-9,0,-9
-120079,sea95,K2m,T2,K,50,5,99,-9,0,-9
-120080,sea95,OK2,O2,K,50,4,99,-9,0,-9
-120081,sea95,Z2m,T2,Z,50,5,99,-9,0,-9
-120082,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120083,sea95,K1t,T1,K,50,2,99,-9,0,-9
-120084,sea95,K2t,T2,K,50,5,99,-9,0,-9
-120085,sea95,K2m,T2,K,50,2,99,-9,0,-9
-120086,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120087,sea95,K3t,T3,K,50,3,99,-9,0,-9
-120088,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120089,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120090,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120091,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120092,sea95,Z1t,T1,Z,50,2,99,-9,0,-9
-120093,sea95,M2t,T2,M,50,3,99,-9,0,-9
-120094,sea95,NR2t,N2,R,50,2,99,-9,0,-9
-120095,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120096,sea95,Z3t,T3,Z,50,3,99,-9,0,-9
-120097,sea95,K1t,T1,K,50,2,99,-9,0,-9
-120098,sea95,OK2t,O2,K,50,2,99,-9,0,-9
-120099,sea95,K2t,T2,K,50,4,99,-9,0,-9
-120100,sea95,M2t,T2,K,50,2,99,-9,0,-9
-120101,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120102,sea95,Z2t,T2,Z,50,5,99,-9,0,-9
-120103,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120104,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120105,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120106,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120107,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120108,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120109,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120110,sea95,K2t,T2,K,50,2,99,-9,0,-9
-120111,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120112,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120113,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120114,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120115,sea95,K2t,T2,K,50,4,99,-9,0,-9
-120116,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120117,sea95,Z1t,T1,Z,50,5,99,-9,0,-9
-120118,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120119,sea95,NK1t,N1,K,50,4,99,-9,0,-9
-120120,sea95,Z2t,T1,Z,50,4,99,-9,0,-9
-120121,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120122,sea95,Z2t,T2,Z,50,4,99,-9,0,-9
-120123,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120124,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120125,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120126,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120127,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120128,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120129,sea95,M2+m,T2,M+,50,4,99,-9,0,-9
-120130,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120131,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120132,sea95,NK1,N1,K,50,4,99,-9,0,-9
-120133,sea95,M2t,T2,M,50,2,99,-9,0,-9
-120134,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120135,sea95,M2t,T2,M,50,4,99,-9,0,-9
-120136,sea95,K2t,T2,K,50,4,99,-9,0,-9
-120137,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120138,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120139,sea95,A2m,T2,A,50,3,99,-9,0,-9
-120140,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120141,sea95,K2m,T2,K,50,4,99,-9,0,-9
-120142,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120143,sea95,A2m,T2,A,50,4,99,-9,0,-9
-120144,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120145,sea95,Z2m,T2,Z,50,5,99,-9,0,-9
-120146,sea95,K2m,T2,K,50,2,99,-9,0,-9
-120147,sea95,Z2m,T2,Z,50,4,99,-9,0,-9
-120148,sea95,A2m,T2,A,50,3,99,-9,0,-9
-120149,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120150,sea95,Z2,T2,Z,50,2,99,-9,0,-9
-120151,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120152,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120153,sea95,K2,T2,K,50,2,99,-9,0,-9
-120154,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120155,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120156,sea95,A2m,T2,A,50,2,99,-9,0,-9
-120157,sea95,-9,-9,-9,50,4,99,-9,0,-9
-120158,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120159,sea95,-9,-9,-9,50,5,99,-9,0,-9
-120160,sea95,-9,-9,-9,50,3,99,-9,0,-9
-120161,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120162,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120163,sea95,-9,-9,-9,50,4,99,-9,0,-9
-120164,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120165,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120166,-9,-9,-9,-9,-9,-9,-9,-9,-1,-9
-120167,sea95,-9,-9,-9,50,4,99,-9,0,-9
-120168,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120169,sea95,-9,-9,-9,50,4,99,-9,0,-9
-120170,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120181,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120182,sea95,M2f,T2,M,50,2,99,-9,0,-9
-120183,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120184,sea95,M2m,T2,M,50,2,99,-9,0,-9
-120185,sea95,Z2m,T2,Z,50,2,99,-9,0,-9
-120186,sea95,Z2t,T2,Z,50,2,99,-9,0,-9
-120187,sea95,-9,-9,-9,50,2,99,-9,0,-9
-120188,sea95,-9,-9,-9,50,2,99,-9,0,-9
+50001,sto03,Flattergras-Buchenwald auf staufrischem sandüberdecktem Feinlehm,staufrisch,2,50,2,91,0,1,-9
+50002,sto03,Buchen-Eichenwald auf staufrischem Terrassensand,staufrisch,1,50,2,99,0,0,-9
+50003,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,3,99,9,0,-9
+50004,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,2,92,0,0,-9
+50005,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Terrassensand,mäßig frisch,2,50,4,91,0,99,-9
+50006,sto03,Buchen-Eichenwald auf grundfeuchtem Niederungssand,grundfeucht,2,50,4,91,6,0,-9
+50007,sto03,Eichen-Hainbuchenwald auf feuchtem Niederungssand,feucht,2,50,4,99,0,0,-9
+50008,sto03,Hainsimsne-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,2,92,0,1,-9
+50009,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,92,0,99,-9
+50010,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,2,91,6,0,-9
+50011,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,5,0,-9
+50012,sto03,Eichen-Hainbuchenwald auf wechselfeuchtem Feinlehm,wecheslfeucht,2,50,4,91,5,0,-9
+50013,sto03,Eichen-Hainbuchenwald auf mäßig wechselfeuchtem Feinlehm,wechselfeucht,2,50,4,91,5,0,-9
+50014,sto03,Flattergras-Buchen Wald auf staufrischem sandüberdecktem Feinlehm,staufrisch,2,50,2,92,0,0,-9
+50015,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,6,1,-9
+50016,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,0,1,-9
+50017,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,5,0,-9
+50018,sto03,Hainsimsen-Buchen Wald auf grundfrischem Buchenntsandsteinlehm,grundfrisch,2,50,3,99,0,2,-9
+50019,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,2,92,0,0,-9
+50020,sto03,Platterbsen-Buchen Wald auf mäßig trockenem Kalkverwitterungslehm,mäßig trocken,5,50,3,99,0,0,-9
+50021,sto03,Platterbsen-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,5,50,3,92,0,0,-9
+50022,sto03,Peifengras-Echen-Buchenwald auf mäßig wechselfeuchtem Buchenntsandsteinlehm,mäßig wechselfeucht,2,50,4,91,5,0,-9
+50023,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,3,91,0,99,-9
+50024,sto03,Buchen-Eichenwald auf grundfeuchtem Niederungssand,grundfeucht,1,50,4,91,0,0,-9
+50025,sto03,Buchen-Eichenwald auf mäßig wechselfeuchtem sandüberdecktem Ton,mößig wechselfeucht,3,50,3,99,7,1,-9
+50026,sto03,Buchen-Eichenwald auf staufrischem Braunerdesand,staufreisch,1,50,3,91,7,1,-9
+50027,sto03,Buchen-Eichenwald auf m wechselfeuchtem Niederungssand,mäßig wechselfeucht,2,50,2,91,6,1,-9
+50028,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,0,-9
+50029,sto03,keine Angabe,keine Angabe,2,50,3,99,0,0,-9
+50030,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,6,0,-9
+50031,sto03,Eichen-Hainbuchenwald auf wechselfeuchtem Niederungslehm,wechselfeucht,3,50,4,91,6,0,-9
+50032,sto03,Eichen-Hainbuchenwald auf wechselfeuchtem Decklehm,wechselfeucht,2,50,2,91,5,1,-9
+50033,sto03,Waldmeister-Buchen Wald auf frischem Niederungslehm,frisch,5,50,3,91,7,0,-9
+50034,sto03,Hainsimsen-Buchen Wald auf frischem Feinlehm,frisch,2,50,4,99,0,0,-9
+50035,sto03,Birken-Eichenwald auf mäßig trockenem Podsolsand,mäßig feucht,1,50,3,99,9,99,-9
+50036,sto03,Eichen-Hainbuchenwald auf feuchtem Decksand,feucht,2,50,1,99,0,0,-9
+50037,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,99,0,0,-9
+50038,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,3,99,0,0,-9
+50039,sto03,keine Angabe,keine Angabe,1,50,3,99,0,0,-9
+50040,sto03,Eichen-Hainbuchenwald auf m wechselfeuchtemMoränenlehm,mäßig wechselfeucht,5,50,4,99,0,0,-9
+50041,sto03,Hainsimsen-Buchen Wald auf mäßig trockenem Schiedergebirgslehm,mäßig trocken,2,50,3,91,5,0,-9
+50042,sto03,Bacherlen-Eschenwald,keine Angabe,4,50,4,99,0,0,-9
+50043,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,6,0,-9
+50044,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,0,-9
+50045,sto03,Flattergras-Buchen Wald auf frischem Feinlehm,frisch,3,50,4,99,0,0,-9
+50046,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,2,99,7,99,-9
+50047,sto03,Hainsimsen-Buchen Wald auf mäßig wechseltrockenem Schiefergebirgslehm,mäßig wechselfeucht,2,50,4,92,0,0,-9
+50048,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mößig frisch,2,50,4,91,0,0,-9
+50049,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,5,0,-9
+50050,sto03,Buchen-Wald auf sehr frischem Feinlehm,sehr frisch,2,50,4,91,5,99,-9
+50051,sto03,"Eichen-Hainbuchenwald auf wechselfeuchtem Fliesslehm, Schattenhanghang",wechselfeucht,3,50,4,91,0,99,-9
+50052,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,6,0,-9
+50053,sto03,Hainsimsen-Buchen Wald Auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,99,9,1,-9
+50054,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,0,0,-9
+50055,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig freisch,2,50,4,91,0,0,-9
+50056,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,0,0,-9
+50057,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Lyditkieselschieferlehm,mäßig frisch,2,50,4,91,0,0,-9
+50058,sto03,Bacherlen-Eschenwald auf feuchtem Niederungslehm,feucht,5,50,4,91,9,99,-9
+50059,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,0,-9
+50060,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,92,9,1,-9
+50061,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,4,92,0,0,-9
+50062,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,4,92,0,1,-9
+50063,sto03,Flattergras-Buchen Wald auf staufrischem Feinlehm,staufrisch,3,50,3,91,0,0,-9
+50064,sto03,"Hainsimsen-Buchen Wald auf frischem Sandschluff, Schattenhanghang",frisch,1,50,4,91,5,0,-9
+50065,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,3,92,5,1,-9
+50066,sto03,Hainsimsen-Buchen Wald auf frischem Feinlehm,frisch,2,50,4,92,0,1,-9
+50067,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,5,1,-9
+50068,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,5,0,-9
+50069,sto03,Eichen-Hainbuchenwald auf feuchtem Niederungssand,feucht,3,50,3,99,7,99,-9
+50070,sto03,"Hainsimsen-Buchen Wald auf frischem Hanglehm, Schattenhanghang",frisch,2,50,4,91,0,99,-9
+50071,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,5,1,-9
+50072,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,3,99,0,2,-9
+50073,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,92,0,99,-9
+50074,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,0,-9
+50075,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,99,9,0,-9
+50076,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,99,7,0,-9
+50077,sto03,Eichen-Hainbuchenwald auf mäßig wechselfeuchtem Kreideton,mäßig wechselfeucht,5,50,4,91,0,99,-9
+50078,sto03,Birken-Eichenwald auf grundfrischem Podsolsand,grundfrisch,1,50,2,99,0,99,-9
+50079,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,92,0,2,-9
+50080,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,99,0,2,-9
+50081,sto03,Hainsimsen-Buchen Wald auf sehr frischem Schiedergebirgslehm,sehr frisch,2,50,4,92,0,99,-9
+50082,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,6,1,-9
+50083,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,1,-9
+50084,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,1,-9
+50085,sto03,"Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm, Schattenhang",mäßig frisch,2,50,4,91,0,1,-9
+50086,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,0,2,-9
+50087,sto03,Eichen-Hainbuchenwald auf mäßig wechselfeuchtem Kreideton,mäßig wechselfeucht,5,50,4,99,0,99,-9
+50088,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,5,99,-9
+50089,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,0,99,-9
+50090,sto03,Hainsimsen-Buchen Wald auf mäßig  frischem Schiedergebirgslehm,mäßig frisch,2,50,4,99,0,1,-9
+50091,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,99,0,1,-9
+50092,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,0,-9
+50093,sto03,"Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm, Schattenhang",mäßig frisch,2,50,4,91,0,1,-9
+50094,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,4,91,0,1,-9
+50095,sto03,"Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm, Schattenhang",frisch,2,50,4,91,0,0,-9
+50096,sto03,"Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,",mäßig frisch,2,50,4,91,6,99,-9
+50097,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,2,91,0,1,-9
+50098,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,99,7,1,-9
+50099,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,0,-9
+50100,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,3,92,0,0,-9
+50101,sto03,Hainsimsen-Buchen Wald auf staufrischem Schiedergebirgslehm,staufrisch,2,50,3,91,0,0,-9
+50102,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,5,50,4,91,5,0,-9
+50103,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,0,-9
+50104,sto03,Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm,frisch,2,50,4,91,0,99,-9
+50105,sto03,"Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm, Sonnenhang",mäßig frisch,2,50,4,91,0,1,-9
+50106,sto03,"Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm, Schattenhang",frisch,2,50,4,91,0,2,-9
+50107,sto03,"Hainsimsen-Buchen Wald auf frischem Schiedergebirgslehm, Schattenhang",frisch,2,50,4,91,0,99,-9
+50108,sto03,Waldmeister-Buchen Wald auf frischem Kalkverwitterungslehm,frisch,4,50,4,91,0,1,-9
+50109,sto03,"Hainsimsen-Buchen Wald auf mäßig frischem Hanglehm, Schattenhanghang",mäßig frisch,2,50,4,99,0,0,-9
+50110,sto03,Hainmieren-Roterlen Wald der Berglandtäler,-9,3,50,4,91,0,1,-9
+50111,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,0,-9
+50112,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,3,91,0,1,-9
+50113,sto03,Waldmeister-Buchen Wald auf mäßig frischem bis mäßig trockenem Kalkverwitterungslehm,mäßig frisch bis mäßig trocken,5,50,1,92,5,0,-9
+50114,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,91,0,1,-9
+50115,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,50,4,91,0,0,-9
+50116,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,50,2,91,0,0,-9
+50117,sto03,Eichen-Hainbuchenwald auf mäßig wechselfeuchtem Feinlehm,mäßig wechelfeucht,3,50,4,91,0,0,-9
+50118,sto03,Eichen-Hainbuchenwald auf grundfeucht Feinlehm,grundfeucht,3,50,4,99,9,0,-9
+50119,sto03,Waldmeister-Buchen Wald auf mäßig frischem Hanglehm,mäßig frisch,4,50,4,91,0,0,-9
+50120,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,92,0,1,-9
+50121,sto03,Waldmeister-Buchen Wald auf frischem Schichtlehm,frisch,5,50,4,99,7,0,-9
+50122,sto03,Platterbsen-Buchen Wald auf mäßig trockenem Kalkverwitterungslehm,mäßig trocken,5,50,3,99,7,0,-9
+50123,sto03,Birken-Eichenwald auf mäßig frischem Decksand,mäßig frisch,1,50,1,99,9,0,-9
+50124,sto03,Birken-Eichenwald auf mäßig frischem Decksand,mäßig frisch,1,50,1,99,9,0,-9
+50125,sto03,Buchen-Eichenwald auf grundfeuchtem Niederungssand,grundfeucht,2,50,2,99,0,0,-9
+50126,sto03,Platterbsen-Buchen Wald auf mäßig trockenem Kalkverwitterungslehm,mäßig trocken,5,50,2,91,0,0,-9
+50127,sto03,Waldmeister-Buchen Wald auf frischem bis hangfrischem Schichtlehm,frisch bis hangfrisch,3,50,3,91,0,0,-9
+50128,sto03,Flattergras-Buchen Wald auf frischem bis mäßig frischem Keuperlehm,frisch bis mäßig frisch,3,50,4,99,9,0,-9
+50129,sto03,Buchen-Eichenwald auf frischem Sandsteinsand,frisch,1,50,4,92,0,99,-9
+50130,sto03,Waldmeister-Buchen Wald auf frischem Kalkverwitterungslehm,frisch,4,50,3,91,0,99,-9
+50131,sto03,Flattergras-Buchen Wald auf mäßig frischem Roetlehm,mäßig frisch,4,50,4,91,0,99,-9
+50132,sto03,Eichen-Hainbuchenwald auf wechselfeuchtem Juralehm,wechselfeucht,3,50,3,91,0,0,-9
+50133,sto03,Eichen-Hainbuchenwald auf mäßig wechselfeuchtem Feinlehm,mäßig wechselfeucht,3,50,3,91,0,0,-9
+50134,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,3,50,4,99,7,99,-9
+50135,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,50,4,91,0,99,-9
+50136,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,50,4,91,0,99,-9
+50137,sto03,Flattergras-Buchen Wald auf mäßig frischem Keuperton,mäßig frisch,3,50,3,91,0,0,-9
+50138,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,50,3,91,0,99,-9
+50139,sto03,Waldmeister-Buchen Wald auf frischem bis mäßig frischem Schichtlehm,mäßig frisch,4,50,3,91,0,99,-9
+50140,sto03,Flattergras-Buchen Wald auf staufrischem Keupersandsteinlehm,staufrisch,3,50,3,91,0,0,-9
+50141,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,4,10,4,-2,0,0,-9
+50142,sto03,Eichen-Hainbuchenwald auf wechselfeuchtem Fliesslehm,wechselfeucht,3,10,3,-2,0,0,-9
+50143,sto03,"Buchen-Eichen Wald auf grundfeucht, Niederungssand",grundfeucht,2,50,3,-9,0,0,-9
+50144,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiedergebirgslehm,mäßig frisch,2,50,4,92,0,0,-9
+50145,sto03,Waldmeister-Buchen Wald auf mäßig frischem Kalkverwitterungslehm,mäßig frisch,5,50,2,91,0,0,-9
+50146,sto03,Hainsimsen-Buchen Wald auf mäßig frischem Schiefergebirgslehm,mäßig frisch,2,50,4,92,0,0,-9

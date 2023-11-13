@@ -1,179 +1,214 @@
 bund_nr,team,datum,gruendigkeit,aktuellgrundwstand,scheinbgrundwstand,bodentyp,podsoligkeit,anmerkung,team_mbp,datum_mbp,team_mbc,datum_mbc,anmerkung_mbp,anmerkung_mbc
-120001,Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,190,-2,,ykn,p1,(v)YK; ab 120 Pürkhammerbohrung; Oberboden gestört: wahrscheinlich tiefgepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",Profil nur bis 120 beprobbar
-120002,Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,125,-2,,bbn,p2,"Sandbraunerde (BBn,p2); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,Hoelzer;Hoevelmann;Bielefeldt,2006-11-08,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120003,Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,170,-2,,bbn,p2,"(vBB,p2); gepflügt; Regenwürmer",Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120004,Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,105,-2,,rzn,p1,"verbraunte (stellenweise) Pararendzina aus carbonathaltigen anthropogenen Ablagerungen über trockengefallenem Moor/Torf (bRZ); gestört: übererdet bis 8dm mit Bauaushub, Baumaterialien (?)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,Hoelzer;Hoevelmann;Bielefeldt,2006-10-31,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120005,Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,170,-2,,bbn,p1,"Grandsandbraunerde ( (v)BBn); Vollumbruch; 45 bis 170: stellenweise deutlich aufschäumend, stellenweise nicht reagierend",Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120006,Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,230,-2,,gg-bb,p1,reliktischer Braunerde- Gley (vBB-GG); gestört: alter unscharfer Pflughorizont,Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120007,Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,160,-2,,bbn,p3,"(Grand)Sandbraunerde (BB,p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120008,Hoelzer;Hoevelmann;Eglin,2006-08-28,195,-2,,bb-pp,p1,"Profil auf forstlicher Verkehrswegeinsel, streifengepflügt rudimentär - zerfahren; Profil in Fahrspur, Oberboden durch Schwarzwild und Befahrung flächig gestört",Hoelzer;Hoevelmann;Eglin,2006-08-28,Hoelzer;Hoevelmann;Eglin,2006-08-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120009,Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,160,-2,,ykn,p2,"tiefvergleytes Kolluvium (gYK,p2); gestört: zum größten Teil deutlich übererdet",Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120010,Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,200,-2,,lf-bb,p3,"( (v)LF-BB, p3); streifengepflügt; auf Rückegasse",Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,Hoelzer;Hoevelmann;Bielefeldt,2006-10-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120011,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,170,-2,,lf-bb,p1,tiefpseudovergleyter Fahlerde- Podsol oder tiefpseudovergleyte + reliktisch vergleyte Fahlerde- Braunerde (sv LF-PP oder sv LF-BB); streifengepflügt; wahrscheinlich gedüngt,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120012,Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,205,-2,,bbn,p4,"Staubsandbraunerde, stark podsolig (tiefvergleyt)( (g)BB,p4)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120013,Hoelzer;Hoevelmann;Eglin,2006-08-22,210,-2,,bb-yu,p3,Treposol aus podsolierter Sandbraunerde (PP-BB-Yn),Hoelzer;Hoevelmann;Eglin,2006-08-22,Hoelzer;Hoevelmann;Eglin,2006-08-22,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120014,Hoelzer;Hoevelmann,2006-05-10,200,-2,,gg-bb,p2,sw. podsolierte reliktische Gley -Braunerde,Hoelzer;Hoevelmann,2006-05-10,Hoelzer;Hoevelmann,2006-05-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120015,Hoelzer;Hoevelmann;Bielefeldt,2006-10-23,120,125,95,gg,p1,"wahrscheinlich reliktischer Annmoor über Gley, abgeschoben zu gepflügtem Humusgley (GGe-(v)GGh); streifengepflügt; stark verdichtet; Regenwürmer; Aa abgeschoben auf einen Wall außerhalb des Bestandes",Hoelzer;Hoevelmann;Bielefeldt,2006-10-23,Hoelzer;Hoevelmann;Bielefeldt,2006-10-23,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120016,Hoelzer;Hoevelmann;Bielefeldt,2006-10-27,170,-2,,yk-pp,p1,"(BB-PP, oder bYK-PP); stellenweise deutlich verdichtet",Hoelzer;Hoevelmann;Bielefeldt,2006-10-27,Hoelzer;Hoevelmann;Bielefeldt,2006-10-27,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120017,Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,190,-2,,lld,p1,Bänderparabraunerde (LLd);gepflügt; Ackerrandlage,Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120018,Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,190,-2,,ll-bb,p2,"podsolig, fahlerdeartige Bänderparabraunerde- Braunerde (dLLd-BB, p2); Horizontierung an Profilwand -OST:  Profilfront gestört",Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,Hoelzer;Hoevelmann;Bielefeldt,2006-11-01,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120019,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,155,-2,,bb-rq,p3,"regosolartige (Flug-) Sandbraunerde tiefvergleyt (BB-RQ, p3)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120020,Hoelzer;Hoevelmann;Bielefeldt,2006-11-06,170,-2,,ykn,p1,kalkhaltiges Kolluvium (cYK); wahrscheinlich gepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-11-06,Hoelzer;Hoevelmann;Bielefeldt,2006-11-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120021,Hoelzer;Hoevelmann;Bielefeldt,2006-11-03,205,-2,,bbn,p3,"(Grand-)Sandbraunerde (BBn,p3); Horizontierung an der SSw- Wand; streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-03,Hoelzer;Hoevelmann;Bielefeldt,2006-11-03,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120022,Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,155,-2,,ykn,p4,"stark podsolige Sandbraunerde, kolluvial überprägt im tieferen Unterboden reliktisch vergleyt (BB-K , p4); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120023,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120024,Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,180,-2,,bbn,p3,"Sandbraunerde (BBn,p3); Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120025,Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,205,-2,,bbn,p3,"(Staub)Sandbraunerde reliktisch vergleyt (tiefvergleyt) (BB,p3); flächig zerfahren, verdichtet, Gw wahrscheinlich wurzelerreichbar",Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120026,Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,185,-2,,lf-bb,p3,"Fahlerde-Braunerde, tiefpseudovergleyt (LF_BB, p3)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120027,Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,160,-2,,bbn,p3,"Grandsandbraunerde (BBn, p3); gepflügt, befahren (Harvester)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,Hoelzer;Hoevelmann;Bielefeldt,2006-11-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120028,Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,200,-2,180,gg-yu,p3,"reliktischer Gley - Treposol, aktuell wurzelerreichbar vergleyt (GG-YU, p3); streifengepflügt nach Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120029,Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,160,-2,160,gg-bb,p3,"(GG-BB,p3)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120030,Hoelzer;Hoevelmann;Bielefeldt,2006-11-10,155,-2,,gg-bb,p4,"stark podsolig, reliktische Gley- Braunerde, tiefvergleyt (GG-BB,p4); gepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-10,Hoelzer;Hoevelmann;Bielefeldt,2006-11-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120031,Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,185,-2,,bbn,p3,"(BB/Ll-Lf, p3); Oberboden gestört: wahrscheinlich Pflug",Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120032,Hoelzer;Hoevelmann;Bielefeldt,2006-11-19,155,-2,,gg-pp,p1,reliktischer Gley - Podsol ( (GG-)PP ); gepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-11-19,Hoelzer;Hoevelmann;Bielefeldt,2006-11-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120033,Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,200,-2,,bbn,p3,"Sandbraunerde (BBn, p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120034,Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,170,-2,,bbn,p2,"Sandbraunerde (schwach podsolig) (BBn,p2); gepflügt; Profil SE-Seite gestört: stellenweise bis 90",Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120035,Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,210,-2,,bbn,p3,"mäßig podsolig, im Unterboden gebänderte Sandbraunerde ( (v)BBn,p3); Vollumbruch; im Untergrund schluffig-(glazi)fluviatile(Becken-?) Bänderung,",Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,Hoelzer;Hoevelmann;Bielefeldt,2006-11-15,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120036,Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,205,205,,bbn,p3,"reliktisch vergleyte Sandbraunerde(BB,p3) aktuell tiefvergleyt; Vollumbruch, streifengepflügt; Horizontierung NO-Seite: Front gestört",Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120037,Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,140,-2,,bb-pp,p1,reliktisch vergleyter Treposol aus Braunerde - Podsol (BB-PP-YU),Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,Hoelzer;Hoevelmann;Bielefeldt,2006-11-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120038,Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,185,-2,,lf-bb,p2,"Sandbraunerde, gekappt, im Unterboden gebändert (LFd-BB, p2)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120039,Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,210,-2,,bbn,p2,"Sandbraunerde über gebänderten glazifluviatilen Sanden (BBn, p2); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,Hoelzer;Hoevelmann;Bielefeldt,2006-11-23,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120040,Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,180,-2,,bbn,p3,Grandsandbraunerde (BB; p3); Profil auf Rückegasse; streifengepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120041,Hoelzer;Hoevelmann;Eglin,2006-08-29,165,-2,,bbn,p4,podsolierte Lockersandbraunerde über Grandsand; ppYU Treposol aus Podsol (Aber Ap nicht durchgehend >40); Vollumbruch,Hoelzer;Hoevelmann;Eglin,2006-08-29,Hoelzer;Hoevelmann;Eglin,2006-08-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120042,Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,155,-2,,bbn,p4,"Staubsandbraunerde reliktisch vergleyt (BB,p4); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120043,Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,175,-2,,bbn,p3,"Sandbraunerde, reliktisch im Unterboden vergleyt und schwach pseudovergleyt; streifengepflügt; Untergrenze vom Damm-Hochpunkt gemessen",Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120044,Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,180,-2,,bbn,p3,"Sandbraunerde (BB,p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120045,Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,200,-2,,bbn,p4,"Sandbraunerde, podsolierte (BB,p4); streifengepflügt; Verdichtung: Harvester",Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,Hoelzer;Hoevelmann;Bielefeldt,2006-09-27,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120046,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,200,-2,,bbn,p3,tiefvergleyte (+ reliktisch vergleyte) Sandbraunerde,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120047,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,190,-2,,bbn,p2,(Grand-)Sandbraunerde; möglicherweise gepflügt; Oberboden verdichtet,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120048,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,190,-2,,bbn,p2,(sehr) schwach podsolig im Tieferen pseudovergleyte Braunerde (aus Sp+Sgf) über wurzelerreichbarem Mergel; streifengepflügt; Hori.Nr.: 4: eo = gebändert vor allem an Untergrenze mit Kalk; Hori.Nr.:6: wf1= hpts. an Untergrenze,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120049,Hoelzer;Hoevelmann;Bielefeldt,2006-06-19,200,-2,,bbn,p2,reliktisch lessivierte pseudovergleyte schwach podsolige (Merkmalspara-) Braunerde (BB); Hori.Nr5: tuffartige Kalk - Konkretionen,Hoelzer;Hoevelmann;Bielefeldt,2006-06-19,Hoelzer;Hoevelmann;Bielefeldt,2006-06-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120050,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,200,-2,,bbn,p2, Sandbraunerde; Hori.Nr. 4+5: eh = fleckig gebändert; streifengepflügt (Vollumbruch); altes Profil als Störung in der linken Profilwand,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120051,Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,180,-2,,bbn,p2, lessivierte gepflügte Braunerde / Acker - BB; streifengepflügt nach Vollumbruch,Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120052,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,150,-2,,bb-ss,p1,lessivierter Braunerde- Pseudogley; Bodenbearbeitung möglich vor allem Seitenwand; (streifengepflügt); ab125 Regenstauwasser bis 150cm uGof,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,Hoelzer;Hoevelmann;Bielefeldt,2006-06-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","Lfd.Nr 7: nach Gewitterguss höherer Stauwassseranteil als bei Profilansprache, Pürkhammmerbohrung auf Stufe oberhalb Stauwasser"
-120053,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,200,-2,200,bbn,p3,podsolige Sandbraunerde im tieferen  Unterboden (reliktisch) vergleyt; Hori.Nr.: Grenze 120-130= wf2; streifengepflügt; altes Profil linke Stirnwand; Erlenbruch in Nachbarschaft ca >2m Geländeabfall;,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","Horiz.Nr.7: c0, aber im benachbarten Bestand Zeigerpflanzen"
-120054,Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,190,-2,,bbn,p2,"reliktisch vergleyte Braunerde; streifengepflügt; z.T. tiefer gepflügt; Rinne: heterogene Durchmischung Ap+ Bv1,2 bis 100; Horiz  160-190: auch mit verbraunten Knollen",Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",Horizonte heterogen verwirrgt
-120055,Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,180,-2,,bbn,p3,podsolierte Sandbraunerde; streifengepflügt; stellenweise Auftrag; Yj +10cm ; Hori.Nr.3: linke Profilwand durchgehend Sl2 intensiv verbraunt; podsolierte Sandbraunerde,Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,Hoelzer;Hoevelmann;Bielefeldt,2006-06-15,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120056,Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,180,-2,,ss-bb,p3,"verfahlte  Braunerde; Oberboden stark befahren, ausgehagerte Erscheinung, linke Profilhälfte wirkt gestört",Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,Hoelzer;Hoevelmann;Bielefeldt,2006-06-22,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",58-100 inhomogen
-120057,Hoelzer;Hoevelmann;Bielefeldt,2006-07-18,175,200,,gg-bb,p2,Gley - Sandbraunerde (reliktischer Gley mit Restverbraunung und aktueller Verlegung im tieferen Unterboden (wurzelerreichbar)); streifengepflügt oder Wiesenumbruch,Hoelzer;Hoevelmann;Bielefeldt,2006-07-18,Hoelzer;Hoevelmann;Bielefeldt,2006-07-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120058,Hoelzer;Hoevelmann;Bielefeldt,2006-07-18,195,-2,,bbn,p2,(wahrscheinlich tiefvergleyte) Sandbraunerde; streifengepflügt; Oberboden stark gestört,Hoelzer;Hoevelmann;Bielefeldt,0206-07-18,Hoelzer;Hoevelmann;Bielefeldt,2006-07-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120059,Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,185,-2,,bbn,p4,"(Zwerg- Podsol) Sandbraunerde stark podsolig (BB,p4); OB gestört aber keine Bearbeitung erkennbar",Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,Hoelzer;Hoevelmann;Bielefeldt,2006-10-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120060,Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,135,-2,,bbn,p2,"Grandsandbraunerde oder schwach lessivierte p2BB, im Unter(boden)grund kalkhaltig; Grundwasseranschluss im tieferen Untergrund nicht auszuschließen, aber wg. Skelett nicht aufzugraben, nicht zu erbohren, also: nicht zu verifizieren;",Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","wg. Skelett keine tiefere Beprobung (nicht aufzugraben, nicht zu erbohren)"
-120061,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,200,-2,,bbn,p3,"mäßig podsolige Sandbraunerde über wurzelreichem kalkhaltigem Feinkies Sgf; aber an Satelliten p4,( PP-BB); Hori.Nr.4: von 95-110= wf2; streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,Hoelzer;Hoevelmann;Bielefeldt,2006-06-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120062,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,170,-2,,bbn,p3,Grandsandbraunerde,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120063,Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,190,-2,200,bb-pp,p1,Braunerde - Podsol (tiefvergleyt - wahrscheinlich) (vBB-PP); deutliche Verdichtung: auf Rückegasse,Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120064,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120065,Hoelzer;Hoevelmann;Eglin,2006-06-06,185,-2,,bbn,p1,pseudovergleyte (Acker-) Braunerde mit  eschartigem Oberboden (eher Garten- als Ackerboden); (alternativ: BBh ?),Hoelzer;Hoevelmann;Eglin,2006-06-06,Hoelzer;Hoevelmann;Eglin,2006-06-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120066,Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,180,-2,,pp-bb,p1,streifengepflügt; reliktisch vergleyt (> 40 dm); Regenwurm bei Probenahme Aeh 0-15 cm; Tiefenstufe: 120-180: Eiskeile,Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,Hoelzer;Hoevelmann;Bielefeldt,2006-06-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120067,Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,180,-2,,bbn,p2,Hori.Nr.5: knisterndes Lehmband (wf3-4); Sgf+Lg Reste noch carbonathaltig,Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120068,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,200,-2,,pp-bb,p3,Hori.Nr.4: gerundete Steine; mehrfachumgelagerter Geschiebedecksand,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120069,Hoelzer;Hoevelmann;Bielefeldt,2006-06-14,180,-2,,bbn,p3,"ohne Bodenbearbeitung wäre es wahrscheinlich PP-BB; 0-35: Ap gestört, streifengepflügt (nach vorangegangener tieferen Bearbeitung?); bei 2,6m kein scheinbarer GW",Hoelzer;Hoevelmann;Bielefeldt,2006-06-14,Hoelzer;Hoevelmann;Bielefeldt,2006-06-14,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","0-5, 5-10, 10-35 am Profil deutlich gestört"
-120070,Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,175,-2,,bbn,p4,"Lockersandbraunerde, reliktisch vergleyt (BBn,p4)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,Hoelzer;Hoevelmann;Bielefeldt,2006-10-09,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120071,Hoelzer;Damman,2006-05-29,150,-2,,bbn,p2,streifengepflügt,Hoelzer;Damman,2006-05-29,Hoelzer;Damman,2006-05-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120072,Hoelzer;Damman,2006-05-29,170,-2,,ss-bb,p2,,Hoelzer;Damman,2006-05-29,Hoelzer;Damman,2006-05-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120073,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,205,-2,,pp-bb,p1," humoser, reliktisch vergleyter und bearbeiteter Zwerg - Podsol ; Sto ca. 7cm übererdet; zw. 30-50cm gepflügt;  Hori.Nr.1: Störung streifengepflügt + geringmächtige Übererdung",Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120074,Hoelzer;Damman,2006-05-16,150,-2,,pp-bb,p1,Podsol - Braunerde,Hoelzer;Damman,2006-05-16,Hoelzer;Damman,2006-05-16,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120075,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,175,-2,,gg-yu,p4, tiefgepflügter podsolierter Gley ; Stubbenrodung/Humus abgeschoben,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120076,Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,170,-2,,bbn,p2,"Sandbraunerde, p2;",Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,Hoelzer;Hoevelmann;Bielefeldt,2006-06-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120077,Hoelzer;Damman,2006-06-01,170,-2,,ykn,p2,Kolluvium;,Hoelzer;Damman,2006-06-01,Hoelzer;Damman,2006-06-01,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120078,Hoelzer;Damman,2006-05-30,190,-2,,bb-ss,p2,,Hoelzer;Damman,2006-05-30,Hoelzer;Damman,2006-05-30,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120079,Hoelzer;Damman,2006-05-17,140,-2,,bb-lf,p2,schwach pseudovergleyt Brauerde-Fahlerde (Bt-Horizonte fehlen); BhvAeh: Mischhorizont durch Bearbeitung,Hoelzer;Damman,2006-05-17,Hoelzer;Damman,2006-05-17,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120080,Hoelzer;Hoevelmann;Eglin,2006-08-24,-2,18,,ghn,p1,Niedermoorgley; Moormächtigkeit größer als 1m: keine Mineralprobe möglich,Hoelzer;Hoevelmann;Eglin,2006-08-24,Hoelzer;Hoevelmann;Eglin,2006-08-24,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",entfällt
-120081,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,180,205,165,bbn,p3,vergleyte podsolige Braunerde,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,Hoelzer;Hoevelmann;Bielefeldt,2006-06-08,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120082,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120083,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,165,165,140,gg-rq,p2,"schwach verbraunter Gley - Regosol, ehem. Acker aus Talsanden, Flugsand beeinflusst, sehr humos; Regenwurm (lu,en)",Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120084,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,200,-2,,lf-ss,p2,verfahlte Parabraunerde - Pseudogley,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120085,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,170,-2,,ss-bb,p2,gut erschließbare SS-BB im Untergrund kalkhaltig,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,Hoelzer;Hoevelmann;Bielefeldt,2006-06-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120086,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,205,-2,,bbn,p3,"Sandbraunerde (mäßig - stark) podsolig; Oberboden gestört: befahren, Schwarzwild",Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120087,Hoelzer;Hoevelmann;Bielefeldt,2006-06-26,190,-2,,ss-lf,p2,Pseudogley Tieflehm-Fahlerde mit wurzelerreichbaren Mergel (p2); 170-190: wahrscheinlich C5 aber Salzsäure verschüttet;,Hoelzer;Hoevelmann;Bielefeldt,2006-06-26,Hoelzer;Hoevelmann;Bielefeldt,2006-06-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120088,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,200,-2,,bbn,p2,schwach podsolige (Grand-) Sandbraunerde; eventuell alte Streifenpflugbearbeitung,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,Hoelzer;Hoevelmann;Bielefeldt,2006-06-27,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120089,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,220,-2,,bbn,p2,"sehr podsolige Sandbraunerde (reliktisch) tiefvergleyt; streifengepflügt, Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,Hoelzer;Hoevelmann;Bielefeldt,2006-07-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120090,Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,175,-2,180,gg-bb,p2,"tiefvergleyte Sandbraunerde (in der Veg.- Periode); in Aushub Kalk- Konkretionen, kreideartig aber in keiner Profilwand wieder zu finden;",Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120091,Hoelzer;Hoevelmann;Bielefeldt,2006-07-03,200,-2,,bb-rq,p2,"(Fein)Sandbraunerde, tiefvergleyt; streifengepflügt; bis 130 Eiskeile;",Hoelzer;Hoevelmann;Bielefeldt,2006-07-03,Hoelzer;Hoevelmann;Bielefeldt,2006-07-03,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","gestörte Profilwände: Probenahme: 10-80= vom Profileinstieg, 80-220= von Profilfront;"
-120092,Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,180,185,135,lf-bb,p1,verfahlte Gley(Acker)Braunerde; Staubsand; Vollumbruch,Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120093,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,200,-2,,bbn,p2,podsolige Sandbraunerde; streifengepflügt;  im UBo wurzelerreichbarer saisonaler Hangwasserzug,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",Oberbodenstörungen durch Schwarzwild + Streifenpflug
-120094,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,160,135,,yk-gg,p2,Kolluvium - Gley; GW bei 135 beim Aufgraben im Frühjahr; großflächige Wühlarbeit von Schwarzwild,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120095,Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,195,-2,,bbn,p3,"Sandbraunerde (BBn,p3); streifengepflügt; stellenweise verdichtet",Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,Hoelzer;Hoevelmann;Bielefeldt,2006-10-30,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120096,Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,140,-2,,pp-bb,p1,"Zwerg - Podsol (PP-BB, ( BBn, p4)); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,Hoelzer;Hoevelmann;Bielefeldt,2006-11-17,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120097,Hoelzer;Hoevelmann;Bielefeldt,2006-06-11,135,140,120,yon,p1,"Gley - Hortisol (GG-YO); Regenwürmer; Problem: 0-30 ungestört, 30-60 schwach gestört, 60-114 stark gestört, evt. Erklärung: alter Entwässerungsgraben",Hoelzer;Hoevelmann;Bielefeldt,2006-07-11,Hoelzer;Hoevelmann;Bielefeldt,2006-07-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120098,Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,150,70,35,ghn,p1,"Gley - Niedermoor, fängt an zu vererden",Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,Hoelzer;Hoevelmann;Bielefeldt,2006-07-10,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","0-5 + 5-10: Bohrung=Muhrach-Bohrer 8cm Durchmesser; 10-20,20-30: C-Probe am Profil"
-120099,Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,200,-2,,ol-rq,p1,Lockersyroem - Regosol aus kalkfreien Schüttsanden mit Einschlüssen aus kalkhaltiger Mudde (bis ca. 6 dm u. GOF) über kalkhaltigen Kippsanden bis ca. 20 dm u. GOF über kalkfreien Kippsanden; alle Schüttungen aus natürlichen Ausgangssubstraten (Schmelzwass,Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120100,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,195,-2,,bbn,p3,"(Grand) Sandbraunerde, mäßig bis stark podsolig; flache Bearbeitung",Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120101,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,200,-2,,ss-lf,p2,verfahlte Bänderparabraunerde pseudovergleyt; gepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120102,Hoelzer;Hoevelmann;Bielefeldt,2006-07-25,200,-2,,gg-rq,p4,"tiefvergleyt Regosol - Podsol- Brauerde (GG-RQ-BB) bzw. Podsol Staubsandbraunerde, tiefvergleyt (RQ-PP-BB); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-07-25,Hoelzer;Hoevelmann;Bielefeldt,2006-07-25,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120103,Hoelzer;Hoevelmann;Bielefeldt,2006-07-11,180,-2,,pp-bb,p1,Podsol (Sand) Braunerde; streifengepflügt; Übererdung aus altem Profilaushub; altes Profil in Westwand,Hoelzer;Hoevelmann;Bielefeldt,2006-07-11,Hoelzer;Hoevelmann;Bielefeldt,2006-07-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120104,Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,175,-2,,lld,p2,"schwach podsolige, (schwach) pseudovergleyte, (schwach) verfahlte, (Bänder) Parabraunerde, (fdLLd); streifengepflügt?",Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120105,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,205,-2,200,bbn,p2,flächig befahren; im Frühjahr wahrscheinlich Grundwasser wurzelerreichbar,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120106,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,190,-2,,ss-lf,p1,pseudovergleyte Tieflehm Fahlerde mit schwachen Rest- Verbraunung. im OB über wurzelerreichbarem Mg/Lg,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,Hoelzer;Hoevelmann;Bielefeldt,2006-07-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","130-170=extrem hart, 55-130 sehr heterogen: keine Trennung; 170-190 = linke Profilwand"
-120107,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,190,-2,,lld,p2,(s)LLd; an den Sat: stellenw. : p3-p4,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,Hoelzer;Hoevelmann;Bielefeldt,2006-07-17,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120108,Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,160,-2,,yyn,p1,"(Grand) Sandbraunerde; Bändersandbraunerde mit Mergel in Knollen; Wiese, fast Freilage, homogener Ap, östliche Profilwand stark gestört (altes Profil), Mergelreste",Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,Hoelzer;Hoevelmann;Bielefeldt,2006-06-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120109,Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,180,-2,,bbn,p3,Sandbraunerde mäßig(schwach) podsolig; Ap(3-22) verdichtet (Verhärtungen aus Podsolierung möglich),Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,Hoelzer;Hoevelmann;Bielefeldt,2006-07-05,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120110,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,220,-2,,bb-yu,p2,Braunerde Treposol; Vollumbruch; stark befahren; Saalezeitliche Stauchungskomplexe,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120111,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,200,-2,,bbn,p2,Acker- Sandbraunerde; im Oberboden (Ap-Bv deutlich schwere Verdichtung); Störung in Profilfront: 50-110,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,Hoelzer;Hoevelmann;Bielefeldt,2006-07-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120112,Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,160,-2,,bbn,p4,"Sandbraunerde (BB, p4); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120113,Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,170,-2,190,bbn,p2,Sandbraunerde,Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,Hoelzer;Hoevelmann;Bielefeldt,2006-07-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120114,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,180,-2,,bbn,p3,streifengepflügt; befahren mit Harvester; p2-p3;,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,Hoelzer;Hoevelmann;Bielefeldt,2006-07-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120115,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,170,-2,,ss-lf,p3,"sehr dicht, pseudovergleyte Tieflehmfahlerde mit Restverbraunung, freier Kalk noch wurzelerreichbar ;streifengepflügt; Oberboden wirkt relativ humusfrei;  verlegtes Profil",Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,Hoelzer;Hoevelmann;Bielefeldt,2006-06-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120116,Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,190,-2,,bb-pp,p1,Sandbraunerde Podsol,Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120117,Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,140,145,150,gg-yu,p1,Tiefumbruchboden- Gley; Vollumbruch (nach1970) davor mit Planierraupe Stubben abgeschoben,Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120118,Hoelzer;Hoevelmann;Eglin,2006-08-31,165,-2,,ppn,p1,"schwach ausgeprägter Podsol (Zwerg- Podsol), aus armen, glazi- fluviatilen Talsanden, bis 65cm periglazial überprägt (PP)",Hoelzer;Hoevelmann;Eglin,2006-08-31,Hoelzer;Hoevelmann;Eglin,2006-08-31,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120119,Hoelzer;Hoevelmann;Eglin,2006-08-31,100,90,70,gmn,p1,reliktischer Anmoor- Gley über Gley (GM) ; c4 nur Geschiebemergel,Hoelzer;Hoevelmann;Eglin,2006-08-31,Hoelzer;Hoevelmann;Eglin,2006-08-31,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120120,Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,170,-2,,bb-lf,p2,"(bLF-LL, p2); Kieslinsen nicht beprobt",Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,Hoelzer;Hoevelmann;Bielefeldt,2006-10-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120121,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120122,Hoelzer;Hoevelmann;Eglin,2006-08-29,170,-2,,bb-rq,p2,"Locker- Sandbraunerde (BB, p3); streifengepflügt; Profilmorphologie kaum zu erkennen",Hoelzer;Hoevelmann;Eglin,2006-08-29,Hoelzer;Hoevelmann;Eglin,2006-08-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120123,Hoelzer;Hoevelmann;Eglin,2006-08-29,180,-2,,bb-rq,p2,"Sandbraunerde (BB,p2-p3); 10-28: Störung: kolluvial überflossen?, Auftrag?; streifengepflügt",Hoelzer;Hoevelmann;Eglin,2006-08-29,Hoelzer;Hoevelmann;Eglin,2006-08-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120124,Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,190,-2,,lfd,p2,"schwach podsolige, schwach pseudovergleyte, verfahlte Bänderbraunerde, (s)LF-LD); streifengepflügt; OB deutlich gestört",Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,Hoelzer;Hoevelmann;Bielefeldt,2006-07-24,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120125,Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,200,-2,,bb-rq,p1,"Podsol Staubsandbraunerde, PP-BB-RQ bzw. b PP-RQ; OB verdichtet: ehem. Militär. Übungsgelände",Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,Hoelzer;Hoevelmann;Bielefeldt,2006-07-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120126,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120127,Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,220,-2,,bbn,p3,"Braunerde- Treposol, (Locker) Sandbraunerde, umgebrochen mäßig podsolig; Truppenübungsplatz",Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,Hoelzer;Hoevelmann;Bielefeldt,2006-09-04,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120128,Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,200,-2,,bbn,p3,Sandbraunerde (BBn oder BB-RQ); wahrscheinlich streifengepflügt; OB durch Schwarzwild gestört,Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120129,Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,170,-2,,rq-bb,p2,"Regosol- Braunerde, tiefvergleyt; streifengepflügt; Profilfront z.T. übererdet",Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,Hoelzer;Hoevelmann;Bielefeldt,2006-07-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120130,Hoelzer;Hoevelmann;Bielefeldt,2006-10-05,200,-2,,bbn,p4,"Sandbraunerde mit reliktischen Gley- Merkmalen (BBn,p4)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-05,Hoelzer;Hoevelmann;Bielefeldt,2006-10-05,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120131,Hoelzer;Hoevelmann;Eglin,2006-08-28,200,-2,,bbn,p2,"Sandbraunerde, tiefpseudovergleyt, (s)BB; Vollumbruch, streifengepflügt",Hoelzer;Hoevelmann;Eglin,2006-08-28,Hoelzer;Hoevelmann;Eglin,2006-08-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120132,Hoelzer;Hoevelmann;Eglin,2006-08-28,65,65,10,kvn,p1,flaches Niedermoor im Übergang zu Erdniedermoor über Gley mit Restverbraunung (KV-HN/ bG`G`); ehemalige GW-Stand lag bei +25cm ü GOK,Hoelzer;Hoevelmann;Eglin,2006-08-28,Hoelzer;Hoevelmann;Eglin,2006-08-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120133,Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,180,-2,,bbn,p2,"streifengepflügt; Sandbraunerde (BB,p2), wahrscheinlich reliktisch vergleyt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120134,Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,200,-2,,bbn,p2,"Sandbraunerde ((v)BB) nicht beackert sondern gepflügt, im tieferen Unterboden reliktisch vergleyt; Pflugsohlen = Verdichtung; streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,Hoelzer;Hoevelmann;Bielefeldt,2006-09-06,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120135,Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,190,-2,,bbn,p2,"Sandbraunerde (BB,p2)",Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120136,Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,195,-2,,lfn,p2,"Fahlerde ((d,b)LFn), Oberboden mit Restverbraunung, Unterboden schwache Bänderung; streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120137,Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,195,-2,200,ppn,p1,"tiefvergleyter Podsol aus Staubsand über fossilem Podsol aus Staubsand über Tal (?)Sanden (PP); Oberboden deutlich gestört: kein streifengepflügt erkennbar, möglich wäre ein sehr gleichmäßiger Auftrag (+0,65) mit Talsanden (Überflutung) später Bodenentwic",Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120138,Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,190,-2,,ppn,p1,Grandsandbraunerde über Podsol über Tieflehm (PPv); streifengepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,Hoelzer;Hoevelmann;Bielefeldt,2006-10-03,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120139,Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,185,-2,,bb-lf,p1,"Acker- Fahlerde, Acker- Regosol (BB-LF); Vollumbruch; Profileinstieg geologisch anders als Profilfront",Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,Hoelzer;Hoevelmann;Bielefeldt,2006-09-18,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120140,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,200,-2,,ppn,p1,Podsol (vPP); Vollumbruch,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120141,Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,200,-2,,lfn,p2,"Fahlerde (LF,p2); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120142,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,180,-2,,bbn,p3,"Sandbraunerde (vBB,p3); gepflügt; verdichtet",Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120143,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,200,-2,,bb-pp,p1,Zwerg- Podsol im Unterboden reliktisch vergleyt (BB-PP); Auswehungsmulde; keine Bodenbearbeitung,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120144,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,200,-2,,bbn,p2,"Sandbraunerde im Unterboden gebänderter Cv (BB,p2); gepflügt, verdichtet",Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,Hoelzer;Hoevelmann;Bielefeldt,2006-09-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120145,Hoelzer;Hoevelmann;Bielefeldt,2006-09-28,200,-2,,lfn,p2,"Fahlerde (LF,p2); Oberboden flächig gestört: Lehm- Pingen oder Bombentrichter; Steinsohle aus Profil entfernt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-28,Hoelzer;Hoevelmann;Bielefeldt,2006-09-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120146,Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,195,-2,,lfn,p2,"pseudovergleyte Tieflehm- Fahlerde (LF_LL, s,p2); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,Hoelzer;Hoevelmann;Bielefeldt,2006-10-02,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120147,Hoelzer;Hoevelmann;Bielefeldt,2006-09-21,200,-2,,bbn,p2,"Grandsandbraunerde (BB); Störung in der Profilwand: alte Grabung/ Plastik; (kiesig, grobsandige) Schmelzwassersande Elsterzeitlich mit Beckenabsätzen (Lt2?) in Knollen und Bändern",Hoelzer;Hoevelmann;Bielefeldt,2006-09-21,Hoelzer;Hoevelmann;Bielefeldt,2006-09-21,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120148,Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,200,-2,,oln,p1,"Klipp- und Aufschüttungboden, verbraunender Lockersyrosem aus Klipplehmen im Unterboden schwach pseudovergleyt; !!!völlig gestörte Profilsituation!!!",Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120149,Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,180,180,160,pp-bb,p1,podsolierte Sandbraunerde tiefvergleyt; streifengepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,Hoelzer;Hoevelmann;Bielefeldt,2006-09-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120150,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,170,180,150,gg-pp,p1,??Auftragsboden/ reliktischer Anmoor/ Gley- Podsol/ Gley-Humuspodsol (GG-PP)?; starke Oberbodenstörung: ehem. Abbaugebiet,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,Hoelzer;Hoevelmann;Bielefeldt,2006-09-11,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",streifengepflügt; Braunkohletageabbau: sehr stark gestört
-120151,Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,155,-2,,ss-lf,p3,"tiefvergleyte Pseudogley- Fahlerde (gSS-LF, p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120152,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120153,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,200,-2,,ol-rq,p1,Lockersyrosem- Regosol (OL-RQ) aus gekippten Kiessanden über gekippten Sanden mit hellem Ton über gekippten Sanden; Aufschüttboden,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,Hoelzer;Hoevelmann;Bielefeldt,2006-09-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",Kombination der Beprobunggrenzen nach Substratwechsel der Schüttung und Tiefenstufen
-120154,Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,170,-2,,gmn,p1,"reliktischer Anmoor bis Stagnogley, entwässertes Erdniedermoor- Stagnogley, (rGM) Oberboden gepflügt und zu Streifen zusammengeschoben",Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)","Horizonttiefen / TS von Position auf Damm entschieden, starke Störung bis 45cm"
-120155,Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,170,-2,,bbn,p2,"kultotrophe Acker-, Grandsandbraunerde (ku BB,p2) für Hortisol zu geringmächtig vor allem kein deutlich erhöhter Humusgehalt; Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,Hoelzer;Hoevelmann;Bielefeldt,2006-09-14,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120156,Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,200,210,,ppn,p1,Podsol (PP) tiefvergleyt; Bodenverdichtung: Harvester,Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,Hoelzer;Hoevelmann;Bielefeldt,2006-09-25,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120157,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,205,-2,,bbn,p3,"Sandbraunerde im Unterboden reliktisch vergleyt (BBn, p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,Hoelzer;Hoevelmann;Bielefeldt,2006-11-28,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120158,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120159,Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,80,80,50,gg,p1,pseudovergleyter Erdniedermoor- Gley bzw Erdniedermoor- Stagnogley (s KV-GG (KV-SG)),Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,Hoelzer;Hoevelmann;Bielefeldt,2006-11-29,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120160,Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,185,-2,,bbn,p3,"reliktisch vergleyte Sandbraunerde (BBn, p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,Hoelzer;Hoevelmann;Bielefeldt,2006-11-22,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120161,Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,175,-2,,bbn,p4,"streifengepflügte, fahlerdeartige, (reliktisch pseudo-) vergleyte, podsolierte/ stark podsolige Grundsandbraunerde (mit Flugsandüberdeckung); Farbe: lfd.Nr.3: auch 7,5YR 5/8",Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,Hoelzer;Hoevelmann;Bielefeldt,2006-09-05,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120162,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120163,Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,160,-2,,bbn,p2,"(BBn, p2); Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120164,Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,110,100,80,ggn,p1,"(GGn); Profil gestört: abgeschoben, Vollumbruch",Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120165,Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,170,-2,,bbn,p3,"mäßig podsolige Sandbraunerde im Unterboden gebändert (BB,p3); streifengepflügt",Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,Hoelzer;Hoevelmann;Bielefeldt,2006-09-13,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120166,-9,1970-01-01,-9,-9,,-9,-9,,-9,1970-01-01,-9,1970-01-01,,
-120167,Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,200,-2,,yu,p2,"Ackerbraunerde im U-Boden reliktisch, vergleyt und schwach pseudovergleyt; Vollumbruch; mehrfachgepflügt; homogenisiert",Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,Hoelzer;Hoevelmann;Bielefeldt,2006-09-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120168,Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,120,-2,,ol-rz,p1,"Pelosol- Pararenzina- Lockersyrosem oder pelosolartiger Pararenzina- Lockersyrosem aus z.T. sandigen carbonathaltigen Kippentonn (Schlämme, Kiesabbau) über carbonathaltigen Kippensanden/Kiesen (DD-RZ-OL)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,Hoelzer;Hoevelmann;Bielefeldt,2006-11-02,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120169,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,205,-2,,bbn,p2,Sandbraunerde im tieferen Unterboden kalkhaltig; Farbe:75-140 auch 10YR7/3;Kalk: 140-190:stellenweise C2; streifengepflügt ; stark schrägeinfallende Schichtung; Horizontierung Profilfront (links) U-grenze; übererdet,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,Hoelzer;Hoevelmann;Bielefeldt,2006-09-19,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120170,Hoelzer;Hoevelmann;Eglin,2006-08-30,175,-2,,bbn,p3,Sandbraunerde; Oberboden deutlich gestört; zu MBHG: lfd. Nr.6: Lg(931) zerschwemmt Sl3,Hoelzer;Hoevelmann;Eglin,2006-08-30,Hoelzer;Hoevelmann;Eglin,2006-08-30,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120181,Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,115,-2,,ppn,p1,( vPP) reliktisch vergleyt???; gepflügt,Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,Hoelzer;Hoevelmann;Bielefeldt,2006-10-12,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120182,Hoelzer;Hoevelmann;Bielefeldt,2006-10-26,140,-2,,bbn,p4,"Sandbraunerde (BBn,p4)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-26,Hoelzer;Hoevelmann;Bielefeldt,2006-10-26,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120183,Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,110,-2,,ppn,p1,Podsol aus Staub und Flugsanden (PPn),Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,Hoelzer;Hoevelmann;Bielefeldt,2006-10-24,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120184,Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,100,-2,,bbn,p3,"Sandbraunerde (BB, p3); geringmächtiger Ahe",Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,Hoelzer;Hoevelmann;Bielefeldt,2006-11-20,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120185,Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,125,-2,,pp-bb,p1,Zwerg- Podsol-Sandbraunerde (reliktisch vergleyt) (PP-BB),Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,Hoelzer;Hoevelmann;Bielefeldt,2006-11-07,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120186,Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,110,-2,,bbn,p3,"Sandbraunerde (BBn,p3)",Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,Hoelzer;Hoevelmann;Bielefeldt,2006-11-16,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120187,Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,95,-2,,bbn,p2,"Braunerde( BBn,p2)",Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,Hoelzer;Hoevelmann;Bielefeldt,2006-10-25,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
-120188,Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,85,-2,,lf-bb,p3,"schwach pseudovergleyte Fahlerde-Braunerde (  LF-BB, p3); >80 zu hart und steinig um tiefer zu graben; OB erscheint gestört",Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,Hoelzer;Hoevelmann;Bielefeldt,2006-11-14,"GÜK 300 für BB, einzelne Kartenblätter sind nicht vorhanden(INFO HrRiek120808)",
+50001,Dickhof,1990-04-25,200,999,,pp-bb,-9,"GD Archiv-Nr. 271; 
+Waldbrand, Holzkohlerest in Humusauflage und Oberboden; 
+ locker tiefreichend humos, 
+Bodenstörung durch Wildschweine;",Dickhof,2006-08-30,Dickhof,2006-08-30,,
+50002,Dickhof,1990-04-02,200,999,,pp-bb,-9,"Gd-Archiv-Nr.: 263;
+Auf der Fläche Wechsel zwischen BB-PP und PP-BB;",Dickhof,2006-08-22,Dickhof,2006-08-22,,
+50003,Hopp,1991-07-24,120,999,,bbn,p1,GD Archiv-Nr. 670,Milbert,2006-10-06,Milbert,2006-10-06,,
+50004,Hopp,1990-10-30,100,999,,bb-ss,p2,GD Archiv-Nr. 658;,Milbert,2006-10-19,Milbert,2006-10-19,,
+50005,Dickhof,1989-10-30,140,999,,bbn,p1,"GD Archivg-Nr. 256; 
+junge Ackeraufforstung, Boden stellenweise durch Bearbeitung tiefreichend gestört; 
+Beprobungsfläche stellenweise etwas Stauwasser beeinflusst;",Dickhof,2006-06-30,Dickhof,2006-06-30,,
+50006,Dickhof,1989-10-17,160,150,120,bb-gg,p4,GD-Archiv-Nr. 251,Dickhof,2006-08-21,Dickhof,2006-08-21,,
+50007,Dickhof,1990-04-17,90,70,60,ss-gg,p1,"GD Arch-Nr.: 268; 
+Oberboden stark gestört; Tendenz zu Feuchtmoder; 
+Pappelpflanzung seit 1985, 
+örtlich Müll und Gartenabfälle",Dickhof,2006-08-28,Dickhof,2006-08-28,,
+50008,Milbert,1990-08-27,100,999,,bbn,p1,Gd-Archiv-Nr.: 769;,Milbert,2006-09-07,Milbert,2006-09-07,,
+50009,Hopp,1990-10-01,100,999,,bbn,p1,GD Archiv-Nr. 668,Milbert,2006-10-05,Milbert,2006-10-05,,
+50010,Hopp,1991-06-04,90,999,,bbn,p1,GD Archiv-Nr. 673,Milbert,2006-10-12,Milbert,2006-10-12,,
+50011,Hopp,1991-06-13,60,999,,bbn,p1,Gd-Archiv-Nr.: 675; Biosoil-Nr.: 416;,Milbert,2006-10-17,Milbert,2006-10-17,,
+50012,Dickhof,1989-11-13,120,999,,ss,p1,"Gd-Archiv-Nr.: 258; Biosoil-Nr.: 365;
+Eiskeile mit sandig-schluffiger Füllung reichebn bis in die Hat-Sedimente und dienen als bevorzugte Wurzelbahnen; Löß auf der Fläche 3-8 dm mächtig",Dickhof,2006-08-23,Dickhof,2006-08-23,,
+50013,Dickhof,1989-10-26,140,999,,ss,p1,"GD Archiv-Nr. 254; 
+Sew mit vielen Fe-Mn-Konkretionen, zahlreiche Eiskeile",Dickhof,2006-06-29,Dickhof,2006-06-29,,
+50014,Dickhof,1990-04-10,200,999,,pp-bb,-9,"GD Archiv-Nr. 266; 
+Pflugstreifen, Boden bis 25 cm gestört;; ehemals bis 1o cm mächtige brechbare Oh-Lage, durch Pflugstreifen eingearbeitet, Sandlöß über Fließerde mit Eiskeilen, Sandlössdecke sehr locker und gut durchwurzelt",Dickhof,2006-08-29,Dickhof,2006-08-29,,
+50015,Hopp,1991-07-09,50,999,,bbn,p1,GD Archiv-Nr. 655,Milbert,2006-10-04,Milbert,2006-10-04,,
+50016,Hopp,1990-10-25,90,999,,bbn,p1,GD Archiv-Nr. 652,Milbert,2006-10-02,Milbert,2006-10-02,,
+50017,Hopp,1991-06-21,50,999,,bbn,p1,Gd-Archiv-Nr.: 678;,Milbert,2006-10-11,Milbert,2006-10-11,,
+50018,Milbert,1990-08-07,150,180,160,bb-ss,p4,"GD-Archiv-Nr.: 765;
+Ah durch ältere Bodenbearbeitung auf ca. 12 cm vertieft; 
+im neuen Ah Entwicklung einer schwachen Podsoligkeit; 
+Substrat: Umlagerung aus sandigen bis tonigen Sedimenten des Buntsandsteins, 
+Boden um Untergrund vergleyt",Milbert,2006-09-11,Milbert,2006-09-11,,
+50019,Milbert,1991-07-25,90,999,,bb-ss,p4,"Gd-Archiv-Nr.: 763; Biosoil-Nr.: 448;
+Humusfauflage ausgetrocknet, scharfkantig brechbar 
+Solifluktionsmaterial der Klerfer Schichten (Unterdevon);",Milbert,2006-09-05,Milbert,2006-09-05,,
+50020,Milbert,1990-07-30,60,999,,bbn,p1,"Gd-Archiv-Nr.: 764; 
+Proben ab 30 cm aus Kleinschurf, sehr hohe Skelettgehalte, sehr hohe Bleigehalte im Mineralboden,",Milbert,2006-08-03,Milbert,2006-08-03,,
+50021,Milbert,1990-07-16,70,999,,bb-rr,p1,GD-Archiv-Nr.: 762;,Milbert,2006-09-13,Milbert,2006-09-13,,
+50022,Milbert,1990-06-25,90,999,,ss,p1,GD-Archiv-Nr.:756,Milbert,2006-08-29,Milbert,2006-08-29,,
+50023,Milbert,1990-06-11,80,999,,ss-bb,p1,GD-Archiv-Nr.: 754,Milbert,2006-08-31,Milbert,2006-08-31,,
+50024,Dickhof,1990-08-21,170,999,,pp-gg,-9,"GD-Archiv-Nr.: 297; Biosoil-Nr.: 350;
+Grundwasser > 2 m abgesenkt;",Dickhof,2006-08-16,Dickhof,2006-08-16,,
+50025,Dworschak,1990-10-29,200,999,,ss,p1,GD Archiv-Nr. 162,Dickhof,2006-08-15,Dickhof,2006-08-15,nur Grusanteil gemessen,
+50026,Dworschak,1989-11-08,200,999,,pp-bb,-9,GD Archiv-Nr.: 179,Hoffmann,2006-04-19,Hoffmann,2006-04-19,nur grusanteil gemessen,
+50027,Dworschak,1989-11-08,280,999,,pp-ss,-9,"GD-Archiv-Nr.: 170; Biosoil-Nr.: 315;
+Oberboden durch Rabatten stark gestört",Hoffmann,2006-06-08,Hoffmann,2006-06-08,,
+50028,Milbert,1991-05-17,90,999,,ss-bb,p1,Gd-Archiv-Nr.: 770;,Milbert,2006-09-13,Milbert,2006-09-13,,
+50029,Dickhof,1990-08-08,120,999,,rq,p1,"Gd Archiv-Nr. 293; 
+mit Müll bestreut; stellenweise mit Rindenmuilch überdeckt; Bodenmaterial sehr heterogen;",Dickhof,2006-08-09,Dickhof,2006-08-09,,
+50030,Dickhof,1990-08-29,60,999,,bbn,p4,"GD Archiv-Nr. 300; 
+1990 gekalkt; auf Fläche flach bis tiefgründige Braunerde;",Dickhof,2006-08-07,Dickhof,2006-08-07,,
+50031,Dworschak,1989-10-17,160,999,,ss,p4,GD Archiv-Nr. 159; Kalkspiegel zwischen 110 und 130 cm unter GOF schwankend.,Hoffmann,2006-07-06,Hoffmann,2006-07-06,Gesteinsbestimmung aus N-min-Bohrerproben,
+50032,Milbert,1991-05-23,105,999,,ss,p1,Gd-Archiv-Nr.: 771;,Milbert,2006-09-20,Milbert,2006-09-20,,
+50033,Dickhof,1990-06-08,180,999,,abn,p1,"GD-Archiv-Nr.: 274; Biosoil-Nr.: 403;
+Regenwurmgänge bis 15 dm; vereinzelt Ziegel- und Holzkohlenbröckchen im gesamten Profil",Dickhof,2006-08-14,Dickhof,2006-08-14,,
+50034,Richter,1990-08-09,170,999,,ss-ll,p1,GD Archiv-Nr. 563,Richter,2006-06-09,Richter,2006-06-09,,
+50035,Dworschak,1990-06-11,310,310,280,ss-pp,-9,"Gd-Archiv-Nr.: 183;
+im Bhs Ortsteinbrocken, nicht durchgehend; 
+Oberboden durch Bodenbearbeitung gestört, ehemals feinrumusreicher Moder oder rohhumusartiger Moder, Oh-Material im Ahe eingearbeitet",Hoffmann,2006-08-03,Hoffmann,2006-08-03,,
+50036,Richter,1990-08-29,180,145,,pp-gg,-9,GD Archiv-Nr. 567,Richter,2006-05-16,Richter,2006-05-16,,
+50037,Richter,1990-08-23,90,999,,bbn,p1,GD Archiv-Nr. 565,Richter,2006-05-24,Richter,2006-05-24,,
+50038,Dickhof,1990-07-30,160,999,,bbn,p2,"GD Archiv-Nr. 289; 
+Standort 1989 gekalkt; 
+Mineralboden überlagert fossile O-Horizonte, 
+Sandsteine in der Fließerde bis zu Blockgröße",Dickhof,2006-07-25,Dickhof,2006-07-25,,
+50039,Dickhof,1990-07-31,90,999,,rq,p1,"Gd Archiv-Nr. 290; 
+Auftragsboden aus natürlichem Material über Bauschutt und Müll;",Dickhof,2006-08-08,Dickhof,2006-08-08,,
+50040,Dworschak,1990-08-23,60,999,,ss,p1,GD-Archiv-Nr.: 207;,Hoffmann,2006-04-27,Hoffmann,2006-04-27,,
+50041,Richter,1990-08-23,35,999,,bbn,p1,GD Archiv-Nr. 566;,Richter,2006-05-22,Richter,2006-05-22,,
+50042,Dickhof,1990-09-10,130,120,80,ab-gg,p1,"GD Archiv-Nr. 302;
+ in M-Horizonten viele Holzkohle- und Zigelbröckchen;",Dickhof,2006-08-03,Dickhof,2006-08-03,,
+50043,Dickhof,1990-07-23,45,999,,bbn,p2,"GD-Archiv-Nr.: 286; Biosoil-Nr.: 352;
+Boden skelettreich, aus Hangschutt über Tonstein;",Dickhof,2006-07-25,Dickhof,2006-07-25,,
+50044,Richter,1990-08-03,140,999,,bbn,p1,GD Archiv-Nr. 562,Richter,2006-05-11,Richter,2006-05-11,,
+50045,Dworschak,1990-09-17,150,999,,ss-bb,p4,GD Archiv-Nr. 213:,Hoffmann,2006-04-26,Hoffmann,2006-04-26,,
+50046,Richter,1991-04-04,80,999,,ss-bb,p1,"GD-Archiv-Nr.: 577; Biosoil-Nr.: 421;
+Fläche vermutlich ehemals Weide",Richter,2007-04-25,Richter,2007-04-25,,
+50047,Dickhof,1991-07-30,70,999,,bbn,p2,"GD-Archiv-Nr.: 309; Biosoil-Nr.: 388;
+Vorbestand Nadelholz;",Dickhof,2006-07-18,Dickhof,2006-07-18,,
+50048,Dickhof,1991-07-10,60,999,,bbn,p1,GD Archiv-Nr. 312;,Dickhof,2006-07-05,Dickhof,2006-07-05,,
+50049,Richter,1990-07-12,120,999,,bbn,p2,GD Archiv-Nr. 554,Richter,2006-06-01,Richter,2006-06-01,,
+50050,Dickhof,1990-07-03,170,999,,ss-bb,p1,"GD Archiv-Nr. 276; 
+vermutlich ehemals landwirtschaftlich genutzt; 
+lockere Lössdecke über dicht gelagerterFließerde",Dickhof,2006-07-24,Dickhof,2006-07-24,,
+50051,Dworschak,1991-05-23,140,999,,ssg,p2,"GD Archiv-Nr. 218; 
+1991 frisch geflügt mit Naturverjüngung?",Hoffmann,2006-06-28,Hoffmann,2006-06-28,,
+50052,Richter,1991-05-08,120,999,,ss-bb,p2,GD Archiv-Nr. 579,Richter,2006-05-23,Richter,2006-05-23,,
+50053,Koch,1990-07-17,60,999,,bbn,p2,"GD-Archiv-Nr. 364; 
+ehemals landwirtschaftlich genutzt",Koch,2006-09-12,Koch,2006-09-12,,
+50054,Richter,1991-07-04,50,999,,ss-bb,p2,Gd-Archiv-Nr.: 587; Biosoil-Nr.: 371;,Richter,2007-06-01,Richter,2007-06-01,,
+50055,Richter,1991-06-27,70,999,,ss-bb,p2,GD Archiv-Nr. 585,Richter,2006-06-07,Richter,2006-06-07,,
+50056,Richter,1991-06-12,105,999,,bbn,p1,"GD-Archiv-Nr.: 580; Biosoil-Nr.: 354;
+wenige kleine Konkretionen und Grauflecken im Bv-Cv;",Richter,2007-05-23,Richter,2007-05-23,,
+50057,Dworschak,1991-04-12,65,999,,bbn,p2,"A-Horizont stellenweise schwach podsolig;
+GD Archiv-Nr. 228;",Richter,2006-06-21,Richter,2006-06-21,,
+50058,Dworschak,1990-09-20,90,130,,bb-gg,p1,"Gd-Archiv-Nr.: 211; Biosoil-Nr.: 300;
+Go-Bv-Horizont eventuell Aufschüttung, sehr viele nicht gerundete nordische Geschiebe; Fläche mit zahlreichen nassen Rinen, dort Scirpus; Gr1 gegenüber Gr2 stärker verwittert; Tonmergelstein nur auf Kluftflächen durc",Hoffmann,2006-06-29,Hoffmann,2006-06-29,,
+50059,Dickhof,1991-07-23,100,999,,ss-bb,p1,"Gd Archiv-Nr. 320; 
+in oberer Fließerde Grus aus Sandstein und Quarzit, tiefer aus Schluff- und Tonstein, 
+Aufforstung nach Grünland",Dickhof,2006-07-17,Dickhof,2006-07-17,,
+50060,Koch,1990-08-03,90,999,,bbn,p2,GD Archiv-Nr. 373;,Koch,2006-10-09,Koch,2006-10-09,,
+50061,Richter,1991-07-25,70,999,,ss-bb,p4,GD Archiv-Nr. 595,Richter,2006-06-09,Richter,2006-06-09,,
+50062,Richter,1991-06-25,145,999,,ss-bb,p2,GD Archiv-Nr. 583,Richter,2006-06-20,Richter,2006-06-20,,
+50063,Dworschak,1991-04-18,250,240,210,gg-yk,p1,"Gd Archiv-Nr. 221; 
+Feinboden kalkfrei;, Skelettanteil kalkhaltig; 
+zahlreiche Regenwurmröhren bis > 180cm",Hoffmann,2006-07-04,Hoffmann,2006-07-04,,
+50064,Dworschak,1990-04-18,150,999,,pp-bb,-9,Gd Archiv-Nr. 239,Hoffmann,2006-05-17,Hoffmann,2006-05-17,nur Grusantel gemessen,
+50065,Koch,1990-08-23,80,999,,bbn,p2,GD-Archiv-Nr.: 379; Biosoil-Nr.: 407;,Koch,2006-11-08,Koch,2006-11-08,,
+50066,Koch,1990-05-30,100,999,,bbn,p2,Gd Archiv-Nr. 356;,Koch,2006-10-16,Koch,2006-10-16,,
+50067,Koch,1990-05-16,100,999,,bbn,p1,GD-Archiv-Nr.:351; Biosoil-Nr.: 390;,Koch,2006-10-10,Koch,2006-10-10,,
+50068,Koch,1990-07-31,60,999,,bbn,p1,Gd-Archiv-Nr.: 371; Biosoil-Nr.: 372;,Koch,2006-08-25,Koch,2006-08-25,,
+50069,Dworschak,1990-05-15,200,40,10,ggn,p1,"GD-Archiv-Nr.: 175; Biosoil-Nr.:_ 245;
+Ackeraufforstung",Hoffmann,2006-06-26,Hoffmann,2006-06-26,,
+50070,Dworschak,1990-04-12,200,999,,ss-bb,p1,"GD Archiv-Nr. 180; Windwurffläche (1989) aufgeforstet, Tiefenlage des Sd-Horizontes schwankt auf der Beprobungsfläche",Hoffmann,2006-08-01,Hoffmann,2006-08-01,,
+50071,Koch,1990-09-26,100,999,,bbn,p2,GD Archiv-Nr. 391,Koch,2006-10-12,Koch,2006-10-12,,
+50072,Koch,1990-09-18,120,999,,bbn,p2,GD Archiv-Nr. 389,Koch,2006-11-20,Koch,2006-11-20,,
+50073,Koch,1990-08-16,60,999,,bbn,p2,GD Archiv-Nr.  376,Koch,2006-11-20,Koch,2006-11-20,,
+50074,Dickhof,1991-07-01,35,999,,bbn,p1,"GD Archiv-Nr. 322; 
+vermutlich ältere Ackeraufforstung;",Dickhof,2006-07-04,Dickhof,2006-07-04,,
+50075,Dickhof,1991-06-26,60,999,,bbn,p1,"Gd Archiv-Nr.: 323; 
+Bauernwald, vermutlich hin und wieder beweidet",Hoffmann,2006-08-01,Hoffmann,2006-08-01,,
+50076,Koch,1991-07-23,60,999,,bbn,p1,GD Archiv-Nr. 404,Koch,2006-08-21,Koch,2006-08-21,,
+50077,Dworschak,1990-07-12,120,999,,bb-ss,p1,GD Archiv-Nr. 195,Hoffmann,2006-05-23,Hoffmann,2006-05-23,,"stark zersetztes Kreidegestein, feucht leicht grabbar, in trockenem Zustand hart wie Festgestein"
+50078,Dworschak,1990-07-31,100,200,180,gg-pp,-9,"GD Archiv-Nr. 194; 
+Grundwasser von 8 - 13 dm auf 13 - 20 dm abgesenkt; 
+Humusform durch Bearbeitung gestört;",Hoffmann,2006-05-12,Hoffmann,2006-05-12,,
+50079,Koch,1990-10-04,70,999,,bbn,p2,Gd-Archiv-Nr.: 392; Biosoil-Nr.: 424;,Koch,2006-10-23,Koch,2006-10-23,,
+50080,Koch,1990-09-12,100,999,,bbn,p2,GD-Archiv-Nr.: 386; Biosoil-Nr.: 408;,Koch,2006-10-18,Koch,2006-10-18,,
+50081,Koch,1990-08-27,100,999,,bbn,p2,GD Archiv-Nr. 380,Koch,2006-11-06,Koch,2006-11-06,,
+50082,Koch,1990-06-11,80,999,,bbn,p2,GD-Archiv-Nr.: 361; Biosoil-Nr.: 391;,Koch,2006-10-17,Koch,2006-10-17,,
+50083,Koch,1990-07-13,55,999,,bbn,p2,GD Archiv-Nr.: 363;,Koch,2006-11-08,Koch,2006-11-08,,
+50084,Dickhof,1991-06-20,35,999,,bbn,p1,"GD-Archiv-Nr.: 328; Biosoil-Nr.: 373;
+Oberboden stellenweuise schwach podsolig;",Dickhof,2006-07-12,Dickhof,2006-07-12,,
+50085,Koch,1991-06-03,50,999,,bbn,p2,GD Archiv-Nr. 411,Koch,2006-08-18,Koch,2006-08-18,,
+50086,Dworschak,1991-06-05,70,999,,ss-bb,p1,"GD-Archiv-Nr.: 229 Biosoil-Nr.: 339;
+ab 4 dm Bodentiefe schwach pseudovergleyt; Gestein = Arnsberger Schichten, sandstein Untercarbon;",Koch,2006-08-15,Koch,2006-08-15,,
+50087,Dworschak,1990-07-25,85,999,,ss,p1,"GD-Archiv-Nr.: 193; Biosoil-Nr.: 283;
+Entwässerungsgräben",Hoffmann,2006-08-03,Hoffmann,2006-08-03,,
+50088,Koch,1990-10-08,50,999,,bbn,p1,GD Archiv-Nr. 394,Koch,2006-11-06,Koch,2006-11-06,,
+50089,Heilmann,1990-08-07,75,999,,bbn,p2,Gd-Archiv-Nr.: 40,Siegert,2006-07-26,Siegert,2006-07-26,,
+50090,Koch,1990-07-26,60,999,,bbn,p2,Gd Archiv-Nr. 369;,Koch,2006-11-14,Koch,2006-11-14,,
+50091,Dickhof,1991-06-05,35,999,,bbn,p2,"Gd Archiv-Nr. 331; 
+im Bv-Vc-Horizont hangparallel eingeregelte Schluffsteinplatten mit wenig gut durchwurzeltem Feinboden dazwischen;",Dickhof,2006-07-03,Dickhof,2006-07-03,,
+50092,Koch,1991-05-28,65,999,,bbn,p2,GD Archiv-Nr. 416,Koch,2006-08-08,Koch,2006-08-08,,
+50093,Koch,1991-05-16,60,999,,bbn,p2,GD Archiv-Nr. 417,Koch,2006-08-01,Koch,2006-08-01,,
+50094,Heilmann/Koch,1991-06-19,85,999,,ss-bb,p2,GD Archiv-Nr. 73,Siegert,2006-07-27,Siegert,2006-07-27,Grobbbodenbestimmung nur Grusanteil,
+50095,Heilmann,1990-07-31,60,999,,bbn,p2,GD Archiv-Nr.49; Biosoil-Nr.; 409;,Siegert,2006-09-29,Siegert,2006-09-29,,
+50096,Heilmann,1990-08-06,65,999,,bbn,p2,"GD Archiv-Nr. 52; Oh-Material örtlich in skelettreichen Oberboden eingewaschen,",Siegert,2006-07-18,Siegert,2006-07-18,,
+50097,Heilmann,1989-10-26,60,999,,bbn,p2,GD Archiv-Nr.: 17,Siegert,2006-09-06,Siegert,2006-09-06,,
+50098,Heilmann,1989-11-08,60,999,,bbn,p1,Gd Archiv-Nr. 20;,Siegert,2006-09-15,Siegert,2006-09-15,Grobbodenmessung nur Grusanteil,
+50099,Koch,1991-05-23,80,999,,bbn,p2,GD-Archiv-Nr.:419; Biosoil-Nr.: 357;,Koch,2006-08-09,Koch,2006-08-09,,
+50100,Koch,1991-05-27,70,999,,pp-bb,-9,GD Archiv-Nr. 420,Koch,2006-08-03,Koch,2006-08-03,,
+50101,Heilmann,1991-06-18,95,999,,ss-bb,p1,GD-Archiv-Nr.: 71; Biosoil-Nr.: 340;,Siegert,2006-09-11,Siegert,2006-09-11,,
+50102,Pahlke,1991-09-23,25,999,,bbn,p1,"GD-Archiv-Nr.: 914;
+überwiegend flachgründiger wohl umgelagerter Kalksteinverwitterungslehm (/Muschelkalk), örtlich (Satellit 3-4) tiefgründig mit Sandbeimengung;",Milbert,2006-06-27,Milbert,2006-06-27,,
+50103,Heilmann,1990-07-31,55,999,,bbn,p1,Gd Archiv-Nr. 54,Siegert,2006-07-20,Siegert,2006-07-20,Grobbodenbestimmung G-Probe  nur für Grusanteil,
+50104,Heilmann,1990-08-28,65,999,,bbn,p2,GD Archiv-nr. 58; Oh-Horizont örtlich in Mineralisierung begriffen,Siegert,2006-09-07,Siegert,2006-09-07,Grobbodenmessung nur Grusanteil,
+50105,Heilmann,1989-10-23,60,999,,bbn,p1,GD-Archiv-Nr. 15,Siegert,2006-07-05,Siegert,2006-07-05,"Volumen der G-Proben überprüfen, BZE I Stechzylinder für TRD aus Profil bis 60 cm",
+50106,Heilmann,1989-11-07,90,999,,bbn,p2,Gd Archiv-Nr. 19,Siegert,2006-07-03,Siegert,2006-07-03,G-Proben nur für Grusanteil,
+50107,Koch,1991-05-07,70,999,,bbn,p2,GD Archiv-Nr. 423,Koch,2006-08-14,Koch,2006-08-14,,
+50108,Heilmann,1991-06-12,85,999,,bbn,p1,"GD Archiv-Nr: 69; anstehendes Gestein enthält Kalkknollen, in unmittelbarer Nachbarschaft steht Kieselkalk an",Siegert,2006-07-14,Siegert,2006-07-14,,
+50109,Pahlke,1991-09-16,55,999,,ss-bb,p4,Gd-Archiv-Nr.: 911;,Milbert,2006-06-28,Milbert,2006-06-28,,
+50110,Heilmann,1990-08-22,65,65,,ggn,p1,"GD Archiv-Nr.: 66; Biosoil-Nr.: 375;
+Satelliten liegen auf verlängerten Achsen in einem schmalen Siepen",Siegert,2006-10-10,Siegert,2006-10-10,,
+50111,Heilmann,1989-10-02,50,999,,bbn,p1,"GD-Archiv_Nr.: 5;
+Typische basenarme Braunerde aus Fließerde über Tonstein (Mitteldevon) mit Mullartigem Moder als Humusform",Siegert,2006-08-28,Siegert,2006-08-28,Stechzylinderuntersuchungen der BZE I bis 60 cm aus dem Profil verwenden.,
+50112,Heilmann,1990-04-25,32,999,,bbn,p4,Gd-Archiv-Nr.: 29;,Siegert,2006-09-13,Siegert,2006-09-13,,
+50113,Pahlke,1990-08-01,40,999,,bbn,p1,"GD-Archiv-Nr.: 863; Biosoil-Nr.:323;
+Lößschleier über Residualton über Kalkstein;",Milbert,2006-08-09,Milbert,2006-08-09,,
+50114,Heilmann,1990-05-11,50,999,,bbn,p2,GD Archiv-Nr.: 37,Siegert,2006-07-07,Siegert,2006-07-07,G-Probe nur Grusanteil,
+50115,Heilmann,1990-04-25,45,999,,bbc,p1,GD Archiv-Nr. 31,Siegert,2006-08-29,Siegert,2006-08-29,G-Proben nur für Grusanteil,
+50116,Pahlke,1990-07-30,55,999,,ss-bb,p1,GD-Archiv-Nr.: 862;,Milbert / Gommer,2006-08-01,Milbert / Gommer,2006-08-01,,
+50117,Pahlke,1990-07-24,170,999,,bb-ss,p1,GD-Archiv-Nr.:859;,Milbert,2006-08-08,Milbert,2006-08-08,,
+50118,Pahlke,1991-09-02,210,140,,ggq,p1,GD-Archiv-Nr.:909;,Milbert / Gommer,2006-08-01,Milbert / Gommer,2006-08-01,,
+50119,Heilmann,1990-04-26,92,999,,bbc,p1,GG Archiv-Nr. 26,Siegert,2006-09-04,Siegert,2006-09-04,,
+50120,Heilmann,1991-06-11,80,999,,ss-bb,p4,Gd-Archiv-Nr.: 81;,Siegert,2006-09-05,Siegert,2006-09-05,,
+50121,Heilmann,1991-06-06,65,999,,bbn,p1,Gd Archiv-Nr. 79; Ap-Horizont vermutlich Schwarzerde-Relikt; zahlreiche sich nach unten öffnende Schrumpfungsrisse,Siegert,2006-07-11,Siegert,2006-07-11,Grobbodenbestimmung nur Grusanteil,
+50122,Pahlke,1990-07-26,20,999,,bbh,p1,"GD-Archiv-Nr.:861;
+Beprobungsfläche sehr stark gestört, Müll, Hohlwege, Abgrabung, Randeinflüsse",Milbert,2006-08-07,Milbert,2006-08-07,,
+50123,Pahlke,1991-06-22,200,140,,pp-yu,-9,"GD-Archiv: 887; 
+Bodenbearbeitung (Pflugstreifen) sowie Holzkohenreste im Oberboden",Milbert,2008-08-05,Milbert,2008-08-05,,
+50124,Pahlke,1991-06-29,180,999,,ppn,-9,"GD-Archiv-Nr.: 889; Biosoil-Nr.: 286;
+Schmelzwassersand über Kalkverwitterungslehm;deutliche Oberbodenstörungen; Fahrspuren",Milbert / Gommer,2006-08-15,Milbert / Gommer,2006-08-15,,
+50125,Pahlke,1991-08-28,200,140,,pp-gg,-9,GD-Archiv-Nr.: 907;,Milbert,2006-06-29,Milbert / Gommer,2006-06-29,,
+50126,Pahlke,1990-07-18,16,999,,bbn,p1,Gd-Archiv-Nr.: 856;,Koch,2006-11-22,Koch,2006-11-22,,
+50127,Pahlke,1991-07-08,130,999,,bbh,p1,"Gd-Archiv: 894; 
+Braunerde überlagert gekappte Pseudogley-Parabraunerde (Mittellage)",Koch,2006-11-28,Koch,2006-11-28,,
+50128,Pahlke,1991-07-16,35,999,,bbh,p1,"Lößlehm über Sand- und Schluffstein, Keuper; 
+GD-Archiv-899",Milbert,2006-08-01,Milbert,2006-08-01,,
+50129,Betzer,1990-07-10,170,999,,ss-pp,-9,"Gd-Archiv-Nr.:456; Biosoil-Nr.: 325; Schutt-Podsol
+ Mächtigkeit des Bhs stark schwankend; Profil mit großen Blocken durchsetzt; Panterfleckung im Ahe;  örtlich mehrere Oh-Lagen übereinander akkumuliert;",Koch,2006-10-24,Koch,2006-10-24,,
+50130,Pahlke,1990-08-14,60,999,,bbn,p1,"GD-Archiv-Nr.: 864; Biosoil-Nr.: 306;
+kleinflächiger Wechsel in Verwitterungstiefe und Bodenart;",Koch,2006-10-30,Koch,2006-10-30,,
+50131,Pahlke,1990-08-28,100,999,,dd-bb,p1,GD-Archiv-Nr.: 869;,Koch,2006-11-27,Koch,2006-11-27,,
+50132,Pahlke,1991-06-25,100,999,,ss,p2,"Gd-Archiv-Nr.: 886, Biosoil-Nr.: 287;",Milbert,2006-07-26,Milbert,2006-07-26,,
+50133,Pahlke,1991-07-09,140,999,,ssg,p2,Gd-Archiv-Nr.: 895; Biosoil-Nr. 267;,Milbert,2006-07-24,Milbert,2006-07-24,,
+50134,Betzer,1990-07-11,100,999,,ss-bb,p1,GD Archiv-Nr. 457,Koch,2006-08-25,Koch,2006-08-25,,
+50135,Pahlke/Koch,1990-08-22,75,999,,bbn,p1,GD-Archiv-Nr.:867,Koch,2006-11-15,Koch,2006-11-15,,
+50136,Pahlke,1990-08-30,45,999,,bbn,p1,GD-Archiv-Nr.: 870;,Koch,2006-11-22,Koch,2006-11-22,,
+50137,Pahlke,1991-07-03,50,999,,bbn,p1,Gd-Archiv-Nr.:892;,Milbert,2006-07-31,Milbert,2006-07-31,,
+50138,Pahlke,1990-09-13,30,999,,bbh,p1,,Koch,2006-11-15,Koch,2006-11-15,,
+50139,Pahlke,1990-09-17,55,999,,bbh,p1,GD-Archiv-Nr.: 874; Biosoil-Nr.: 307;,Koch,2006-10-31,Koch,2006-10-31,,
+50140,Pahlke,1991-06-11,120,999,,ss-bb,p1,GD-Archiv-Nr.: 881; Biosoil-Nr.: 288;,Milbert,2006-08-02,Milbert,2006-08-02,,
+50141,Dickhof,2007-04-18,155,999,,rqn,p1,"GD-Archiv-Nr.: 84; Biosoil-Nr.: 384;
+Rekultivierungsfläche, Braunkohlentagebau; lockerer Boden, stark belebt aus 'Forstmischung' örtlich mit einzelnen Tonklumpen und Braunkohlematerial, trotz hoher Basensättigung ist eine rasche Entbasung zu erwarten, au",Dickhof,2007-04-18,Dickhof,2007-04-18,,
+50142,Richter,2006-05-30,200,999,,rqn,p1,"GD Archiv-Nr. 87; eingeebneter überdeckter mit Abfällen verunreinigter Bahndamm, Verlegung niícht möglich;",Richter,2006-05-30,Richter,2006-05-30,nur Fein- und Mittelgrus ermittelbar,
+50143,Koch,2007-05-18,220,100,80,ggn,p1,"Gd-Archiv-nr.: 85; Biosoil-Nr.: 317;
+bis 30 cm vereinzelt Ziegelbröckchen;",Koch,2007-05-18,Koch,2007-05-18,,
+50144,Richter,2006-08-15,200,999,,bbn,p1,Gd Archiv-Nr.: 88; Bodenbildung aus Lydit,Richter,2006-08-15,Richter,2006-08-15,nur Fein- und Mittelgrus bei Messung erfasst,
+50145,Siegert,2006-09-27,76,999,,bbn,p1,"GD Archiv-Nr. 89; Ackeraufforstung; Feinboden entkalkt, Gestein kalkhaltig",Siegert,2006-09-27,Siegert,2006-09-27,nur Grusanteil gemessen,
+50146,Milbert/Busch,2006-09-18,100,999,,bbn,p1,GD Archiv-Nr. 86,Milbert,2006-09-19,Milbert,2006-09-19,Grobbodenmessung für Gesamtgrobboden,

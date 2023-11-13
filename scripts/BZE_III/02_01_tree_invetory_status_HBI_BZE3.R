@@ -20,7 +20,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # after they have been sorted into stands according to the forest edge data in script "01_forest_edges_HBI.R" or "01_forest_edges_BZE3.R" 
-HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)
 # HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
  
 
@@ -555,8 +555,8 @@ BZE3_trees_update_02 <- BZE3_trees %>% filter(new_tree_inventory_status %in% c(0
 BZE3_trees_removed <- BZE3_trees %>% filter(!(new_tree_inventory_status %in% c(0, 1)))
 
 
-write.csv(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "update", "2", sep = "_"), ".csv"))
-write.csv(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "removed", "2", sep = "_"), ".csv"))
-write.csv(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
-write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
+write.csv2(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "update", "2", sep = "_"), ".csv"))
+write.csv2(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "trees", "removed", "2", sep = "_"), ".csv"))
+write.csv2(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
+write.csv2(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "trees", "update","2", sep = "_"), ".csv"))
 

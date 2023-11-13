@@ -1,198 +1,198 @@
-bund_nr,ld_bze,bwi_tnr,bwi_eck,team,datum,srid_ist,istre,istho,hbi_status,beart,besttyp,struktur,schlussgrad_schi1,schlussgrad_schi2,mischung,pk1_aufnahme,pk2_aufnahme,pk3_aufnahme,geraet,beschreibungbestockung,anmerkung
-50001,1,,,,1970-01-01,25832,293878,5737366,-9,1,2,1,4,-2,2,-9,-9,-9,-9,"WZE-Mittelbaum III/1(Kiefer)  in 165 gon und 14,57 m von PK-Mittelpunkt. Mächtige Krautschicht von Adlerfarn.",GD BodenProfil Archivnummer: 271
-50002,6,,,,1970-01-01,25832,299576,5681078,-9,1,2,1,3,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Baum V/1 (Kiefer):
+bund_nr,ld_bze,bwi_tnr,bwi_eck,datum,srid_ist,istre,istho,beart,besttyp,struktur,schlussgrad_schi1,schlussgrad_schi2,mischung,beschreibungbestockung,anmerkung
+50001,1,,,1970-01-01,25832,293878,5737366,1,2,1,4,-2,2,"WZE-Mittelbaum III/1(Kiefer)  in 165 gon und 14,57 m von PK-Mittelpunkt. Mächtige Krautschicht von Adlerfarn.",GD BodenProfil Archivnummer: 271
+50002,6,,,1970-01-01,25832,299576,5681078,1,2,1,3,-2,1,"Von PK-Mittelpunkt zu WZE-Baum V/1 (Kiefer):
 29,70 m in 4 gon",GD BodenProfil Archivnummer: 263
-50003,13,,,,1970-01-01,25832,304319,5600812,-9,1,3,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu BZE-Probebaum P1 (Douglasie) 2,87 m in 398 gon.",GD BodenProfil Archivnummer: 670
-50004,16,,,,1970-01-01,25832,304967,5616800,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 8,19 m in 125 gon.",GD BodenProfil Archivnummer: 658
-50005,18,,,,1970-01-01,25832,307570,5680752,-9,1,8,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mttelbaum III/1 (Bergahorn): 15,0 m in 215 gon.",GD BodenProfil Archivnummer: 256
-50006,19,,,,1970-01-01,25832,307897,5688746,-9,4,8,1,2,-2,2,-9,-9,-9,-9,"ehemaliger Niederwald.
+50003,13,,,1970-01-01,25832,304319,5600812,1,3,1,1,-2,2,"Von PK-Mittelpunkt zu BZE-Probebaum P1 (Douglasie) 2,87 m in 398 gon.",GD BodenProfil Archivnummer: 670
+50004,16,,,1970-01-01,25832,304967,5616800,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 8,19 m in 125 gon.",GD BodenProfil Archivnummer: 658
+50005,18,,,1970-01-01,25832,307570,5680752,1,8,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mttelbaum III/1 (Bergahorn): 15,0 m in 215 gon.",GD BodenProfil Archivnummer: 256
+50006,19,,,1970-01-01,25832,307897,5688746,4,8,1,2,-2,2,"ehemaliger Niederwald.
 Abstand PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Birke): 15,0 m in 96 gon..","GD BodenProfil Archivnummer: 251
 Neigung nach Profilaufnahme 1,1 bis < 2,2 gon"
-50007,21,,,,1970-01-01,25832,308880,5712727,-9,1,8,2,1,5,2,-9,-9,-9,-9,"von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 186 gon in 15,0 m",GD BodenProfil Archivnummer: 268
-50008,26,,,,1970-01-01,25832,311667,5584501,-9,1,2,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittebaum IX/1 (Fichte) 10,98 m in 190 gon.",GD BodenProfil Archivnummer: 769
-50009,28,,,,1970-01-01,25832,312313,5600489,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 18,83 in 73 gon.
+50007,21,,,1970-01-01,25832,308880,5712727,1,8,2,1,5,2,"von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 186 gon in 15,0 m",GD BodenProfil Archivnummer: 268
+50008,26,,,1970-01-01,25832,311667,5584501,1,2,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittebaum IX/1 (Fichte) 10,98 m in 190 gon.",GD BodenProfil Archivnummer: 769
+50009,28,,,1970-01-01,25832,312313,5600489,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 18,83 in 73 gon.
 Bestand ist für Kahlhieb ausgezeichnet!",GD BodenProfil Archivnummer: 668
-50010,30,,,,1970-01-01,25832,312961,5616476,-9,1,7,1,6,-2,2,-9,-9,-9,-9,"Kahlhiebsfläche (nach Kyrill 2007???). Lückig bis räumdig einzelne Naturverjüngung von SBI, GFI, GKI sowie einzelneTEI und DGL aus Anbau.(ca. 4 Jahre, hoher Ausfall).",GD BodenProfil Archivnummer: 673
-50011,32,,,,1970-01-01,31468,4101709,5638358,-9,1,5,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Traubeneiche) 13,74 m in 124 gon.",GD BodenProfil Archivnummer: 675
-50012,34,,,,1970-01-01,31468,4105569,5686008,-9,1,5,2,2,5,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Birke) 15,0 m in 238 gon.",GD BodenProfil Archivnummer: 258
-50013,35,,,,1970-01-01,25832,315564,5680425,-9,1,5,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 163 gon.",GD BodenProfil Archivnummer: 254
-50014,38,,,,1970-01-01,25832,317530,5728385,-9,1,5,2,3,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 114 gon.",GD BodenProfil Archivnummer: 266
-50015,45,,,,1970-01-01,25832,320307,5600166,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von  PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,03 m in 120 gon.",GD BodenProfil Archivnummer: 655
-50016,46,,,,1970-01-01,25832,320630,5608159,-9,1,4,2,6,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche) 16,32 m in 17 gon.",GD BodenProfil Archivnummer: 652
-50017,48,,,,1970-01-01,25832,320954,5616152,-9,1,5,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum
+50010,30,,,1970-01-01,25832,312961,5616476,1,7,1,6,-2,2,"Kahlhiebsfläche (nach Kyrill 2007???). Lückig bis räumdig einzelne Naturverjüngung von SBI, GFI, GKI sowie einzelneTEI und DGL aus Anbau.(ca. 4 Jahre, hoher Ausfall).",GD BodenProfil Archivnummer: 673
+50011,32,,,1970-01-01,31468,4101709,5638358,1,5,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Traubeneiche) 13,74 m in 124 gon.",GD BodenProfil Archivnummer: 675
+50012,34,,,1970-01-01,31468,4105569,5686008,1,5,2,2,5,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Birke) 15,0 m in 238 gon.",GD BodenProfil Archivnummer: 258
+50013,35,,,1970-01-01,25832,315564,5680425,1,5,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 163 gon.",GD BodenProfil Archivnummer: 254
+50014,38,,,1970-01-01,25832,317530,5728385,1,5,2,3,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 114 gon.",GD BodenProfil Archivnummer: 266
+50015,45,,,1970-01-01,25832,320307,5600166,1,1,1,6,-2,1,"Von  PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,03 m in 120 gon.",GD BodenProfil Archivnummer: 655
+50016,46,,,1970-01-01,25832,320630,5608159,1,4,2,6,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche) 16,32 m in 17 gon.",GD BodenProfil Archivnummer: 652
+50017,48,,,1970-01-01,25832,320954,5616152,1,5,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum
 V/1 (Traubeneiche) 8,88 m in 188 gon.",GD BodenProfil Archivnummer: 678
-50018,60,,,,1970-01-01,25832,327654,5583856,-9,1,3,1,2,-2,2,-9,-9,-9,-9,"Weihnachtsbaum- / Schmuckreisigkultur.
+50018,60,,,1970-01-01,25832,327654,5583856,1,3,1,2,-2,2,"Weihnachtsbaum- / Schmuckreisigkultur.
 Von PK-Mittelpunkt zu BZE-Probebaum P1 (Edeltanne) 5,21 m in 285 gon.",GD BodenProfil Archivnummer: 765
-50019,61,,,,1970-01-01,31468,4115150,5604784,-9,1,1,1,3,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 15,84 m in 363 gon.",GD BodenProfil Archivnummer: 763
-50020,63,,,,1970-01-01,25832,328300,5599842,-9,1,2,4,4,2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Kiefer)9,94 m in 291 gon.
+50019,61,,,1970-01-01,31468,4115150,5604784,1,1,1,3,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 15,84 m in 363 gon.",GD BodenProfil Archivnummer: 763
+50020,63,,,1970-01-01,25832,328300,5599842,1,2,4,4,2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Kiefer)9,94 m in 291 gon.
 Gezäunte Voranbaufläche RBU, Begründung Voranbau 2009.",GD BodenProfil Archivnummer: 764
-50021,69,,,,1970-01-01,25832,335647,5583533,-9,1,2,4,3,2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Kiefer) 24,53 m in 118 gon.",GD BodenProfil Archivnummer: 762
-50022,70,,,,1970-01-01,25832,336616,5607512,-9,1,2,1,3,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 14,69 m in 202 gon.",GD BodenProfil Archivnummer: 756
-50023,75,,,,1970-01-01,25832,344285,5599196,-9,1,6,2,2,2,2,-9,-9,-9,-9,"Zwischen- bis unterständige RBU unter gleichaltriger ELA. Bestand aktuell zur kurzfristigen Durchforstung ausgezeichnet. Sehr viel liegendes Totholz (niedergeschnittene Lärchen aus 2006). Von PK-Mittelpunkt zu BZE-Probebaum P3: 5,63 m in 104 gon.",GD BodenProfil Archivnummer: 754
-50024,77,,,,1970-01-01,31468,4138821,5699391,-9,1,4,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,46 m in 269 gon.
+50021,69,,,1970-01-01,25832,335647,5583533,1,2,4,3,2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Kiefer) 24,53 m in 118 gon.",GD BodenProfil Archivnummer: 762
+50022,70,,,1970-01-01,25832,336616,5607512,1,2,1,3,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 14,69 m in 202 gon.",GD BodenProfil Archivnummer: 756
+50023,75,,,1970-01-01,25832,344285,5599196,1,6,2,2,2,2,"Zwischen- bis unterständige RBU unter gleichaltriger ELA. Bestand aktuell zur kurzfristigen Durchforstung ausgezeichnet. Sehr viel liegendes Totholz (niedergeschnittene Lärchen aus 2006). Von PK-Mittelpunkt zu BZE-Probebaum P3: 5,63 m in 104 gon.",GD BodenProfil Archivnummer: 754
+50024,77,,,1970-01-01,31468,4138821,5699391,1,4,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,46 m in 269 gon.
 Im S des  PK Jungwuchs Weymouthskiefer","GD BodenProfil Archivnummer: 297
 Neigung nach Profilaufnahme < 1,1 gon"
-50025,78,,,,1970-01-01,25832,348189,5695103,-9,1,5,1,3,-2,1,-9,-9,-9,-9,"Abstand von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 20,4 m in 117 gon.
+50025,78,,,1970-01-01,25832,348189,5695103,1,5,1,3,-2,1,"Abstand von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 20,4 m in 117 gon.
 Stieleiche von sehr schlechter Vitalität.","GD BodenProfil Archivnummer: 162
 Neigung nach Profilaufnahme < 1,1 gon"
-50026,80,,,,1970-01-01,25832,348844,5711087,-9,1,4,3,5,1,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Roteiche) 17,41 m in 222 gon.",GD BodenProfil Archivnummer: 179
-50027,81,,,,1970-01-01,31468,4141461,5731343,-9,1,2,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 16,45 m in 150 gon.",GD BodenProfil Archivnummer: 170
-50028,98,,,,1970-01-01,25832,352601,5606864,-9,1,7,2,2,6,2,-9,-9,-9,-9,"Unterstand von teils baumförmig gewachsenem Ilex aquifolium (=sLB).
+50026,80,,,1970-01-01,25832,348844,5711087,1,4,3,5,1,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Roteiche) 17,41 m in 222 gon.",GD BodenProfil Archivnummer: 179
+50027,81,,,1970-01-01,31468,4141461,5731343,1,2,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 16,45 m in 150 gon.",GD BodenProfil Archivnummer: 170
+50028,98,,,1970-01-01,25832,352601,5606864,1,7,2,2,6,2,"Unterstand von teils baumförmig gewachsenem Ilex aquifolium (=sLB).
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,92 m in 69 gon.",GD BodenProfil Archivnummer: 770
-50029,99,,,,1970-01-01,25832,354549,5654816,-9,1,2,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzkiefer) 14,90 m in 356 gon.","GD BodenProfil Archivnummer: 293
+50029,99,,,1970-01-01,25832,354549,5654816,1,2,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzkiefer) 14,90 m in 356 gon.","GD BodenProfil Archivnummer: 293
 Neigung nach Profilaufnahme < 1,1 gon"
-50030,101,,,,1970-01-01,25832,355854,5686783,-9,1,4,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,97 m in 284 gon.","GD BodenProfil Archivnummer: 300
+50030,101,,,1970-01-01,25832,355854,5686783,1,4,1,6,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,97 m in 284 gon.","GD BodenProfil Archivnummer: 300
 Neigung nach Profilaufnahme 16,7 bis < 22,2 gon"
-50031,105,,,,1970-01-01,25832,359140,5766700,-9,1,5,6,2,5,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 11,8 m in 70 gon.",GD BodenProfil Archivnummer: 159
-50032,115,,,,1970-01-01,25832,360917,5614532,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 36,79 m in 143 gon.",GD BodenProfil Archivnummer: 771
-50033,116,,,,1970-01-01,31468,4150929,5650255,-9,1,8,2,2,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Esche) 14,59 in 152 gon.","GD BodenProfil Archivnummer: 274
+50031,105,,,1970-01-01,25832,359140,5766700,1,5,6,2,5,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 11,8 m in 70 gon.",GD BodenProfil Archivnummer: 159
+50032,115,,,1970-01-01,25832,360917,5614532,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 36,79 m in 143 gon.",GD BodenProfil Archivnummer: 771
+50033,116,,,1970-01-01,31468,4150929,5650255,1,8,2,2,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Esche) 14,59 in 152 gon.","GD BodenProfil Archivnummer: 274
 Neigung nach Profilaufnahme < 1,1 gon"
-50034,117,,,,1970-01-01,25832,362866,5662482,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Dichte Strauchschicht von Ilex aquifolium.
+50034,117,,,1970-01-01,25832,362866,5662482,1,4,1,2,-2,2,"Dichte Strauchschicht von Ilex aquifolium.
 Von PK-Mittelpunkt zu BZE-Probebaum P 2 (Rotbuche) 10,10 m in 49 gon.","GD BodenProfil Archivnummer: 563
 Neigung nach Profilaufnahme 5,5 bis < 11,1 gon"
-50035,120,,,,1970-01-01,25832,365484,5726414,-9,1,2,2,5,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer): 19,5 m in 174 gon. 50m a.d.Waldfeldkante,20m vor Hochsitz,175Gon,50m der RG folgen",GD BodenProfil Archivnummer: 183
-50036,130,,,,1970-01-01,25832,369881,5638182,-9,1,2,2,6,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 14,96 m in 315 gon.","GD BodenProfil Archivnummer: 567
+50035,120,,,1970-01-01,25832,365484,5726414,1,2,2,5,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer): 19,5 m in 174 gon. 50m a.d.Waldfeldkante,20m vor Hochsitz,175Gon,50m der RG folgen",GD BodenProfil Archivnummer: 183
+50036,130,,,1970-01-01,25832,369881,5638182,1,2,2,6,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 14,96 m in 315 gon.","GD BodenProfil Archivnummer: 567
 Neigung nach Profilaufnahme < 1,1 gon"
-50037,133,,,,1970-01-01,25832,370858,5662156,-9,1,5,2,3,4,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 14,98 m in 134 gon.","GD BodenProfil Archivnummer: 565
+50037,133,,,1970-01-01,25832,370858,5662156,1,5,2,3,4,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 14,98 m in 134 gon.","GD BodenProfil Archivnummer: 565
 Neigung nach Profilaufnahme 5,5 bis < 11,1 gon"
-50038,136,,,,1970-01-01,25832,372164,5694121,-9,1,4,2,2,5,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,14 m in 208 gon.","GD BodenProfil Archivnummer: 289
+50038,136,,,1970-01-01,25832,372164,5694121,1,4,2,2,5,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,14 m in 208 gon.","GD BodenProfil Archivnummer: 289
 Neigung nach Profilaufnahme > 22,2 gon"
-50039,137,,,,1970-01-01,25832,372491,5702112,-9,1,8,2,2,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Erle) 15,0 m in 203 gon.","GD BodenProfil Archivnummer: 290
+50039,137,,,1970-01-01,25832,372491,5702112,1,8,2,2,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Erle) 15,0 m in 203 gon.","GD BodenProfil Archivnummer: 290
 Neigung nach Profilaufnahme < 1,1 gon"
-50040,139,,,,1970-01-01,25832,375122,5766040,-9,1,4,2,2,5,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 151 gon.",GD BodenProfil Archivnummer: 207
-50041,151,,,,1970-01-01,25832,376899,5613885,-9,1,3,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Douglasie) 22,69 m in 339 gon.",GD BodenProfil Archivnummer: 566
-50042,152,,,,1970-01-01,25832,379501,5677812,-9,1,1,2,6,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 23,29 m in 157 gon.","GD BodenProfil Archivnummer: 302
+50040,139,,,1970-01-01,25832,375122,5766040,1,4,2,2,5,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche): 15,0 m in 151 gon.",GD BodenProfil Archivnummer: 207
+50041,151,,,1970-01-01,25832,376899,5613885,1,3,1,6,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Douglasie) 22,69 m in 339 gon.",GD BodenProfil Archivnummer: 566
+50042,152,,,1970-01-01,25832,379501,5677812,1,1,2,6,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 23,29 m in 157 gon.","GD BodenProfil Archivnummer: 302
 Neigung nach Profilaufnahme 2,2 bis < 5,5 gon"
-50043,153,,,,1970-01-01,31468,4170780,5696874,-9,1,6,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,45 m in 134 gon.","GD BodenProfil Archivnummer: 286
+50043,153,,,1970-01-01,31468,4170780,5696874,1,6,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,45 m in 134 gon.","GD BodenProfil Archivnummer: 286
 Neigung nach Profilaufnahme 16,7 bis < 22,2 gon"
-50044,163,,,,1970-01-01,25832,386188,5645523,-9,1,3,1,6,-2,2,-9,-9,-9,-9,"Jungwuchs, kein WZE-Mittelbaum markiert.","GD BodenProfil Archivnummer: 562
+50044,163,,,1970-01-01,25832,386188,5645523,1,3,1,6,-2,2,"Jungwuchs, kein WZE-Mittelbaum markiert.","GD BodenProfil Archivnummer: 562
 Neigung nach Profilaufnahme 5,5 bis < 11,1 gon"
-50045,168,,,,1970-01-01,25832,390773,5757389,-9,1,6,2,3,2,3,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Birke): 18,0 m in 259 gon.",GD BodenProfil Archivnummer: 213
-50046,184,,,,1970-01-01,31468,4181503,5631643,-9,1,4,1,3,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 19,70 m in 206 gon.",GD BodenProfil Archivnummer: 577
-50047,186,,,,1970-01-01,31468,4184137,5663617,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,39 m in 184 gon.",GD BodenProfil Archivnummer: 309
-50048,189,,,,1970-01-01,25832,396967,5645182,-9,1,6,1,6,-2,2,-9,-9,-9,-9,"PK-Mittelpunkt liegt auf Blöße (Sturmwurffläche, wahrscheinlich Kyrill 2007).
+50045,168,,,1970-01-01,25832,390773,5757389,1,6,2,3,2,3,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Birke): 18,0 m in 259 gon.",GD BodenProfil Archivnummer: 213
+50046,184,,,1970-01-01,31468,4181503,5631643,1,4,1,3,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 19,70 m in 206 gon.",GD BodenProfil Archivnummer: 577
+50047,186,,,1970-01-01,31468,4184137,5663617,1,1,1,6,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,39 m in 184 gon.",GD BodenProfil Archivnummer: 309
+50048,189,,,1970-01-01,25832,396967,5645182,1,6,1,6,-2,2,"PK-Mittelpunkt liegt auf Blöße (Sturmwurffläche, wahrscheinlich Kyrill 2007).
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 8,10 m in 388 gon.",GD BodenProfil Archivnummer: 312
-50049,191,,,,1970-01-01,25832,396967,5661176,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 41,10 m in 281 gon.",GD BodenProfil Archivnummer: 554
-50050,193,,,,1970-01-01,25832,396967,5685166,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu BZE-Probebaum P 1: 3,27 m in 80 gon.",GD BodenProfil Archivnummer: 276
-50051,194,,,,1970-01-01,25832,396967,5725151,-9,1,4,2,3,1,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 18,2 m in 136 gon.",GD BodenProfil Archivnummer: 218
-50052,207,,,,1970-01-01,25832,404963,5629188,-9,1,5,2,3,6,2,-9,-9,-9,-9,"Vonj PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Traubeneiche) 5,51 m in 345 gon.",GD BodenProfil Archivnummer: 579
-50053,209,,,,1970-01-01,25832,404963,5661176,-9,1,5,1,5,-2,2,-9,-9,-9,-9,"Sturmwurffläche Kyrill 2007. Wiederaufforstung SEI 2009, gezäunt.",GD BodenProfil Archivnummer: 364
-50054,210,,,,1970-01-01,31468,4195213,5679028,-9,1,4,2,6,1,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,84 m in 365 gon.",GD BodenProfil Archivnummer: 587
-50055,212,,,,1970-01-01,25832,404964,5677169,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 15,13 m in 249 gon.",GD BodenProfil Archivnummer: 585
-50056,213,,,,1970-01-01,31468,4195883,5695171,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,15 m in 42 gon.
+50049,191,,,1970-01-01,25832,396967,5661176,1,1,1,6,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 41,10 m in 281 gon.",GD BodenProfil Archivnummer: 554
+50050,193,,,1970-01-01,25832,396967,5685166,1,1,1,6,-2,2,"Von PK-Mittelpunkt zu BZE-Probebaum P 1: 3,27 m in 80 gon.",GD BodenProfil Archivnummer: 276
+50051,194,,,1970-01-01,25832,396967,5725151,1,4,2,3,1,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 18,2 m in 136 gon.",GD BodenProfil Archivnummer: 218
+50052,207,,,1970-01-01,25832,404963,5629188,1,5,2,3,6,2,"Vonj PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Traubeneiche) 5,51 m in 345 gon.",GD BodenProfil Archivnummer: 579
+50053,209,,,1970-01-01,25832,404963,5661176,1,5,1,5,-2,2,"Sturmwurffläche Kyrill 2007. Wiederaufforstung SEI 2009, gezäunt.",GD BodenProfil Archivnummer: 364
+50054,210,,,1970-01-01,31468,4195213,5679028,1,4,2,6,1,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,84 m in 365 gon.",GD BodenProfil Archivnummer: 587
+50055,212,,,1970-01-01,25832,404964,5677169,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 15,13 m in 249 gon.",GD BodenProfil Archivnummer: 585
+50056,213,,,1970-01-01,31468,4195883,5695171,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,15 m in 42 gon.
 7",GD BodenProfil Archivnummer: 580
-50057,214,,,,1970-01-01,25832,404964,5693163,-9,1,5,1,2,-2,2,-9,-9,-9,-9,"Lückiger Unterstand von Ilex aquifolia.
+50057,214,,,1970-01-01,25832,404964,5693163,1,5,1,2,-2,2,"Lückiger Unterstand von Ilex aquifolia.
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,90 m in 88 gon.",GD BodenProfil Archivnummer: 228
-50058,215,,,,1970-01-01,31468,4197859,5743177,-9,1,8,2,5,5,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 13,5 m in 13 gon.",GD BodenProfil Archivnummer: 211
-50059,228,,,,1970-01-01,25832,412960,5645182,-9,1,5,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 16,00 m in 398 gon.",GD BodenProfil Archivnummer: 320
-50060,230,,,,1970-01-01,25832,412960,5661176,-9,1,4,1,1,-2,3,-9,-9,-9,-9,,"GD BodenProfil Archivnummer: 373
+50058,215,,,1970-01-01,31468,4197859,5743177,1,8,2,5,5,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 13,5 m in 13 gon.",GD BodenProfil Archivnummer: 211
+50059,228,,,1970-01-01,25832,412960,5645182,1,5,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 16,00 m in 398 gon.",GD BodenProfil Archivnummer: 320
+50060,230,,,1970-01-01,25832,412960,5661176,1,4,1,1,-2,3,,"GD BodenProfil Archivnummer: 373
 Neigung nach Profilaufnahme > 22,2 gon"
-50061,232,,,,1970-01-01,25832,412960,5677169,-9,1,1,1,1,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 6,17 m in 107 gon.",GD BodenProfil Archivnummer: 595
-50062,234,,,,1970-01-01,25832,412960,5685166,-9,1,5,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Sandbirke) 1,72 m in 124 gon.",GD BodenProfil Archivnummer: 583
-50063,237,,,,1970-01-01,25832,412961,5709157,-9,1,8,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzerle) 15,52 m in 235 gon.",GD BodenProfil Archivnummer: 221
-50064,239,,,,1970-01-01,25832,412962,5789125,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 14,0 m  in 179 gon.",GD BodenProfil Archivnummer: 171
-50065,252,,,,1970-01-01,31468,4209959,5646557,-9,1,8,2,6,1,2,-9,-9,-9,-9,"Sukzessionsfläche mit vorwüchsigen Birken und zwischen- bis unterständigen Fichten. Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Birke) 3,63 m in 181 gon.
+50061,232,,,1970-01-01,25832,412960,5677169,1,1,1,1,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 6,17 m in 107 gon.",GD BodenProfil Archivnummer: 595
+50075,280,,,1970-01-01,25832,428954,5669172,1,6,1,6,-2,2,"Kahlhiebsfläche nach Sturmschäden, zum Aufnahmezeitpunkt nicht wieder aufgeforstet.",GD BodenProfil Archivnummer: 323
+50062,234,,,1970-01-01,25832,412960,5685166,1,5,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Sandbirke) 1,72 m in 124 gon.",GD BodenProfil Archivnummer: 583
+50063,237,,,1970-01-01,25832,412961,5709157,1,8,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzerle) 15,52 m in 235 gon.",GD BodenProfil Archivnummer: 221
+50064,239,,,1970-01-01,25832,412962,5789125,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 14,0 m  in 179 gon.",GD BodenProfil Archivnummer: 171
+50065,252,,,1970-01-01,31468,4209959,5646557,1,8,2,6,1,2,"Sukzessionsfläche mit vorwüchsigen Birken und zwischen- bis unterständigen Fichten. Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Birke) 3,63 m in 181 gon.
 Einkürzung der Verjungungs-PK im N und W auf 5 m wegen Schussschneise.",GD BodenProfil Archivnummer: 379
-50066,253,,,,1970-01-01,25832,420957,5645182,-9,1,1,1,5,-2,2,-9,-9,-9,-9,Sturmwurffläche.Kyrill 2007. Wiederaufforstung mit Fichte 2008.,GD BodenProfil Archivnummer: 356
-50067,254,,,,1970-01-01,31468,4210636,5662411,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mitelbaum V/1 (Rotbuche) 14,23 m in 208 gon",GD BodenProfil Archivnummer: 351
-50068,257,,,,1970-01-01,31468,4211229,5678500,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,72 m in 278 gon.",GD BodenProfil Archivnummer: 371
-50069,261,,,,1970-01-01,31468,4215855,5790547,-9,1,8,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzerle) 10,78 m in 263 gon..",GD BodenProfil Archivnummer: 175
-50070,263,,,,1970-01-01,25832,420959,5789125,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 16,2 m in 184 gon.",GD BodenProfil Archivnummer: 180
-50071,274,,,,1970-01-01,25832,428954,5629188,-9,1,1,1,2,-2,2,-9,-9,-9,-9,Flächenwurf Kyrill 2007. Wiederaufforstung mit Fichte 2008.,GD BodenProfil Archivnummer: 391
-50072,275,,,,1970-01-01,25832,428954,5637185,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 14,95 m in 281 gon.",GD BodenProfil Archivnummer: 389
-50073,277,,,,1970-01-01,25832,428954,5653179,-9,1,1,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mitelpunkt zu WZE-Mittelbaum III/1 (Douglasie) 20,48 m in 218 gon.",GD BodenProfil Archivnummer: 376
-50074,279,,,,1970-01-01,25832,428954,5661175,-9,1,1,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 16,25 m in 254 gon.",GD BodenProfil Archivnummer: 322
-50075,280,,,,1970-01-01,25832,428954,5669172,-9,1,6,1,6,-2,2,-9,-9,-9,-9,"Kahlhiebsfläche nach Sturmschäden, zum Aufnahmezeitpunkt nicht wieder aufgeforstet.",GD BodenProfil Archivnummer: 323
-50076,282,,,,1970-01-01,25832,428954,5677169,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 18,46 m in 336 gon.",GD BodenProfil Archivnummer: 404
-50077,286,,,,1970-01-01,25832,428955,5733147,-9,1,5,2,3,5,2,-9,-9,-9,-9,"Entfernung PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Esche): 24,52 m in 125 gon",GD BodenProfil Archivnummer: 195
-50078,288,,,,1970-01-01,25832,428955,5765134,-9,1,3,1,2,-2,2,-9,-9,-9,-9,"Entfernung von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Küstentanne):  10,20 m in 224 gon.",GD BodenProfil Archivnummer: 194
-50079,303,,,,1970-01-01,31468,4225298,5629851,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Zahlreiche Kronenbrüche, Höhenmessungen eingeschränkt..
+50066,253,,,1970-01-01,25832,420957,5645182,1,1,1,5,-2,2,Sturmwurffläche.Kyrill 2007. Wiederaufforstung mit Fichte 2008.,GD BodenProfil Archivnummer: 356
+50067,254,,,1970-01-01,31468,4210636,5662411,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mitelbaum V/1 (Rotbuche) 14,23 m in 208 gon",GD BodenProfil Archivnummer: 351
+50068,257,,,1970-01-01,31468,4211229,5678500,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,72 m in 278 gon.",GD BodenProfil Archivnummer: 371
+50069,261,,,1970-01-01,31468,4215855,5790547,1,8,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Schwarzerle) 10,78 m in 263 gon..",GD BodenProfil Archivnummer: 175
+50070,263,,,1970-01-01,25832,420959,5789125,1,1,1,6,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 16,2 m in 184 gon.",GD BodenProfil Archivnummer: 180
+50071,274,,,1970-01-01,25832,428954,5629188,1,1,1,2,-2,2,Flächenwurf Kyrill 2007. Wiederaufforstung mit Fichte 2008.,GD BodenProfil Archivnummer: 391
+50072,275,,,1970-01-01,25832,428954,5637185,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 14,95 m in 281 gon.",GD BodenProfil Archivnummer: 389
+50073,277,,,1970-01-01,25832,428954,5653179,1,1,1,2,-2,2,"Von PK-Mitelpunkt zu WZE-Mittelbaum III/1 (Douglasie) 20,48 m in 218 gon.",GD BodenProfil Archivnummer: 376
+50074,279,,,1970-01-01,25832,428954,5661175,1,1,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 16,25 m in 254 gon.",GD BodenProfil Archivnummer: 322
+50076,282,,,1970-01-01,25832,428954,5677169,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 18,46 m in 336 gon.",GD BodenProfil Archivnummer: 404
+50077,286,,,1970-01-01,25832,428955,5733147,1,5,2,3,5,2,"Entfernung PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Esche): 24,52 m in 125 gon",GD BodenProfil Archivnummer: 195
+50078,288,,,1970-01-01,25832,428955,5765134,1,3,1,2,-2,2,"Entfernung von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Küstentanne):  10,20 m in 224 gon.",GD BodenProfil Archivnummer: 194
+50079,303,,,1970-01-01,31468,4225298,5629851,1,1,1,2,-2,1,"Zahlreiche Kronenbrüche, Höhenmessungen eingeschränkt..
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte)  14,36 m in 138 gon.",GD BodenProfil Archivnummer: 392
-50080,306,,,,1970-01-01,31468,4226027,5645950,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"PK-Mittelpunkt liegt auf Sturmwurffläche (Kyrill 2007), unmittelbar südwestlich vorgelagerter Altbestandesrest. Bestockung aus lückiger Naturverjüngung von Fichte, Birke und Eberesche (Anwuchs, ca. 6-8 Jahre).
+50080,306,,,1970-01-01,31468,4226027,5645950,1,1,1,6,-2,2,"PK-Mittelpunkt liegt auf Sturmwurffläche (Kyrill 2007), unmittelbar südwestlich vorgelagerter Altbestandesrest. Bestockung aus lückiger Naturverjüngung von Fichte, Birke und Eberesche (Anwuchs, ca. 6-8 Jahre).
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (",GD BodenProfil Archivnummer: 386
-50081,307,,,,1970-01-01,25832,436951,5645182,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von Sturm geschädigter Bestand (Kyrill 2007). 
+50081,307,,,1970-01-01,25832,436951,5645182,1,1,1,6,-2,1,"Von Sturm geschädigter Bestand (Kyrill 2007). 
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 16,14 m in 360 gon.",GD BodenProfil Archivnummer: 380
-50082,309,,,,1970-01-01,31468,4226500,5661759,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Fichte) 15,39 m in 249 gon.",GD BodenProfil Archivnummer: 361
-50083,311,,,,1970-01-01,25832,436951,5661175,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Fichte) 15,06 m in 83 gon. Sturmgeschädigter Bestand.",GD BodenProfil Archivnummer: 363
-50084,313,,,,1970-01-01,31468,4227220,5677852,-9,1,1,1,3,-2,2,-9,-9,-9,-9,"Fichtenanwuchs, begründet  Herbst 2008 auf Sturmwurffläche (Kyrill 2007).",GD BodenProfil Archivnummer: 328
-50085,315,,,,1970-01-01,25832,436951,5677169,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt z WZE-Mittelbaum  III/1 (Fichte) 15,04 m in 283 gon. Sturmschäden.",GD BodenProfil Archivnummer: 411
-50086,318,,,,1970-01-01,31468,4228574,5709870,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 13,71 m in 67 gon.",GD BodenProfil Archivnummer: 229
-50087,319,,,,1970-01-01,31468,4230485,5757769,-9,1,5,5,3,2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 26,0 m in 281 gon.",GD BodenProfil Archivnummer: 193
-50088,332,,,,1970-01-01,25832,444948,5637185,-9,1,1,1,6,-2,5,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,52 m in 310 gon.
+50082,309,,,1970-01-01,31468,4226500,5661759,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Fichte) 15,39 m in 249 gon.",GD BodenProfil Archivnummer: 361
+50083,311,,,1970-01-01,25832,436951,5661175,1,1,1,6,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Fichte) 15,06 m in 83 gon. Sturmgeschädigter Bestand.",GD BodenProfil Archivnummer: 363
+50084,313,,,1970-01-01,31468,4227220,5677852,1,1,1,3,-2,2,"Fichtenanwuchs, begründet  Herbst 2008 auf Sturmwurffläche (Kyrill 2007).",GD BodenProfil Archivnummer: 328
+50085,315,,,1970-01-01,25832,436951,5677169,1,1,1,6,-2,1,"Von PK-Mittelpunkt z WZE-Mittelbaum  III/1 (Fichte) 15,04 m in 283 gon. Sturmschäden.",GD BodenProfil Archivnummer: 411
+50086,318,,,1970-01-01,31468,4228574,5709870,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche): 13,71 m in 67 gon.",GD BodenProfil Archivnummer: 229
+50087,319,,,1970-01-01,31468,4230485,5757769,1,5,5,3,2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Eiche) 26,0 m in 281 gon.",GD BodenProfil Archivnummer: 193
+50088,332,,,1970-01-01,25832,444948,5637185,1,1,1,6,-2,5,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,52 m in 310 gon.
 Starke alte Schälschäden an Fichte.",GD BodenProfil Archivnummer: 394
-50089,334,,,,1970-01-01,25832,444948,5645182,-9,1,4,3,5,1,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 3,86 m in 384 gon.
+50089,334,,,1970-01-01,25832,444948,5645182,1,4,3,5,1,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 3,86 m in 384 gon.
 Rotbuchen-Naturverjüngung unter raümdig stehenden Altbestandesreste von RBU und GFI",GD BodenProfil Archivnummer:  40
-50090,335,,,,1970-01-01,25832,444948,5653178,-9,1,1,4,6,4,1,-9,-9,-9,-9,"RBU-Voranbau mit hohen Pflanzenausfällen(Trockenheit).
+50090,335,,,1970-01-01,25832,444948,5653178,1,1,4,6,4,1,"RBU-Voranbau mit hohen Pflanzenausfällen(Trockenheit).
 Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,96 m in 159 gon.",GD BodenProfil Archivnummer: 369
-50091,337,,,,1970-01-01,25832,444948,5661175,-9,1,1,1,3,-2,1,-9,-9,-9,-9,"Von PK-Mitelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,16 m in 195 gon.",GD BodenProfil Archivnummer: 331
-50092,339,,,,1970-01-01,25832,444948,5685166,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"PK-Mitelpunkt liegt unmittelbar an Schlagfront. Südlich vorgelagert aufgeforstete Sturmwurffläche (GFI ca. 2 Jahre). Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,92 m in 321 gon.",GD BodenProfil Archivnummer: 416
-50093,340,,,,1970-01-01,25832,444948,5693163,-9,1,4,3,5,1,1,-9,-9,-9,-9,"Sturmwurffläche Kyrill 2007. Einzelne Überhälter und teils dichte ca. 10jährige RBU-Naturverjüngung. Von PK-Mittelpunkt zu WZE-Baum III/2 (Rotbuche) 19,0 m in 50 gon.",GD BodenProfil Archivnummer: 417
-50094,342,,,,1970-01-01,25832,444948,5701160,-9,1,1,1,1,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte): 14,11 m in 17 gon.",GD BodenProfil Archivnummer:  73
-50095,356,,,,1970-01-01,31468,4241888,5645454,-9,1,4,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Buche) 15,10 m in 307 gon.",GD BodenProfil Archivnummer:  49
-50096,358,,,,1970-01-01,25832,452944,5645182,-9,1,3,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 Fichte) 14,14 m in 196 gon.",GD BodenProfil Archivnummer:  52
-50097,360,,,,1970-01-01,25832,452944,5661175,-9,1,6,2,6,1,5,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Fichte) 15,68 m in 199 gon.",GD BodenProfil Archivnummer:  17
-50098,363,,,,1970-01-01,25832,452945,5677169,-9,1,1,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu BZE-Probebaum P2: 1,18 m in 30 gon.","GD BodenProfil Archivnummer:  20
+50091,337,,,1970-01-01,25832,444948,5661175,1,1,1,3,-2,1,"Von PK-Mitelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,16 m in 195 gon.",GD BodenProfil Archivnummer: 331
+50092,339,,,1970-01-01,25832,444948,5685166,1,1,1,6,-2,1,"PK-Mitelpunkt liegt unmittelbar an Schlagfront. Südlich vorgelagert aufgeforstete Sturmwurffläche (GFI ca. 2 Jahre). Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,92 m in 321 gon.",GD BodenProfil Archivnummer: 416
+50093,340,,,1970-01-01,25832,444948,5693163,1,4,3,5,1,1,"Sturmwurffläche Kyrill 2007. Einzelne Überhälter und teils dichte ca. 10jährige RBU-Naturverjüngung. Von PK-Mittelpunkt zu WZE-Baum III/2 (Rotbuche) 19,0 m in 50 gon.",GD BodenProfil Archivnummer: 417
+50094,342,,,1970-01-01,25832,444948,5701160,1,1,1,1,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte): 14,11 m in 17 gon.",GD BodenProfil Archivnummer:  73
+50095,356,,,1970-01-01,31468,4241888,5645454,1,4,1,6,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Buche) 15,10 m in 307 gon.",GD BodenProfil Archivnummer:  49
+50096,358,,,1970-01-01,25832,452944,5645182,1,3,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 Fichte) 14,14 m in 196 gon.",GD BodenProfil Archivnummer:  52
+50097,360,,,1970-01-01,25832,452944,5661175,1,6,2,6,1,5,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Fichte) 15,68 m in 199 gon.",GD BodenProfil Archivnummer:  17
+50098,363,,,1970-01-01,25832,452945,5677169,1,1,1,1,-2,2,"Von PK-Mittelpunkt zu BZE-Probebaum P2: 1,18 m in 30 gon.","GD BodenProfil Archivnummer:  20
 Neigung nach Profilaufnahme 16,7 bis < 22,2 gon"
-50099,365,,,,1970-01-01,31468,4243826,5693254,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,67 m in 28 gon.",GD BodenProfil Archivnummer: 419
-50100,366,,,,1970-01-01,25832,452945,5693163,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu BZE-Probebaum 
+50099,365,,,1970-01-01,31468,4243826,5693254,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,67 m in 28 gon.",GD BodenProfil Archivnummer: 419
+50100,366,,,1970-01-01,25832,452945,5693163,1,1,1,6,-2,2,"Von PK-Mittelpunkt zu BZE-Probebaum 
 P2 (Fichte) 3,88 m in 256 gon.",GD BodenProfil Archivnummer: 420
-50101,367,,,,1970-01-01,31468,4244747,5709268,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"Im W größere Wurflücke (Blöße).
+50101,367,,,1970-01-01,31468,4244747,5709268,1,1,1,6,-2,2,"Im W größere Wurflücke (Blöße).
 Von PK-Mittelpunkt zu WZE-Mittelbaum XI/1 (Fichte): 14,36 m in 144 gon.",GD BodenProfil Archivnummer:  71
-50102,368,,,,1970-01-01,25832,452946,5773131,-9,1,4,1,1,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 16,0 m in 118 gon.",GD BodenProfil Archivnummer: 914
-50103,383,,,,1970-01-01,25832,460941,5645181,-9,1,3,1,6,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 1,86 m in 106 gon.",GD BodenProfil Archivnummer:  54
-50104,385,,,,1970-01-01,25832,460941,5661175,-9,1,6,1,2,-2,4,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Buche) 12,50 m in 191 gon.",GD BodenProfil Archivnummer:  58
-50105,387,,,,1970-01-01,25832,460941,5669172,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 14,35 m in 212 gon.",GD BodenProfil Archivnummer:  15
-50106,389,,,,1970-01-01,25832,460941,5677169,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,46 m in 271 gon",GD BodenProfil Archivnummer:  19
-50107,391,,,,1970-01-01,25832,460941,5685166,-9,1,1,2,6,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,18 m in 207 gon.",GD BodenProfil Archivnummer: 423
-50108,393,,,,1970-01-01,25832,460942,5701159,-9,1,4,2,6,1,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Traubeneiche) 15,34 m in 14 gon.",GD BodenProfil Archivnummer:  69
-50109,394,,,,1970-01-01,25832,460942,5765134,-9,1,1,1,6,-2,2,-9,-9,-9,-9,"Im NW unmittelbar an PK-Mittelpunkt angrenzende Windwurflücke.
+50102,368,,,1970-01-01,25832,452946,5773131,1,4,1,1,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 16,0 m in 118 gon.",GD BodenProfil Archivnummer: 914
+50103,383,,,1970-01-01,25832,460941,5645181,1,3,1,6,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 1,86 m in 106 gon.",GD BodenProfil Archivnummer:  54
+50104,385,,,1970-01-01,25832,460941,5661175,1,6,1,2,-2,4,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Buche) 12,50 m in 191 gon.",GD BodenProfil Archivnummer:  58
+50105,387,,,1970-01-01,25832,460941,5669172,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 14,35 m in 212 gon.",GD BodenProfil Archivnummer:  15
+50106,389,,,1970-01-01,25832,460941,5677169,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,46 m in 271 gon",GD BodenProfil Archivnummer:  19
+50107,391,,,1970-01-01,25832,460941,5685166,1,1,2,6,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 13,18 m in 207 gon.",GD BodenProfil Archivnummer: 423
+50108,393,,,1970-01-01,25832,460942,5701159,1,4,2,6,1,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Traubeneiche) 15,34 m in 14 gon.",GD BodenProfil Archivnummer:  69
+50109,394,,,1970-01-01,25832,460942,5765134,1,1,1,6,-2,2,"Im NW unmittelbar an PK-Mittelpunkt angrenzende Windwurflücke.
 Abstand PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 7,0 m in 149 gon.",GD BodenProfil Archivnummer: 911
-50110,406,,,,1970-01-01,31468,4259268,5676601,-9,1,1,2,6,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 10,0 m in 142 gon.",GD BodenProfil Archivnummer:  66
-50111,409,,,,1970-01-01,31468,4260021,5692665,-9,1,4,1,3,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,63 m in 107 gon.",GD BodenProfil Archivnummer:   5
-50112,412,,,,1970-01-01,31468,4260584,5708486,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von  PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 16,10 m in 190 gon.",GD BodenProfil Archivnummer:  29
-50113,414,,,,1970-01-01,31468,4261047,5724470,-9,1,8,2,2,1,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Hainbuche) 14,0 m in 231 gon.",GD BodenProfil Archivnummer: 863
-50114,426,,,,1970-01-01,25832,476935,5677169,-9,1,7,1,2,-2,3,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 10,64 m in 63 gon.",GD BodenProfil Archivnummer:  37
-50115,427,,,,1970-01-01,25832,476935,5701159,-9,1,4,2,5,1,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbau IX/1 (Rotbuche) 13,61 m in 353 gon.",GD BodenProfil Archivnummer:  31
-50116,428,,,,1970-01-01,25832,476935,5717153,-9,1,4,2,3,2,2,-9,-9,-9,-9,"Entfernung von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche) in 14.3 m, 114 gon.",GD BodenProfil Archivnummer: 862
-50117,429,,,,1970-01-01,25832,476936,5725149,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Lärche) 14,40 m in 346 gon.",GD BodenProfil Archivnummer: 859
-50118,431,,,,1970-01-01,25832,476937,5789124,-9,1,4,2,2,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,57 m in 398 gon.",GD BodenProfil Archivnummer: 909
-50119,444,,,,1970-01-01,25832,484932,5693162,-9,1,4,2,6,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Rotbuche): 14,71 m in 170 gon.",GD BodenProfil Archivnummer:  26
-50120,445,,,,1970-01-01,31468,4276536,5707926,-9,1,1,1,6,-2,2,-9,-9,-9,-9,Kahlhiebsfläche mit lückigem Anwuchs von Fichtennaturverjüngung (begradigte Sturmwurffläche).,GD BodenProfil Archivnummer:  81
-50121,447,,,,1970-01-01,25832,484932,5709156,-9,1,6,2,3,2,3,-9,-9,-9,-9,Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Roteiche). 389 gon in 16 m.,GD BodenProfil Archivnummer:  79
-50122,448,,,,1970-01-01,25832,484932,5725149,-9,1,1,1,6,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 11,95 m in 101 gon.
+50110,406,,,1970-01-01,31468,4259268,5676601,1,1,2,6,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 10,0 m in 142 gon.",GD BodenProfil Archivnummer:  66
+50111,409,,,1970-01-01,31468,4260021,5692665,1,4,1,3,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 14,63 m in 107 gon.",GD BodenProfil Archivnummer:   5
+50112,412,,,1970-01-01,31468,4260584,5708486,1,1,1,6,-2,1,"Von  PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 16,10 m in 190 gon.",GD BodenProfil Archivnummer:  29
+50113,414,,,1970-01-01,31468,4261047,5724470,1,8,2,2,1,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Hainbuche) 14,0 m in 231 gon.",GD BodenProfil Archivnummer: 863
+50114,426,,,1970-01-01,25832,476935,5677169,1,7,1,2,-2,3,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 10,64 m in 63 gon.",GD BodenProfil Archivnummer:  37
+50115,427,,,1970-01-01,25832,476935,5701159,1,4,2,5,1,1,"Von PK-Mittelpunkt zu WZE-Mittelbau IX/1 (Rotbuche) 13,61 m in 353 gon.",GD BodenProfil Archivnummer:  31
+50116,428,,,1970-01-01,25832,476935,5717153,1,4,2,3,2,2,"Entfernung von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche) in 14.3 m, 114 gon.",GD BodenProfil Archivnummer: 862
+50117,429,,,1970-01-01,25832,476936,5725149,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Lärche) 14,40 m in 346 gon.",GD BodenProfil Archivnummer: 859
+50118,431,,,1970-01-01,25832,476937,5789124,1,4,2,2,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 15,57 m in 398 gon.",GD BodenProfil Archivnummer: 909
+50119,444,,,1970-01-01,25832,484932,5693162,1,4,2,6,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum IX/1 (Rotbuche): 14,71 m in 170 gon.",GD BodenProfil Archivnummer:  26
+50120,445,,,1970-01-01,31468,4276536,5707926,1,1,1,6,-2,2,Kahlhiebsfläche mit lückigem Anwuchs von Fichtennaturverjüngung (begradigte Sturmwurffläche).,GD BodenProfil Archivnummer:  81
+50121,447,,,1970-01-01,25832,484932,5709156,1,6,2,3,2,3,Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Roteiche). 389 gon in 16 m.,GD BodenProfil Archivnummer:  79
+50122,448,,,1970-01-01,25832,484932,5725149,1,1,1,6,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 11,95 m in 101 gon.
 Schmaler Bestandesstreifen, Fichten zumeist mit Randbaumhabitus; dichte Strauchschicht von Weißdorn, Faulbaum und Hasel.",GD BodenProfil Archivnummer: 861
-50123,449,,,,1970-01-01,25832,484933,5741143,-9,1,2,1,6,-2,1,-9,-9,-9,-9,"Einzelne Überhälter GKI. Von PK-Mittelpunkt zu WZE Mittelbaum III/1 (Kiefer) 15,28 m in 146 gon.","GD BodenProfil Archivnummer: 887
+50123,449,,,1970-01-01,25832,484933,5741143,1,2,1,6,-2,1,"Einzelne Überhälter GKI. Von PK-Mittelpunkt zu WZE Mittelbaum III/1 (Kiefer) 15,28 m in 146 gon.","GD BodenProfil Archivnummer: 887
 Einfluß durch Truppenübungsplatz; 30 cm tief gepflügt;
 Satellit 7: Wasser ab 90 cm
 Satellit 6: Wasser ab 65 cm"
-50124,450,,,,1970-01-01,31468,4278617,5755793,-9,1,2,5,5,1,2,-9,-9,-9,-9,"Fichte stark geschält.
+50124,450,,,1970-01-01,31468,4278617,5755793,1,2,5,5,1,2,"Fichte stark geschält.
 Von PK-Mittelpunkt zu WZE-Mittelbaum XV/1 (Kiefer) 15,2 m in 51 gon.",GD BodenProfil Archivnummer: 889
-50125,452,,,,1970-01-01,25832,484934,5805118,-9,1,2,2,3,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 15,43 m in 278 gon.",GD BodenProfil Archivnummer: 907
-50126,457,,,,1970-01-01,25832,492929,5733146,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche): 16,05 m in 186 gon.",GD BodenProfil Archivnummer: 856
-50127,459,,,,1970-01-01,25832,492929,5741143,-9,1,8,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Bergahorn) 20,16 m in 157 gon.","GD BodenProfil Archivnummer: 894
+50125,452,,,1970-01-01,25832,484934,5805118,1,2,2,3,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 15,43 m in 278 gon.",GD BodenProfil Archivnummer: 907
+50126,457,,,1970-01-01,25832,492929,5733146,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum VII/1 (Rotbuche): 16,05 m in 186 gon.",GD BodenProfil Archivnummer: 856
+50127,459,,,1970-01-01,25832,492929,5741143,1,8,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Bergahorn) 20,16 m in 157 gon.","GD BodenProfil Archivnummer: 894
 im Bereich der Satelliten 3 und 4 sehr alte, mit Mineralboden vermischte Meilerplatte noch schwach morphologisch und bodenkundlich erkennbar.
 Satellit 1:Bohrtiefe 2 * 9,0 dm
 Satellit 2:Bohrtiefe  9,0 und 6,0 dm
 Satelli"
-50128,461,,,,1970-01-01,25832,492930,5773130,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 15,0 m in 53 gon.",GD BodenProfil Archivnummer: 899
-50129,474,,,,1970-01-01,31468,4293218,5723424,-9,1,1,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,47 m in 203 gon.",GD BodenProfil Archivnummer: 456
-50130,475,,,,1970-01-01,31468,4294073,5739231,-9,1,4,3,5,5,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (alte Rotbuche): 9,43 m in 229 gon.",GD BodenProfil Archivnummer: 864
-50131,477,,,,1970-01-01,25832,500926,5741143,-9,1,4,3,2,1,7,-9,-9,-9,-9,"Von PK-Mittelpunkt zu BZE-Probebaum P 2: 2,29 m in 165 gon.",GD BodenProfil Archivnummer: 869
-50132,479,,,,1970-01-01,31468,4294415,5755206,-9,1,4,6,2,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Stieleiche) 14,96 m in 254 gon.",GD BodenProfil Archivnummer: 886
-50133,482,,,,1970-01-01,31468,4295228,5771254,-9,1,4,2,2,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mitelbaum VII/1 (Rotbuche) 14,94 m in 70 gon.",GD BodenProfil Archivnummer: 895
-50134,485,,,,1970-01-01,25832,508923,5701159,-9,1,1,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/21 (Fichte): 14,26 m in 94 gon.",GD BodenProfil Archivnummer: 457
-50135,486,,,,1970-01-01,25832,508923,5725149,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 14,06 m in 65 gon.",GD BodenProfil Archivnummer: 867
-50136,488,,,,1970-01-01,25832,508923,5733146,-9,1,4,2,3,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche): 13,33 m in 173 gon.",GD BodenProfil Archivnummer: 870
-50137,489,,,,1970-01-01,25832,508923,5757136,-9,1,4,1,1,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,35 m in 217 gon.",GD BodenProfil Archivnummer: 892
-50138,494,,,,1970-01-01,25832,516920,5725149,-9,1,4,2,4,5,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche): 16,08 m in 121 gon.",GD BodenProfil Archivnummer: 873
-50139,495,,,,1970-01-01,31468,4310010,5738713,-9,1,4,2,3,1,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu  WZE-Mittelbaum VII/1 (Rotbuche): 8,94 m in 257 gon.",GD BodenProfil Archivnummer: 874
-50140,496,,,,1970-01-01,31468,4310495,5754557,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,93  m in 340 gon.",GD BodenProfil Archivnummer: 881
-50141,505,,,,1970-01-01,31468,4120122,5668950,-9,1,4,1,2,-2,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Vogelkirsche) 13,56 m in 149 gon.
+50128,461,,,1970-01-01,25832,492930,5773130,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 15,0 m in 53 gon.",GD BodenProfil Archivnummer: 899
+50129,474,,,1970-01-01,31468,4293218,5723424,1,1,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 14,47 m in 203 gon.",GD BodenProfil Archivnummer: 456
+50130,475,,,1970-01-01,31468,4294073,5739231,1,4,3,5,5,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (alte Rotbuche): 9,43 m in 229 gon.",GD BodenProfil Archivnummer: 864
+50131,477,,,1970-01-01,25832,500926,5741143,1,4,3,2,1,7,"Von PK-Mittelpunkt zu BZE-Probebaum P 2: 2,29 m in 165 gon.",GD BodenProfil Archivnummer: 869
+50132,479,,,1970-01-01,31468,4294415,5755206,1,4,6,2,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Stieleiche) 14,96 m in 254 gon.",GD BodenProfil Archivnummer: 886
+50133,482,,,1970-01-01,31468,4295228,5771254,1,4,2,2,6,2,"Von PK-Mittelpunkt zu WZE-Mitelbaum VII/1 (Rotbuche) 14,94 m in 70 gon.",GD BodenProfil Archivnummer: 895
+50134,485,,,1970-01-01,25832,508923,5701159,1,1,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/21 (Fichte): 14,26 m in 94 gon.",GD BodenProfil Archivnummer: 457
+50135,486,,,1970-01-01,25832,508923,5725149,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Fichte) 14,06 m in 65 gon.",GD BodenProfil Archivnummer: 867
+50136,488,,,1970-01-01,25832,508923,5733146,1,4,2,3,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche): 13,33 m in 173 gon.",GD BodenProfil Archivnummer: 870
+50137,489,,,1970-01-01,25832,508923,5757136,1,4,1,1,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche) 13,35 m in 217 gon.",GD BodenProfil Archivnummer: 892
+50138,494,,,1970-01-01,25832,516920,5725149,1,4,2,4,5,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum V/1 (Rotbuche): 16,08 m in 121 gon.",GD BodenProfil Archivnummer: 873
+50139,495,,,1970-01-01,31468,4310010,5738713,1,4,2,3,1,1,"Von PK-Mittelpunkt zu  WZE-Mittelbaum VII/1 (Rotbuche): 8,94 m in 257 gon.",GD BodenProfil Archivnummer: 874
+50140,496,,,1970-01-01,31468,4310495,5754557,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Rotbuche) 13,93  m in 340 gon.",GD BodenProfil Archivnummer: 881
+50141,505,,,1970-01-01,31468,4120122,5668950,1,4,1,2,-2,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Vogelkirsche) 13,56 m in 149 gon.
 Frisch durchforstet, Teil der liegenden Buchen wird wahrscheinlich noch durch Brennholzselbstwerbung entnommen.",GD BodenProfil Archivnummer:  84
-50142,513,,,,1970-01-01,25832,370207,5646174,-9,1,8,6,6,2,2,-9,-9,-9,-9," Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Robinie) 16,95 m in 240 gon.",GD BodenProfil Archivnummer:  87
-50143,516,,,,1970-01-01,31468,4173426,5728782,-9,1,8,2,3,6,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 15,0 m in 30 gon.","GD BodenProfil Archivnummer:  85
+50142,513,,,1970-01-01,25832,370207,5646174,1,8,6,6,2,2," Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Robinie) 16,95 m in 240 gon.",GD BodenProfil Archivnummer:  87
+50143,516,,,1970-01-01,31468,4173426,5728782,1,8,2,3,6,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Pappel): 15,0 m in 30 gon.","GD BodenProfil Archivnummer:  85
 Hangneigung ""17 gon"" fehlerhaft: GD-Kartierer: 1° - paßt zur Angabe ""Hangrichtung flach""!"
-50144,524,,,,1970-01-01,25832,428954,5693163,-9,1,1,1,2,-2,1,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 15,17 m in 135 gon.",GD BodenProfil Archivnummer:  88
-50145,527,,,,1970-01-01,25832,476935,5693162,-9,1,1,1,1,-2,1,-9,-9,-9,-9,"Erstaufforstung.
+50144,524,,,1970-01-01,25832,428954,5693163,1,1,1,2,-2,1,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Fichte) 15,17 m in 135 gon.",GD BodenProfil Archivnummer:  88
+50145,527,,,1970-01-01,25832,476935,5693162,1,1,1,1,-2,1,"Erstaufforstung.
 Von PK-Mittelpunkt zu WZE-Mittelbaum  III/1 (Fichte) 4,34 in 204 gon.",GD BodenProfil Archivnummer:  89
-50146,508,,,,1970-01-01,25832,356435,5602707,-9,1,2,2,3,6,2,-9,-9,-9,-9,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 20,87 m  in  102 gon.",GD BodenProfil Archivnummer:  86
+50146,508,,,1970-01-01,25832,356435,5602707,1,2,2,3,6,2,"Von PK-Mittelpunkt zu WZE-Mittelbaum III/1 (Kiefer) 20,87 m  in  102 gon.",GD BodenProfil Archivnummer:  86

@@ -193,27 +193,27 @@ DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
   # we have to do two things: 
   # link the species with the right ICode by their BWI_SP_oode
   # link the plot ID with the state it´s situated in and the state with the region code
-  
+
   ## select thh correct tangenz accordint to species and
   # select the ba_BWI1 sep
-  sp_tan <- as.character(DBH_SP$SP_BWI1[DBH_SP$Chr_code_ger == spec])
+  sp_tan <- unique(as.character(DBH_SP$SP_BWI1[which(toupper(DBH_SP$SP_BWI1)%in% toupper(spec))]))
   # determine ld based on plot ID
   # determine state the plot is located in by it´s plot ID
-    # for plots with 5 digits it´s the first number, for plots with 6 the first two 
-    # these numbers comply with the column icode_reg in the DBH_region dataset so that the extracted country code can be immediately translated into 
-    # the DBH tangez region 
-    # https://www.geeksforgeeks.org/count-number-of-characters-in-string-in-r/
-    # https://stackoverflow.com/questions/61954941/extract-first-x-digits-of-n-digit-numbers
+  # for plots with 5 digits it´s the first number, for plots with 6 the first two 
+  # these numbers comply with the column icode_reg in the DBH_region dataset so that the extracted country code can be immediately translated into 
+  # the DBH tangez region 
+  # https://www.geeksforgeeks.org/count-number-of-characters-in-string-in-r/
+  # https://stackoverflow.com/questions/61954941/extract-first-x-digits-of-n-digit-numbers
   ld_icode <- ifelse(str_length(plot.id) == 5, substr(plot.id, 1, 1), substr(plot.id, 1, 2))
   #ld <- DBH_region$icode_reg[which(grepl(ld_plot, DBH_region$icode_reg))]
   # select the region belonign to the state that belongs to the plot_ID from DBH_region dataset 
-  reg_tan <- DBH_region$region[which(DBH_region$icode_reg == ld_icode)]
+  reg_tan <- unique(DBH_region$region[which(DBH_region$icode_reg %in% ld_icode)])
   # select the tangenz belonging to the reion and species from DBH_tan dataset
-  tangenz <- DBH_tan$tangenz[DBH_tan$SP_BWI1 == as.character(sp_tan) & DBH_tan$region == reg_tan]
- # calcualte DBH according to function by Stefan Dahm
-  dbh.dahm = (d.mm)+2*((d.h.cm)-130)/tangenz 
+  tangenz <- DBH_tan$tangenz[DBH_tan$SP_BWI1 %in% as.character(sp_tan) & DBH_tan$region %in% reg_tan][1]
+  # calcualte DBH according to function by Stefan Dahm
+  dbh.dahm.cm = ((d.mm)+2*((d.h.cm)-130)/tangenz )/10
   
-  return(dbh.dahm)
+   return(dbh.dahm.cm)
 }
 
 

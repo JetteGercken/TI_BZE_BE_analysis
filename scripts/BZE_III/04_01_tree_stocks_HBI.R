@@ -18,7 +18,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
 # tree data
-trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3.csv"), sep = ",", dec = ",") 
+trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3.csv"), sep = ";", dec = ",") 
 # HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/BI_trees_update_3.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # trees %>% filter(H_m <0)
 
@@ -206,8 +206,8 @@ trees <- trees %>% mutate(C_kg_tree = carbon(B_kg_tree))
 HBI_trees_update_4 <- trees %>% select(- c("Chr_code_ger", "H_SP_group","BWI_SP_group" , "Bio_SP_group",
                                            "N_SP_group", "N_bg_SP_group", "N_f_SP_group_MoMoK"))
 
-# HBI dataset including estimated heights
-write.csv(HBI_trees_update_4, paste0(out.path.BZE3, paste(unique(HBI_trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
+# HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
+write.csv2(HBI_trees_update_4, paste0(out.path.BZE3, paste(unique(HBI_trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
 
 
 
