@@ -34,7 +34,6 @@ all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, in
 all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
 
 
-
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # assign column names 
                         # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
