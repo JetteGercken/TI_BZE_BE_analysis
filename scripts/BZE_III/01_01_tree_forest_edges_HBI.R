@@ -1735,8 +1735,8 @@ HBI_trees_update_1 <- HBI_trees_update_1 %>% filter(stand != "warning")
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
-all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo %>% unnest(geometry), inter.poly.two.edges.df.nogeo%>% unnest(geometry))
-all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo)
+all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
+all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) #%>% nest("geometry" = geometry)
 
 
 
@@ -1754,15 +1754,68 @@ write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(HBI_trees_upd
 write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
           
 
-# export list of plots where the edge polygones intersect within the 17.84 radius
+# export list of plots where the both edge polygones intersect within the 17.84 radius
 write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
           
 # exporting edge triangle polygones
 write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+
 # exporting edge intersection polygones 
-write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
-# exporting all remaining circles
-write.csv2(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+#write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+# to export the dataframes with long geometries and keep the geometries in list format for better processing later 
+# thus we export them with the following function, that enables to save the whole geometry list in 1 Table
+# https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
+tibble_with_lists_to_csv(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+# exporting all remaining circles polygones
+tibble_with_lists_to_csv(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
+
+
+## export coordiantes of all edge-triangle-circle intersections polygones  to  dataframes 
+all.edge.intersections.coords.list <- vector("list", length = nrow(unique(all.edge.intersections.poly[, c("plot_ID", "e_ID")])))
+for (i in 1:nrow(unique(all.edge.intersections.poly[, c("plot_ID", "e_ID")]))) {
+  # i = 1
+  all.edge.intersections.coords.list[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(all.edge.intersections.poly$plot_ID[i]), 
+    "e_ID" = c(all.edge.intersections.poly$e_ID[i]),  
+    "e_form" = c(all.edge.intersections.poly$e_form[i]),
+    "lon" = (as_tibble(st_coordinates(all.edge.intersections.poly$geometry[i])) %>% select("X", -c( "L1", "L2"))),
+    "lat" = (as_tibble(st_coordinates(all.edge.intersections.poly$geometry[i])) %>% select("Y", -c( "L1", "L2")))
+  ))
+}
+all.edge.intersections.coords.list.final <- rbindlist(all.edge.intersections.coords.list)
+all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.list.final) %>% 
+  # the exportet polygones only include the widest cirlce intersection at 17.84m radius
+  mutate(CCS_r_m = 17.84) %>% 
+  # join in the stand info by plot_ID, e_ID, CCS_r_M
+  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+            by = c("plot_ID", "e_ID", "CCS_r_m"))
+write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
+
+
+## export coordiantes of all remaining polygones  to  dataframes
+all.rem.circle.coords.list <- vector("list", length = nrow(unique(all.remaning.circles.poly[, c("plot_ID", "e_ID")])))
+for (i in 1:nrow(unique(all.remaning.circles.poly[, c("plot_ID", "e_ID")]))) {
+  # i = 1
+  all.rem.circle.coords.list[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(all.remaning.circles.poly$plot_ID[i]), 
+    "e_ID" = c(all.remaning.circles.poly$e_ID[i]),  
+    "e_form" = c(all.remaning.circles.poly$e_form[i]),
+    "lon" = (as_tibble(st_coordinates(all.remaning.circles.poly$geometry[i])) %>% select("X", -c( "L1", "L2"))),
+    "lat" = (as_tibble(st_coordinates(all.remaning.circles.poly$geometry[i])) %>% select("Y", -c( "L1", "L2")))
+  ))
+}
+all.rem.circle.coords.list.final <- rbindlist(all.rem.circle.coords.list)
+all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>% 
+  # the exportet polygones only include the widest cirlce intersection at 17.84m radius
+  mutate(CCS_r_m = 17.84) %>% 
+  # join in the stand info by plot_ID, e_ID, CCS_r_M
+  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+            by = c("plot_ID", "e_ID", "CCS_r_m"))
+write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
+
+
+
+
 
 
 

@@ -156,6 +156,15 @@ N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" ,
                                 "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
 
 # ----- 1. Functions -----------------------------------------------------------
+# this function exports tables with list columns to csv: 
+# https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
+tibble_with_lists_to_csv <- function(tibble_object, file_path_name) {
+  set_lists_to_chars <- function(x) { 
+    if(class(x) == 'list') { y <- paste(unlist(x[1]), sep='', collapse=', ') } else { y <- x  } 
+    return(y) }
+  new_frame <- data.frame(lapply(tibble_object, set_lists_to_chars), stringsAsFactors = F)
+  write.csv2(new_frame, file=file_path_name)
+}
 
 
 # ----- 1.1. area circle --------------------------------------------------
@@ -190,6 +199,7 @@ DBH_BWI <- function(d.mm, d.h.cm){
 #               Brusthöhendurchmesser bei abweichender Meßhöhe nach Abholzigkeitsfunktion lt. Stefan Dahm 
 #             tabes required to perfom linkage between trees dataset and tangenz dataste: x_ba.Ba_BWI1, x_bl.Region, [k_Tangenz (Ba_Bwi1, Region)].Ba_BWI1+Region bwi.xyk1.k_tangenz 
 DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
+  # avoidind error: "longer object length is not a multiple of shorter object length" by https://stackoverflow.com/questions/10865095/why-do-i-get-warning-longer-object-length-is-not-a-multiple-of-shorter-object-l
   # we have to do two things: 
   # link the species with the right ICode by their BWI_SP_oode
   # link the plot ID with the state it´s situated in and the state with the region code
