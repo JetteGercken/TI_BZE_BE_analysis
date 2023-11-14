@@ -22,7 +22,7 @@ HBI_RG <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec
 HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
 
 # # import polygones along all edges iin triangle shape
-# all_triangles_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_triangle_poly.csv")), delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
+ all_triangles_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_triangle_poly.csv")), delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
 # # import all remaining circle polygones with geometry as list
 # all_rem_circles_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_rem_circles_poly.csv")),  delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
 # all_rem_circles_poly$geometry <- as_tibble(all_rem_circles_poly$geometry)
@@ -38,12 +38,26 @@ all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # assign column names 
                         # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist")
+colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm")
                     #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_cm", "inv_year")
 
 
 # 1. calculations ---------------------------------------------------------
+all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102]
+all_triangles_poly$geometry <- sub("list", " ", all_triangles_poly$geometry)
+all_triangles_poly$geometry <- sub("c", " ", all_triangles_poly$geometry)
+all_triangles_poly$geometry <- sub(" ( ", " ", all_triangles_poly$geometry)
+all_triangles_poly$geometry <- sub( ")", " ", all_triangles_poly$geometry)
+
+as.list(all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102])
+
+
+st_as_sf(all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102])
+sfheaders::sf_polygon(obj = all_triangles_poly %>% filter(plot_ID == 50102) 
+                      , x = "X"
+                      , y = "Y"
+                      , keep = TRUE)
 
 
 # 1.1. assign gon according to exposition --------------------------------
@@ -53,7 +67,7 @@ HBI_RG_loc <- HBI_RG_loc%>%
                              CCS_position == "s" ~ 200,
                              CCS_position == "o" ~ 300), 
          # if the max distance of the last plant in the RG CCS is not measured we assume it´s 5m or 500cm
-         CCS_max_dist = ifelse(CCS_max_dist == -9 | is.na(CCS_max_dist), 500, CCS_max_dist))
+         CCS_max_dist_cm = ifelse(CCS_max_dist_cm == -9 | is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
 
  
 
@@ -62,16 +76,17 @@ HBI_RG_one_edge <- HBI_RG_loc %>% semi_join(., all_edge_intersections_coords %>%
                                               distinct() %>% 
                                               group_by(plot_ID) %>% 
                                               summarise(n_edges = n()) %>% 
-                                              filter(n_edges == 1), by = "plot_ID")
+                                              filter(n_edges > 1), by = "plot_ID")
 
 # for each plot_id and regeneration circle at plots with one edge only 
-for (i in nrow(unique(HBI_RG_forest_edges[c("plot_ID", "CCS_nr")]))) {
+RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
+for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # i = 1
   
   # regerneation sampling cirlce data
-  my.plot.id <- unique(HBI_RG_forest_edges[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
-  my.ccs.id <- unique(HBI_RG_forest_edges[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
-  my.ccs.r <- (HBI_RG_forest_edges$CCS_max_dist[HBI_RG_forest_edges$plot_ID == my.plot.id & HBI_RG_forest_edges$CCS_nr == my.ccs.id])/100   # max dist of last plant in the circle to create buffer
+  my.plot.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
+  my.ccs.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
+  my.ccs.r <- (HBI_RG_one_edge$CCS_max_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id])/100   # max dist of last plant in the circle to create buffer
 
   # circle data
   c.x0 = 0 
@@ -79,40 +94,84 @@ for (i in nrow(unique(HBI_RG_forest_edges[c("plot_ID", "CCS_nr")]))) {
   c.r3 = 17.84
   
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
-  ccs.dist <- HBI_RG_forest_edges$CCS_dist[HBI_RG_forest_edges$plot_ID == my.plot.id & HBI_RG_forest_edges$CCS_nr == my.ccs.id]
-  ccs.azi <- HBI_RG_forest_edges$CCS_gon[HBI_RG_forest_edges$plot_ID == my.plot.id & HBI_RG_forest_edges$CCS_nr == my.ccs.id]
+  ccs.dist <- HBI_RG_one_edge$CCS_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]/100
+  ccs.azi <- HBI_RG_one_edge$CCS_gon[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]
   x_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "x")
   y_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y")
-  # create polygone around 
-  my.ccs.center <- as.data.frame(cbind("lon" = x_CCS_center, "lat" = y_CCS_center))
-  my.rg.ccs.poly <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
-  circle.17 <- sf::st_buffer(circle.pt, my.ccs.r/100)
   
+## create polyones
+  # create polygone of RG CCS 
+  my.rg.ccs.poly <- sf::st_buffer(
+    sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, "lat" = y_CCS_center)),coords = c("lon", "lat")), # center point df
+    my.ccs.r) # radius
+  # create polygon of edge-intersection from all.edge.intersection.coords.df
   edge.poly <- sfheaders::sf_polygon(obj = all.edge.intersections.coords.df %>% filter(plot_ID == my.plot.id) 
                                      , x = "X"
                                      , y = "Y"
                                      , keep = TRUE)
-  
+  # create polygon of edge-intersection from all.edge.intersection.coords.df
   rem.circle.poly <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
                                            , x = "X"
                                            , y = "Y"
                                            , keep = TRUE)
- 
+ ## check for intersections
+  # with edge-intersection-polygon
+  intersection.with.edge <- sf::st_intersection(my.rg.ccs.poly, edge.poly)
+  # with remaining circle polygon
+  intersection.with.rem.circle <- sf::st_intersection(rem.circle.poly, my.rg.ccs.poly)
   
-  #### build whole 17.84 m circle
-  # build polygon (circlular buffer) around center point
-  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  # center.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
-  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
-  circle.17 <- sf::st_buffer(circle.pt, c.r3)
+## set the stand of the rg circle according to its intersections: https://www.geeksforgeeks.org/nested-if-else-statement-in-r/
+  # if both polygones, intersectionw if there are intersectionons of the respective RG CCS with the edge and remaining circle polyones (nrow != 0) 
+if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0){
+  # the RG CCS receives two stands and areas 
+  my.stand.rg <-c(intersection.with.rem.circle$stand, intersection.with.edge$stand)
+  # if there are only intersectionons of the respective RG CCS with remaining circle polyone (nrow != 0) 
+  if(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0){
+    # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
+    my.stand.rg <- c(intersection.with.rem.circle$stand)
+    # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
+    if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0){
+      # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
+      my.stand.rg <- c(intersection.with.edge$stand)
+    }}}else{my.stand.rg <- c("warning")}
   
   
-  print(plot(circle.17$geometry), 
-        plot(edge.poly$geometry, col = "red", add = T), 
-        plot(rem.circle.poly$geometry, col = "blue", add =T))
+## determine area of the rg circle (stands) according to it´s intersection
+  if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0){
+    # the RG CCS receives two stands and areas 
+    my.rg.A.m2 <- c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge))
+    # if there are only intersectionons of the respective RG CCS with remaining circle polyone (nrow != 0) 
+    if(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0){
+      # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
+      my.rg.A.m2 <- c(st_area(intersection.with.rem.circle))
+      # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
+      if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0){
+        # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
+        my.rg.A.m2 <- c(st_area(intersection.with.edge))
+      }}}else{my.rg.A.m2 <- c(0)}                      
+  
+## safe intersection info (stand and area) of the RG CCS into dataframe
+   rg.edge.data <- as.data.frame(cbind(
+     "plot_ID" = c(rep(my.plot.id, times = length(my.stand.rg))), 
+     "CCS_nr" = c(rep(my.ccs.id, times = length(my.stand.rg))), 
+     "stand" = my.stand.rg, 
+     "RG_area_m2"= my.rg.A.m2
+   ))
+  
+## put dataframe in export list
+  RG.CCS.one.edge[[i]] <- rg.edge.data
+
+  
+  print(ggplot() +
+           geom_sf(data = rem.circle.poly, aes(colour = stand))+
+           geom_sf(data = edge.poly, aes(colour = stand))+
+          geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
+          ggtitle(my.plot.id, my.ccs.id)
+         )
   
   }
       
+
 
 
 

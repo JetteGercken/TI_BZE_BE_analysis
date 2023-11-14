@@ -102,6 +102,7 @@ here::here()
 # ----- 0.4 import parameters etc. for functions --------------------------
 
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
+# change region sheet to x_ld_neu aus code tables
 DBH_region <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_region.csv"), sep = ";", dec = ",")
 DBH_region <- DBH_region %>% dplyr::select(ï..ICode, KurzD,  LangD, Region)
 colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG", "region")
@@ -113,6 +114,7 @@ colnames(DBH_SP) <- c("icode_spec", "Chr_code_ger", "bot_genus", "bot_species", 
 DBH_SP$Chr_code_ger <- gsub(" ", "", DBH_SP$Chr_code_ger)
 DBH_SP$SP_BWI1 <- gsub(" ", "", DBH_SP$SP_BWI1)
 
+# change tangenz csv to neu_k_tangens from code tabellen in 
 DBH_tan <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_tangenz.csv"), sep = ";", dec = ",")
 colnames(DBH_tan) <- c("SP_BWI1", "icode", "region", "tangenz")
 
@@ -206,7 +208,7 @@ DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
 
   ## select thh correct tangenz accordint to species and
   # select the ba_BWI1 sep
-  sp_tan <- unique(as.character(DBH_SP$SP_BWI1[which(toupper(DBH_SP$SP_BWI1)%in% toupper(spec))]))
+  sp_tan <- spec # unique(as.character(DBH_SP$SP_BWI1[which(toupper(DBH_SP$SP_BWI1)%in% toupper(spec))]))
   # determine ld based on plot ID
   # determine state the plot is located in by it´s plot ID
   # for plots with 5 digits it´s the first number, for plots with 6 the first two 

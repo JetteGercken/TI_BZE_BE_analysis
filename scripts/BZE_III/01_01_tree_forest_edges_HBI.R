@@ -25,7 +25,7 @@ HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI point info
-HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # HBI forest edges (Waldränder) info
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 # species names & codes 
@@ -40,24 +40,29 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI trees
-colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
-                         "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
+colnames(HBI_trees) <- c("plot_ID", "tree_ID", "tree_inventory_status",
+                         "multi_stem",  "SP_code", 
+                         "age", "age_meth",
+                         "D_mm", "DBH_h_cm", "H_dm", "C_h_dm",
+                         "azi_gon", "dist_cm",
+                         "Kraft",  "C_layer")
+
+  
 HBI_trees <- HBI_trees %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
-                                  Dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code , DBH_class ,  Kraft ,  
-                                  C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm ,  DBH_cm )
+                                  dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code ,  Kraft ,  
+                                  C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI locations
-HBI_loc <- HBI_loc %>% dplyr::select("ï..ToTraktId", "ToEckId", "K2_RW",
+HBI_loc <- HBI_loc %>% dplyr::select(c("plot_ID", "ToEckId", "K2_RW",
                               "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                               "HW_MED",  "LAT_MED",  "LON_MED", 
-                              "LAT_MEAN", "LON_MEAN")
+                              "LAT_MEAN", "LON_MEAN"))
 colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                        "HW_MED",  "LAT_MED",  "LON_MED", 
                        "LAT_MEAN", "LON_MEAN") 
 
 # HBI point/ inventory info
-HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, hbi_status )
+HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
 colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 HBI_inv_info$date <- as.Date(HBI_inv_info$date)
@@ -77,8 +82,8 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>%
   # join in inventory info
-  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-            by = "plot_ID")  %>% 
+  # left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
+  #           by = "plot_ID")  %>% 
   # join in the species names from x_bart to ensure the Dahm DBH correction function
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
@@ -86,6 +91,8 @@ HBI_trees <- HBI_trees %>%
   mutate(DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing 
          # cakcukate corrected BDH if measuringheight != 1.3m
          DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, BWI))) 
+
+
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
 SP_NAs <- HBI_trees %>% 
@@ -1770,7 +1777,31 @@ tibble_with_lists_to_csv(all.edge.intersections.poly, paste0(out.path.BZE3, past
 tibble_with_lists_to_csv(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
 
 
+## export coordiante of all edge_triangle poligons to dataframes
 ## export coordiantes of all edge-triangle-circle intersections polygones  to  dataframes 
+all.edge.triangle.coords.list <- vector("list", length = nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")])))
+for (i in 1:nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")]))) {
+  # i = 1
+  all.edge.triangle.coords.list[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(all.triangle.polys.df.nogeo$plot_ID[i]), 
+    "e_ID" = c(all.triangle.polys.df.nogeo$e_ID[i]),  
+    "e_form" = c(all.triangle.polys.df.nogeo$e_form[i]),
+    "lon" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("X", -c( "L1", "L2"))),
+    "lat" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("Y", -c( "L1", "L2")))
+  ))
+}
+all.edge.triangle.coords.list.final <- rbindlist(all.edge.triangle.coords.list)
+all.edge.triangle.coords.df <- as.data.frame(all.edge.triangle.coords.list.final) %>% 
+  # the exportet polygones only include the widest cirlce intersection at 17.84m radius
+  mutate(CCS_r_m = 17.84) %>% 
+  # join in the stand info by plot_ID, e_ID, CCS_r_M
+  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+            by = c("plot_ID", "e_ID", "CCS_r_m"))
+write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
+
+
+
+## export coordiantes of all edge-triangle-circle-intersections polygones  to  dataframes 
 all.edge.intersections.coords.list <- vector("list", length = nrow(unique(all.edge.intersections.poly[, c("plot_ID", "e_ID")])))
 for (i in 1:nrow(unique(all.edge.intersections.poly[, c("plot_ID", "e_ID")]))) {
   # i = 1
