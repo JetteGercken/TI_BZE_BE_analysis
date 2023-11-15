@@ -84,7 +84,7 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
     sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, "lat" = y_CCS_center)),coords = c("lon", "lat")), # center point df
     my.ccs.r) # radius
   # create polygon of edge-intersection from all.edge.intersection.coords.df
-  edge.poly <- sfheaders::sf_polygon(obj = all.edge.intersections.coords.df %>% filter(plot_ID == my.plot.id) 
+  edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id) 
                                      , x = "X"
                                      , y = "Y"
                                      , keep = TRUE)

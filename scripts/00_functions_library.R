@@ -114,9 +114,6 @@ colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz", "icode")
 
 
 
-
-
-
 # ----- 0.4.2. nitrogen content datasets ----------------------------------
 ## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
   # import
