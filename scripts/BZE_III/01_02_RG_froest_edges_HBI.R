@@ -21,17 +21,11 @@ HBI_RG <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
 HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
 
-# # import polygones along all edges iin triangle shape
- all_triangles_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_triangle_poly.csv")), delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
-# # import all remaining circle polygones with geometry as list
-# all_rem_circles_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_rem_circles_poly.csv")),  delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
-# all_rem_circles_poly$geometry <- as_tibble(all_rem_circles_poly$geometry)
-# # import all edge-triangle-circle-intersection polygons with geometry as list
-# all_edge_intersections_poly <- read_delim(here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_intersection_poly.csv")),  delim = ";", escape_double = FALSE, trim_ws = TRUE, show_col_types = FALSE)
-# all_edge_intersections_poly$geometry <-as.list(all_edge_intersections_poly$geometry)
-
+# # import coordinates of polygones along all edges iin triangle shape
 all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
 all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
+all_edge_triagles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edge_triangle_coords.csv")), sep = ";", dec = ",")
+
 
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
@@ -43,24 +37,10 @@ colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_c
 
 
 # 1. calculations ---------------------------------------------------------
-all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102]
-all_triangles_poly$geometry <- sub("list", " ", all_triangles_poly$geometry)
-all_triangles_poly$geometry <- sub("c", " ", all_triangles_poly$geometry)
-all_triangles_poly$geometry <- sub(" ( ", " ", all_triangles_poly$geometry)
-all_triangles_poly$geometry <- sub( ")", " ", all_triangles_poly$geometry)
-
-as.list(all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102])
-
-
-st_as_sf(all_triangles_poly$geometry[all_triangles_poly$plot_ID == 50102])
-sfheaders::sf_polygon(obj = all_triangles_poly %>% filter(plot_ID == 50102) 
-                      , x = "X"
-                      , y = "Y"
-                      , keep = TRUE)
 
 
 # 1.1. assign gon according to exposition --------------------------------
-HBI_RG_loc <- HBI_RG_loc%>% 
+HBI_RG_loc <- HBI_RG_loc %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "w" ~ 100,
                              CCS_position == "s" ~ 200,

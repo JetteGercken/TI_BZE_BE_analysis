@@ -103,20 +103,14 @@ here::here()
 
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
 # change region sheet to x_ld_neu aus code tables
-DBH_region <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_region.csv"), sep = ";", dec = ",")
-DBH_region <- DBH_region %>% dplyr::select(ï..ICode, KurzD,  LangD, Region)
-colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG", "region")
-
-DBH_SP <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_species.csv"), sep = ";", dec = ",")
-DBH_SP<- DBH_SP %>% dplyr::select("ï..ICode", "KurzD", "Gattung", "Art", "ba_BWI1")
-colnames(DBH_SP) <- c("icode_spec", "Chr_code_ger", "bot_genus", "bot_species", "SP_BWI1")
-# remove empty space from species codes https://www.statology.org/r-remove-spaces-from-string/
-DBH_SP$Chr_code_ger <- gsub(" ", "", DBH_SP$Chr_code_ger)
-DBH_SP$SP_BWI1 <- gsub(" ", "", DBH_SP$SP_BWI1)
+DBH_region <- read.delim(file = here("data/input/general/neu_x_ld.csv"), sep = ";", dec = ",")
+DBH_region <- DBH_region %>% dplyr::select(ICode, KurzD,  LangD, bl, region)
+colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG","country",  "region")
 
 # change tangenz csv to neu_k_tangens from code tabellen in 
-DBH_tan <- read.delim(file = here("data/input/BZE2_HBI/DBH_dahm_tangenz.csv"), sep = ";", dec = ",")
-colnames(DBH_tan) <- c("SP_BWI1", "icode", "region", "tangenz")
+DBH_tan <- read.delim(file = here("data/input/general/neu_k_tangenz.csv"), sep = ";", dec = ",")
+DBH_tan %>% dplyr::select( ba_bwi, region, tangenz, Icode)
+colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz", "icode")
 
 
 
