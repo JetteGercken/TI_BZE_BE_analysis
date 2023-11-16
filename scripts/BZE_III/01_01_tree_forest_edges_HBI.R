@@ -52,7 +52,7 @@ HBI_trees <- HBI_trees %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_sta
                                   dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code ,  Kraft ,  
                                   C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI locations
-HBI_loc <- HBI_loc %>% dplyr::select(c("plot_ID", "ToEckId", "K2_RW",
+HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW",
                               "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                               "HW_MED",  "LAT_MED",  "LON_MED", 
                               "LAT_MEAN", "LON_MEAN"))
@@ -82,8 +82,8 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
 HBI_trees <- HBI_trees %>%
   # join in inventory info
-  # left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-  #           by = "plot_ID")  %>% 
+   left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
+           by = "plot_ID")  %>% 
   # join in the species names from x_bart to ensure the Dahm DBH correction function
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
@@ -141,7 +141,7 @@ if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees datas
 # ----- 1.1.2.1.1. HBI join in forest edge info per plot -----------------------------------------------
 HBI_trees <- HBI_trees %>% 
   # calculate the coordinates of every tree
-  mutate(dist_m = Dist_cm/100, 
+  mutate(dist_m = dist_cm/100, 
          X_tree = coord(data_circle$x0[1], data_circle$y0[1], dist_m, azi_gon, coordinate = "x"), 
          Y_tree = coord(data_circle$x0[1], data_circle$y0[1], dist_m, azi_gon, coordinate = "y")) %>% 
   # join in the forest edge information per plot 
@@ -1415,7 +1415,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.one.edge.nogeo[i, "Dist_cm"]/100 
+  dist.tree <- trees.one.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.one.edge.nogeo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
@@ -1526,7 +1526,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.two.edges.nogeo[i, "Dist_cm"]/100 
+  dist.tree <- trees.two.edges.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.two.edges.nogeo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
@@ -1605,7 +1605,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.no.edge.nogeo[i, "Dist_cm"]/100 
+  dist.tree <- trees.no.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
@@ -1635,8 +1635,8 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   
   #### build circle
   # circle data
-  c.x0 = 0 
-  c.y0 = 0
+  c.x0 = 0  # + my.center.easting
+  c.y0 = 0  # + my.center.northing
   c.r3 = 17.84
   c.r2 = 12.62
   c.r1 = 5.64
@@ -1744,6 +1744,12 @@ HBI_trees_update_1 <- HBI_trees_update_1 %>% filter(stand != "warning")
 all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
 all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
 all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) #%>% nest("geometry" = geometry)
+all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.coords.df.nogeo) %>% 
+  # the exportet polygones only include the widest cirlce intersection at 17.84m radius
+  mutate(CCS_r_m = 17.84) %>% 
+  # join in the stand info by plot_ID, e_ID, CCS_r_M
+  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+            by = c("plot_ID", "e_ID", "CCS_r_m"))
 
 
 
@@ -1752,7 +1758,7 @@ all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.
 # exporting tree and edge/ plot area data
 write.csv2(HBI_trees_update_1, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "trees_update_1", sep = "_"), ".csv"))
 write.csv2(HBI_trees_removed_1, paste0(out.path.BZE3, paste(unique(HBI_trees_removed_1$inv)[1], "trees_removed_1", sep = "_"), ".csv"))
-write.csv2(trees_and_edges,paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
+write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
@@ -1766,39 +1772,18 @@ write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste
           
 # exporting edge triangle polygones
 write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+# exporting edge triangle coordiantes
+write.csv2(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"))
+
 
 # exporting edge intersection polygones 
 #write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # to export the dataframes with long geometries and keep the geometries in list format for better processing later 
 # thus we export them with the following function, that enables to save the whole geometry list in 1 Table
 # https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
-tibble_with_lists_to_csv(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+tibble_with_lists_to_csv(all.edge.intersections.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # exporting all remaining circles polygones
-tibble_with_lists_to_csv(all.remaning.circles.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
-
-
-## export coordiante of all edge_triangle poligons to dataframes
-## export coordiantes of all edge-triangle-circle intersections polygones  to  dataframes 
-all.edge.triangle.coords.list <- vector("list", length = nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")])))
-for (i in 1:nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")]))) {
-  # i = 1
-  all.edge.triangle.coords.list[[i]] <- as.data.frame(cbind(
-    "plot_ID" = c(all.triangle.polys.df.nogeo$plot_ID[i]), 
-    "e_ID" = c(all.triangle.polys.df.nogeo$e_ID[i]),  
-    "e_form" = c(all.triangle.polys.df.nogeo$e_form[i]),
-    "lon" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("X", -c( "L1", "L2"))),
-    "lat" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("Y", -c( "L1", "L2")))
-  ))
-}
-all.edge.triangle.coords.list.final <- rbindlist(all.edge.triangle.coords.list)
-all.edge.triangle.coords.df <- as.data.frame(all.edge.triangle.coords.list.final) %>% 
-  # the exportet polygones only include the widest cirlce intersection at 17.84m radius
-  mutate(CCS_r_m = 17.84) %>% 
-  # join in the stand info by plot_ID, e_ID, CCS_r_M
-  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
-            by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
-
+tibble_with_lists_to_csv(all.remaning.circles.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
 
 
 ## export coordiantes of all edge-triangle-circle-intersections polygones  to  dataframes 
@@ -1856,7 +1841,7 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50004, unique(HBI_trees$plot_ID)))
+  # i = which(grepl(50080, unique(HBI_trees$plot_ID)))
   my.plot.id = unique(HBI_trees$plot_ID)[i]
   #print(my.plot.id)
   
@@ -1890,6 +1875,29 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
 
 
  
+
+# Notes:  -----------------------------------------------------------------
+
  
- 
+# ## export coordiante of all edge_triangle poligons to dataframes
+# ## export coordiantes of all edge-triangle-circle intersections polygones  to  dataframes 
+# all.edge.triangle.coords.list <- vector("list", length = nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")])))
+# for (i in 1:nrow(unique(all.triangle.polys.df.nogeo[, c("plot_ID", "e_ID")]))) {
+#   # i = 1
+#   all.edge.triangle.coords.list[[i]] <- as.data.frame(cbind(
+#     "plot_ID" = c(all.triangle.polys.df.nogeo$plot_ID[i]), 
+#     "e_ID" = c(all.triangle.polys.df.nogeo$e_ID[i]),  
+#     "e_form" = c(all.triangle.polys.df.nogeo$e_form[i]),
+#     "lon" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("X", -c( "L1", "L2"))),
+#     "lat" = (as_tibble(st_coordinates(all.triangle.polys.df.nogeo$geometry[i])) %>% select("Y", -c( "L1", "L2")))
+#   ))
+# }
+# all.edge.triangle.coords.list.final <- rbindlist(all.edge.triangle.coords.list)
+# all.edge.triangle.coords.df <- as.data.frame(all.edge.triangle.coords.list.final) %>% 
+#   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
+#   mutate(CCS_r_m = 17.84) %>% 
+#   # join in the stand info by plot_ID, e_ID, CCS_r_M
+#   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+#             by = c("plot_ID", "e_ID", "CCS_r_m"))
+# write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
  
