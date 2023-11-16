@@ -30,7 +30,7 @@ colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form",
 all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
 all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
 all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
 
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
@@ -59,7 +59,7 @@ HBI_RG_loc <- HBI_RG_loc %>%
          CCS_max_dist_cm = ifelse(CCS_max_dist_cm == -9 | is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
 
  
-HBI_RG_one_edge <- HBI_RG_loc %>% semi_join(., all.edges.area.df.nogeo %>% 
+HBI_RG_one_edge <- HBI_RG_loc %>% semi_join(., all_areas_stands %>% 
                                               filter(e_ID != 0 & CCS_r_m  == 17.84 & 
                                                        e_ID == 1 & inter_stat == "partly intersecting"|
                                                        e_ID != 0 & CCS_r_m  == 17.84 & 
@@ -196,9 +196,12 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   
   }
       
-
-
-
+# i keep receiving the error: 
+# Fehler in (function (msg)  : 
+#              TopologyException: Input geom 1 is invalid: Self-intersection at 48.514126607176074 -13.396589143077524
+#            Zusätzlich: Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
+# a solution could be here: 
+# https://gis.stackexchange.com/questions/163445/getting-topologyexception-input-geom-1-is-invalid-which-is-due-to-self-intersec
 
 
 
