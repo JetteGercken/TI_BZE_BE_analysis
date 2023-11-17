@@ -1830,18 +1830,13 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
 write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
 
 
-
-
-
-
-
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 dev.off()
 for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50080, unique(HBI_trees$plot_ID)))
+  # i = which(grepl(50131, unique(HBI_trees$plot_ID)))
   my.plot.id = unique(HBI_trees$plot_ID)[i]
   #print(my.plot.id)
   
@@ -1901,3 +1896,23 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
 #             by = c("plot_ID", "e_ID", "CCS_r_m"))
 # write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
  
+
+# plot(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)))
+# st_coordinates(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)))
+# plot(sfheaders::sf_multipolygon(obj = as.data.frame(st_coordinates(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131))) )
+#                                 , x = "X"
+#                                 , y = "Y"
+#                                 , keep = TRUE)
+#      
+# )
+# 
+# as(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)), 'Spatial')
+# spp<- SpatialPolygonsDataFrame(as(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)), 'Spatial'), data = all.remaning.circles.poly %>% filter(plot_ID == 50131))
+# 
+# as.data.frame(spp)
+# SPDF <- SpatialPointsDataFrame(coords=xy, data=df)
+# 
+# # And then convert it (back) to a data.frame
+# DF <- as.data.frame(SPDF)
+# 
+# plot(SpatialPolygonsDataFrame(as(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)), 'Spatial'), data=as.data.frame("yourData")))
