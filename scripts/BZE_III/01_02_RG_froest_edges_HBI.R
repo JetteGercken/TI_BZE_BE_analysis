@@ -41,9 +41,8 @@ colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_
 colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_cm", "inv_year")
 
 
+
 # 1. calculations ---------------------------------------------------------
-
-
 # 1.1. assign gon according to exposition --------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
   left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
@@ -59,7 +58,14 @@ HBI_RG_loc <- HBI_RG_loc %>%
          # if the max distance of the last plant in the RG CCS is not measured we assume it´s 5m or 500cm
          CCS_max_dist_cm = ifelse(CCS_max_dist_cm == -9 | is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
 
- 
+
+
+
+
+# 2. sorting sampling circles into stands ---------------------------------
+# 2.1. plots with 1 edge: sorting sampling circles into stands ---------------------------------
+
+# subsetting the HBI_RG_loc dataset by filtering for plots that have only one intersecting edge
 HBI_RG_one_edge <- HBI_RG_loc %>% 
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
@@ -145,19 +151,21 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
                                       , y = "Y"
                                       , keep = TRUE)
    
-   # edge.poly <- sfheaders::sf_polygon(obj = all_edge_triangles_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
-   #                                                                       , x = "lon"
-   #                                                                       , y = "lat"
-   #                                                                        , keep = TRUE)
-   # 
+  
  # create polygon of remaining circle
    circle.edge.inter <- sf::st_intersection(circle.17, edge.poly)
+   # if there is no intersection between the edge and the cirlce, 
     if(isTRUE(nrow(circle.edge.inter) == 0)){
+      # the whole circle polygon is set as the remaining circle 
      rem.circle.17 <- circle.17}else{
+       # else the remaining area/ polyon after the inersection is deducted is passed on as remaining circle
        rem.circle.17 <- sf::st_difference(circle.17, st_geometry(circle.edge.inter))
      }
    
    
+  ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
+   # since we´d have to find a way to first export and then mport and convert multipolygones 
+   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
   # rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
   #                                 , x = "X"
   #                                 , y = "Y"
@@ -208,7 +216,7 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
       "plot_ID" = c(rep(my.plot.id, times = length(unlist(my.stand.rg)))), 
       "CCS_nr" = c(rep(my.ccs.id, times = length(unlist(my.stand.rg)))), 
       "stand" =  c(unlist(my.stand.rg)), 
-      "RG_area_m2"= c(unlist(my.rg.A.m2)) 
+      "area_m2"= c(unlist(my.rg.A.m2)) 
     ))
     
   ## assign the whole CCS area to the stand that covers 2/3rds of the RG CCS area
@@ -217,11 +225,18 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
     
     # select the row that includes the stand that covers 2/3 of the RG CCS area, 
     # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
-    rg.edge.data <- rg.edge.data[rg.edge.data$RG_area_m2 >= rg.ccs.A.0.6, ]
+    rg.0.6.data <- rg.edge.data[rg.edge.data$area_m2 >= rg.ccs.A.0.6, ]
     # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
     # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
     # since we cannot sort them into stands by location as we don´t know their location
-    rg.edge.data$RG_area_m2  <- sf::st_area(my.rg.ccs.poly)
+    
+    if(isTRUE(nrow(rg.0.6.data)== 0)){
+      rg.edge.data[1,]$stand <- NA
+      rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+    }else{
+      rg.edge.data <- rg.0.6.data
+      rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+    }
     
   
 ## put dataframe in export list
@@ -237,48 +252,24 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
          )
   
   }
-      
-# i keep receiving the error: 
-# Fehler in (function (msg)  : 
-#              TopologyException: Input geom 1 is invalid: Self-intersection at 48.514126607176074 -13.396589143077524
-#            Zusätzlich: Es gab 50 oder mehr Warnungen (Anzeige der ersten 50 mit warnings())
-# a solution could be here: 
-# https://gis.stackexchange.com/questions/163445/getting-topologyexception-input-geom-1-is-invalid-which-is-due-to-self-intersec
+# bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
+RG.one.edge.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
+
+
+
+
+# 2.2. plots with 2 edges: sorting sampling circles into stands ---------------------------------
+# subsetting data
+
+
+
+
+
 
 
 
 
 # notes -------------------------------------------------------------------
-# assign stand to RG circle polygone with nested if statement
-# if both polygones, intersectionw if there are intersectionons of the respective RG CCS with the edge and remaining circle polyones (nrow != 0) 
-if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0){
-  # the RG CCS receives two stands and areas 
-  my.stand.rg <-c(intersection.with.rem.circle$stand, intersection.with.edge$stand)
-  # if there are only intersectionons of the respective RG CCS with remaining circle polyone (nrow != 0) 
-  if(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0){
-    # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-    my.stand.rg <- c(intersection.with.rem.circle$stand)
-    # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
-    if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0){
-      # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
-      my.stand.rg <- c(intersection.with.edge$stand)
-    }}}else{my.stand.rg <- c("warning")}
-
-
-
-if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0){
-  # the RG CCS receives two stands and areas 
-  my.rg.A.m2 <- c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge))
-  # if there are only intersectionons of the respective RG CCS with remaining circle polyone (nrow != 0) 
-  if(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0){
-    # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-    my.rg.A.m2 <- c(st_area(intersection.with.rem.circle))
-    # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
-    if(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0){
-      # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
-      my.rg.A.m2 <- c(st_area(intersection.with.edge))
-    }}}else{my.rg.A.m2 <- c(0)} 
-
 
 
 
