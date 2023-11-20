@@ -1059,6 +1059,7 @@ forest_edges_HBI.man.sub.2.edges.nogeo <- forest_edges_HBI.man %>% # rows:84
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
 
+
 # prepare output lists
 # list to save areas in
 edges.list.two.edges.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
@@ -1075,7 +1076,7 @@ intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(f
 
 for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){ 
   #i = 1
-  # i = which(grepl(50009, unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+  # i = which(grepl(50075, unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
   my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)[i]
@@ -1137,7 +1138,7 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   #print(plot(remaining.circle.17.1$geometry, main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
   
   ## create polygone of intersecting area of second polygone with remaining circle
-  inter.poly.17.2 <- st_intersection(remaining.circle.17.1, my.poly.2)
+  inter.poly.17.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.17.1))
   inter.status.poly.17.2 <- ifelse(nrow(inter.poly.17.2) == 0, "no intersections",
                                    ifelse(my.e.form.2== 1 & inter.poly.17.2$geometry == remaining.circle.17.1$geometry,  "no intersections",
                                           ifelse(my.e.form.2 == 2 & inter.poly.17.2$geometry == remaining.circle.17.1$geometry, "fully covering circle", 
@@ -1169,7 +1170,7 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   # print(plot(remaining.circle.12.1$geometry, main = paste0(my.plot.id, "-",my.e.form.1,  "-", c.r2))) 
   
   ## create polygone of intersecting area of second polygone with remaining circle
-  inter.poly.12.2 <- st_intersection(remaining.circle.12.1, my.poly.2)
+  inter.poly.12.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.12.1))
   inter.status.poly.12.2 <- ifelse(nrow(inter.poly.12.2) == 0, "no intersections",
                                    ifelse(my.e.form.2== 1 & inter.poly.12.2$geometry == remaining.circle.12.1$geometry,  "no intersections",
                                           ifelse(my.e.form.2 == 2 & inter.poly.12.2$geometry == remaining.circle.12.1$geometry, "fully covering circle", 
@@ -1201,7 +1202,7 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   # print(plot(remaining.circle.5.1$geometry, main = paste0(my.plot.id, "-",my.e.form.1,  "-", c.r1))) 
   
   ## create polygone of intersecting area of second polygone with remaining circle
-  inter.poly.5.2 <- st_intersection(remaining.circle.5.1, my.poly.2)
+  inter.poly.5.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.5.1))
   inter.status.poly.5.2 <- ifelse(nrow(inter.poly.5.2) == 0, "no intersections",
                                   ifelse(my.e.form.2== 1 & inter.poly.5.2$geometry == remaining.circle.5.1$geometry,  "no intersections",
                                          ifelse(my.e.form.2 == 2 & inter.poly.5.2$geometry == remaining.circle.5.1$geometry, "fully covering circle", 
@@ -1807,6 +1808,8 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
 
+all.edge.intersections.poly %>% filter(plot_ID == 50057)
+all.edge.intersections.coords.df %>% filter(plot_ID == 50057)
 
 ## export coordiantes of all remaining polygones  to  dataframes
 all.rem.circle.coords.list <- vector("list", length = nrow(unique(all.remaning.circles.poly[, c("plot_ID", "e_ID")])))
@@ -1836,7 +1839,7 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50131, unique(HBI_trees$plot_ID)))
+  # i = which(grepl(50075, unique(HBI_trees$plot_ID)))
   my.plot.id = unique(HBI_trees$plot_ID)[i]
   #print(my.plot.id)
   
