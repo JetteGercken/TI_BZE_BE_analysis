@@ -311,7 +311,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
   ccs.dist <-unique( HBI_RG_two_edges$CCS_dist[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id]/100)
   ccs.azi <- unique(HBI_RG_two_edges$CCS_gon[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id])
-  x_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "x") # + my.center.easting
+  x_CCS_center =  # + my.center.easting
   y_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y") # my.center.northing
   
   ## create polyones
