@@ -89,12 +89,13 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
   #             filter(n_edges == 1) %>% 
   #             select(plot_ID), by = "plot_ID")
 
+HBI_RG_one_edge %>% filter(plot_ID == 50134)
 
 
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
-  # i = 13
+  # i = 206
   # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # regerneation sampling cirlce data
@@ -118,8 +119,8 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
   ccs.dist <- HBI_RG_one_edge$CCS_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]/100
   ccs.azi <- HBI_RG_one_edge$CCS_gon[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]
-  x_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "x") # + my.center.easting
-  y_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y") # my.center.northing
+  x_CCS_center = ccs.dist*sin(ccs.azi * pi/200) # coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "x") # + my.center.easting
+  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)# coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y") # my.center.northing
   
 ## create polyones
   # create polygone of regeneration sampling circle RG CCS 
@@ -245,6 +246,13 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   #print(my.plot.id)
   
   print(ggplot() +
+          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
+                                                            "lat" = c.y0)),
+                                        coords = c("lon", "lat"))), aes(),fill = NA)+
+          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
+                                                           "lat" = y_CCS_center)),
+                                       coords = c("lon", "lat"))), aes(),fill = NA)+
+         
            geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
            geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
           geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+

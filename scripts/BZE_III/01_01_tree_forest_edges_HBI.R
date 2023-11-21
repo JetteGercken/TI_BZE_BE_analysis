@@ -1839,7 +1839,7 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50075, unique(HBI_trees$plot_ID)))
+  # i = which(grepl(50141, unique(HBI_trees$plot_ID)))
   my.plot.id = unique(HBI_trees$plot_ID)[i]
   #print(my.plot.id)
   
