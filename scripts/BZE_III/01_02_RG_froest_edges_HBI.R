@@ -19,9 +19,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2) 
 HBI_RG <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",") %>% mutate(inv_year = 2012)
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
+HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")%>% mutate(inv_year = 2012)
 # this dataset contains the HBI forest edges info
-HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
 colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                                 "A_dist", "A_azi",  "B_dist", "B_azi", 
                                 "T_dist", "T_azi") # t = turning point 
@@ -36,7 +36,7 @@ all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # assign column names 
                         # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm")
+colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year")
                     #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_cm", "inv_year")
 
@@ -45,6 +45,7 @@ colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_c
 # 1. calculations ---------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
+  mutate(inv = inv_name(inv_year)) %>% 
   left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
@@ -77,26 +78,15 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
-  # semi_join(., all_areas_stands %>% 
-  #             filter(e_ID != 0 & CCS_r_m  == 17.84 & 
-  #                      e_ID == 1 & inter_stat == "partly intersecting"|
-  #                      e_ID != 0 & CCS_r_m  == 17.84 & 
-  #                      e_ID == 2) %>% 
-  #             select(plot_ID, e_ID) %>% 
-  #             distinct() %>% 
-  #             group_by(plot_ID) %>% 
-  #             summarise(n_edges = n()) %>% 
-  #             filter(n_edges == 1) %>% 
-  #             select(plot_ID), by = "plot_ID")
-
-HBI_RG_one_edge %>% filter(plot_ID == 50134)
-
 
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # i = 206
   # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  
+  # assign crs
+  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # regerneation sampling cirlce data
   my.plot.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
@@ -119,8 +109,8 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
   ccs.dist <- HBI_RG_one_edge$CCS_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]/100
   ccs.azi <- HBI_RG_one_edge$CCS_gon[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]
-  x_CCS_center = ccs.dist*sin(ccs.azi * pi/200) # coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "x") # + my.center.easting
-  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)# coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y") # my.center.northing
+  x_CCS_center = ccs.dist*sin(ccs.azi * pi/200)  # + my.center.easting
+  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)  # + my.center.northing
   
 ## create polyones
   # create polygone of regeneration sampling circle RG CCS 
@@ -179,38 +169,10 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   intersection.with.rem.circle <- sf::st_intersection(my.rg.ccs.poly, rem.circle.17)
   
 ## set the stand of the rg circle according to its intersections: https://www.geeksforgeeks.org/nested-if-else-statement-in-r/
-   #if there are only intersectionons of the respective RG CCS with remaining circle polyone (nrow != 0) 
-   my.stand.rg <- ifelse(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0,    # the RG CCS receives two stands and areas 
-                         # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-                         list(c(intersection.with.rem.circle$stand, intersection.with.edge$stand)),
-                         # if there are only intersectionons of the respective RG CCS with the remaining circle polyone (nrow != 0) 
-                         ifelse(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0, 
-                                # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-                               list( c(intersection.with.rem.circle$stand)), 
-                         # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
-                                ifelse(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0, 
-                                       # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
-                                       list(c(intersection.with.edge$stand)), 
-                                       list(c("warning"))
-                                       )))
-                          
- 
+    my.stand.rg <- list(c(intersection.with.rem.circle$stand, intersection.with.edge$stand))
+                         
 ## determine area of the rg circle (stands) according to it´s intersection
-   my.rg.A.m2 <- ifelse(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) != 0,    # the RG CCS receives two stands and areas 
-                         # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-                         list(c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge))),
-                         # if there are only intersectionons of the respective RG CCS with the remaining circle polyone (nrow != 0) 
-                         ifelse(nrow(intersection.with.edge) == 0 & nrow(intersection.with.rem.circle) != 0, 
-                                # the RG CCS receives the stand of the remaining circle, as well as the area covered by it
-                                list(c(st_area(intersection.with.rem.circle))), 
-                                # if there are only intersectionons of the respective RG CCS with the edge-circle-intersection polyone (nrow != 0) 
-                                ifelse(nrow(intersection.with.edge) != 0 & nrow(intersection.with.rem.circle) == 0, 
-                                       # the RG CCS receives the stand of the edge intersection, as well as the area covered by it
-                                       list(c(st_area(intersection.with.edge))), 
-                                       list(c(0))
-                                       )))
-   
-                      
+   my.rg.A.m2 <- list(c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge)))
    
  ## safe intersection info (stand and area) of the RG CCS into dataframe
     rg.edge.data <- as.data.frame(cbind(
@@ -258,7 +220,6 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
           geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
           ggtitle(my.plot.id, my.ccs.id)
          )
-  
   }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
 RG.one.edge.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
@@ -277,8 +238,7 @@ HBI_RG_two_edges <- HBI_RG_loc %>%
               filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I")  %>% 
               select(plot_ID, e_ID) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID) %>% distinct(), by = "plot_ID") #%>% 
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-
+# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 
 # for each plot_id and regeneration circle at plots with one edge only 
@@ -286,6 +246,9 @@ RG.CCS.two.edges <- vector("list", length = nrow(unique(HBI_RG_two_edges[c("plot
 for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # i = 34
   # i = which(grepl(50132, unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  
+  # assign crs
+  # my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # regerneation sampling cirlce data
   my.plot.id <- unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
@@ -311,8 +274,8 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
   ccs.dist <-unique( HBI_RG_two_edges$CCS_dist[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id]/100)
   ccs.azi <- unique(HBI_RG_two_edges$CCS_gon[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id])
-  x_CCS_center =  # + my.center.easting
-  y_CCS_center = coord(c.x0, c.y0, ccs.dist, ccs.azi, coordinate = "y") # my.center.northing
+  x_CCS_center = ccs.dist*sin(ccs.azi* pi/200)  # + my.center.easting
+  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)  # + my.center.northing
   
   ## create polyones
   # create polygone of regeneration sampling circle RG CCS 
@@ -432,6 +395,29 @@ RG.two.edges.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
 
 
 
+
+# 3. export RG data ----------------------------------------------------------
+
+# 3.1. preparing data for export -----------------------------------------------
+
+## bind stand and area of plots with one ad two edges together 
+RG_all_edges_stands_areas <- rbind(RG.one.edge.stands.areas, RG.two.edges.stands.areas)
+
+## harmonizig strings with HBI_RG datasets 
+RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)], as.integer) 
+
+## joining stand and area info into RG datasets
+  # join stand and area data into dataset with regeneration CCS locations and size 
+  # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
+# HBI_RG_loc update
+HBI_RG_loc_update_1 <- HBI_RG_loc %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") 
+# HBI_RG update
+HBI_RG_update_1 <- HBI_RG %>% left_join(., RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") 
+
+
+# 3.2. export  ------------------------------------------------------------
+write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_update_1$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_RG_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
 
 
 
