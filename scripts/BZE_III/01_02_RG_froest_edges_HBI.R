@@ -45,8 +45,7 @@ colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_c
 # 1. calculations ---------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
-  mutate(inv = inv_name(inv_year)) %>% 
-  left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
+ left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -77,6 +76,18 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
               select(plot_ID, e_ID) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID) %>% distinct(), by = "plot_ID") #%>% 
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+
+HBI_RG_one_edge.test <- HBI_RG_loc %>% anti_join(., all_areas_stands %>%
+                                                   filter(CCS_r_m == 17.84 & 
+                                                            e_ID %in% c("1", "2")) %>% 
+                                                   select(plot_ID, e_ID) %>% 
+                                                   distinct() %>% 
+                                                   group_by(plot_ID) %>% 
+                                                   summarise(n = n()) %>% 
+                                                   filter(n > 1 ) %>% 
+                                                   select(plot_ID), 
+                                                 by = "plot_ID")
+
 
 
 # for each plot_id and regeneration circle at plots with one edge only 

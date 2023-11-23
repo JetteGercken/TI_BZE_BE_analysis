@@ -1351,7 +1351,7 @@ rem.circle.poly.two.edges.list.final.nogeo <- rbindlist(rem.circle.poly.2.edges.
 rem.circle.poly.two.edges.df.nogeo <- as.data.frame(rem.circle.poly.two.edges.list.final.nogeo)[,c(1,2,3,4)]  %>% distinct()
 # list of multipolygones of remaining circles
 rem.circle.multipoly.two.edges.list.final.nogeo <- rbindlist(rem.circle.multipoly.2.edges.list.nogeo)
-rem.circle.multipoly.two.edges.df.nogeo <- as.data.frame(rem.circle.multipoly.two.edges.list.final.nogeo)[,c(1,2,3,10)] %>% distinct()
+rem.circle.multipoly.two.edges.df.nogeo <- as.data.frame(rem.circle.multipoly.two.edges.list.final.nogeo)[,c(1,2,3,7)] %>% distinct()
 # binding the both circle lists back together 
 rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(rem.circle.multipoly.two.edges.list.final.nogeo) != 0){
   rbind(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
@@ -1808,8 +1808,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
 
-all.edge.intersections.poly %>% filter(plot_ID == 50057)
-all.edge.intersections.coords.df %>% filter(plot_ID == 50057)
+
 
 ## export coordiantes of all remaining polygones  to  dataframes
 all.rem.circle.coords.list <- vector("list", length = nrow(unique(all.remaning.circles.poly[, c("plot_ID", "e_ID")])))
