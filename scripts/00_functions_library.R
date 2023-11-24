@@ -148,6 +148,16 @@ N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" ,
                                 "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
                                 "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
 
+
+# 0.4.3. import species names dataest x_bart ------------------------------
+# species names & codes 
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+# the join always works like this: 
+# left_join(., SP_names_com_ID_tapeS %>% 
+#             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+#           by = c("SP_code" = "char_code_ger_lowcase"))
+
+
 # ----- 1. Functions -----------------------------------------------------------
 # this function exports tables with list columns to csv: 
 # https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
@@ -221,11 +231,23 @@ DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
 
 
 
-# ----- 1.3 age class ----------------------------------------------------------
+# ----- 1.3 dbh to size class ----------------------------------------------------------
+# defining regernation size class
+sizeclass_to_d <- function(size.class){
+  d.cm = case_when(size.class == 0 ~ 0, 
+                   size.class == 1 ~ (4.9+0)/2, 
+                   size.class == 2 ~ (5.9+5)/2,
+                   TRUE ~ (6.9+6)/2);
+  return(d.cm)
+}
+
+
+
+
+## age classes label
 # defining age classes from 1 to 160 in steps of 20
 # this is a preparation fot the comparison with carbon stocks calcualted by te
 labs_age <- c(seq(1, 180, by = 20))
-
 
 
 # ----- 1.4 coordinate functions ---------------------------------------

@@ -15,11 +15,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # ----- 0.3 data import --------------------------------------------------------
-# regeneration
-# this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2) 
-HBI_RG <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",") %>% mutate(inv_year = 2012)
+# regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")%>% mutate(inv_year = 2012)
+HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")%>% mutate(inv_year = 2012, 
+                                                                                                     inv = inv_name(inv_year))
 # this dataset contains the HBI forest edges info
 HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
 colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
@@ -27,18 +26,16 @@ colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form",
                                 "T_dist", "T_azi") # t = turning point 
 
 # # import coordinates of polygones along all edges iin triangle shape
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
+all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
+all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
+all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
 
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # assign column names 
                         # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year")
-                    #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
-colnames(HBI_RG) <- c("plot_ID", "CCS_no", "t_ID", "SP_code", "H_cm", "D_class_cm", "inv_year")
+colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year", "inv")
 
 
 
@@ -77,23 +74,39 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
-HBI_RG_one_edge.test <- HBI_RG_loc %>% anti_join(., all_areas_stands %>%
-                                                   filter(CCS_r_m == 17.84 & 
-                                                            e_ID %in% c("1", "2")) %>% 
-                                                   select(plot_ID, e_ID) %>% 
-                                                   distinct() %>% 
-                                                   group_by(plot_ID) %>% 
-                                                   summarise(n = n()) %>% 
-                                                   filter(n > 1 ) %>% 
-                                                   select(plot_ID), 
-                                                 by = "plot_ID")
+HBI_RG_one_edge <- HBI_RG_loc %>% 
+  #filter for plots that we actually have coordiantes and areas for 
+  semi_join(., all_areas_stands %>%
+              filter(CCS_r_m == 17.84 & 
+                       e_ID == 2 &
+                       inter_stat == "partly intersecting" |
+                       CCS_r_m == 17.84 & 
+                       e_ID == 1) %>% 
+              select(plot_ID) %>% 
+              distinct(), 
+            by = c("plot_ID")) %>% 
+  # silter for plots that have only one forest edge
+  anti_join(., all_areas_stands %>%
+              filter(CCS_r_m == 17.84 & 
+                      e_ID %in% c("1", "2")) %>% 
+             select(plot_ID, e_ID) %>% 
+             group_by(plot_ID) %>% 
+             summarise(n = n()) %>% 
+             filter(n > 1 ) %>% 
+             select(plot_ID) %>% 
+        distinct(), 
+       by = "plot_ID")
+  
+# remove plots that do now have a corresponding center coordiante in the HBI loc document
+#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+
 
 
 
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
-  # i = 206
+  # i = 213
   # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # assign crs
@@ -241,13 +254,27 @@ RG.one.edge.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
 # 2.2. plots with 2 edges: sorting sampling circles into stands ---------------------------------
 # subsetting data
 HBI_RG_two_edges <- HBI_RG_loc %>% 
-  # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
-              select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
-  # filter for trees located in plots htat haev only one forest edge
-  semi_join(forest_edges_HBI.man %>%
-              filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I")  %>% 
-              select(plot_ID, e_ID) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID) %>% distinct(), by = "plot_ID") #%>% 
+  #filter for plots that we actually have coordiantes and areas for 
+  semi_join(., all_areas_stands %>%
+              filter(CCS_r_m == 17.84 & 
+                       e_ID == 2 &
+                       inter_stat == "partly intersecting" |
+                       CCS_r_m == 17.84 & 
+                       e_ID == 1) %>% 
+              select(plot_ID) %>% 
+              distinct(), 
+            by = c("plot_ID")) %>% 
+  # silter for plots that have only one forest edge
+  semi_join(., all_areas_stands %>%
+              filter(CCS_r_m == 17.84 & 
+                       e_ID %in% c("1", "2")) %>% 
+              select(plot_ID, e_ID) %>% 
+              group_by(plot_ID) %>% 
+              summarise(n = n()) %>% 
+              filter(n > 1 ) %>% 
+              select(plot_ID) %>% 
+              distinct(), 
+            by = "plot_ID")
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
@@ -422,8 +449,6 @@ RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)],
   # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
 # HBI_RG_loc update
 HBI_RG_loc_update_1 <- HBI_RG_loc %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") 
-# HBI_RG update
-HBI_RG_update_1 <- HBI_RG %>% left_join(., RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") 
 
 
 # 3.2. export  ------------------------------------------------------------
