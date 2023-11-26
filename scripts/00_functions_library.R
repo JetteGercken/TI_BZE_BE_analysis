@@ -1131,7 +1131,7 @@ inv_name <- function(inv.year){
 
 
 # 1.11. Biomass functions -------------------------------------------------
-
+# 1.11.1. Wutzler: Foliage on beach trees Biomass functions -------------------------------------------------
 # reference: 
 # Wutzler, Thomas & Wirth, Christian & Schumacher, Jens. (2008). 
 # Generic biomass functions for Common beech (Fagus sylvatica) in Central Europe: 
@@ -1166,6 +1166,7 @@ Wutzler_fB_L1 <- function(d, h){  #DH3 4a Model
   return(b0*d^b1*h^b2)
 }
 
+# 1.11.2. GHGI: belowground Biomass functions -------------------------------------------------
 ## belowground phytomass GHGI
 GHGI_bB <- function(spec, d){
   # function for soft hard woods requires DBH in mm, 
@@ -1177,6 +1178,46 @@ GHGI_bB <- function(spec, d){
   # ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))
   return(b0[spec]*d^b1[spec]) 
 }
+
+# 1.11.3. GHGI: below <1.3m height Biomass functions -------------------------------------------------
+## above ground biomass for trees <1.3m GHGI (equation: 6, coefficient table: 4)
+GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
+  b0 <- c(NB = 0.23059, LB = 0.04940);
+  b1 <- c(NB = 2.20101, LB = 2.54946);
+  return(b0[spec]*h^b1[spec])
+}
+
+# 1.11.4. GHGI: below <1.3m height Biomass kompartiments -------------------------------------------------
+# reference: 
+# Tab. 4:
+# DVFFA – Sektion Ertragskunde, Jahrestagung 2009
+# "Biomasse- und Elementgehalte im Unterwuchs – erste Ergebnisse für Flächen des Forstlichen Umweltmonitorings in Rheinland-Pfalz"
+# Wolff, B.*; Bolte, A.**; Bielefeldt, J.**; Czajkowski, T.**
+# * Fachhochschule Eberswalde (FHE), Fachgebiet Wald und Umwelt, A.-Möller-Straße 1, 16225 Eberswalde
+# ** Johann Heinrich v. Thünen-Institut (vTI), Institut für Waldökologie und Waldinventuren,  A.-Möller-Straße 1, 16225 Eberswalde
+function(whd, h, compartiment){
+  # parameters for stem compartiment
+  a = c("BAH" = );
+  b = c();
+  c = c();
+  # paremeters for branch compartiment
+  d = c();
+  e = c();
+  f = c(); 
+  # paremeters for folliage compartiment
+  g = c();
+  h = c();
+  j = c();
+  
+  
+  
+}
+
+
+
+
+
+
 
 
 # ----- 1.12. Nitrogen stock  --------------------------------------------
