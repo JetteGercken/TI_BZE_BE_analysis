@@ -146,4 +146,46 @@ HBI.RG.below.1.3 <- HBI_RG[HBI_RG$H_m < 1.3, ]
 
 
 
+bio.ag.kg.RG.below.1.3 <- vector("list", length = nrow(HBI.RG.below.1.3))
+for (i in 1:nrow(HBI.RG.below.1.3)) {
+  # i = 1
+  
+  # basic tree info
+  # select one tree ID and plot ID for each individual tree per plot and sampling circuit
+  my.plot.id <- HBI.RG.below.1.3[,"plot_ID"][i]
+  my.ccs.id <- HBI.RG.below.1.3[,"CCS_no"][i]
+  my.tree.id <- HBI.RG.below.1.3[,"tree_ID"][i]
+  BL.or.CF <- unique(HBI.RG.below.1.3$LH_NH[HBI.RG.below.1.3$plot_ID==my.plot.id & HBI.RG.below.1.3$tree_ID==my.tree.id & HBI.RG.below.1.3$CCS_no==my.ccs.id])
+  
+  # select variales for belowground functions
+  spp = unique(HBI.RG.below.1.3$RG_Wolff_bio[HBI.RG.below.1.3$plot_ID==my.plot.id & HBI.RG.below.1.3$tree_ID==my.tree.id & HBI.RG.below.1.3$CCS_no==my.ccs.id])
+  h.cm = as.numeric(unique(HBI.RG.below.1.3$H_cm[HBI.RG.below.1.3$plot_ID==my.plot.id & HBI.RG.below.1.3$tree_ID==my.tree.id & HBI.RG.below.1.3$CCS_no==my.ccs.id]))
+  whd.cm = as.numeric(h.to.whd(h.cm, spp))
+  
+  
+  
+  
+  # calculate biomass per compartiment
+  B_kg_tree <- as.data.frame(cbind(
+    "compartiment" = c("sw+fw", "ndl", "ag"), 
+    "B_kg_tree" = c(as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "stem"))[1,], 
+                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "foliage"))[1,], 
+                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "ag"))[1,]
+                    )))
+
+  
+  bio.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(as.integer(my.plot.id)), 
+    "tree_ID" = c(as.integer(my.tree.id)), 
+    "inv" = unique(HBI.RG.above.1.3$inv[trees$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id]), 
+    "inv_year" = c(as.integer(unique(HBI.RG.above.1.3$inv_year[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id]))),
+    "compartiment" = c(B_kg_tree$compartiment),
+    "B_kg_tree" = c(as.numeric(B_kg_tree$B_kg_tree))
+    )
+  )  
+  
+  bio.ag.kg.RG.below.1.3[[i]] <- bio.info.df
+  
+}
+bio.ag.kg.RG.below.1.3.df <- as.data.frame(rbindlist(bio.ag.kg.RG.below.1.3))
 

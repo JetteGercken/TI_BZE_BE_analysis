@@ -126,7 +126,7 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
 
 
 
-# creating sp groups ----------------------------
+# ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
 # when trying to assign the correct latinn manes to the respective trees via their species code or species number 
 # it became evident that neither the areviations of the common species names, nor the species numbers correspond
@@ -363,12 +363,43 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                         LH_NH == "NB" & bot_genus == "Pinus" ~ 'KI', 
                                         LH_NH == "NB" & bot_genus == "Picea" ~ 'FI', 
                                         LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Picea")) ~ 'aNB',   # # other coniferous tree (anderer Nadelbaum)
-         ))
+                                        TRUE ~ "other"),
+         # species groups to apply the biomass functions by Wolff to the regeneration trees
+         RG_Wolff_bio = case_when(bot_genus == "Acer" ~ "BAH", 
+                                  bot_genus == "Fraxinus" | 
+                                    BWI_SP_group == "aLh"  & 
+                                    !(bot_genus %in% c("Acer",
+                                                       "Fagus", 
+                                                       "Quercus", 
+                                                       "Rhamnus", 
+                                                       "Fagus", 
+                                                       "Sorbus", 
+                                                       "Sambucus")) ~ "ES",
+                                  bot_genus == "Betulus" | 
+                                    BWI_SP_group == "aLn" &
+                                    !(bot_genus %in% c("Acer",
+                                                       "Fagus", 
+                                                       "Quercus", 
+                                                       "Rhamnus", 
+                                                       "Fagus", 
+                                                       "Sorbus", 
+                                                       "Sambucus")) ~ "BI",
+                                  bot_genus == "Sambucus" ~ "HOL", 
+                                  bot_genus == "Fagus" ~ "BU", 
+                                  bot_genus == "Quercus" ~ "EI", 
+                                  bot_genus == "Rhamnus" ~ "FKD", 
+                                  bot_genus == "Sorbus" ~ "VB", 
+                                  bot_genus == "Picea" |
+                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus")) ~ "FI",
+                                  bot_genus == "Pinus"~ "KI", 
+                                  TRUE ~ "other") 
+  )
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
 
 
+ 
 
 
-RG_Wolff_bio = case_when()
+

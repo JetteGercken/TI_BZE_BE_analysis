@@ -1263,7 +1263,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                  LH_NH == "NB" & bot_genus == "Pinus" ~ 'KI', 
                                  LH_NH == "NB" & bot_genus == "Picea" ~ 'FI', 
                                  LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Picea")) ~ 'aNB',   # # other coniferous tree (anderer Nadelbaum)
-                                 ))
+                                 TRUE ~ "other"))
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 

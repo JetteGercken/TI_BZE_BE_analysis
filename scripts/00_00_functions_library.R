@@ -1209,6 +1209,8 @@ h.to.whd <- function(h, spec_wolff){
   # the steps are: 
   # h/a = whd^b
   # bth-root(h/a) = whd
+  # h is the trees height in cm 
+  # whd is the radius at hte stem base (Wurzelhalsdurchmesser) in cm
  a <- c(BAH = 4.3239, BI = 9.50205, BU= 4.8909, 
         VB = 6.2529, EI = 8.2332, ES =  3.4668, FKD = 10.26,  #in BWI: SLB; FKD = fauliger Kreuzdorn --> Faulbaum --> Rhamnus frangula
         FI = 3.674, GIN = 12.322,  # Ginster = GIN
@@ -1220,7 +1222,7 @@ h.to.whd <- function(h, spec_wolff){
         HOL =  1.1832,
         KI = 0.9366);
  
- whd = nthroot((h/a), b)
+ whd = nthroot((h/a[spec_wolff]), b[spec_wolff])
  
  return(whd)
   
@@ -1229,22 +1231,53 @@ h.to.whd <- function(h, spec_wolff){
 
 
 
-
-function(whd, h, compartiment){
-  # parameters for stem compartiment
-  a = c("BAH" = );
-  b = c();
-  c = c();
-  # paremeters for branch compartiment
-  d = c();
-  e = c();
-  f = c(); 
+wolff.bio.below.1m <- function(whd, h, spec_wolff, compartiment){
+  # parameters for total abovgroun biomass
+  a <- c(BAH = -4.116664, BI = -4.374745, BU= -5.329977, 
+         VB = - 5.511373, EI = -6.890656, ES = -5.980901,
+         FKD = -5.805027, FI = -4.365029, GIN = -5.007328, 
+         HOL = -5.596683, KI = -4.054296);
+  b <- c(BAH = 2.103417, BI = 1.952172, BU = 1.504128, 
+         VB = 1.102974, EI = 0.992884, ES = 1.042600, 
+         FKD = 1.268980, FI = 1.873336, GIN = 1.475571, 
+         HOL = 1.133249, KI = 1.586179);
+  c  <- c(BAH = 0.499551, BI = 0.731565, BU = 1.182288, 
+          VB = 1.326973, EI = 1.769866, ES = 1.519227, 
+          FKD = 1.293988, FI = 0.977148, GIN = 1.069508, 
+          HOL = 1.366231, KI = 0.911674);
+  # paremeters for branch + stem compartimen
+  d <- c(BAH = -5.255099, BI = 4.586260, BU = -6.160292, 
+         VB = -6.050794, EI = -7.338351, ES = -6.623514, 
+         FKD = -6.678752, FI = -5.295721, GIN = -5.329752, 
+         HOL =  -6.697415, KI = -6.221465);
+  e <- c(BAH = 2.055909, BI = 2.317019, BU = 1.719560, 
+         VB = 1.218037, EI = 1.100074, ES = 1.241859, 
+         FKD = 1.709183, FI = 1.905118, GIN = 1.568195, 
+         HOL = 1.685368, KI = 1.506163);
+  f <- c(BAH = 0.729275, BI = 0.495968, BU = 1.204329, 
+         VB = 1.361229, EI = 1.739085, ES = 1.496878, 
+         FKD = 1.231672, FI = 1.044837, GIN = 1.079322, 
+         HOL = 1.207866, KI = 1.327712); 
   # paremeters for folliage compartiment
-  g = c();
-  h = c();
-  j = c();
+  x <- c(BAH = -3.729638, BI =  -6.108247, BU = -5.385717, 
+         VB = -7.216398, EI = -8.201379, ES = -6.584228, 
+         FKD =  -5.943471, FI = -4.823170, GIN =  -6.240936,
+         HOL =  -4.956678, KI = -3.179742);
+  y <- c(BAH = 2.350116, BI = 1.369987, BU = 1.260222, 
+         VB = 0.497185, EI = 0.900570, ES = 0.877136, 
+         FKD = 0.875969, FI = 1.873277, GIN = 0.701319, 
+         HOL = 0.486142, KI = 1.767087);
+  z <- c(BAH = -0.067977, BI = 1.175875, BU = 0.945780, 
+         VB = 1.581494, EI = 1.833317, ES = 1.42240, 
+         FKD = 1.193355, FI = 0.884113, GIN = 1.109381, 
+         HOL = 1.248850, KI = 0.392809);
   
-  
+  switch(
+    compartiment,
+    "ag" = exp(a[spec_wolff])*whd^b[spec_wolff]*h^c[spec_wolff],
+    "stem" = exp(d[spec_wolff])*whd^e[spec_wolff]*h^f[spec_wolff],
+    "foliage" = exp(x[spec_wolff])*whd^y[spec_wolff]*h^z[spec_wolff]
+  )
   
 }
 
