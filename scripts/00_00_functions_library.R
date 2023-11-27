@@ -1195,6 +1195,41 @@ GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link 
 # Wolff, B.*; Bolte, A.**; Bielefeldt, J.**; Czajkowski, T.**
 # * Fachhochschule Eberswalde (FHE), Fachgebiet Wald und Umwelt, A.-Möller-Straße 1, 16225 Eberswalde
 # ** Johann Heinrich v. Thünen-Institut (vTI), Institut für Waldökologie und Waldinventuren,  A.-Möller-Straße 1, 16225 Eberswalde
+
+# we need the throot to transform the whd-to-h equation
+# https://stackoverflow.com/questions/58447310/how-to-use-the-nthroot-function-in-r
+nthroot = function(x,n) {
+  (abs(x)^(1/n))*sign(x)
+}
+
+h.to.whd <- function(h, spec_wolff){
+  # the original function is as follows: 
+  # h = a*whd^b
+  # now we have to transform it into wdh = ...
+  # the steps are: 
+  # h/a = whd^b
+  # bth-root(h/a) = whd
+ a <- c(BAH = 4.3239, BI = 9.50205, BU= 4.8909, 
+        VB = 6.2529, EI = 8.2332, ES =  3.4668, FKD = 10.26,  #in BWI: SLB; FKD = fauliger Kreuzdorn --> Faulbaum --> Rhamnus frangula
+        FI = 3.674, GIN = 12.322,  # Ginster = GIN
+        HOL =  5.5999,  # holunder
+        KI =  7.9661);
+ b <- c(BAH = 1.2531, BI = 1, BU = 1.1404, VB = 1.0844, EI = 1, 
+        ES = 1.3483, FKD = 1.0269,  #in BWI: SLB; FKD = fauliger Kreuzdorn --> Faulbaum --> Rhamnus frangula
+        FI = 1.0905 , GIN = 1, # Ginster
+        HOL =  1.1832,
+        KI = 0.9366);
+ 
+ whd = nthroot((h/a), b)
+ 
+ return(whd)
+  
+  
+}
+
+
+
+
 function(whd, h, compartiment){
   # parameters for stem compartiment
   a = c("BAH" = );
