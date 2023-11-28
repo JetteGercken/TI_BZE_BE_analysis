@@ -1210,7 +1210,7 @@ h.to.whd <- function(h, spec_wolff){
   # h/a = whd^b
   # bth-root(h/a) = whd
   # h is the trees height in cm 
-  # whd is the radius at hte stem base (Wurzelhalsdurchmesser) in cm
+  # whd is the radius at hte stem base (Wurzelhalsdurchmesser) in mm
  a <- c(BAH = 4.3239, BI = 9.50205, BU= 4.8909, 
         VB = 6.2529, EI = 8.2332, ES =  3.4668, FKD = 10.26,  #in BWI: SLB; FKD = fauliger Kreuzdorn --> Faulbaum --> Rhamnus frangula
         FI = 3.674, GIN = 12.322,  # Ginster = GIN
@@ -1222,9 +1222,9 @@ h.to.whd <- function(h, spec_wolff){
         HOL =  1.1832,
         KI = 0.9366);
  
- whd = nthroot((h/a[spec_wolff]), b[spec_wolff])
+ whd.cm = (nthroot((h/a[spec_wolff]), b[spec_wolff]))/10 #divide by 10 to change whd from mm to cm
  
- return(whd)
+ return(whd.cm)
   
   
 }
@@ -1282,7 +1282,52 @@ wolff.bio.below.1m <- function(whd, h, spec_wolff, compartiment){
 }
 
 
-
+Poorter_rg_RSR_RLR <- function(ag, spec, compartiment){ # instead of the species I have to put NH_LH here
+  # equation to transform aboveground into belowground biomass : stem:root-ratio
+ # quadratische ergänzung der Funktion: stem = a + b1*root + b2*root^2
+                                      # sten = b2*root^2 + b1*root + a
+                                      # stem = a*root^2 + b*root + c
+  # https://www.mathepanik.de/Klassen/Klasse_10/Lektion_Kl_10_L_parabeln_gleichung_loesen.php
+  c <- c(NB = -0.070, LB = -0.097);   # a
+  b <- c(NB = 1.236, LB = 1.071);     # b1  
+  a <- c(NB = -0.0186, LB = 0.01794); # b2
+  # 10-log of belowground biomass in g (*1000)
+  ag_g <- log10(ag*1000)
+  # implement trasformed funtion 
+  log.10.bg_bio = sqrt(((ag_g-c[spec])/a[spec])+ (((b[spec]/a[spec])/2)^2))+ (b[spec]/a[spec])/2
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+  # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  bg_bio_kg <- (10^log.10.bg_bio)/1000; 
+  
+  # equation to transform belowground into foliage biomass : leaf:root-ratio
+  bg_g <- log10(bg_bio_kg*1000);             # 10-log of belowground biomass in g (*1000)
+  a1 <- c(NB = 0.243, LB =  0.090);
+  b1 <- c(NB =  0.924, LB =  0.889);
+  b2 <- c(NB = -0.0282, LB = -0.0254);
+  log.10.f_bio <- a1[spec]+ b1[spec]* bg_g+ b2[spec]*(bg_g)^2;
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+  # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  f_bio_kg <- (10^log.10.f_bio)/1000;
+  
+  
+  # equation to transform root into stem biomass
+  a3 <- c(NB = -0.070, LB = -0.097);   # a
+  b3 <- c(NB = 1.236, LB = 1.071);     # b1  
+  b4 <- c(NB = -0.0186, LB = 0.01794); # b2
+  # 10-log of belowground biomass in g (*1000)
+  log.10.stem_bio <- a3[spec]+ b3[spec]*bg_g + b4[spec]*(bg_g)^2;
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+  # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  stem_bio_kg <- (10^log.10.stem_bio)/1000;
+  
+  switch(compartiment, 
+         "bg" = bg_bio_kg, 
+         "foliage" = f_bio_kg, 
+         "stem" = stem_bio_kg)
+}
 
 
 

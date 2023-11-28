@@ -3,101 +3,14 @@
 # Functions & require
 
 
-# ----- 0. SETUP ---------------------------------------------------------------
-# ----- 0.1. Packages  ---------------------------------------------------------
-## datamanagement
-# install.packages("usethis")
-#  install.packages("here")
-#  install.packages("readr")
-#  install.packages("tidyverse")
-#  install.packages("tibble")
-#  install.packages("dplyr")
-#  install.packages("data.table")
-#  install.packages("broom")
-#  install.packages("purrr")
-#  install.packages("devtools")
-#  ## laTex
-#  install.packages("stargazer")  #for compatability with Latex
-#  install.packages("tikzDevice") #for compatability with Latex#
-#  # visualisation
-#  install.packages("ggthemes")
-#  install.packages("ggplot2")
-#  install.packages("reshape2") #for multiple y values
-#  install.packages("ggforce") #for zooming in parts of the plot
-# install.packages("ggforce")             # Install ggforce package
-#  options(tz="CA")
-#  install.packages("reshape2")
-#  # analysis
-#  install.packages("corrplot")
-#  install.packages("AICcmodavg")
-#  # forest related
-#   install.packages("forestmangr")
-#  install.packages("rBDAT")
-#  install.packages("TapeR")
-# install.packages("pkgbuild")
-#  require("devtools")
-#  if (! require("remotes")) 
-#    install.packages("remotes")
-#  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-# install.packages("magrittr")
-# install.packages("sjmisc")
-# if(!require(devtools)) install.packages("devtools")
-# devtools::install_github("kassambara/ggcorrplot")
-## spatial
-# install.packages("sf")
-# install.packages("rgdal")
-# install.packages("terra")
-#install.packages("sfheaders")
+# ----- 0.1. packages and functions --------------------------------------------
+source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
-
-# ----- 0.2. require   ---------------------------------------------------------
-# datamanagement
-require(usethis)
-require(here)
-require(readr)
-require(tidyverse)
-require(tibble)
-require(dplyr)
-require(data.table)
-require(broom)
-require(purrr)
-require(remotes)
-require(devtools)
-# laTex
-require(stargazer)  #for compatability with Latex
-require(tikzDevice) #for compatability with Latex
-# visualisation
-require(ggthemes)
-require(ggplot2)
-require(reshape2) #for multiple y values
-require(ggforce) #for zooming in parts of the plot
-options(tz="CA")
-# analysis
-require(corrplot)
-require(AICcmodavg)
-require(ggcorrplot)
-# forest related
-require(forestmangr)
-require(rBDAT)
-require(TapeR)
-if (! require("remotes")) 
-  install.packages("remotes")
-require(remotes)
-#devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-#remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-require(TapeS)
-require(magrittr)
-require(sjmisc)
-require(ggforce)                      # Load ggforce package
-# spatial 
-require(sf)
-require(rgdal)
-require(terra)
-require(sfheaders)
-
-# ----- 0.3. working directory -------------------------------------------------
+# ----- 0.2. working directory -------------------------------------------------
 here::here()
+getwd()
 
+out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 # ----- 0.4 import species codes dataset  --------------------------
 # species names & codes 
