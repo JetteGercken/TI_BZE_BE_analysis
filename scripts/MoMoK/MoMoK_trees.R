@@ -1265,7 +1265,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                  LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Picea")) ~ 'aNB',   # # other coniferous tree (anderer Nadelbaum)
                                  TRUE ~ "other"))
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
-write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
+# write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
 
 # ----- 1.4.2.1. LIVING TREES: adding speices info -----------------------------------------
@@ -3270,6 +3270,7 @@ trees_P.export <- trees_P %>%
          B_t_plot, C_t_plot, N_t_plot, 
          B_t_ha, C_t_ha, N_t_ha,
          B_t_MA, C_t_MA, N_t_MA)
+
 
 # colnames(trees_P.export) <- c("Plot", "Kompartiment", 
 #                                  "durchsch_D1.3_cm", "SD_D1.3_cm" ,  "durchsch_H_m" , "SD_H_m",

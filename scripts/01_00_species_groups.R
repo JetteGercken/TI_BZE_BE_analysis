@@ -14,7 +14,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.4 import species codes dataset  --------------------------
 # species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+#SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 # the join always works like this: 
 # left_join(., SP_names_com_ID_tapeS %>% 
 #             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
