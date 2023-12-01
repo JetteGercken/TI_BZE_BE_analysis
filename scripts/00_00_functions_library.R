@@ -1287,37 +1287,47 @@ Poorter_rg_RSR_RLR <- function(ag, spec, compartiment){ # instead of the species
  # quadratische ergänzung der Funktion: stem = a + b1*root + b2*root^2
                                       # sten = b2*root^2 + b1*root + a
                                       # stem = a*root^2 + b*root + c
+                                      # 0 = a*root^2 + b*root + c-y
+                                      # c = c-y
+                                      # (-b-sqrt(b^2-4*a*c))/2*a = x1
+                                      # (-b + sqrt(b^2-4*a*c))/2*a = x1
   # https://www.mathepanik.de/Klassen/Klasse_10/Lektion_Kl_10_L_parabeln_gleichung_loesen.php
   c <- c(NB = -0.070, LB = -0.097);   # a
   b <- c(NB = 1.236, LB = 1.071);     # b1  
   a <- c(NB = -0.0186, LB = 0.01794); # b2
   # 10-log of belowground biomass in g (*1000)
-  ag_g <- log10(ag*1000)
-  # implement trasformed funtion 
-  log.10.bg_bio = sqrt(((ag_g-c[spec])/a[spec])+ (((b[spec]/a[spec])/2)^2))+ (b[spec]/a[spec])/2
+  ag_g <- ag*1000;
+  # withdraw y from c to create a function that equals to 0 so we apply the quadratic function
+  cy <- c[spec]-log10(ag_g);
+  # calculate two possible results for the biomass at the given y
+  log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
+  log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
-  bg_bio_kg <- (10^log.10.bg_bio)/1000; 
+  bg.kg.x1 = (10^log.bg.x1)/1000
+  bg.kg.x2 = (10^log.bg.x2)/1000
+  # if x1 is lower then zero while x2 is higher then zero but below the stem mass choose x2, if not choose x1
+  bg_bio_kg = ifelse(bg.kg.x1 <= 0 & bg.kg.x2 <= ag | bg.kg.x1 <= bg.kg.x2 & bg.kg.x2 <= ag, bg.kg.x2, 
+                     ifelse(bg.kg.x1 >= 0 & bg.kg.x1 <= ag | bg.kg.x1 > bg.kg.x2 & bg.kg.x1 <= ag, bg.kg.x1, NA))
   
   # equation to transform belowground into foliage biomass : leaf:root-ratio
-  bg_g <- log10(bg_bio_kg*1000);             # 10-log of belowground biomass in g (*1000)
+  bg_g <- bg_bio_kg*1000;             # 10-log of belowground biomass in g (*1000)
   a1 <- c(NB = 0.243, LB =  0.090);
   b1 <- c(NB =  0.924, LB =  0.889);
   b2 <- c(NB = -0.0282, LB = -0.0254);
-  log.10.f_bio <- a1[spec]+ b1[spec]* bg_g+ b2[spec]*(bg_g)^2;
+  log.10.f_bio <- a1[spec]+ b1[spec]* log10(bg_g)+ b2[spec]*log10(bg_g)^2;
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
   f_bio_kg <- (10^log.10.f_bio)/1000;
-  
   
   # equation to transform root into stem biomass
   a3 <- c(NB = -0.070, LB = -0.097);   # a
   b3 <- c(NB = 1.236, LB = 1.071);     # b1  
   b4 <- c(NB = -0.0186, LB = 0.01794); # b2
   # 10-log of belowground biomass in g (*1000)
-  log.10.stem_bio <- a3[spec]+ b3[spec]*bg_g + b4[spec]*(bg_g)^2;
+  log.10.stem_bio <- a3[spec]+ b3[spec]*log10(bg_g) + b4[spec]*log10(bg_g)^2;
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
@@ -1328,7 +1338,6 @@ Poorter_rg_RSR_RLR <- function(ag, spec, compartiment){ # instead of the species
          "foliage" = f_bio_kg, 
          "stem" = stem_bio_kg)
 }
-
 
 
 

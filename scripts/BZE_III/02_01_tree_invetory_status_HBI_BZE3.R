@@ -7,7 +7,7 @@
 # ----- 0.1. packages and functions --------------------------------------------
 
 
-source(paste0(getwd(), "/scripts/00_functions_library.R"))
+source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -25,27 +25,19 @@ HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_upda
  
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
-# HBI / pre
-colnames(HBI_trees) <- c("multi_stem", "D_mm", "DBH_class", "DBH_h_cm", "H_dm",
-                         "azi_gon", "SP_code", "tree_ID", "plot_ID", "tree_inventory_status", 
-                         "DBH_cm", "age", "C_layer", "C_h_dm", "Kraft", "Dist_cm", "age_meth")  
-# vomplete pre inventory dataset
+
+# complete pre inventory dataset
 HBI_trees <- HBI_trees %>% 
-  select(plot_ID,  tree_ID,  tree_inventory_status,  multi_stem, Dist_cm,  azi_gon, age, age_meth,  
-         SP_code, DBH_class,  Kraft, C_layer, H_dm,  C_h_dm, D_mm,   DBH_h_cm,  DBH_cm ) %>% 
-  left_join(., HBI_inv_info %>% select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-            by = "plot_ID") %>% 
-  mutate(inv = inv_name(inv_year),
-         DBH_cm = ifelse(DBH_h_cm == 130, D_mm/10, DBH_BWI(D_mm, DBH_h_cm)), 
-         # these two columns are meant to prepare for the comming data sorting
-         old_tree_ID = tree_ID, 
+  # these two columns are meant to prepare for the comming data sorting
+  mutate(old_tree_ID = tree_ID, 
          new_tree_inventory_status = tree_inventory_status) 
 
-# create practice BZE3/ post dataset from HBI/ pre data
+
+# create fake/ practice BZE3/ post dataset from HBI/ pre data
 BZE3_trees <-HBI_trees[1:10,] %>% 
   mutate(D_mm = D_mm+10,
          H_dm = as.numeric(H_dm)+10, 
-         Dist_cm= Dist_cm+20, 
+         dist_cm= dist_cm+20, 
          tree_inventory_status = case_when(row_number() == 1 ~ -9,
                                            row_number() == 2 ~ -1,
                                            row_number() == 3 ~ 0,
@@ -56,11 +48,10 @@ BZE3_trees <-HBI_trees[1:10,] %>%
                                            row_number() == 8 ~ 5,
                                            row_number() == 9 ~ 6,
                                            row_number() == 10 ~ 7,
-                                           TRUE ~ NA)) %>% 
-  mutate(inv_year = 2023, 
-         inv = inv_name(inv_year), 
-         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_BWI(as.numeric(D_mm), as.numeric(DBH_h_cm))))
-# mutate two new trees to simulate a case of tree_inventory_status == 6
+                                           TRUE ~ NA), 
+         inv_year = 2023, 
+         inv = inv_name(inv_year)) 
+  # mutate two new trees to simulate a case of tree_inventory_status == 6
 BZE3_trees <- rbind(
   BZE3_trees,
   BZE3_trees %>% filter(tree_inventory_status == 6) %>% mutate(tree_ID = 27, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+300, tree_inventory_status = 0),
@@ -94,14 +85,14 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
   my.dbh.cm <- BZE3_trees_9[i, "DBH_cm"]
   
   azi.tree.2 <- as.numeric(BZE3_trees_9[i, "azi_gon"])
-  dist.tree.2 <- as.numeric(BZE3_trees_9[i, "Dist_cm"])/100
+  dist.tree.2 <- as.numeric(BZE3_trees_9[i, "dist_cm"])/100
   x.tree.2 <- dist.tree.2*sin(azi.tree.2)       # this is: easting, longitude, RW
   y.tree.2 <- dist.tree.2*cos(azi.tree.2)       # this is: northing, latitude, HW 
   
   # select the distance and azimute of the trees of the previous inventory by plot ID 
   # to calcualte the coordiantes of all trees of the plot in the previous inventory
   azi.tree.1 <- HBI_trees$azi_gon[HBI_trees$plot_ID == my.plot.id]
-  dist.tree.1 <- HBI_trees$Dist_cm[HBI_trees$plot_ID == my.plot.id]/100
+  dist.tree.1 <- HBI_trees$dist_cm[HBI_trees$plot_ID == my.plot.id]/100
   x.tree.1 <- dist.tree.1*sin(azi.tree.1)       # this is: easting, longitude, RW
   y.tree.1 <- dist.tree.1*cos(azi.tree.1)       # this is: northing, latitude, HW 
 
@@ -180,6 +171,115 @@ HBI_trees <- HBI_trees %>%
   select(-tree_inventory_status_new)
 
 
+
+# tree inventory status == -1 ---------------------------------------------
+# this is like NA. 
+# what we can check is, if theres a tree with a similar position (+-10 gon and 20cm distance or so)
+# if so, we can change the inventory ID to 1 - repeated inventory
+# if not we will have to set it to 0 - newly inventorised
+# subset data frot inventory status -1
+BZE3_trees_1 <- BZE3_trees %>% filter(tree_inventory_status == -1)
+tree_inventory_status_1.list <- vector(mode = "list", length = length(BZE3_trees_1$tree_ID))
+
+for (i in 1:length(BZE3_trees_1$tree_ID)) {
+  # i = 1
+  
+  my.plot.id <- BZE3_trees_1[i, "plot_ID"]
+  my.tree.id <- BZE3_trees_1[i, "tree_ID"]
+  my.tree.spec <- BZE3_trees_1[i, "SP_code"]
+  my.inv <- BZE3_trees_1[i, "inv"]
+  my.inv.year <- BZE3_trees_1[i, "inv_year"]
+  my.dbh.cm <- BZE3_trees_1[i, "DBH_cm"]
+  
+  azi.tree.2 <- as.numeric(BZE3_trees_1[i, "azi_gon"])
+  dist.tree.2 <- as.numeric(BZE3_trees_1[i, "dist_cm"])/100
+  x.tree.2 <- dist.tree.2*sin(azi.tree.2)       # this is: easting, longitude, RW
+  y.tree.2 <- dist.tree.2*cos(azi.tree.2)       # this is: northing, latitude, HW 
+  
+  # select the distance and azimute of the trees of the previous inventory by plot ID 
+  # to calcualte the coordiantes of all trees of the plot in the previous inventory
+  azi.tree.1 <- HBI_trees$azi_gon[HBI_trees$plot_ID == my.plot.id]
+  dist.tree.1 <- HBI_trees$dist_cm[HBI_trees$plot_ID == my.plot.id]/100
+  x.tree.1 <- dist.tree.1*sin(azi.tree.1)       # this is: easting, longitude, RW
+  y.tree.1 <- dist.tree.1*cos(azi.tree.1)       # this is: northing, latitude, HW 
+  
+  # select the row number of the tree point in the HBI (inventory 1) dataframe of the same plot ID,
+  # which has the smallest distance to the given tree corodinates from BZE3 (inventory 2)
+  closest.id <- which.min( distance(x.tree.1, y.tree.1, x.tree.2, y.tree.2))
+  
+  # calculate or select the actual distance, species and dbh between the selected row/ coordiantes of tzhe nearest neighbout canidate from HBI and the given tree from BZE3
+  distance.my.tree.and.nearest.neighbour <- distance(x.tree.1[closest.id], y.tree.1[closest.id], x.tree.2, y.tree.2)
+  species.nearest.neighbour <- HBI_trees$SP_code[HBI_trees$plot_ID == my.plot.id][closest.id]
+  dbh.nearest.neighbour <- HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id][closest.id]
+  t_id.nearest.neighbour <- HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id][closest.id]
+  inv.status.nearest.neighbour <- HBI_trees$tree_inventory_status[HBI_trees$plot_ID == my.plot.id][closest.id]
+  
+  # we can assume its the same tree and they just forgot to give a tree 
+  # inventory status number if:
+  # the distance is within a range of +/- 50cm, 
+  # if the species is identical 
+  # maybe also if the dbh is lower or equal? 
+  tree_inventory_status_post <- ifelse(distance.my.tree.and.nearest.neighbour <= 0.5 & 
+                                      my.tree.spec == species.nearest.neighbour & 
+                                      my.dbh.cm >= dbh.nearest.neighbour & 
+                                      my.tree.id == t_id.nearest.neighbour | 
+                                      distance.my.tree.and.nearest.neighbour >= 0.5 & 
+                                      my.tree.spec == species.nearest.neighbour & 
+                                      my.dbh.cm >= dbh.nearest.neighbour & 
+                                      my.tree.id == t_id.nearest.neighbour, 1, NA)
+  
+  # if we actually find a tree in the previous inventroy that fullfills our requirements
+  # we have to assign a new inventory status to this tree as well. Unless the tree was already subject to a 
+  # repeated inventory, we have to assign it to tree status 0 as it must have been the first inventory of my.tree
+  tree_inventory_status_pre <- ifelse(!is.na(tree_inventory_status_post & inv.status.nearest.neighbour !=1 ), 0, inv.status.nearest.neighbour)
+  
+  # build dataset that links tree status with plot, tree and inventory ID so the tree remains indentifiable
+  tree_inventory_status_1.list[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id, HBI_trees$plot_ID[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "tree_ID" = c(my.tree.id, HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "inv" = c(my.inv, HBI_trees$inv[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "inv_year" = c(my.inv.year, HBI_trees$inv_year[HBI_trees$plot_ID == my.plot.id][closest.id]),
+    "tree_inventory_status_new" = c(tree_inventory_status_post, tree_inventory_status_pre)
+  ))
+  
+  print(ggplot()+ 
+          geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
+          geom_point(aes(x.tree.1, y.tree.1, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
+          geom_point(aes(x.tree.2, y.tree.2, size = my.dbh.cm, color= "red"))+ 
+          guides(color=guide_legend(title="tree from inv. 2"))+
+          guides(size=guide_legend(title="DBH cm"))+
+          geom_text(aes(x.tree.1, y.tree.1), 
+                    label= HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id],
+                    nudge_x=0.45, nudge_y=0.1,check_overlap=T)+
+          geom_text(aes(x.tree.2, y.tree.2), 
+                    label= BZE3_trees_1$tree_ID[BZE3_trees_1$plot_ID == my.plot.id & BZE3_trees_1$tree_ID == my.tree.id],
+                    nudge_x=0.45, nudge_y=0.1, check_overlap=T)
+  )
+  
+}
+# safe list in dataframe
+tree_inventory_status_1.df <- as.data.frame(tree_inventory_status_1.list)
+# https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
+tree_inventory_status_1.df[,c(1,2, 4, 5)] <- lapply(tree_inventory_status_1.df[,c(1,2, 4, 5)], as.integer)
+
+# join the new tree inventory status in and replace -9s and NAs if possible
+BZE3_trees <- BZE3_trees %>% 
+  left_join(., tree_inventory_status_1.df, 
+            by = c("plot_ID","tree_ID", "inv", "inv_year")) %>% 
+  # this is an update join/ mutate: this part replaces the new inventory status that was created by the loop
+  mutate(new_tree_inventory_status = ifelse(tree_inventory_status == -1 & !is.na(tree_inventory_status_new) | is.na(tree_inventory_status) & !is.na(tree_inventory_status_new), tree_inventory_status_new, tree_inventory_status)) %>% 
+  select(-tree_inventory_status_new)
+
+
+HBI_trees <- HBI_trees %>% 
+  left_join(., tree_inventory_status_1.df, 
+            by = c("plot_ID","tree_ID", "inv",  "inv_year")) %>% 
+  mutate(new_tree_inventory_status = ifelse(tree_inventory_status == -1 & !is.na(tree_inventory_status_new) | is.na(tree_inventory_status) & !is.na(tree_inventory_status_new), tree_inventory_status_new, tree_inventory_status)) %>% 
+  select(-tree_inventory_status_new)
+
+
+
+
 # tree inventory status == 4 ---------------------------------------------
 # for trees that have the status 4 the tree should have not been assessed in the previous inventory 
 # what we have to do is find the tree in the previous inventory (so a tree that has the somewhat similar position and tree ID)
@@ -198,14 +298,14 @@ for (i in 1:length(BZE3_trees_4$tree_ID)) {
   my.dbh.cm <- BZE3_trees_4[i, "DBH_cm"]
   
   azi.tree.2 <- as.numeric(BZE3_trees_4[i, "azi_gon"])
-  dist.tree.2 <- as.numeric(BZE3_trees_4[i, "Dist_cm"])/100
+  dist.tree.2 <- as.numeric(BZE3_trees_4[i, "dist_cm"])/100
   x.tree.2 <- dist.tree.2*sin(azi.tree.2)       # this is: easting, longitude, RW
   y.tree.2 <- dist.tree.2*cos(azi.tree.2)       # this is: northing, latitude, HW 
   
   # select the distance and azimute of the trees of the previous inventory by plot ID 
   # to calcualte the coordiantes of all trees of the plot in the previous inventory
   azi.tree.1 <- HBI_trees$azi_gon[HBI_trees$plot_ID == my.plot.id]
-  dist.tree.1 <- HBI_trees$Dist_cm[HBI_trees$plot_ID == my.plot.id]/100
+  dist.tree.1 <- HBI_trees$dist_cm[HBI_trees$plot_ID == my.plot.id]/100
   x.tree.1 <- dist.tree.1*sin(azi.tree.1)       # this is: easting, longitude, RW
   y.tree.1 <- dist.tree.1*cos(azi.tree.1)       # this is: northing, latitude, HW 
   
@@ -311,7 +411,7 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   my.dbh.cm <- BZE3_trees_6[i, "DBH_cm"]
   # calculate coordiantes for tree i 
   azi.tree.2 <- as.numeric(BZE3_trees_6[i, "azi_gon"])
-  dist.tree.2 <- as.numeric(BZE3_trees_6[i, "Dist_cm"])/100
+  dist.tree.2 <- as.numeric(BZE3_trees_6[i, "dist_cm"])/100
   x.tree.2 <- dist.tree.2*sin(azi.tree.2)       # this is: easting, longitude, RW
   y.tree.2 <- dist.tree.2*cos(azi.tree.2)       # this is: northing, latitude, HW 
   
@@ -319,7 +419,7 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   # select the distance and azimute of the trees of the previous inventory by plot ID 
   # to calcualte the coordiantes of all trees of the plot in the previous inventory
   azi.tree.pre <- HBI_trees$azi_gon[HBI_trees$plot_ID == my.plot.id]
-  dist.tree.pre <- HBI_trees$Dist_cm[HBI_trees$plot_ID == my.plot.id]/100
+  dist.tree.pre <- HBI_trees$dist_cm[HBI_trees$plot_ID == my.plot.id]/100
   x.tree.pre <- dist.tree.pre*sin(azi.tree.pre)       # this is: easting, longitude, RW
   y.tree.pre <- dist.tree.pre*cos(azi.tree.pre)       # this is: northing, latitude, HW 
   # select the row number of the tree point in the HBI (previous inventory, inventory 1) dataframe 
@@ -360,7 +460,7 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   
   # calcualte cartesian coordiantes of all potential partner trees of my.tree at the plot
   azi.all.trees.2 <- as.numeric(closest.trees.canidates.2$azi_gon)
-  dist.all.trees.2 <- as.numeric(closest.trees.canidates.2$Dist_cm)/100 # divide by 100 to transform into m 
+  dist.all.trees.2 <- as.numeric(closest.trees.canidates.2$dist_cm)/100 # divide by 100 to transform into m 
   x.all.trees.2 <- dist.all.trees.2*sin(azi.all.trees.2)       # this is: easting, longitude, RW
   y.all.trees.2 <- dist.all.trees.2*cos(azi.all.trees.2)       # this is: northing, latitude, HW 
   # find the tree IDs in the canidates dataset/ current inventory/ inventory 2/ BZE3 dataset 

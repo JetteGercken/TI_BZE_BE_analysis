@@ -285,16 +285,15 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                                        "Fagus", 
                                                        "Quercus", 
                                                        "Rhamnus", 
-                                                       "Fagus", 
                                                        "Sorbus", 
                                                        "Sambucus")) ~ "ES",
                                   bot_genus == "Betulus" | 
+                                    # and all other trees in the "short life expectancy BWI species" group which are not separately grouped
                                     BWI_SP_group == "aLn" &
                                     !(bot_genus %in% c("Acer",
                                                        "Fagus", 
                                                        "Quercus", 
                                                        "Rhamnus", 
-                                                       "Fagus", 
                                                        "Sorbus", 
                                                        "Sambucus")) ~ "BI",
                                   bot_genus == "Sambucus" ~ "HOL", 
@@ -303,9 +302,9 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                   bot_genus == "Rhamnus" ~ "FKD", 
                                   bot_genus == "Sorbus" ~ "VB", 
                                   bot_genus == "Picea" |
-                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus")) ~ "FI",
+                                    LH_NH == "NB" & !(bot_genus %in% c("Pinus", "Picea")) ~ "FI",
                                   bot_genus == "Pinus"~ "KI", 
-                                  TRUE ~ "other") 
+                                  TRUE ~ "BU") 
   )
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")

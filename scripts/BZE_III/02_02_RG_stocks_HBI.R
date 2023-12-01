@@ -195,6 +195,7 @@ for (i in 1:nrow(HBI.RG.below.1)) {
   
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
+    "CCS_no" = c(rep(as.integer(my.ccs.id), times = nrow(B_kg_tree))),
     "tree_ID" = c(as.integer(my.tree.id)), 
     "inv" = unique(HBI.RG.below.1$inv[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]), 
     "inv_year" = c(as.integer(unique(HBI.RG.below.1$inv_year[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]))),
@@ -244,7 +245,7 @@ for (i in 1:nrow(HBI.RG.below.1)) {
                     )))
   
   wolff_B_kg_tree <- as.data.frame(cbind(
-    "bio_method" = c(rep("wolff", times = 4)),
+    "bio_method" = c(rep("wolff + poorter", times = 4)),
     "compartiment" = c("sw+fw", "ndl", "ag", "bg"), 
     "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF), spp_LHNH, compartiment = "stem"))[1,], 
                     as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF), spp_LHNH, compartiment = "foliage"))[1,], 
@@ -256,11 +257,13 @@ for (i in 1:nrow(HBI.RG.below.1)) {
   
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(rep(as.integer(my.plot.id), times = nrow(B_kg_tree))), 
+    "CCS_no" = c(rep(as.integer(my.ccs.id), times = nrow(B_kg_tree))),
     "tree_ID" = c(rep(as.integer(my.tree.id), times = nrow(B_kg_tree))), 
     "inv" = c(rep(unique(HBI.RG.below.1$inv[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]), times = nrow(B_kg_tree))), 
     "inv_year" = c(rep(as.integer(unique(HBI.RG.below.1$inv_year[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id])), times = nrow(B_kg_tree))),
     "compartiment" = c(B_kg_tree$compartiment),
-    "B_kg_tree" = c(as.numeric(B_kg_tree$B_kg_tree))
+    "B_kg_tree" = c(as.numeric(B_kg_tree$B_kg_tree)), 
+    "bio_method" = c(B_kg_tree$bio_method)
   )
   )  
   
@@ -273,13 +276,65 @@ poorter.bio.ag.bg.kg.RG.below.1.df <- as.data.frame(rbindlist(poorter.bio.ag.bg.
 
 
 # visualizing biomass comparisson poorter vs. Wolff -----------------------
-ggplot()+ 
-  geom_bar(data = (bio.ag.kg.RG.below.1.df %>% mutate(bio_method = "wolff"))[1:3,], 
-           aes(x = compartiment, y = as.numeric(B_kg_tree), fill = bio_method), 
-           stat="identity", position = "dodge")
-ggplot()+ 
-  geom_bar(data = (poorter.bio.ag.bg.kg.RG.below.1.df %>% mutate(bio_method = "poorter"))[1:4,], 
-           aes(x = compartiment, y = as.numeric(B_kg_tree), fill = bio_method), 
-           stat="identity", position = "dodge")
+for (i in 1:nrow(unique(bio.ag.kg.RG.below.1.df [,c("plot_ID", "CCS_no", "tree_ID")]))){
+  # i=1
+  my.plot.id <- unique(bio.ag.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"plot_ID"][i]
+  my.ccs.id <- unique(bio.ag.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"CCS_no"][i]
+  my.tree.id <- unique(bio.ag.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"tree_ID"][i]
+  
+ print(ggplot()+ 
+  geom_bar(data = (bio.ag.kg.RG.below.1.df %>% mutate(bio_method = "wolff") %>% 
+                     filter(tree_ID == my.tree.id, plot_ID == my.plot.id, CCS_no == my.ccs.id)) , 
+           aes(x = compartiment, y = as.numeric(B_kg_tree), fill = compartiment), 
+           stat="identity", position = "dodge")+ 
+    ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
+}
+
+
+for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_no", "tree_ID")]))){
+  # i=1
+  my.plot.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"plot_ID"][i]
+  my.ccs.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"CCS_no"][i]
+  my.tree.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"tree_ID"][i]
+  
+  print(ggplot()+ 
+          geom_bar(data = (poorter.bio.ag.bg.kg.RG.below.1.df %>% filter(bio_method == "poorter") %>% 
+                             filter(tree_ID == my.tree.id, plot_ID == my.plot.id, CCS_no == my.ccs.id)) , 
+                   aes(x = compartiment, y = as.numeric(B_kg_tree), fill = compartiment), 
+                   stat="identity", position = "dodge")+ 
+          ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
+}
+
+
+for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_no", "tree_ID")]))){
+  # i=1
+  my.plot.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"plot_ID"][i]
+  my.ccs.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"CCS_no"][i]
+  my.tree.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"tree_ID"][i]
+  
+  print(ggplot()+ 
+          geom_bar(data = (poorter.bio.ag.bg.kg.RG.below.1.df %>% filter(bio_method == "wolff + poorter") %>% 
+                             filter(tree_ID == my.tree.id, plot_ID == my.plot.id, CCS_no == my.ccs.id)) , 
+                   aes(x = compartiment, y = as.numeric(B_kg_tree), fill = compartiment), 
+                   stat="identity", position = "dodge")+ 
+          ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
+}
+
+
+
+for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_no", "tree_ID")]))){
+  # i=1
+  my.plot.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"plot_ID"][i]
+  my.ccs.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"CCS_no"][i]
+  my.tree.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"tree_ID"][i]
+  
+  print(ggplot()+ 
+          geom_bar(data = (poorter.bio.ag.bg.kg.RG.below.1.df %>% #filter(bio_method == "wolff + poorter") %>% 
+                             filter(tree_ID == my.tree.id, plot_ID == my.plot.id, CCS_no == my.ccs.id)) , 
+                   aes(x = compartiment, y = as.numeric(B_kg_tree), fill = bio_method), 
+                   stat="identity", position = "dodge")+ 
+           ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
+}
+
 
 
