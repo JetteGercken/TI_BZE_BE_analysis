@@ -53,10 +53,20 @@ getwd()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 # ----- 0.4 importing data -----------------------------------------------------
+# this dataset contains the BZE file tit_1 which reffers to Fromblatt 
+HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+BZE3_inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 
 
 
 
+
+
+# 1. create a list with the BZE plots that should be excluded -----------------
+
+
+
+# 2. remove not processable plots from LT, RG and DW ----------------------
 
 
 

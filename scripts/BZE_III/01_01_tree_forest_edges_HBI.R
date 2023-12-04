@@ -8,7 +8,7 @@
 # ----- 0.1. packages and functions --------------------------------------------
 
 
-source(paste0(getwd(), "/scripts/00_functions_library.R"))
+source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -1733,7 +1733,10 @@ HBI_trees_update_1 <- HBI_trees %>%
                             # trees with the status "warning" will be excluded from the analysis
                             stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
                             stand == "A" & is.na(inter_stat) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
-         plot_A_ha = as.numeric(area_m2)/10000)  # dividedd by 10 000 to transform m2 into hectar
+         # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
+         stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
+         # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+         CCS_plot_A_ha = c_A(CCS_r_m)/10000)  # dividedd by 10 000 to transform m2 into hectar
 
 
 

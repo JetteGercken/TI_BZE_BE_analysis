@@ -1222,9 +1222,9 @@ h.to.whd <- function(h, spec_wolff){
         HOL =  1.1832,
         KI = 0.9366);
  
- whd.cm = (nthroot((h/a[spec_wolff]), b[spec_wolff]))/10 #divide by 10 to change whd from mm to cm
+ whd.mm = (nthroot((h/a[spec_wolff]), b[spec_wolff])) # input for the function is in mm 
  
- return(whd.cm)
+ return(whd.mm)
   
   
 }
@@ -1282,7 +1282,7 @@ wolff.bio.below.1m <- function(whd, h, spec_wolff, compartiment){
 }
 
 
-Poorter_rg_RSR_RLR <- function(ag, spec, compartiment){ # instead of the species I have to put NH_LH here
+Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the species I have to put NH_LH here
   # equation to transform aboveground into belowground biomass : stem:root-ratio
  # quadratische ergänzung der Funktion: stem = a + b1*root + b2*root^2
                                       # sten = b2*root^2 + b1*root + a
@@ -1296,23 +1296,24 @@ Poorter_rg_RSR_RLR <- function(ag, spec, compartiment){ # instead of the species
   b <- c(NB = 1.236, LB = 1.071);     # b1  
   a <- c(NB = -0.0186, LB = 0.01794); # b2
   # 10-log of belowground biomass in g (*1000)
-  ag_g <- ag*1000;
+  ag_g <- ag.kg*1000;
   # withdraw y from c to create a function that equals to 0 so we apply the quadratic function
-  cy <- c[spec]-log10(ag_g);
+  cy <- as.data.frame(c[spec]-log10(ag_g))[,1];
   # calculate two possible results for the biomass at the given y
   log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
   log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
-  bg.kg.x1 = (10^log.bg.x1)/1000
-  bg.kg.x2 = (10^log.bg.x2)/1000
+  bg.kg.x1 = as.data.frame((10^log.bg.x1)/1000)[,1]
+  bg.kg.x2 = as.data.frame((10^log.bg.x2)/1000)[,1]
   # if x1 is lower then zero while x2 is higher then zero but below the stem mass choose x2, if not choose x1
-  bg_bio_kg = ifelse(bg.kg.x1 <= 0 & bg.kg.x2 <= ag | bg.kg.x1 <= bg.kg.x2 & bg.kg.x2 <= ag, bg.kg.x2, 
-                     ifelse(bg.kg.x1 >= 0 & bg.kg.x1 <= ag | bg.kg.x1 > bg.kg.x2 & bg.kg.x1 <= ag, bg.kg.x1, NA))
+  bg_bio_kg = ifelse(bg.kg.x1 >= 0 & bg.kg.x1 <= ag.kg, bg.kg.x1, 
+                       ifelse(bg.kg.x2 >= 0 & bg.kg.x2 <= ag.kg, bg.kg.x2, 
+                              NA))
   
   # equation to transform belowground into foliage biomass : leaf:root-ratio
-  bg_g <- bg_bio_kg*1000;             # 10-log of belowground biomass in g (*1000)
+  bg_g <- bg_bio_kg*1000;             # belowground biomass in g (*1000)
   a1 <- c(NB = 0.243, LB =  0.090);
   b1 <- c(NB =  0.924, LB =  0.889);
   b2 <- c(NB = -0.0282, LB = -0.0254);

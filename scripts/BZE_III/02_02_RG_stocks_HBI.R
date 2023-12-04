@@ -160,9 +160,11 @@ bio.total.kg.RG.df <-
 
 
 
+
 # 1.2.2. biomass for RG trees height < 1.3m -------------------------------
 # subset those trees that have a height above 1.3m and thus a DBH which allows them to be processed in TapeS
 HBI.RG.below.1 <- HBI_RG[HBI_RG$H_m < 1, ]
+
 # 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
 # estimate shoot-base-diameter through height of tree
 # esitmate Biomasse in compartiments 
@@ -212,7 +214,9 @@ bio.ag.kg.RG.below.1.df <- as.data.frame(rbindlist(bio.ag.kg.RG.below.1))
 
 
 
-
+# comparing the biomass per compartiment for trees under 1m: 
+#      - compartiments of poorter with with GHGI vs. Wollf input biomass 
+#      - compartiments of poorter with wolff input biomas vs. compartiment of wolff with wolff input biomass 
 poorter.bio.ag.bg.kg.RG.below.1 <- vector("list", length = nrow(HBI.RG.below.1))
 for (i in 1:nrow(HBI.RG.below.1)) {
   # i = 1
@@ -231,8 +235,9 @@ for (i in 1:nrow(HBI.RG.below.1)) {
   # Wolff et al. function for aboveground biomass for trees below 1m
   spp = unique(HBI.RG.below.1$RG_Wolff_bio[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id])
   h.cm = as.numeric(unique(HBI.RG.below.1$H_cm[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]))
-  whd.cm = as.numeric(h.to.whd(h.cm, spp))
-  ag_WOLFF = as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "ag"))[1,]
+  whd.mm = as.numeric(h.to.whd(h.cm, spp))
+  ag_WOLFF_kg = as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "ag"))[1,]/1000 # divide by 1000 to transform in kg
+  
   
   # calculate biomass per compartiment
   poorter_B_kg_tree <- as.data.frame(cbind(
@@ -244,16 +249,25 @@ for (i in 1:nrow(HBI.RG.below.1)) {
                     as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
                     )))
   
-  wolff_B_kg_tree <- as.data.frame(cbind(
+  wolff_poorter_B_kg_tree <- as.data.frame(cbind(
     "bio_method" = c(rep("wolff + poorter", times = 4)),
     "compartiment" = c("sw+fw", "ndl", "ag", "bg"), 
-    "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF), spp_LHNH, compartiment = "stem"))[1,], 
-                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF), spp_LHNH, compartiment = "foliage"))[1,], 
-                    as.numeric(ag_WOLFF), 
-                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF), spp_LHNH, compartiment = "bg"))[1,]
+    "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "stem"))[1,], 
+                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "foliage"))[1,], 
+                    as.numeric(ag_WOLFF_kg), 
+                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "bg"))[1,]
                     )))
   
-  B_kg_tree <-  rbind(poorter_B_kg_tree, wolff_B_kg_tree)
+  wolff_B_kg_tree <- as.data.frame(cbind(
+    "bio_method" = c(rep("wolff", times = 3)),
+    "compartiment" = c("sw+fw", "ndl", "ag"), 
+    "B_kg_tree" = c(as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "stem"))[1,]/1000,    # /1000 to transform from g into kg
+                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "foliage"))[1,]/1000, # /1000 to transform from g into kg
+                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "ag"))[1,]/1000       # /1000 to transform from g into kg
+    )))
+  
+  
+  B_kg_tree <-  rbind(poorter_B_kg_tree, wolff_poorter_B_kg_tree, wolff_B_kg_tree)
   
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(rep(as.integer(my.plot.id), times = nrow(B_kg_tree))), 
@@ -337,4 +351,19 @@ for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_n
 }
 
 
+
+
+for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_no", "tree_ID")]))){
+  # i=1
+  my.plot.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"plot_ID"][i]
+  my.ccs.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"CCS_no"][i]
+  my.tree.id <- unique(poorter.bio.ag.bg.kg.RG.below.1.df[, c("plot_ID", "CCS_no", "tree_ID")])[,"tree_ID"][i]
+  
+  print(ggplot()+ 
+          geom_bar(data = (poorter.bio.ag.bg.kg.RG.below.1.df  %>% 
+                             filter(tree_ID == my.tree.id, plot_ID == my.plot.id, CCS_no == my.ccs.id)) , 
+                   aes(x = compartiment, y = as.numeric(B_kg_tree), fill = bio_method), 
+                   stat="identity", position = "dodge")+ 
+          ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
+}
 
