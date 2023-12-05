@@ -214,6 +214,14 @@ bio.ag.kg.RG.below.1.df <- as.data.frame(rbindlist(bio.ag.kg.RG.below.1))
 
 
 
+
+
+
+
+# 2. Biomass comparisson  ---------------------------------------
+
+# 2.1 calculate biomass via Wolff, Poorter, GHGI --------------------------
+
 # comparing the biomass per compartiment for trees under 1m: 
 #      - compartiments of poorter with with GHGI vs. Wollf input biomass 
 #      - compartiments of poorter with wolff input biomas vs. compartiment of wolff with wolff input biomass 
@@ -236,7 +244,7 @@ for (i in 1:nrow(HBI.RG.below.1)) {
   spp = unique(HBI.RG.below.1$RG_Wolff_bio[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id])
   h.cm = as.numeric(unique(HBI.RG.below.1$H_cm[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]))
   whd.mm = as.numeric(h.to.whd(h.cm, spp))
-  ag_WOLFF_kg = as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "ag"))[1,]/1000 # divide by 1000 to transform in kg
+  stem_WOLFF_kg = as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "stem"))[1,]/1000 # divide by 1000 to transform in kg
   
   
   # calculate biomass per compartiment
@@ -247,16 +255,16 @@ for (i in 1:nrow(HBI.RG.below.1)) {
                     as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,], 
                     ag_GHGI, 
                     as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
-                    )))
+    )))
   
   wolff_poorter_B_kg_tree <- as.data.frame(cbind(
-    "bio_method" = c(rep("wolff + poorter", times = 4)),
+    "bio_method" = c(rep("wolff+poorter", times = 4)),
     "compartiment" = c("sw+fw", "ndl", "ag", "bg"), 
     "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "stem"))[1,], 
                     as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "foliage"))[1,], 
-                    as.numeric(ag_WOLFF_kg), 
+                    as.numeric(stem_WOLFF_kg), 
                     as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "bg"))[1,]
-                    )))
+    )))
   
   wolff_B_kg_tree <- as.data.frame(cbind(
     "bio_method" = c(rep("wolff", times = 3)),
@@ -287,6 +295,36 @@ for (i in 1:nrow(HBI.RG.below.1)) {
 poorter.bio.ag.bg.kg.RG.below.1.df <- as.data.frame(rbindlist(poorter.bio.ag.bg.kg.RG.below.1))
 
 
+
+# 2.1 tests for significant differences ----------------------------------------------
+
+# diffrences between poorter compartiments based on wolff input mass and 
+# test if biomass is normally distributed to then compare 
+shapiro.test(as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "wolff"][1:5000]))
+# result: p-value < 2.2e-16
+# From the output, the p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution.
+# In other words, we can assume the normality.
+shapiro.test(as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "wolff+poorter"][1:5000]))
+# result: p-value < 2.2e-16
+# From the output, the p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution.
+# In other words, we can assume the normality.
+shapiro.test(as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "poorter"][1:5000]))
+# result: p-value < 2.2e-16
+# From the output, the p-value > 0.05 implying that the distribution of the data are not significantly different from normal distribution.
+# In other words, we can assume the normality.
+
+t.test(as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "poorter" & poorter.bio.ag.bg.kg.RG.below.1.df$compartiment != "bg"]), 
+       as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "wolff+poorter"]))
+# result: 
+  # data:  as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "poorter" & poorter.bio.ag.bg.kg.RG.below.1.df$compartiment != "bg"]) and as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "wolff+poorter"])
+  # t = -26.655, df = 10131, p-value < 2.2e-16
+  # alternative hypothesis: true difference in means is not equal to 0
+  # 95 percent confidence interval:
+  #   -6.672096e+60 -5.757997e+60
+  # sample estimates:
+  #   mean of x    mean of y 
+  # 8.448797e-03 6.215046e+60 
+## there is a significant difference in the compartiments biomass
 
 
 # visualizing biomass comparisson poorter vs. Wolff -----------------------

@@ -1300,17 +1300,20 @@ Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the spec
   # withdraw y from c to create a function that equals to 0 so we apply the quadratic function
   cy <- as.data.frame(c[spec]-log10(ag_g))[,1];
   # calculate two possible results for the biomass at the given y
-  log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
-  log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
+  log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*abs(a[spec])*abs(cy)))/(2*a[spec]);
+  log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*abs(a[spec])*abs(cy)))/(2*a[spec]);
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
   bg.kg.x1 = as.data.frame((10^log.bg.x1)/1000)[,1]
   bg.kg.x2 = as.data.frame((10^log.bg.x2)/1000)[,1]
+  ag_minus_x1 = ag.kg - bg.kg.x1
+  ag_minus_x2 = ag.kg - bg.kg.x2
+  
   # if x1 is lower then zero while x2 is higher then zero but below the stem mass choose x2, if not choose x1
-  bg_bio_kg = ifelse(bg.kg.x1 >= 0 & bg.kg.x1 <= ag.kg, bg.kg.x1, 
-                       ifelse(bg.kg.x2 >= 0 & bg.kg.x2 <= ag.kg, bg.kg.x2, 
-                              NA))
+  bg_bio_kg = ifelse(bg.kg.x1 >= 0 & ag_minus_x1 < ag_minus_x2, bg.kg.x1, 
+                     ifelse(bg.kg.x2 >= 0 & ag_minus_x2 < ag_minus_x1, bg.kg.x2, 
+                            NA))
   
   # equation to transform belowground into foliage biomass : leaf:root-ratio
   bg_g <- bg_bio_kg*1000;             # belowground biomass in g (*1000)
