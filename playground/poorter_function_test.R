@@ -6,9 +6,11 @@ library("here")
 # set working directory ---------------------------------------------------
 here::here()
 
+# ----- 0.1. Packages & functions  ---------------------------------------------------------
+source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 # import data -------------------------------------------------------------
-HBI.RG.below.1 <- read.delim(file = here("HBI_RG_below_1.csv"), sep = ";", dec = ",") 
+HBI_RG_below_1 <- read.delim(file = here("playground/HBI_RG_below_1.csv"), sep = ";", dec = ",") 
 
 
 # functions ---------------------------------------------------------------
@@ -105,7 +107,7 @@ GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link 
 
 # poorter -----------------------------------------------------------------
 # this function uses poorters root-to-shoot biomass functions transformed by quadratic function
-Poorter_quadr_func <- function(ag, spec, compartiment){ # instead of the species we have to put NH_LH here
+Poorter_quadr_func <- function(ag.kg, spec, compartiment){ # instead of the species we have to put NH_LH here
   # spec is in column "LH_NH" (coniferous or broadleafed tree)
   # ag is the aboveground biomass or stem biomass calculated with GHGI_aB_Hb1.3 or 
   # compartiment can be found in switch function 
@@ -118,27 +120,32 @@ Poorter_quadr_func <- function(ag, spec, compartiment){ # instead of the species
   # c = c-y
   # (-b-sqrt(b^2-4*a*c))/2*a = x1
   # (-b + sqrt(b^2-4*a*c))/2*a = x1
+  # https://www.mathepanik.de/Klassen/Klasse_10/Lektion_Kl_10_L_parabeln_gleichung_loesen.php
   c <- c(NB = -0.070, LB = -0.097);   # a
   b <- c(NB = 1.236, LB = 1.071);     # b1  
   a <- c(NB = -0.0186, LB = 0.01794); # b2
   # 10-log of belowground biomass in g (*1000)
-  ag_g <- ag*1000;
+  ag_g <- ag.kg*1000;
   # withdraw y from c to create a function that equals to 0 so we apply the quadratic function
-  cy <- c[spec]-log10(ag_g);
+  cy <- as.data.frame(c[spec]-log10(ag_g))[,1];
   # calculate two possible results for the biomass at the given y
-  log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
-  log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*a[spec]*cy))/(2*a[spec]);
+  log.bg.x1 = (-b[spec]-sqrt(b[spec]^2-4*abs(a[spec])*abs(cy)))/(2*a[spec]);
+  log.bg.x2 = (-b[spec]+sqrt(b[spec]^2-4*abs(a[spec])*abs(cy)))/(2*a[spec]);
   # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
   # log_a(b) = c ---> b = a^c
   # b) transform leaf biomass in g into kg by dividing by 1000
-  bg.kg.x1 = (10^log.bg.x1)/1000
-  bg.kg.x2 = (10^log.bg.x2)/1000
+  bg.kg.x1 = as.data.frame((10^log.bg.x1)/1000)[,1]
+  bg.kg.x2 = as.data.frame((10^log.bg.x2)/1000)[,1]
+  ag_minus_x1 = ag.kg - bg.kg.x1
+  ag_minus_x2 = ag.kg - bg.kg.x2
+  
   # if x1 is lower then zero while x2 is higher then zero but below the stem mass choose x2, if not choose x1
-  bg_bio_kg = ifelse(bg.kg.x1 <= 0 & bg.kg.x2 <= ag | bg.kg.x1 <= bg.kg.x2 & bg.kg.x2 <= ag, bg.kg.x2, 
-                     ifelse(bg.kg.x1 >= 0 & bg.kg.x1 <= ag | bg.kg.x1 > bg.kg.x2 & bg.kg.x1 <= ag, bg.kg.x1, NA))
+  bg_bio_kg = ifelse(bg.kg.x1 >= 0 & ag_minus_x1 < ag_minus_x2, bg.kg.x1, 
+                     ifelse(bg.kg.x2 >= 0 & ag_minus_x2 < ag_minus_x1, bg.kg.x2, 
+                            NA))
   
   # equation to transform belowground into foliage biomass : leaf:root-ratio
-  bg_g <- bg_bio_kg*1000;             # 10-log of belowground biomass in g (*1000)
+  bg_g <- bg_bio_kg*1000;             # belowground biomass in g (*1000)
   a1 <- c(NB = 0.243, LB =  0.090);
   b1 <- c(NB =  0.924, LB =  0.889);
   b2 <- c(NB = -0.0282, LB = -0.0254);
@@ -162,7 +169,9 @@ Poorter_quadr_func <- function(ag, spec, compartiment){ # instead of the species
   switch(compartiment, 
          "bg" = bg_bio_kg, 
          "foliage" = f_bio_kg, 
-         "stem" = stem_bio_kg)
+         "stem" = stem_bio_kg, 
+         "x1" = bg.kg.x1, 
+         "x2" = bg.kg.x2)
 }
 
 
@@ -212,4 +221,19 @@ Poorter_quadr_compl <- function(ag, spec, compartiment){ # instead of the specie
            "bg" = bg_bio_kg, 
            "foliage" = f_bio_kg, 
            "stem" = stem_bio_kg)
-  }
+}
+
+
+
+
+view(HBI_RG_below_1 %>% 
+  mutate(
+    ag_bio_kg = GHGI_aB_Hb1.3(LH_NH, H_m),
+  bg_kg_x1 = Poorter_quadr_func(ag_bio_kg, LH_NH, compartiment = "x1"), 
+  bg_kg_x2 = Poorter_quadr_func(ag_bio_kg, LH_NH, compartiment = "x2"), 
+  bg_kg = Poorter_quadr_func(ag_bio_kg, LH_NH, compartiment = "bg"),
+  x_choosen = ifelse(bg_kg == bg_kg_x1, "x1", 
+                     ifelse(bg_kg == bg_kg_x2, "x2", NA)) 
+  ) %>% 
+    filter( bg_kg_x1 <0 & bg_kg_x2 <0)
+  )

@@ -1337,7 +1337,9 @@ Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the spec
   switch(compartiment, 
          "bg" = bg_bio_kg, 
          "foliage" = f_bio_kg, 
-         "stem" = stem_bio_kg)
+         "stem" = stem_bio_kg, 
+         "x1" = bg.kg.x1, 
+         "x2" = bg.kg.x2)
 }
 
 

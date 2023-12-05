@@ -1440,9 +1440,9 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
   # print(plot(my.inter$geometry), 
-  #      plot(my.rem.circle$geometry, add = T), 
-  #      plot(tree.sf$geometry, add = T)
-  #     )
+  #       plot(my.rem.circle$geometry, add = T), 
+  #       plot(tree.sf$geometry, add = T)
+  #      )
   
   inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
   inter.tree.edge <- sf::st_intersection(tree.sf, my.inter)
