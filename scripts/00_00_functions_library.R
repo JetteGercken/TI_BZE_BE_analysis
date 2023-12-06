@@ -1361,7 +1361,7 @@ N_all_com <- function(B, N_spec_w_rumpf, N_spec_f_BZE, N_spec_bg_Jacobsen, comp.
   
  # calculate nitrogen content in the aboveground and belowground compartiments but without sums (total or total aboveground N) 
   N <- case_when(
-    comp.trees == "ndl" ~ as.numeric(B)*as.numeric(n_con_f[N_spec_f_BZE]), 
+    comp.trees == "ndl" ~ NA, # as.numeric(B)*as.numeric(n_con_f[N_spec_f_BZE]), # accordint to the BZE we don´t have to deliver this compartiments nitrogen stock so we wont 
     comp.trees == "bg" ~ as.numeric(B)*as.numeric(n_con_bg[N_spec_bg_Jacobsen]), 
     !(comp.trees %in% ("ag, total, ndl, bg")) ~ as.numeric(B)*as.numeric(n_con_w[SP_compart_Rumpf]),
     TRUE ~ NA)

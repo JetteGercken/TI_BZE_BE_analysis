@@ -96,12 +96,12 @@ for (i in 1:nrow(HBI.RG.above.1.3)) {
   
   bio.ag.kg.RG.above.1.3[[i]] <- bio.info.df
   
-  
 }
 bio.ag.kg.RG.above.1.3.df <- as.data.frame(rbindlist(bio.ag.kg.RG.above.1.3))
+bio.ag.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.ag.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)], as.numeric)
 
   
-# 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
+# 1.2.1.2. belowgroung biomass for RG trees height > 1.3m -------------------------------
 bio.bg.kg.RG.above.1.3 <- vector("list", length = nrow(HBI.RG.above.1.3))
 for (i in 1:nrow(HBI.RG.above.1.3)) {
   # i = 1
@@ -135,11 +135,11 @@ for (i in 1:nrow(HBI.RG.above.1.3)) {
   
 }
 bio.bg.kg.RG.above.1.3.df <- as.data.frame(rbindlist(bio.bg.kg.RG.above.1.3))
+bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)], as.numeric)
 
 
-
-# 1.2.1.1. total and total aboveground biomass for RG trees height > 1.3m -------------------------------
-bio.total.kg.RG.df <- 
+# 1.2.1.3. total and total aboveground biomass for RG trees height > 1.3m -------------------------------
+  bio.total.kg.RG.above.1.3.df <- 
   rbind(
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
     rbind(
@@ -158,68 +158,48 @@ bio.total.kg.RG.df <-
              "inv_year", "compartiment", "B_kg_tree"))
 
 
-
+          
 
 
 # 1.2.2. biomass for RG trees height < 1.3m -------------------------------
-# subset those trees that have a height above 1.3m and thus a DBH which allows them to be processed in TapeS
-HBI.RG.below.1 <- HBI_RG[HBI_RG$H_m < 1, ]
-
 # 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
-# estimate shoot-base-diameter through height of tree
-# esitmate Biomasse in compartiments 
+# 1.2.1.1.1. GHGI aboveground biomass for RG trees height > 1.3m -------------------------------
+bio.ag.kg.RG.below.1.3.df <- HBI_RG %>% 
+  filter(H_m <= 1.3)
+  mutate(compartiment = "ag", 
+         B_kg_tree = GHGI_aB_Hb1.3(LH_NH, H_m))
+  select("plot_ID","CCS_no", "tree_ID", "inv", 
+                  "inv_year", "compartiment", "B_kg_tree")
+  
 
-bio.ag.kg.RG.below.1 <- vector("list", length = nrow(HBI.RG.below.1))
-for (i in 1:nrow(HBI.RG.below.1)) {
-  # i = 1
-  
-  # basic tree info
-  # select one tree ID and plot ID for each individual tree per plot and sampling circuit
-  my.plot.id <- HBI.RG.below.1[,"plot_ID"][i]
-  my.ccs.id <- HBI.RG.below.1[,"CCS_no"][i]
-  my.tree.id <- HBI.RG.below.1[,"tree_ID"][i]
-  BL.or.CF <- unique(HBI.RG.below.1$LH_NH[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id])
-  
-  # select variales for belowground functions
-  spp = unique(HBI.RG.below.1$RG_Wolff_bio[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id])
-  h.cm = as.numeric(unique(HBI.RG.below.1$H_cm[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]))
-  whd.cm = as.numeric(h.to.whd(h.cm, spp))
-  
-  
-  # calculate biomass per compartiment
-  B_kg_tree <- as.data.frame(cbind(
-    "compartiment" = c("sw+fw", "ndl", "ag"), 
-    "B_kg_tree" = c(as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "stem"))[1,], 
-                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "foliage"))[1,], 
-                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "ag"))[1,]
-                    )))
+
+
+# 1.2.3. join RG biomass for trees <1.3m and >1.3m height  ----------------
+HBI_RG <- HBI_RG %>% left_join(., rbind(bio.ag.kg.RG.above.1.3.df, 
+                              bio.bg.kg.RG.above.1.3.df, 
+                              bio.ag.kg.RG.below.1.3.df), 
+                      by = c("plot_ID", "CCS_no", "tree_ID", "inv", "inv_year"), 
+                     multiple = "all") 
 
   
-  bio.info.df <- as.data.frame(cbind(
-    "plot_ID" = c(as.integer(my.plot.id)), 
-    "CCS_no" = c(rep(as.integer(my.ccs.id), times = nrow(B_kg_tree))),
-    "tree_ID" = c(as.integer(my.tree.id)), 
-    "inv" = unique(HBI.RG.below.1$inv[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]), 
-    "inv_year" = c(as.integer(unique(HBI.RG.below.1$inv_year[HBI.RG.below.1$plot_ID==my.plot.id & HBI.RG.below.1$tree_ID==my.tree.id & HBI.RG.below.1$CCS_no==my.ccs.id]))),
-    "compartiment" = c(B_kg_tree$compartiment),
-    "B_kg_tree" = c(as.numeric(B_kg_tree$B_kg_tree))
-    )
-  )  
   
-  bio.ag.kg.RG.below.1[[i]] <- bio.info.df
   
-}
-bio.ag.kg.RG.below.1.df <- as.data.frame(rbindlist(bio.ag.kg.RG.below.1))
+
+# 1.3 Nitrogen stock ------------------------------------------------------
+# here we have to select which Nitrogen content we want to use for which compartiment
+  
 
 
 
-
-
-
-
-
+  
+  
+  
+  
+  
 # 2. Biomass comparisson  ---------------------------------------
-
+# subset those trees that have a height above 1.3m and thus a DBH which allows them to be processed in TapeS
+  HBI.RG.below.1 <- HBI_RG[HBI_RG$H_m < 1, ]
+  
 # 2.1 calculate biomass via Wolff, Poorter, GHGI --------------------------
 
 # comparing the biomass per compartiment for trees under 1m: 
@@ -405,3 +385,55 @@ for (i in 1:nrow(unique(poorter.bio.ag.bg.kg.RG.below.1.df [,c("plot_ID", "CCS_n
           ggtitle(paste0(my.plot.id, ",", my.ccs.id,",", my.tree.id)))
 }
 
+
+
+
+
+
+
+
+
+
+
+# NOTES -------------------------------------------------------------------
+
+# N.
+
+
+
+
+# N. one to conquer them all ----------------------------------------------
+
+
+
+HBI_RG %>% left_join(., 
+                     rbind(
+                       # join in aboegrond compartiments and belowground compartients in tree dataset 
+                       bio.ag.kg.RG.above.1.3.df, 
+                       bio.bg.kg.RG.above.1.3.df,
+                       # 1.2.1.3. total and total aboveground biomass for RG trees height > 1.3m -------------------------------
+                       # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
+                       rbind(
+                         bio.ag.kg.RG.above.1.3.df, bio.bg.kg.RG.above.1.3.df) %>% 
+                         group_by(plot_ID, CCS_no, tree_ID, inv, inv_year) %>% 
+                         summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+                         mutate(compartiment = "total") %>% 
+                         select("plot_ID", "CCS_no", "tree_ID", "inv", 
+                                "inv_year", "compartiment", "B_kg_tree"),
+                       # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
+                       bio.ag.kg.RG.above.1.3.df%>% 
+                         group_by(plot_ID, CCS_no, tree_ID, inv, inv_year) %>% 
+                         summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+                         mutate(compartiment = "ag")%>% 
+                         select("plot_ID","CCS_no", "tree_ID", "inv", 
+                                "inv_year", "compartiment", "B_kg_tree"), 
+                       # 1.2.2. biomass for RG trees height < 1.3m -------------------------------
+                       # 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
+                       # 1.2.1.1.1. GHGI aboveground biomass for RG trees height > 1.3m -------------------------------
+                       (HBI_RG %>% 
+                          filter(H_m <= 1.3) %>% 
+                          mutate(compartiment = "ag", 
+                                 B_kg_tree = GHGI_aB_Hb1.3(LH_NH, H_m)) %>% 
+                          select("plot_ID","CCS_no", "tree_ID", "inv", "inv_year", "compartiment", "B_kg_tree"))), # close rbind  for all compartiments and trees
+                     by = c("plot_ID", "CCS_no", "tree_ID", "inv", "inv_year"), 
+                     multiple = "all") # close left join in HBI_RG

@@ -190,15 +190,11 @@ trees <- trees %>% left_join(.,
                              rbind(N.ag.bg.kg.df , 
                                    N.total.kg.df), 
                              by = c("plot_ID", "tree_ID", "inv", "inv_year", "compartiment"), 
-                             multiple = "all") 
-
+                             multiple = "all")
 
 
 # 1.3. carbon stock per tree & compartiment -------------------------------------------------------
 trees <- trees %>% mutate(C_kg_tree = carbon(B_kg_tree))
-
-
-
 
 
 
@@ -261,7 +257,8 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   my.tree.bio <- trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id & !(trees$compartiment %in% c("ag", "total")), ][, c("compartiment", "B_kg_tree")]
   # species group for the woody compartiments according to Rumpf et al. 2018
   my.tree.N.SP.w <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_SP_group"])
-  my.tree.N.SP.f <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_f_SP_group_MoMoK"])
+  # species groups for foliage ompartiments: foliage nitrogen content is not going to be calculatet
+  #my.tree.N.SP.f <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_f_SP_group_MoMoK"])
   my.tree.N.SP.bg <- unique(trees[trees$plot_ID == my.plot.id & trees$tree_ID == my.tree.id,][, "N_bg_SP_group"])
   # save woody compartiments in list to select them easier later
   my.tree.comp.N.w  <- my.tree.bio$compartiment[!(my.tree.bio$compartiment %in% c("ndl", "bg"))]
@@ -270,7 +267,7 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   ## woody compartiments
   n_con_w <- N_con_w[N_con_w$SP_BWI == my.tree.N.SP.w & N_con_w$compartiment %in% c(my.tree.comp.N.w),][, c("N_con", "compartiment")]
   ## foliage compartiment
-  n_con_f <-  N_con_f[N_con_f$N_f_SP_group_MoMoK == my.tree.N.SP.f,][, c("N_con", "compartiment")]
+     #n_con_f <-  N_con_f[N_con_f$N_f_SP_group_MoMoK == my.tree.N.SP.f,][, c("N_con", "compartiment")]
   ## belowground compartiment
   # proably I will also have to assign new species groups since those were only created for MoMoK
   n_con_bg <- N_con_bg[N_con_bg$SP_group == my.tree.N.SP.bg,][, c("N_con", "compartiment")]
@@ -279,9 +276,9 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   N.df <- rbind(
     ## stock in woody compartiments: merge biomass and content together by compartiment and 
     merge(my.tree.bio, n_con_w, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
-    merge(my.tree.bio, n_con_f, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
+    #merge(my.tree.bio, n_con_f, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con)),
     merge(my.tree.bio, n_con_bg, by="compartiment") %>% mutate(N_kg_tree =  B_kg_tree *as.numeric(N_con))
-  )
+  ) 
   
   
   N.info.df <- as.data.frame(cbind(
