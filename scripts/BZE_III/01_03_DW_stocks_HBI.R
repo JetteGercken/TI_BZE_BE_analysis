@@ -53,11 +53,13 @@ HBI_DW <- HBI_DW %>% left_join(., HBI_inv_info %>% select(inv_year, inv, plot_ID
 # 3 Eiche
 # 4 unbekannt
 
-HBI_DW %>% left_join(., 
-                     HBI_forest_info %>% select(bund_nr, besttyp)) %>% 
-  mutate(LH_NH = case_when(besttyp %in% c() ~ LB, 
-                           besttyp %in% c() ~ NB, 
-                           TRUE ~ NA))
+HBI_DW <- HBI_DW %>% left_join(., 
+                     HBI_forest_info %>% 
+                       mutate(LH_NH = case_when(besttyp %in% c(4, 5, 7, 8, 10, 91 ) ~ "LB", 
+                                                besttyp %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
+                                                TRUE ~ NA)) %>% 
+                       select(bund_nr, LH_NH), 
+                     by = c("plot_ID" = "bund_nr"))
 # 1. calculations ---------------------------------------------------------------
 
 # 1.2. volume --------------------------------------------------------------------
@@ -92,22 +94,25 @@ for (i in 1:nrow(HBW_DW_whole)){
   # my.decay.type <- HBW_DW_whole[,"decay"][i]
   # my.dw.type <- HBW_DW_whole[,"dw_type"][i]
   my.dw.spec <- HBW_DW_whole[,"dw_sp"][i]
+  my.CF.BL <- HBW_DW_whole[,"LH_NH"][i]
   
   # select variables fot TprTrees object
   # translating Species groups into TapeS codes
-  spp = case_when(SP_group == 1 | (SP_group == 4 & LH_NH == "NB") ~ 1,  # Fi
-                          SP_group == 2 | (SP_group == 4 & LH_NH == "LB") ~ 15, # BU
-                          SP_group == 3 ~ 17,                                   # EI   
-                          TRUE ~ NA), 
-  Dm = na.omit(as.list(as.numeric(unique(HBW_DW_whole$D_mm[trees$plot_ID==my.plot.id & trees$tree_ID==my.tree.id])/10))) # diameter in cm
-  Hm =  as.list(as.numeric(1.3))
-  Ht = na.omit(as.numeric(unique(trees$H_m[trees$plot_ID==my.plot.id & trees$tree_ID==my.tree.id])))
+  spp = case_when(my.dw.spec == 1 | (my.dw.spec == 4 & my.CF.BL == "NB") ~ 1,  # Fi
+                  my.dw.spec == 2 | (my.dw.spec == 4 & my.CF.BL == "LB") ~ 15, # BU
+                  my.dw.spec == 3 ~ 17,                                   # EI   
+                          TRUE ~ NA) 
+  Dm = na.omit(as.list(as.numeric(unique(HBW_DW_whole$d_mm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))/10)) # diameter in cm
+  Hm = as.list(as.numeric(1.3))
+  Ht = na.omit(as.numeric(unique(HBW_DW_whole$l_dm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))/10) # lenth in meter m
   # create tapes compartiments
   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
   
   # create object  
-  obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  tprBiomass(obj.dw)
   
+  tprVolume(obj.dw[obj.dw@monotone == TRUE], mono = TRUE)
   
 }
  
