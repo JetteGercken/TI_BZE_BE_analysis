@@ -17,7 +17,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # DEAD trees
 HBI_DW <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
                     #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
-colnames(HBI_DW) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_mm", "l_dm", "decay")
+colnames(HBI_DW) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 
 # HBI point info
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
@@ -85,13 +85,14 @@ HBI_DW <- HBI_DW %>% left_join(.,
 
 # 1.3 biomass ------------------------------------------------------------------------
 HBW_DW_whole <- HBI_DW[HBI_DW$dw_type %in% c(2, 5, 3), ]
+bio.dw.whole.kg.list <- vector("list", length = nrow(HBW_DW_whole))
 for (i in 1:nrow(HBW_DW_whole)){
-  # i = 1
+  # i = 50
   
   # select general info about the DW item
   my.plot.id <- HBW_DW_whole[,"plot_ID"][i]
   my.tree.id <- HBW_DW_whole[,"tree_ID"][i]
-  # my.decay.type <- HBW_DW_whole[,"decay"][i]
+  my.decay.type <- HBW_DW_whole[,"decay"][i]
   # my.dw.type <- HBW_DW_whole[,"dw_type"][i]
   my.dw.spec <- HBW_DW_whole[,"dw_sp"][i]
   my.CF.BL <- HBW_DW_whole[,"LH_NH"][i]
@@ -102,7 +103,7 @@ for (i in 1:nrow(HBW_DW_whole)){
                   my.dw.spec == 2 | (my.dw.spec == 4 & my.CF.BL == "LB") ~ 15, # BU
                   my.dw.spec == 3 ~ 17,                                   # EI   
                           TRUE ~ NA) 
-  Dm = na.omit(as.list(as.numeric(unique(HBW_DW_whole$d_mm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))/10)) # diameter in cm
+  Dm = na.omit(as.list(as.numeric(unique(HBW_DW_whole$d_cm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id])))) # diameter in cm
   Hm = as.list(as.numeric(1.3))
   Ht = na.omit(as.numeric(unique(HBW_DW_whole$l_dm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))/10) # lenth in meter m
   # create tapes compartiments
@@ -110,12 +111,27 @@ for (i in 1:nrow(HBW_DW_whole)){
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-  tprBiomass(obj.dw)
   
-  tprVolume(obj.dw[obj.dw@monotone == TRUE], mono = TRUE)
+  bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
+    pivot_longer(cols = stw:ndl,
+                 names_to = "compartiment", 
+                 values_to = "B_kg_tree") %>% 
+    mutate(B_kg_tree = rdB_DW(B_kg_tree, paste0(my.decay.type, "_", my.dw.spec)))
+  
+  
+  bio.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(as.integer(HBW_DW_whole$plot_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
+    "tree_ID" = c(as.integer(HBW_DW_whole$tree_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
+    "inv" = c(HBW_DW_whole$inv[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id]), 
+    "inv_year" = c(as.integer(HBW_DW_whole$inv_year[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])),
+    "compartiment" = c(bio.df$compartiment),
+    "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
+  ) )
+  
+  bio.dw.whole.kg.list[[i]] <- bio.info.df
   
 }
- 
+bio_dw_whole_kg.df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
 
 
 

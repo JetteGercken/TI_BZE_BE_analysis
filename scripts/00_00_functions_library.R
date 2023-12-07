@@ -1139,6 +1139,7 @@ inv_name <- function(inv.year){
 # Canadian Journal of Forest Research - Journal Canadien de la Recherche Forestiere, 
 # v.38, 1661-1675 (2008). 38. 10.1139/X07-194. 
 
+
 ### foliage of broadleaved trees according to Wutzler et al. 2008
 # to aply this function the Oberhoehe and the elevation above sea level are required
 
@@ -1179,7 +1180,8 @@ GHGI_bB <- function(spec, d){
   return(b0[spec]*d^b1[spec]) 
 }
 
-# 1.11.3. GHGI: below <1.3m height Biomass functions -------------------------------------------------
+# 1.11.3. REGENERATION BIOMASS ---------------------------------------------------------------
+# 1.11.3.1. GHGI: below <1.3m height Biomass functions -------------------------------------------------
 ## above ground biomass for trees <1.3m GHGI (equation: 6, coefficient table: 4)
 GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
@@ -1187,7 +1189,7 @@ GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link 
   return(b0[spec]*h^b1[spec])
 }
 
-# 1.11.4. GHGI: below <1.3m height Biomass kompartiments -------------------------------------------------
+# 1.11.3.2 GHGI: below <1.3m height Biomass kompartiments -------------------------------------------------
 # reference: 
 # Tab. 4:
 # DVFFA – Sektion Ertragskunde, Jahrestagung 2009
@@ -1345,6 +1347,55 @@ Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the spec
          "x2" = bg.kg.x2)
 }
 
+
+# 1.11.4. DEADWOOD BIOMASS --------------------------------------------------------
+# 1.11.4.1. Volume Deadwood according to BWI ----------------------------------------------------------
+# here we have to consider, that in case of MoMok there were no different types pf diameter taken
+# e.g  min diameter, max diameter, middle diam
+# the volume calautation follows the procedure described in BWI Methodikband, 
+
+# volume for deadwood when 
+# Dm was taken (Mittendurchmesser) or 
+# Totholztyp == 3 (liegend, stark, Burchstück) & L_m <3m
+V_DW_cylinder <- function(d, l){
+  d <- DW_total %>% mutate(D_m = D_cm/100) %>% dplyr::pull(D_m);
+  l <- DW_total %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m);
+  return(((d/2)^2*pi)*l)
+}
+
+# Volume for deadwood when 
+# !(DW_type %in% c(1, 6, 4) | DW_type == 3 & L_m > 3m)
+V_DW_whole <- function(spec_tpS, d, dh, l){          # I don´t know if this can work
+  spp = na.omit(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(tpS_ID)); # for this Ill first have to create species groups that correspond with TapeS
+  Dm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>% dplyr::pull(D_cm)));
+  Hm = na.omit(as.list(DW_total %>% filter(L_dm > 30) %>%  mutate(D_h_m = 1.3) %>% dplyr::pull(D_h_m))); # height at which diameter was taken, has to be 1.3m becaus ehtese are the deadwood pieces that do stil have a DBH
+  Ht = na.omit(DW_total %>% filter(L_dm > 30) %>% mutate(L_m = L_dm/10) %>% dplyr::pull(L_m));
+  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4);
+  return (tprVolume(obj.dw[obj.dw@monotone == TRUE]))
+}
+
+# ---- 1.3.4.2. Biomass Deadwood according to BWI ----------------------------------------------------------
+B_DW <- function(V, dec_SP){     # dec_SP = a column that holds the degree of decay and the species type has to be created (united)
+  # *1000 to transform density in g/cm3 into kg/m3: https://www.translatorscafe.com/unit-converter/de-DE/density/4-1/Gramm/Kubikzentimeter-Kilogramm/Kubikmeter/
+  # spec_ 
+  # 2_ = coniferous tree
+  # 1_ = broadleafed tree
+  # 3_ = oak
+  BEF <- c("2_1" = 0.372*1000, "2_2" = 0.308*1000, "2_3" = 0.141*1000, "2_4" = 0.123*1000,   # conferous trees according to Faver
+           "1_1" = 0.58*1000, "1_2" = 0.37*1000, "1_3" = 0.21*1000, "1_4" = 0.26*1000,       # broadleaved trees according to Müller-Ursing
+           "3_1" = 0.58*1000, "3_2" = 0.37*1000, "3_3" = 0.21*1000, "3_4" = 0.26*1000);      # oak
+  return(V*BEF[dec_SP])
+}
+
+# relative density for tapeS deadwood compartiments
+# Biomasse unzersetzt * (100% - relative Veränderung der Dichte) = 
+# B * (1-(D1 - D2/ D1))
+rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
+  rd <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
+          "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
+          "3_1" = 1, "3_2" = (1-((0.58-0.37)/0.58)), "3_3" = (1-((0.58-0.21)/0.58)), "3_4" = (1-((0.58-0.26)/0.58)) );      # relative change in density of oak trees according to Müller-Ursing basen on 100% = 0.58
+  return(B*rd[dec_SP])
+}
 
 
 
