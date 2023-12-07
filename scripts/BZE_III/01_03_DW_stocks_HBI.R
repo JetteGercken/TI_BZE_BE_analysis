@@ -59,11 +59,13 @@ HBI_DW <- HBI_DW %>% left_join(.,
                                                 besttyp %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
                                                 TRUE ~ NA)) %>% 
                        select(bund_nr, LH_NH), 
-                     by = c("plot_ID" = "bund_nr"))
+                     by = c("plot_ID" = "bund_nr")) %>% 
+  mutate(tapes_ID =  case_when(dw_sp == 1 | (dw_sp == 4 & LH_NH == "NB") ~ 1,  # Fi
+                             dw_sp == 2 | (dw_sp == 4 & LH_NH == "LB") ~ 15, # BU
+                             dw_sp == 3 ~ 17,                                   # EI   
+                             TRUE ~ NA) )
 # 1. calculations ---------------------------------------------------------------
-
-# 1.2. volume --------------------------------------------------------------------
-#1 liegend; starkes Totholz; umfasst Stamm, Äste, Zweige,  abgebrochene Kronen, D ≥ 10 cm am dickeren Ende
+# 1 liegend; starkes Totholz; umfasst Stamm, Äste, Zweige,  abgebrochene Kronen, D ≥ 10 cm am dickeren Ende
 # 2 stehend, ganzer Baum; stehendes Totholz mit Ästen BHD ≥ 10 cm
 # 3 stehend, Bruchstück; Baumstumpf ohne Äste BHD ≥ 10 cm, Höhe ≥ 13 dm
 # 4 Wurzelstock Ø Schnittflächendurchmesser ≥ 10 cm, Höhe < 13 dm
@@ -71,54 +73,45 @@ HBI_DW <- HBI_DW %>% left_join(.,
 # 6 in Haufen vorkommendes Totholz D ≥ 10 cm am dickeren Ende
 
 
-# 1.3.1. whole trees  -----------------------------
-# Das Volumen der Totholzart 2 = stehend oder liegend, ganzer Baum wird wie ein lebender Baum behandelt, d. h. es werden BHD und Höhe gemessen und über die Programmbibliothek BDat das Volumen hergeleitet. 
-# Bei der Totholzart 3 = stehend oder liegend, Bruchstück (mit Wurzelanlauf) wird ebenfalls der BHD und die Höhe erfasst und anschließend mit BDat das Volumen für gebrochene Bäume berechnet. 
-   # -->  Für Bruchstücke mit Wurzelanlauf < 3 m Länge bzw. Höhe liefert BDat jedoch unplausible Totholzvolumina, da es für diesen Wertebereich nicht 
-#         entsprechend parametrisiert wurde. Alternativ wurde für diese Totholzstücke die Zylinderformel angewandt, wobei deren BHD als Prädiktor für den Durchmesser einfließt
+# 1.3 biomass -------------------------------------------------------------------------------
 
-# For whole trees (laying 5, standing 2) and for broken trees with L_m > 1.3 the volume 
-# estimaion preceedes like for living trees
-# For broken deadwood items, stumps and piles of deadwood the zylinder function is applied 
-
-
-
-# 1.3 biomass ------------------------------------------------------------------------
-HBW_DW_whole <- HBI_DW[HBI_DW$dw_type %in% c(2, 5, 3), ]
+# 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
+# for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
+HBW_DW_whole <- HBI_DW[HBI_DW$dw_type %in% c(2, 5), ]
+# export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(HBW_DW_whole))
+# export list for volume
 for (i in 1:nrow(HBW_DW_whole)){
-  # i = 50
+  # i = 1
   
   # select general info about the DW item
   my.plot.id <- HBW_DW_whole[,"plot_ID"][i]
   my.tree.id <- HBW_DW_whole[,"tree_ID"][i]
   my.decay.type <- HBW_DW_whole[,"decay"][i]
-  # my.dw.type <- HBW_DW_whole[,"dw_type"][i]
   my.dw.spec <- HBW_DW_whole[,"dw_sp"][i]
   my.CF.BL <- HBW_DW_whole[,"LH_NH"][i]
   
   # select variables fot TprTrees object
   # translating Species groups into TapeS codes
-  spp = case_when(my.dw.spec == 1 | (my.dw.spec == 4 & my.CF.BL == "NB") ~ 1,  # Fi
-                  my.dw.spec == 2 | (my.dw.spec == 4 & my.CF.BL == "LB") ~ 15, # BU
-                  my.dw.spec == 3 ~ 17,                                   # EI   
-                          TRUE ~ NA) 
+  spp =  na.omit(as.numeric(unique(HBW_DW_whole$tapes_ID[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))) 
   Dm = na.omit(as.list(as.numeric(unique(HBW_DW_whole$d_cm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id])))) # diameter in cm
   Hm = as.list(as.numeric(1.3))
   Ht = na.omit(as.numeric(unique(HBW_DW_whole$l_dm[HBW_DW_whole$plot_ID==my.plot.id & HBW_DW_whole$tree_ID==my.tree.id]))/10) # lenth in meter m
   # create tapes compartiments
-  comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
+  comp <- as.character(c("stw","stb","sw", "sb", "fwb"))
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-  
+
+  # calculate biomass
   bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
-    pivot_longer(cols = stw:ndl,
+    pivot_longer(cols = stw:fwb,
                  names_to = "compartiment", 
                  values_to = "B_kg_tree") %>% 
+          # apply the biomass reduction factor to the biomass of deadwoodto account for decay state
     mutate(B_kg_tree = rdB_DW(B_kg_tree, paste0(my.decay.type, "_", my.dw.spec)))
   
-  
+  # create export dataframe
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(HBW_DW_whole$plot_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
     "tree_ID" = c(as.integer(HBW_DW_whole$tree_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
@@ -126,12 +119,133 @@ for (i in 1:nrow(HBW_DW_whole)){
     "inv_year" = c(as.integer(HBW_DW_whole$inv_year[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])),
     "compartiment" = c(bio.df$compartiment),
     "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
-  ) )
+  ))
   
   bio.dw.whole.kg.list[[i]] <- bio.info.df
-  
+
 }
 bio_dw_whole_kg.df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
 
+# sum up deadwood ag compartiments 
+bio_dw_whole_ag_kg.df <- bio_dw_whole_kg.df %>% 
+  select(-compartiment) %>% 
+  mutate(compartiment = "ag") %>% 
+  group_by(plot_ID, tree_ID, inv, inv_year, compartiment) %>% 
+  summarise(B_kg_tree = sum(as.numeric(B_kg_tree)))
 
+
+
+# 1.3.2. biomass broken deadwood trees (bruchstücke, 3) ------------------------------------------------------------------------
+# for broken deadwood trees above 1.3 m all compartiments except foliage ("ndl" ) are calculated via TapeS
+# export list for biomasse
+bio.dw.broken.kg.list <- vector("list", length = nrow(HBW_DW_broken))
+for (i in 1:nrow(HBW_DW_broken)){
+  # i = 1
+  
+  # select general info about the DW item
+  my.plot.id <- HBW_DW_broken[,"plot_ID"][i]
+  my.tree.id <- HBW_DW_broken[,"tree_ID"][i]
+  my.decay.type <- HBW_DW_broken[,"decay"][i]
+  my.dw.spec <- HBW_DW_broken[,"dw_sp"][i]
+  my.CF.BL <- HBW_DW_broken[,"LH_NH"][i]
+  
+  # select variables fot TprTrees object
+  spp =  na.omit(as.numeric(unique(HBW_DW_broken$tapes_ID[HBW_DW_broken$plot_ID==my.plot.id & HBW_DW_broken$tree_ID==my.tree.id]))) 
+  Dm = na.omit(as.list(as.numeric(unique(HBW_DW_broken$d_cm[HBW_DW_broken$plot_ID==my.plot.id & HBW_DW_broken$tree_ID==my.tree.id])))) # diameter in cm
+  Hm = as.list(as.numeric(1.3))
+  Ht = na.omit(as.numeric(unique(HBW_DW_broken$l_dm[HBW_DW_broken$plot_ID==my.plot.id & HBW_DW_broken$tree_ID==my.tree.id]))/10) # lenth in meter m
+  
+  # create object  
+  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  
+  # create the deimitation of the stem section we want TapeS to caluculate the volume for
+  A <- 0 # lower limit
+  B <- Ht # upper limit = lenght
+  
+  # calcualte volume for stem segment 0 to length 
+  bio.df <- as.data.frame(cbind(
+    "vol_m3" = c((tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H") - tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")), 
+                 (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")),
+                 (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H"))), 
+    "compartiment" = c("sb", "sw", "ag"))) %>% 
+    # calculate biomass
+    mutate(B_kg_tree = B_DW(as.numeric(vol_m3), my.decay.type, my.dw.spec))
+
+  bio.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id), 
+    "inv" = c(HBW_DW_broken$inv[HBW_DW_broken$plot_ID == my.plot.id & HBW_DW_broken$tree_ID == my.tree.id]), 
+    "inv_year" = c(as.integer(HBW_DW_broken$inv_year[HBW_DW_broken$plot_ID == my.plot.id & HBW_DW_broken$tree_ID == my.tree.id])),
+    "compartiment" = c(bio.df$compartiment),
+    "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
+  ) )
+  
+  bio.dw.broken.kg.list[[i]] <- bio.info.df
+  
+}
+bio_dw_broken_kg.df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
+
+
+
+# 1.3.3. biomass for deadwood pieces --------------------------------------------------------
+bio_dw_pieces_kg.df <- HBI_DW %>% 
+  filter(dw_type %in% c(1, 4, 6)) %>% 
+  mutate(
+  compartiment =  "ag", 
+  B_kg_tree = B_DW(V_DW_cylinder(d_cm/100, l_dm/10), decay, dw_sp)) %>% 
+  select("plot_ID", "tree_ID", "inv", "inv_year", "compartiment", "B_kg_tree")
+
+
+# 1.3.4. add biomass to DW dataframe -----------------------------
+# harmonise strings
+bio_dw_whole_kg.df[,c(1,2, 4, 6)] <- lapply(bio_dw_whole_kg.df[,c(1,2,4, 6)], as.numeric)
+bio_dw_whole_ag_kg.df[,c(1,2, 4, 6)] <- lapply(bio_dw_whole_ag_kg.df[,c(1,2,4, 6)], as.numeric)
+bio_dw_broken_kg.df[,c(1,2, 4, 6)] <- lapply(bio_dw_broken_kg.df[,c(1,2,4, 6)], as.numeric)
+bio_dw_pieces_kg.df[,c(1,2, 4, 6)] <- lapply(bio_dw_pieces_kg.df[,c(1,2,4, 6)], as.numeric)
+
+
+# join biomass in
+HBI_DW <- HBI_DW %>% 
+  left_join(., rbind(
+            bio_dw_whole_kg.df,
+            bio_dw_whole_ag_kg.df,
+            bio_dw_broken_kg.df, 
+            bio_dw_pieces_kg.df),
+            by = c("plot_ID", "tree_ID", "inv", "inv_year"),
+            multiple = "all") 
+
+
+
+# 1.4. Nitrogen stock -----------------------------------------------------
+
+
+
+
+# NOTES -------------------------------------------------------------------
+
+
+# N. calculate volume in loop ---------------------------------------------
+
+# calcualte volume 
+# # export list for volume
+# vol.dw.broken.kg.list <- vector("list", length = nrow(HBW_DW_broken))
+# {
+# vol.df <- as.data.frame(cbind(
+#   "vol_m3" = c((tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE) - tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE)), 
+#                (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE)),
+#                 (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE))), 
+#   "compartiment" = c("sb", "sw", "ag")))
+# # save volume and resective tree info in export df 
+# vol.info.df <- as.data.frame(cbind(
+#   "plot_ID" = c(as.integer(HBW_DW_whole$plot_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
+#   "tree_ID" = c(as.integer(HBW_DW_whole$tree_ID[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])), 
+#   "inv" = c(HBW_DW_whole$inv[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id]), 
+#   "inv_year" = c(as.integer(HBW_DW_whole$inv_year[HBW_DW_whole$plot_ID == my.plot.id & HBW_DW_whole$tree_ID == my.tree.id])),
+#   "compartiment" = c(vol.df$compartiment),
+#   "V_m3_tree" = c(as.numeric(vol.df$vol_m3))
+# ) )
+# 
+# vol.dw.whole.kg.list[[i]] <- vol.info.df
+# }
+# vol_dw_whole_kg.df <- as.data.frame(rbindlist(vol.dw.whole.kg.list))
 

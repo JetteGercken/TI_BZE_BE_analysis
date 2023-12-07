@@ -165,9 +165,9 @@ bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.bg.kg.RG.above.1.3.df[,
 # 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
 # 1.2.1.1.1. GHGI aboveground biomass for RG trees height > 1.3m -------------------------------
 bio.ag.kg.RG.below.1.3.df <- HBI_RG %>% 
-  filter(H_m <= 1.3)
+  filter(H_m <= 1.3) %>% 
   mutate(compartiment = "ag", 
-         B_kg_tree = GHGI_aB_Hb1.3(LH_NH, H_m))
+         B_kg_tree = GHGI_aB_Hb1.3(LH_NH, H_m)) %>% 
   select("plot_ID","CCS_no", "tree_ID", "inv", 
                   "inv_year", "compartiment", "B_kg_tree")
   
@@ -240,18 +240,19 @@ for (i in 1:nrow(HBI.RG.below.1)) {
   wolff_poorter_B_kg_tree <- as.data.frame(cbind(
     "bio_method" = c(rep("wolff+poorter", times = 4)),
     "compartiment" = c("sw+fw", "ndl", "ag", "bg"), 
-    "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "stem"))[1,], 
-                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "foliage"))[1,], 
+    "B_kg_tree" = c(as.data.frame(Poorter_rg_RSR_RLR(as.numeric(stem_WOLFF_kg), spp_LHNH, compartiment = "stem"))[1,], 
+                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(stem_WOLFF_kg), spp_LHNH, compartiment = "foliage"))[1,], 
                     as.numeric(stem_WOLFF_kg), 
-                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(ag_WOLFF_kg), spp_LHNH, compartiment = "bg"))[1,]
+                    as.data.frame(Poorter_rg_RSR_RLR(as.numeric(stem_WOLFF_kg), spp_LHNH, compartiment = "bg"))[1,]
+                      
     )))
   
   wolff_B_kg_tree <- as.data.frame(cbind(
     "bio_method" = c(rep("wolff", times = 3)),
     "compartiment" = c("sw+fw", "ndl", "ag"), 
-    "B_kg_tree" = c(as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "stem"))[1,]/1000,    # /1000 to transform from g into kg
-                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "foliage"))[1,]/1000, # /1000 to transform from g into kg
-                    as.data.frame(wolff.bio.below.1m(whd.cm, h.cm, spp, compartiment = "ag"))[1,]/1000       # /1000 to transform from g into kg
+    "B_kg_tree" = c(as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "stem"))[1,]/1000,    # /1000 to transform from g into kg
+                    as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "foliage"))[1,]/1000, # /1000 to transform from g into kg
+                    as.data.frame(wolff.bio.below.1m(whd.mm, h.cm, spp, compartiment = "ag"))[1,]/1000       # /1000 to transform from g into kg
     )))
   
   
@@ -276,8 +277,21 @@ poorter.bio.ag.bg.kg.RG.below.1.df <- as.data.frame(rbindlist(poorter.bio.ag.bg.
 
 
 
-# 2.1 tests for significant differences ----------------------------------------------
+# 2.1  differences in RG compartimentition ----------------------------------------------
+# 2.1.1. statistical characteristics of difference between Poorter bg options -------------------
+HBI_RG_poorter_x_comparisson <- HBI.RG.below.1 %>% 
+  mutate(stem_kg = wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem")/1000,
+         bg_kg = Poorter_rg_RSR_RLR(wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem"), LH_NH, compartiment = "bg"), 
+         x1 = Poorter_rg_RSR_RLR(wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem")/1000, LH_NH, compartiment = "x1"),
+         x2 = Poorter_rg_RSR_RLR(wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem")/1000, LH_NH, compartiment = "x2"),
+         diff_x = x1 - x2)
 
+summary(HBI_RG_poorter_x_comparisson)
+
+mean(HBI_RG_poorter_x_comparisson$diff_x)
+cv <- sd(HBI_RG_poorter_x_comparisson$diff_x) / mean(HBI_RG_poorter_x_comparisson$diff_x) * 100
+
+# 2.1.2. tests for significant differences ----------------------------------------------
 # diffrences between poorter compartiments based on wolff input mass and 
 # test if biomass is normally distributed to then compare 
 shapiro.test(as.numeric(poorter.bio.ag.bg.kg.RG.below.1.df$B_kg_tree[poorter.bio.ag.bg.kg.RG.below.1.df$bio_method == "wolff"][1:5000]))
