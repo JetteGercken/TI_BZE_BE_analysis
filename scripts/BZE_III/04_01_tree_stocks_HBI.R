@@ -22,7 +22,6 @@ trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3
 # HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/BI_trees_update_3.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # trees %>% filter(H_m <0)
 
-
 # 0.4 data preparation ---------------------------------------------------------
 trees <- trees %>% mutate(H_m = as.numeric(H_m))
 

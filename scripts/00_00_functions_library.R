@@ -1405,13 +1405,13 @@ B_DW <- function(V.m3, dec.type, SP){     # dec_SP = a column that holds the deg
   
   # calculate volume
   # create combination of decay and species to select correct BEF 
-  dec_SP <- paste0(dec.type, "_", SP)
+  SP_dec <- paste0(SP, "_", dec.type)
   # introcude biomass conversion factor
   BEF <- c("2_1" = 0.372*1000, "2_2" = 0.308*1000, "2_3" = 0.141*1000, "2_4" = 0.123*1000,   # conferous trees according to Faver
            "1_1" = 0.58*1000, "1_2" = 0.37*1000, "1_3" = 0.21*1000, "1_4" = 0.26*1000,       # broadleaved trees according to Müller-Ursing
            "3_1" = 0.58*1000, "3_2" = 0.37*1000, "3_3" = 0.21*1000, "3_4" = 0.26*1000);      # oak
   # calculate biomass in kg based on volume in m3 
-  B.kg <- as.numeric(V.m3)*BEF[dec_SP]
+  B.kg <- as.numeric(V.m3)*BEF[SP_dec]
            
   return(B.kg)
 }
@@ -1419,11 +1419,14 @@ B_DW <- function(V.m3, dec.type, SP){     # dec_SP = a column that holds the deg
 # relative density for tapeS deadwood compartiments
 # Biomasse unzersetzt * (100% - relative Veränderung der Dichte) = 
 # B * (1-(D1 - D2/ D1))
-rdB_DW <- function(B, dec_SP){     # a column that holds the degree of decay and the species type has to be created (united)
+rdB_DW <- function(B, dec.type, SP){     # a column that holds the degree of decay and the species type has to be created (united)
+  # create combination of decay and species to select correct BEF 
+  SP_dec <- paste0(SP, "_", dec.type)
+  # relatve density
   rd <- c("2_1" = 1, "2_2" = (1-((0.372-0.308)/0.372)), "2_3" = (1-((0.372-0.141)/0.372)) , "2_4" = (1-((0.372-0.123)/0.372)) ,   # relative change in density of conferous trees according to Faver based on 100% = 0.372
           "1_1" = 1 , "1_2" =  (1-((0.58-0.37)/0.58)), "1_3" = (1-((0.58-0.21)/0.58)) , "1_4" = (1-((0.58-0.26)/0.58)) ,       #  relative change in density of broadleaved trees according to Müller-Ursing basen on 100% = 0.58
           "3_1" = 1, "3_2" = (1-((0.58-0.37)/0.58)), "3_3" = (1-((0.58-0.21)/0.58)), "3_4" = (1-((0.58-0.26)/0.58)) );      # relative change in density of oak trees according to Müller-Ursing basen on 100% = 0.58
-  return(B*rd[dec_SP])
+  return(B*rd[SP_dec])
 }
 
 
