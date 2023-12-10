@@ -253,8 +253,6 @@ for (i in 1:nrow(HBI_DW_stump)){
            wood_ag_ratio = stw/ag)
   }
   
-  
-  
   # calcualte Biomass vie Volume cylinder function and wood density 
   ag.B.kg = as.data.frame(B_DW(V_DW_cylinder(as.numeric(d.cm)/100, as.numeric(l.m)), my.decay.type, my.dw.spec))[,1]
   
@@ -288,7 +286,8 @@ bio_dw_pieces_kg.df <- HBI_DW %>%
   filter(dw_type %in% c(1, 6)) %>% 
   mutate(
   compartiment =  "ag", 
-  B_kg_tree = B_DW(V_DW_cylinder(d_cm/100, l_dm/10), decay, dw_sp)) %>% 
+  V_m3_tree = V_DW_cylinder(as.numeric(d_cm)/100, as.numeric(l_dm/10)),
+  B_kg_tree = B_DW(V_m3_tree, dec_type_BWI, dw_sp)) %>% 
   select("plot_ID", "tree_ID", "inv", "inv_year", "compartiment", "B_kg_tree")
 
 
@@ -303,7 +302,7 @@ all_dw_bio_df <- rbind(
 all_dw_bio_df[,c(1,2, 4, 6)] <- lapply(all_dw_bio_df[,c(1,2,4, 6)], as.numeric)
 
 
-# join biomass in
+# join biomass in deadwood 
 HBI_DW <- HBI_DW %>% 
   left_join(., all_dw_bio_df,
             by = c("plot_ID", "tree_ID", "inv", "inv_year"),
@@ -312,11 +311,67 @@ HBI_DW <- HBI_DW %>%
 
 
 # 1.4. Nitrogen stock -----------------------------------------------------
+# for the sums we shoud ldecide iwf we want to give them the compartiment "ag" 
+# because that´s what they actually are 
+# or the compartiment "total" because that way it will be easier to link the total available 
+# deadwood biomass, nitrogen and carbon stock with the total stocks of trees and RG
+
+# 1.4.1. Nitrogen stock in compartiments -----------------------------------------
+N_dw_ag_comps_kg.df <- HBI_DW %>%
+  filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" |
+        # deselect summed up compartiments for whole trees, stumps and broken trees
+           dw_type %in% c(1, 6)) %>% 
+  mutate(N_kg_tree = case_when(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), 
+                               # for all trees that are not copmartioned (meaning all trees that don´t have )
+                               dw_type %in% c(1, 6) & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sb"), 
+                               TRUE ~ NA)) %>% 
+  select(plot_ID, tree_ID, inv, inv_year, dw_type, compartiment, N_kg_tree) 
+
+
+# 1.4.2. total nitrogen stocks: sum up Nitrogen stock in compartiments -----------------------------------------
+# summ up the aboveground compartiments 
+N_dw_ag_kg.df <- N_ag_comps_kg.df %>%
+  # select only compartitionated trees 
+  filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" )%>% 
+  group_by(plot_ID, tree_ID, inv, inv_year, dw_type) %>% 
+  summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+  mutate(compartiment = "ag") %>% 
+  select("plot_ID", "tree_ID", "inv", 
+         "inv_year", "dw_type", "compartiment", "N_kg_tree")
+
+
+
+# 1.4.3. join Nitrogen stocks into deadwood dataset -----------------------------------
+HBI_DW <- HBI_DW %>% left_join(., 
+                             rbind(N_dw_ag_comps_kg.df , 
+                                   N_dw_ag_kg.df), 
+                             by = c("plot_ID", "tree_ID", "inv", "inv_year",
+                                    "dw_type", "compartiment"), 
+                             multiple = "all")
+
+
+
+# 1.5 carbon stock per tree & compartiment -------------------------------------------------------
+HBI_DW <- HBI_DW %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 
 
-# NOTES -------------------------------------------------------------------
+# NOTES ---------------------------------------------------------------------------------------------------
+
+# thoughts & questions --------------------------------------------------------------------------------------
+
+## compartiment names for ag compartiment which is also the only total compartiment available for DW
+# for the sums of the stocks we should decide if we want to give them the compartiment "ag" 
+# because that´s what they actually are 
+# or the compartiment "total" because that way it will be easier to link the total available 
+# deadwood biomass, nitrogen and carbon stock with the total stocks of trees and RG
+
+## deadwood biomass differences to momok 
+# pseudo trees where not averaged over dw group, plot and decay state but calculated for each dw item separately
+# for those trees that have compartiments (like whole trees, stumps, broken pieces) all compatiments were calculated 
+# regardless their state of decay 
+
 
 
 # N. calculate volume in loop ---------------------------------------------
