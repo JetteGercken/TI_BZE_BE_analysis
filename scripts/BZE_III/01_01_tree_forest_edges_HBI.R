@@ -21,7 +21,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI point info
@@ -40,7 +40,7 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI trees
-colnames(HBI_trees) <- c("plot_ID", "tree_ID", "tree_inventory_status",
+colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status",
                          "multi_stem",  "SP_code", 
                          "age", "age_meth",
                          "D_mm", "DBH_h_cm", "H_dm", "C_h_dm",
@@ -48,7 +48,7 @@ colnames(HBI_trees) <- c("plot_ID", "tree_ID", "tree_inventory_status",
                          "Kraft",  "C_layer")
 
   
-HBI_trees <- HBI_trees %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
+trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
                                   dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code ,  Kraft ,  
                                   C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI locations
@@ -80,7 +80,7 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 # ----- 1.1. LIVING TREES -------------------------------------------------
 # ----- 1.1.1. species & inventory names ----------------------------------------------
 # ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
-HBI_trees <- HBI_trees %>%
+trees_data <- trees_data %>%
   # join in inventory info
    left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
            by = "plot_ID")  %>% 
@@ -95,7 +95,7 @@ HBI_trees <- HBI_trees %>%
 
 
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-SP_NAs <- HBI_trees %>% 
+SP_NAs <- trees_data %>% 
   anti_join(SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
@@ -139,7 +139,7 @@ if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees datas
 
 # ----- 1.1.2.1. join in edge info to tree dataset ------------------------
 # ----- 1.1.2.1.1. HBI join in forest edge info per plot -----------------------------------------------
-HBI_trees <- HBI_trees %>% 
+trees_data <- trees_data %>% 
   # calculate the coordinates of every tree
   mutate(dist_m = dist_cm/100, 
          X_tree = coord(data_circle$x0[1], data_circle$y0[1], dist_m, azi_gon, coordinate = "x"), 
@@ -244,7 +244,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 # etc. assiningg another plot iD or something. 
 
 trees_and_edges <-
-  HBI_trees  %>% 
+  trees_data  %>% 
   # join in edges info per plot
   left_join(., forest_edges_HBI.man %>% 
               select(plot_ID, e_ID, e_type, e_form,
@@ -1369,7 +1369,7 @@ all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.no
 
 # 3.2.2. sorting TREES into edge and remaining circle polygones ---------
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
-trees.one.edge.nogeo <- HBI_trees %>%
+trees.one.edge.nogeo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
@@ -1476,7 +1476,7 @@ tree.points.one.edge.df.nogeo <- as.data.frame(tree.points.list.one.edge.final.n
 
 # 3.2.2.2. plots with 2 edges: sorting trees into edge and remaining circle polygones ---------
 # intersection of trees with 2 edges
-trees.two.edges.nogeo <- HBI_trees %>%
+trees.two.edges.nogeo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% 
               #& inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
@@ -1592,7 +1592,7 @@ two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tr
 
 
 # 3.2.2.3 plots with no edge edge: sorting trees into circle ---------
-trees.no.edge.nogeo <- anti_join(HBI_trees, two.and.one.edge.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
+trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
@@ -1705,7 +1705,7 @@ all.trees.status.df[,c(1,2, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 4, 5)],
 all.edges.area.df.nogeo[,c(1,2, 3, 5)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 5)], as.numeric) 
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
-HBI_trees_update_1 <- HBI_trees %>%  
+trees_update_1 <- trees_data %>%  
  # join in stand of each tree
   left_join(., all.trees.status.df %>% 
               select(plot_ID, tree_ID, inv, t_stat) %>% 
@@ -1736,13 +1736,13 @@ HBI_trees_update_1 <- HBI_trees %>%
          # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
          stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
          # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-         CCS_plot_A_ha = c_A(CCS_r_m)/10000)  # dividedd by 10 000 to transform m2 into hectar
+         plot_A_ha = c_A(CCS_r_m)/10000)  # dividedd by 10 000 to transform m2 into hectar
 
 
 
 # 3.3.1.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
-HBI_trees_removed_1 <- HBI_trees_update_1 %>% filter(stand == "warning")
-HBI_trees_update_1 <- HBI_trees_update_1 %>% filter(stand != "warning")
+trees_removed_1 <- trees_update_1 %>% filter(stand == "warning")
+trees_update_1 <- trees_update_1 %>% filter(stand != "warning")
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
@@ -1760,34 +1760,34 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 # 3.3.2. exporting data ---------------------------------------------------
 
 # exporting tree and edge/ plot area data
-write.csv2(HBI_trees_update_1, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "trees_update_1", sep = "_"), ".csv"))
-write.csv2(HBI_trees_removed_1, paste0(out.path.BZE3, paste(unique(HBI_trees_removed_1$inv)[1], "trees_removed_1", sep = "_"), ".csv"))
-write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
+write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "trees_update_1", sep = "_"), ".csv"))
+write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "trees_removed_1", sep = "_"), ".csv"))
+write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
-write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_trees_stand", sep = "_"), ".csv"))
+write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_trees_stand", sep = "_"), ".csv"))
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
+write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
           
 
 # export list of plots where the both edge polygones intersect within the 17.84 radius
-write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
+write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
           
 # exporting edge triangle polygones
-write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
 # exporting edge triangle coordiantes
-write.csv2(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"))
+write.csv2(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"))
 
 
 # exporting edge intersection polygones 
-#write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+#write.csv2(all.edge.intersections.poly, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # to export the dataframes with long geometries and keep the geometries in list format for better processing later 
 # thus we export them with the following function, that enables to save the whole geometry list in 1 Table
 # https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
-tibble_with_lists_to_csv(all.edge.intersections.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+tibble_with_lists_to_csv(all.edge.intersections.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
 # exporting all remaining circles polygones
-tibble_with_lists_to_csv(all.remaning.circles.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
+tibble_with_lists_to_csv(all.remaning.circles.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
 
 
 ## export coordiantes of all edge-triangle-circle-intersections polygones  to  dataframes 
@@ -1809,7 +1809,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
+write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
 
 
 
@@ -1832,17 +1832,17 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
+write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
 
 
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 dev.off()
-for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
+for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50141, unique(HBI_trees$plot_ID)))
-  my.plot.id = unique(HBI_trees$plot_ID)[i]
+  # i = which(grepl(50141, unique(trees_data$plot_ID)))
+  my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   
   c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
@@ -1899,7 +1899,7 @@ for(i in 1:(nrow(HBI_trees %>% select(plot_ID) %>% distinct()))){
 #   # join in the stand info by plot_ID, e_ID, CCS_r_M
 #   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
 #             by = c("plot_ID", "e_ID", "CCS_r_m"))
-# write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(HBI_trees_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
+# write.csv2(all.edge.triangle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_data_update_1$inv)[1], "all_edge_triangle_coords", sep = "_"), ".csv"))
  
 
 # plot(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)))

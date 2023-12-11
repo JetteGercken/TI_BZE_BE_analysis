@@ -50,17 +50,19 @@ HBI.RG.above.1.3 <- HBI_RG[HBI_RG$H_m > 1.3, ]
 # create output list
 bio.ag.kg.RG.above.1.3 <- vector("list", length = nrow(HBI.RG.above.1.3))
 for (i in 1:nrow(HBI.RG.above.1.3)) {
-  # i = 1
+  # i = 13
   
   # basic tree info
   # select one tree ID and plot ID for each individual tree per plot through unique(trees[, c("plot_ID", "tree_ID")])
   my.plot.id <- HBI.RG.above.1.3[,"plot_ID"][i]
   my.ccs.id <- HBI.RG.above.1.3[,"CCS_no"][i]
   my.tree.id <- HBI.RG.above.1.3[,"tree_ID"][i]
-  BL.or.CF <- unique(HBI.RG.above.1.3$LH_NH[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])
+  my.tree.sp <- HBI.RG.above.1.3[,"SP_code"][i]
+  BL.or.CF <-  SP_names_com_ID_tapeS$LH_NH[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
+  
   
   # select variales for tree object: tapes species, diameter, diameter measuring height, tree height
-  spp = na.omit(unique(HBI.RG.above.1.3$tpS_ID[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id]))
+  spp = SP_names_com_ID_tapeS$tpS_ID[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
   Dm = na.omit(as.list(as.numeric(unique(HBI.RG.above.1.3$D_cm[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])))) 
   Hm = na.omit(as.list(as.numeric(1.3)))
   Ht = na.omit(as.numeric(unique(HBI.RG.above.1.3$H_m[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])))
@@ -71,7 +73,7 @@ for (i in 1:nrow(HBI.RG.above.1.3)) {
   obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   # calculate biomass per compartiment
-  bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>% 
+  bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp, mono = F)) %>% 
     pivot_longer(cols = stw:ndl,
                  names_to = "compartiment", 
                  values_to = "B_kg_tree")
@@ -111,10 +113,10 @@ for (i in 1:nrow(HBI.RG.above.1.3)) {
   my.plot.id <- HBI.RG.above.1.3[,"plot_ID"][i]
   my.ccs.id <- HBI.RG.above.1.3[,"CCS_no"][i]
   my.tree.id <- HBI.RG.above.1.3[,"tree_ID"][i]
-  BL.or.CF <- unique(HBI.RG.above.1.3$LH_NH[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])
+  my.tree.sp <- HBI.RG.above.1.3[,"SP_code"][i]
   
   # select variales for belowground functions
-  spp = unique(HBI.RG.above.1.3$Bio_SP_group[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])
+  spp = SP_names_com_ID_tapeS$Bio_SP_group[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
   dbh.cm = as.numeric(unique(HBI.RG.above.1.3$D_cm[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id]))
   
   
@@ -166,12 +168,12 @@ bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.bg.kg.RG.above.1.3.df[,
 # 1.2.1.1.1. GHGI aboveground biomass for RG trees height > 1.3m -------------------------------
 bio.ag.kg.RG.below.1.3.df <- HBI_RG %>% 
   filter(H_m <= 1.3) %>% 
-  mutate(compartiment = "ag", 
-         B_kg_tree = GHGI_aB_Hb1.3(LH_NH, H_m)) %>% 
+  mutate(compartiment = "ag") %>% 
+  mutate(B_kg_tree = (GHGI_aB_Hb1.3(LH_NH, H_m))) %>% 
   select("plot_ID","CCS_no", "tree_ID", "inv", 
-                  "inv_year", "compartiment", "B_kg_tree")
+                  "inv_year", "compartiment", "B_kg_tree") 
   
-
+  
 
 
 # 1.2.3. join RG biomass for trees <1.3m and >1.3m height  ----------------
@@ -181,9 +183,6 @@ HBI_RG <- HBI_RG %>% left_join(., rbind(bio.ag.kg.RG.above.1.3.df,
                       by = c("plot_ID", "CCS_no", "tree_ID", "inv", "inv_year"), 
                      multiple = "all") 
 
-  
-  
-  
 
 # 1.3 Nitrogen stock ------------------------------------------------------
 # here we have to select which Nitrogen content we want to use for which compartiment

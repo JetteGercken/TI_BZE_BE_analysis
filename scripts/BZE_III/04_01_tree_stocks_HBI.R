@@ -16,11 +16,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-# here we should actually import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to 
+# here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
 trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_3.csv"), sep = ";", dec = ",") 
-# HBI_trees <- read.delim(file = here("data/input/BZE2_HBI/BI_trees_update_3.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-# trees %>% filter(H_m <0)
 
 # 0.4 data preparation ---------------------------------------------------------
 trees <- trees %>% mutate(H_m = as.numeric(H_m))
@@ -79,8 +77,7 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   
     
 }
-bio.ag.kg.final <- rbindlist(bio.ag.kg.list)
-bio.ag.kg.df <- as.data.frame(bio.ag.kg.final)
+bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
 
 
@@ -116,24 +113,23 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   bio.bg.kg.list[[i]] <- bio.info.df
   
 }
-bio.bg.kg.final <- rbindlist(bio.bg.kg.list)
-bio.bg.kg.df <- as.data.frame(bio.bg.kg.final)
+bio_bg_kg_df <- as.data.frame(rbindlist(bio.bg.kg.list))
 
 
 # 1.1.3. biomass all compartiments - total ----------------------------------
 
-bio.total.kg.df <- 
+bio_total_kg_df <- 
   rbind(
 # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
     rbind(
-      bio.ag.kg.df, bio.bg.kg.df) %>% 
+      bio_ag_kg_df, bio_bg_kg_df) %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
       summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"),
 # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
-    bio.ag.kg.df%>% 
+    bio_ag_kg_df%>% 
     group_by(plot_ID, tree_ID, inv, inv_year) %>% 
     summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
     mutate(compartiment = "ag")%>% 
@@ -141,41 +137,41 @@ bio.total.kg.df <-
            "inv_year", "compartiment", "B_kg_tree"))
 
 # 1.1.4. harmonizing biomass strings and compartiment names ---------------
-#  harmonize strings of bio.total.kg.df  
+#  harmonize strings of bio_total_kg_df  
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
-bio.total.kg.df[,c(1,2, 4, 6)] <- lapply(bio.total.kg.df[,c(1,2,4, 6)], as.numeric)
-bio.ag.kg.df[,c(1,2, 4, 6)] <- lapply(bio.ag.kg.df[,c(1,2,4, 6)], as.numeric)
-bio.bg.kg.df[,c(1,2, 4, 6)] <- lapply(bio.bg.kg.df[,c(1,2,4, 6)], as.numeric)
+bio_total_kg_df[,c(1,2, 4, 6)] <- lapply(bio_total_kg_df[,c(1,2,4, 6)], as.numeric)
+bio_ag_kg_df[,c(1,2, 4, 6)] <- lapply(bio_ag_kg_df[,c(1,2,4, 6)], as.numeric)
+bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
 
 # 1.1.4. join biomass into tree dataset -----------------------------------
 
 trees <- trees %>% left_join(., 
-                    rbind(bio.ag.kg.df , 
-                          bio.bg.kg.df, 
-                          bio.total.kg.df), 
+                    rbind(bio_ag_kg_df , 
+                          bio_bg_kg_df, 
+                          bio_total_kg_df), 
                     by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
                     multiple = "all") 
 
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
-N.ag.bg.kg.df <- trees %>%
+N_ag_bg_kg_df <- trees %>%
   filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
   mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
 
 # 1.2.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
-N.total.kg.df <- 
+N_total_kg_df <- 
   rbind(
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
-    N.ag.bg.kg.df %>% 
+    N_ag_bg_kg_df %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
       summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"),
     # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
-    N.ag.bg.kg.df%>% 
+    N_ag_bg_kg_df%>% 
       filter(compartiment != "bg") %>%  # select only aboveground compartiments by exxlduing bg compartiment from N.ab.bg. dataframe 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
       summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
@@ -186,8 +182,8 @@ N.total.kg.df <-
 
 # 1.2.3. join Nitrogen stocks into tree dataset -----------------------------------
 trees <- trees %>% left_join(., 
-                             rbind(N.ag.bg.kg.df , 
-                                   N.total.kg.df), 
+                             rbind(N_ag_bg_kg_df , 
+                                   N_total_kg_df), 
                              by = c("plot_ID", "tree_ID", "inv", "inv_year", "compartiment"), 
                              multiple = "all")
 
@@ -198,11 +194,14 @@ trees <- trees %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-HBI_trees_update_4 <- trees %>% select(- c("Chr_code_ger", "H_SP_group","BWI_SP_group" , "Bio_SP_group",
+trees_update_4 <- trees %>% select(- c("Chr_code_ger", "H_SP_group","BWI_SP_group" , "Bio_SP_group",
                                            "N_SP_group", "N_bg_SP_group", "N_f_SP_group_MoMoK"))
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
-write.csv2(HBI_trees_update_4, paste0(out.path.BZE3, paste(unique(HBI_trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
+write.csv2(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
+
+
+
 
 
 
@@ -294,7 +293,7 @@ for (i in 1:nrow(unique(trees[, c("plot_ID", "tree_ID")]))) {
   
 }
 N.ag.bg.kg.final <- rbindlist(N.ag..bg.kg.list)
-N.ag.bg.kg.df <- as.data.frame(N.ag.bg.kg.final)
+N_ag_bg_kg_df <- as.data.frame(N.ag.bg.kg.final)
 
 
 

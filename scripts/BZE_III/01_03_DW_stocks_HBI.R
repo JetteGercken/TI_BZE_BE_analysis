@@ -15,9 +15,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-HBI_DW <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
+DW_data <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
                     #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
-colnames(HBI_DW) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
+colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 
 # HBI point info
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
@@ -42,7 +42,7 @@ HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,
                                         inv = inv_name(inv_year))
 
 # join inventory jear and name into deadwood tree dataset
-HBI_DW <- HBI_DW %>% left_join(., HBI_inv_info %>% select(inv_year, inv, plot_ID), by = "plot_ID")
+DW_data <- DW_data %>% left_join(., HBI_inv_info %>% select(inv_year, inv, plot_ID), by = "plot_ID")
 
 # 0.4.2. species names -------------------------------------------------------------
 # 1 Nadelholz
@@ -50,7 +50,7 @@ HBI_DW <- HBI_DW %>% left_join(., HBI_inv_info %>% select(inv_year, inv, plot_ID
 # 3 Eiche
 # 4 unbekannt
 
-HBI_DW <- HBI_DW %>% 
+DW_data <- DW_data %>% 
   # join in forest type from HBI forst.csv
   left_join(., 
             HBI_forest_info %>% 
@@ -86,7 +86,7 @@ HBI_DW <- HBI_DW %>%
 
 # 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
 # for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
-HBW_DW_whole <- HBI_DW[HBI_DW$dw_type %in% c(2, 5), ]
+HBW_DW_whole <- DW_data[DW_data$dw_type %in% c(2, 5), ]
 # export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(HBW_DW_whole))
 # export list for volume
@@ -133,10 +133,10 @@ for (i in 1:nrow(HBW_DW_whole)){
   bio.dw.whole.kg.list[[i]] <- bio.info.df
 
 }
-bio_dw_whole_kg.df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
+bio_dw_whole_kg_df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
 
 # sum up deadwood ag compartiments 
-bio_dw_whole_ag_kg.df <- bio_dw_whole_kg.df %>% 
+bio_dw_whole_ag_kg_df <- bio_dw_whole_kg_df %>% 
   select(-compartiment) %>% 
   mutate(compartiment = "ag") %>% 
   group_by(plot_ID, tree_ID, inv, inv_year, compartiment) %>% 
@@ -147,22 +147,22 @@ bio_dw_whole_ag_kg.df <- bio_dw_whole_kg.df %>%
 # 1.3.2. biomass broken deadwood trees (bruchstücke, 3) ------------------------------------------------------------------------
 # for broken deadwood trees above 1.3 m all compartiments except foliage ("ndl" ) are calculated via TapeS
 # export list for biomasse
-HBI_DW_broken <- HBI_DW[HBI_DW$dw_type == 3, ]
-bio.dw.broken.kg.list <- vector("list", length = nrow(HBI_DW_broken))
-for (i in 1:nrow(HBI_DW_broken)){
+DW_data_broken <- DW_data[DW_data$dw_type == 3, ]
+bio.dw.broken.kg.list <- vector("list", length = nrow(DW_data_broken))
+for (i in 1:nrow(DW_data_broken)){
   # i = 1
   
   # select general info about the DW item
-  my.plot.id <- HBI_DW_broken[,"plot_ID"][i]
-  my.tree.id <- HBI_DW_broken[,"tree_ID"][i]
-  my.decay.type <- HBI_DW_broken[,"dec_type_BWI"][i]
-  my.dw.spec <- HBI_DW_broken[,"dw_sp"][i]
+  my.plot.id <- DW_data_broken[,"plot_ID"][i]
+  my.tree.id <- DW_data_broken[,"tree_ID"][i]
+  my.decay.type <- DW_data_broken[,"dec_type_BWI"][i]
+  my.dw.spec <- DW_data_broken[,"dw_sp"][i]
   
   # select variables fot TprTrees object
-  spp =  na.omit(as.numeric(unique(HBI_DW_broken$tpS_ID[HBI_DW_broken$plot_ID==my.plot.id & HBI_DW_broken$tree_ID==my.tree.id]))) 
-  Dm = na.omit(as.list(as.numeric(unique(HBI_DW_broken$d_cm[HBI_DW_broken$plot_ID==my.plot.id & HBI_DW_broken$tree_ID==my.tree.id])))) # diameter in cm
+  spp =  na.omit(as.numeric(unique(DW_data_broken$tpS_ID[DW_data_broken$plot_ID==my.plot.id & DW_data_broken$tree_ID==my.tree.id]))) 
+  Dm = na.omit(as.list(as.numeric(unique(DW_data_broken$d_cm[DW_data_broken$plot_ID==my.plot.id & DW_data_broken$tree_ID==my.tree.id])))) # diameter in cm
   Hm = as.list(as.numeric(1.3))
-  Ht = na.omit(as.numeric(unique(HBI_DW_broken$l_dm[HBI_DW_broken$plot_ID==my.plot.id & HBI_DW_broken$tree_ID==my.tree.id]))/10) # lenth in meter m
+  Ht = na.omit(as.numeric(unique(DW_data_broken$l_dm[DW_data_broken$plot_ID==my.plot.id & DW_data_broken$tree_ID==my.tree.id]))/10) # lenth in meter m
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
@@ -184,8 +184,8 @@ for (i in 1:nrow(HBI_DW_broken)){
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
     "tree_ID" = c(my.tree.id), 
-    "inv" = c(HBI_DW_broken$inv[HBI_DW_broken$plot_ID == my.plot.id & HBI_DW_broken$tree_ID == my.tree.id]), 
-    "inv_year" = c(as.integer(HBI_DW_broken$inv_year[HBI_DW_broken$plot_ID == my.plot.id & HBI_DW_broken$tree_ID == my.tree.id])),
+    "inv" = c(DW_data_broken$inv[DW_data_broken$plot_ID == my.plot.id & DW_data_broken$tree_ID == my.tree.id]), 
+    "inv_year" = c(as.integer(DW_data_broken$inv_year[DW_data_broken$plot_ID == my.plot.id & DW_data_broken$tree_ID == my.tree.id])),
     "compartiment" = c(bio.df$compartiment),
     "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
   ) )
@@ -193,32 +193,33 @@ for (i in 1:nrow(HBI_DW_broken)){
   bio.dw.broken.kg.list[[i]] <- bio.info.df
   
 }
-bio_dw_broken_kg.df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
+bio_dw_broken_kg_df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
 
 
 
 # 1.3.3. biomass for stumps -----------------------------------------------
-HBI_DW_stump <- HBI_DW[HBI_DW$dw_type == 4,]
-bio.dw.stump.kg.list <- vector("list", length = nrow(HBI_DW_stump))
-for (i in 1:nrow(HBI_DW_stump)){
+DW_data_stump <- DW_data[DW_data$dw_type == 4,]
+bio.dw.stump.kg.list <- vector("list", length = nrow(DW_data_stump))
+for (i in 1:nrow(DW_data_stump)){
   # i = 3
   
   # select general info about the DW item
-  my.plot.id <- HBI_DW_stump[,"plot_ID"][i]
-  my.tree.id <- HBI_DW_stump[,"tree_ID"][i]
-  my.decay.type <- HBI_DW_stump[,"dec_type_BWI"][i]
-  my.dw.spec <- HBI_DW_stump[,"dw_sp"][i]
+  my.plot.id <- DW_data_stump[,"plot_ID"][i]
+  my.tree.id <- DW_data_stump[,"tree_ID"][i]
+  my.decay.type <- DW_data_stump[,"dec_type_BWI"][i]
+  my.dw.spec <- DW_data_stump[,"dw_sp"][i]
   
   # select variables fot TprTrees object
-  spp =  na.omit(as.numeric(unique(HBI_DW_stump$tpS_ID[HBI_DW_stump$plot_ID==my.plot.id & HBI_DW_stump$tree_ID==my.tree.id]))) 
+  spp =  na.omit(as.numeric(unique(DW_data_stump$tpS_ID[DW_data_stump$plot_ID==my.plot.id & DW_data_stump$tree_ID==my.tree.id]))) 
   # calculate the DBH: diameter a tree with the measured stump diameter would have at 1.3m height 
-  bwi.spp = na.omit((unique(HBI_DW_stump$BWI[HBI_DW_stump$plot_ID==my.plot.id & HBI_DW_stump$tree_ID==my.tree.id]))) 
-  d.cm = as.numeric(unique(HBI_DW_stump$d_cm[HBI_DW_stump$plot_ID==my.plot.id & HBI_DW_stump$tree_ID==my.tree.id])) # diameter in cm
-  l.m = as.numeric(unique(HBI_DW_stump$l_dm[HBI_DW_stump$plot_ID==my.plot.id & HBI_DW_stump$tree_ID==my.tree.id]))/10
+  bwi.spp = na.omit((unique(DW_data_stump$BWI[DW_data_stump$plot_ID==my.plot.id & DW_data_stump$tree_ID==my.tree.id]))) 
+  d.cm = as.numeric(unique(DW_data_stump$d_cm[DW_data_stump$plot_ID==my.plot.id & DW_data_stump$tree_ID==my.tree.id])) # diameter in cm
+  l.m = as.numeric(unique(DW_data_stump$l_dm[DW_data_stump$plot_ID==my.plot.id & DW_data_stump$tree_ID==my.tree.id]))/10
   Dm = as.list(DBH_Dahm(my.plot.id, as.numeric(d.cm)*10, l.m, bwi.spp))
   # estimate height a tree with the estimated DBH diameter would have
   Hm = as.list(as.numeric(1.3))
-  Ht = na.omit(as.numeric(estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
+  Ht = (as.numeric(estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
+  
   
   # compartiments
   comp <- c("stw", "stb")
@@ -267,8 +268,8 @@ for (i in 1:nrow(HBI_DW_stump)){
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
     "tree_ID" = c(my.tree.id), 
-    "inv" = c(HBI_DW_stump$inv[HBI_DW_stump$plot_ID == my.plot.id & HBI_DW_stump$tree_ID == my.tree.id]), 
-    "inv_year" = c(as.integer(HBI_DW_stump$inv_year[HBI_DW_stump$plot_ID == my.plot.id & HBI_DW_stump$tree_ID == my.tree.id])),
+    "inv" = c(DW_data_stump$inv[DW_data_stump$plot_ID == my.plot.id & DW_data_stump$tree_ID == my.tree.id]), 
+    "inv_year" = c(as.integer(DW_data_stump$inv_year[DW_data_stump$plot_ID == my.plot.id & DW_data_stump$tree_ID == my.tree.id])),
     "compartiment" = c(bio.df$compartiment),
     "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
   ) )
@@ -277,12 +278,12 @@ for (i in 1:nrow(HBI_DW_stump)){
   bio.dw.stump.kg.list[[i]] <- bio.info.df
   
 }
-bio_dw_stump_kg.df <- as.data.frame(rbindlist(bio.dw.stump.kg.list))
+bio_dw_stump_kg_df <- as.data.frame(rbindlist(bio.dw.stump.kg.list))
 
 
 
 # 1.3.4. biomass for deadwood pieces --------------------------------------------------------
-bio_dw_pieces_kg.df <- HBI_DW %>% 
+bio_dw_pieces_kg_df <- DW_data %>% 
   filter(dw_type %in% c(1, 6)) %>% 
   mutate(
   compartiment =  "ag", 
@@ -291,22 +292,25 @@ bio_dw_pieces_kg.df <- HBI_DW %>%
   select("plot_ID", "tree_ID", "inv", "inv_year", "compartiment", "B_kg_tree")
 
 
+
 # 1.3.4. add biomass to DW dataframe -----------------------------
 # harmonise strings
 all_dw_bio_df <- rbind(
-  bio_dw_whole_kg.df,
-  bio_dw_whole_ag_kg.df,
-  bio_dw_broken_kg.df,
-  bio_dw_stump_kg.df,
-  bio_dw_pieces_kg.df)
+  bio_dw_whole_kg_df,
+  bio_dw_whole_ag_kg_df,
+  bio_dw_broken_kg_df,
+  bio_dw_stump_kg_df,
+  bio_dw_pieces_kg_df)
 all_dw_bio_df[,c(1,2, 4, 6)] <- lapply(all_dw_bio_df[,c(1,2,4, 6)], as.numeric)
 
 
+
 # join biomass in deadwood 
-HBI_DW <- HBI_DW %>% 
+DW_data <- DW_data %>% 
   left_join(., all_dw_bio_df,
             by = c("plot_ID", "tree_ID", "inv", "inv_year"),
             multiple = "all") 
+
 
 
 
@@ -317,7 +321,7 @@ HBI_DW <- HBI_DW %>%
 # deadwood biomass, nitrogen and carbon stock with the total stocks of trees and RG
 
 # 1.4.1. Nitrogen stock in compartiments -----------------------------------------
-N_dw_ag_comps_kg.df <- HBI_DW %>%
+N_dw_ag_comps_kg_df <- DW_data %>%
   filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" |
         # deselect summed up compartiments for whole trees, stumps and broken trees
            dw_type %in% c(1, 6)) %>% 
@@ -330,7 +334,7 @@ N_dw_ag_comps_kg.df <- HBI_DW %>%
 
 # 1.4.2. total nitrogen stocks: sum up Nitrogen stock in compartiments -----------------------------------------
 # summ up the aboveground compartiments 
-N_dw_ag_kg.df <- N_ag_comps_kg.df %>%
+N_dw_ag_kg_df <- N_dw_ag_comps_kg_df %>%
   # select only compartitionated trees 
   filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" )%>% 
   group_by(plot_ID, tree_ID, inv, inv_year, dw_type) %>% 
@@ -342,9 +346,9 @@ N_dw_ag_kg.df <- N_ag_comps_kg.df %>%
 
 
 # 1.4.3. join Nitrogen stocks into deadwood dataset -----------------------------------
-HBI_DW <- HBI_DW %>% left_join(., 
-                             rbind(N_dw_ag_comps_kg.df , 
-                                   N_dw_ag_kg.df), 
+DW_data <- DW_data %>% left_join(., 
+                             rbind(N_dw_ag_comps_kg_df , 
+                                   N_dw_ag_kg_df), 
                              by = c("plot_ID", "tree_ID", "inv", "inv_year",
                                     "dw_type", "compartiment"), 
                              multiple = "all")
@@ -352,8 +356,18 @@ HBI_DW <- HBI_DW %>% left_join(.,
 
 
 # 1.5 carbon stock per tree & compartiment -------------------------------------------------------
-HBI_DW <- HBI_DW %>% mutate(C_kg_tree = carbon(B_kg_tree))
+DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
+
+
+# 2. data export ----------------------------------------------------------
+# create export dataset
+DW_data_update_1 <- DW_data
+
+write.csv2(DW_data_update_1, paste0(out.path.BZE3, paste(unique(DW_data_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
+
+
+DW_data %>% filter(is.na(B_kg_tree))
 
 
 
