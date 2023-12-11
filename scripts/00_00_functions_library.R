@@ -1131,7 +1131,7 @@ inv_name <- function(inv.year){
 
 
 
-# 1.11. Biomass functions -------------------------------------------------
+# 1.11. Biomass -------------------------------------------------------------------------------------------
 # 1.11.1. Wutzler: Foliage on beach trees Biomass functions -------------------------------------------------
 # reference: 
 # Wutzler, Thomas & Wirth, Christian & Schumacher, Jens. (2008). 
@@ -1181,8 +1181,11 @@ GHGI_bB <- function(spec, d){
   return(b0[spec]*d^b1[spec]) 
 }
 
-# 1.11.3. REGENERATION BIOMASS ---------------------------------------------------------------
-# 1.11.3.1. GHGI: below <1.3m height Biomass functions -------------------------------------------------
+# 1.11.3. regeneration ---------------------------------------------------------------
+
+# 1.11.3.1. below <1.3m height Biomass functions -------------------------------------------------
+
+# 1.11.3.1.1. GHGI: below <1.3m height Biomass functions -------------------------------------------------
 ## above ground biomass for trees <1.3m GHGI (equation: 6, coefficient table: 4)
 GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link the formula to a column with he categories broadleafed and coniferous trees
   b0 <- c(NB = 0.23059, LB = 0.04940);
@@ -1190,7 +1193,7 @@ GHGI_aB_Hb1.3 <- function(spec, h){  # here instead of species group i´ll link 
   return(b0[spec]*h^b1[spec])
 }
 
-# 1.11.3.2 GHGI: below <1.3m height Biomass kompartiments -------------------------------------------------
+# 1.11.3.1.2. Wolff: below <1.3m height Biomass kompartiments -------------------------------------------------
 # reference: 
 # Tab. 4:
 # DVFFA – Sektion Ertragskunde, Jahrestagung 2009
@@ -1231,8 +1234,6 @@ h.to.whd <- function(h, spec_wolff){
   
   
 }
-
-
 
 wolff.bio.below.1m <- function(h.cm, spec_wolff, compartiment){
     # h           is column H_cm
@@ -1302,7 +1303,7 @@ wolff.bio.below.1m <- function(h.cm, spec_wolff, compartiment){
     
   }
 
-
+# 1.11.3.1.3. Poorter: below <1.3m height Biomass kompartiments -------------------------------------------------
 Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the species I have to put NH_LH here
   # equation to transform aboveground into belowground biomass : stem:root-ratio
  # quadratische ergänzung der Funktion: stem = a + b1*root + b2*root^2
@@ -1366,8 +1367,56 @@ Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the spec
          "x2" = bg.kg.x2)
 }
 
+# 1.11.3.2. biomass RG >1.3m ----------------------------------------------
 
-# 1.11.4. DEADWOOD BIOMASS --------------------------------------------------------
+# 1.11.3.2.1. GHGI: biomass RG >1.3m ----------------------------- --------
+## above ground biomass for trees >1.3m height and < 10cm DBH GHGI (equation: 5, coefficients table: 3)
+# B_H1.3_DBHb10 = above-ground phytomass in kg per individual tree,
+# b0, bs, b3 = coefficients of the function,
+# DBH = Diameter at breast height in cm,
+# ds = Diameter-validity boundary for this function = 10 cm/
+GHGI_aB_H1.3_DBHb10 <- function(spec, d){
+  b0 <- c(fi = 0.41080, ki = 0.41080, bu = 0.09644 , ei= 0.09644, shw =0.09644);
+  bs <- c(fi = 26.63122 , ki = 19.99943 , bu = 33.22328, ei= 28.94782, shw =16.86101);
+  b3 <- c(fi = 0.01370, ki = 0.00916, bu = 0.01162, ei= 0.01501, shw = -0.00551);
+  ds <- c(fi = 10, ki = 10, bu = 10, ei= 10, shw =10);
+  return(b0[spec]+((bs[spec] - b0[spec])/ds[spec]^2 + b3[spec]*(d-ds[spec]))*d^2)
+}
+
+# 1.11.3.2.2. compartiments biomass RG >1.3m ----------------------------- --------
+Poorter_rg_with_bg <- function(bg.kg, spec, compartiment){ # instead of the species I have to put NH_LH here
+  # equation to transform aboveground into belowground biomass : stem:root-ratio
+  
+  # equation to transform belowground into foliage biomass : leaf:root-ratio
+  bg_g <- bg.kg*1000;             # belowground biomass in g (*1000)
+  a1 <- c(NB = 0.243, LB =  0.090);
+  b1 <- c(NB =  0.924, LB =  0.889);
+  b2 <- c(NB = -0.0282, LB = -0.0254);
+  log.10.f_bio <- a1[spec]+ b1[spec]* log10(bg_g)+ b2[spec]*log10(bg_g)^2;
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+  # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  f_bio_kg <- (10^log.10.f_bio)/1000;
+  
+  # equation to transform root into stem biomass
+  a3 <- c(NB = -0.070, LB = -0.097);   # a
+  b3 <- c(NB = 1.236, LB = 1.071);     # b1  
+  b4 <- c(NB = -0.0186, LB = 0.01794); # b2
+  # 10-log of belowground biomass in g (*1000)
+  log.10.stem_bio <- a3[spec]+ b3[spec]*log10(bg_g) + b4[spec]*log10(bg_g)^2;
+  # a) backtranform  logarithm: https://studyflix.de/mathematik/logarithmus-aufloesen-4573
+  # log_a(b) = c ---> b = a^c
+  # b) transform leaf biomass in g into kg by dividing by 1000
+  stem_bio_kg <- (10^log.10.stem_bio)/1000;
+  
+  switch(compartiment, 
+         "foliage" = f_bio_kg, 
+         "stem" = stem_bio_kg)
+}
+
+
+
+# 1.11.4. deadwood --------------------------------------------------------
 # 1.11.4.1. Volume Deadwood according to BWI ----------------------------------------------------------
 # here we have to consider, that in case of MoMok there were no different types pf diameter taken
 # e.g  min diameter, max diameter, middle diam
@@ -1392,7 +1441,7 @@ V_DW_whole <- function(spec_tpS, d, dh, l){          # I don´t know if this can
   return (tprVolume(obj.dw[obj.dw@monotone == TRUE]))
 }
 
-# ---- 1.3.4.2. Biomass Deadwood according to BWI ----------------------------------------------------------
+# ---- 1.11.4.2. Biomass Deadwood according to BWI ----------------------------------------------------------
 B_DW <- function(V.m3, dec.type, SP){     # dec_SP = a column that holds the degree of decay and the species type has to be created (united)
   # *1000 to transform density in g/cm3 into kg/m3: https://www.translatorscafe.com/unit-converter/de-DE/density/4-1/Gramm/Kubikzentimeter-Kilogramm/Kubikmeter/
   # spec_ 

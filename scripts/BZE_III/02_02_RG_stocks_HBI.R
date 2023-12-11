@@ -67,13 +67,13 @@ for (i in 1:nrow(HBI.RG.above.1.3)) {
   Hm = na.omit(as.list(as.numeric(1.3)))
   Ht = na.omit(as.numeric(unique(HBI.RG.above.1.3$H_m[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])))
   # create tapes compartiments
-  comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
+  comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl"))
   
   # create object  
   obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   # calculate biomass per compartiment
-  bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp, mono = F)) %>% 
+  bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp, mono =T)) %>% 
     pivot_longer(cols = stw:ndl,
                  names_to = "compartiment", 
                  values_to = "B_kg_tree")
@@ -196,10 +196,103 @@ HBI_RG <- HBI_RG %>% left_join(., rbind(bio.ag.kg.RG.above.1.3.df,
   
   
 # 2. Biomass comparisson  ---------------------------------------
+# 2.1. Biomass comp RG trees height > 1.3m -------------------------------
+comparisson.bio.bg.kg.RG.above.1.3 <- vector("list", length = nrow(HBI.RG.above.1.3))
+for (i in 1:nrow(HBI.RG.above.1.3)) {
+  # i = 13
+  
+  # basic tree info
+  # select one tree ID and plot ID for each individual tree per plot and sampling circuit
+  my.plot.id <- HBI.RG.above.1.3[,"plot_ID"][i]
+  my.ccs.id <- HBI.RG.above.1.3[,"CCS_no"][i]
+  my.tree.id <- HBI.RG.above.1.3[,"tree_ID"][i]
+  my.tree.sp <- HBI.RG.above.1.3[,"SP_code"][i]
+  
+  
+  # select variales for aboveground  functions
+  # for GHGI
+  spp = SP_names_com_ID_tapeS$Bio_SP_group[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
+  dbh.cm = as.numeric(unique(HBI.RG.above.1.3$D_cm[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id]))
+  # for poorter
+  bg_GHG = as.numeric(bio.bg.kg.RG.above.1.3.df$B_kg_tree[bio.bg.kg.RG.above.1.3.df$plot_ID==my.plot.id & bio.bg.kg.RG.above.1.3.df$tree_ID==my.tree.id & bio.bg.kg.RG.above.1.3.df$CCS_no==my.ccs.id])
+  spp_LHNH = SP_names_com_ID_tapeS$LH_NH[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
+  # for Tapes
+  spp_tapes = SP_names_com_ID_tapeS$tpS_ID[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
+  Dm = na.omit(as.list(as.numeric(unique(HBI.RG.above.1.3$D_cm[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])))) 
+  Hm = na.omit(as.list(as.numeric(1.3)))
+  Ht = na.omit(as.numeric(unique(HBI.RG.above.1.3$H_m[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id & HBI.RG.above.1.3$CCS_no==my.ccs.id])))
+  # create tapes compartiments
+  comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl", "agb"))
+  
+  # create object  
+  obj.trees <- tprTrees(spp_tapes, Dm, Hm, Ht, inv = 4)
+  # calculate biomass per compartiment
+  tapes.bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp, mono =T)) %>% 
+    pivot_longer(cols = stw:agb,
+                 names_to = "compartiment", 
+                 values_to = "B_kg_tree") %>% 
+    mutate(bio_method = rep("tapes", times = length(comp))) %>% 
+    select(compartiment, bio_method, B_kg_tree )
+  
+  # calculate biomass per compartiment
+  bio.df <- as.data.frame(cbind(
+    # "bio_method" = c("poorter+GHG", "poorter+GHG", "GHGI", "GHGI", "GHGI-poorter", "poorter+poorter", "GHGI-poorter", "tapes","GHGI-tapes"),
+    #"compartiment" = c("sw", "ndl", "ag", "bg", "sw", "ag", "ag_diff", "ag","ag_diff"), 
+    "compartiment" = c("stw","stb","sw", "sb", "fwb", "ndl", "ag", "bg"),
+    # poorter biomassees based onGHGI belowground input biomass
+    "poorter_B_kg_tree" = c(0 #stw 
+                            ,0 # stb
+                            ,as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "stem"))[1,]     # sw
+                            , 0
+                            , 0
+                            ,as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "foliage"))[1,]  # ndl
+                            # avboveground biomass consitsting of foliage+stem fom poorter
+                            ,(as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "stem"))[1,]+as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "foliage"))[1,])
+                            , 0),
+    "GHG_B_kg_tree" = c(0 #stw
+                        ,0# stb
+                        #sw: biomass of stem if we would deduct only the foliage compartiment from the GHGI abovegro9und biomass
+                        ,(as.data.frame(GHGI_aB_H1.3_DBHb10(spp, dbh.cm))[1,] - as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "foliage"))[1,]) # ag-ndl predicted by poorter
+                        ,0 # sb
+                        , 0 # fwb
+                        # this is the foliage biomass estiamted by poorter with GHGI belowgeround input
+                        ,as.data.frame(Poorter_rg_with_bg(bg_GHG, spp_LHNH, compartiment = "foliage"))[1,]  # ndl
+                        # GHGI ag
+                        ,as.data.frame(GHGI_aB_H1.3_DBHb10(spp, dbh.cm))[1,]                                # ag
+                        ,bg_GHG),  # bg 
+    "tapes_B_kg_tree" = c(tapes.bio.df$B_kg_tree 
+                          ,0) # belowgroun)                   
+  )) 
+  
+  
+  bio.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(as.integer(my.plot.id)), 
+    "CCS_no" = c(my.ccs.id),
+    "tree_ID" = c(as.integer(my.tree.id)), 
+    "inv" = unique(HBI.RG.above.1.3$inv[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id]), 
+    "inv_year" = c(as.integer(unique(HBI.RG.above.1.3$inv_year[HBI.RG.above.1.3$plot_ID==my.plot.id & HBI.RG.above.1.3$tree_ID==my.tree.id]))),
+    "compartiment" = c(bio.df$compartiment),
+    "poorter_B_kg_tree" = c(as.numeric(bio.df$poorter_B_kg_tree)), 
+    "GHG_B_kg_tree" = c(as.numeric(bio.df$GHG_B_kg_tree)),
+    "tapes_B_kg_tree" = c(as.numeric(bio.df$tapes_B_kg_tree))
+  ) ) 
+  
+  comparisson.bio.bg.kg.RG.above.1.3[[i]] <- bio.info.df
+  
+}
+comparisson_bio_kg_RG_above_1.3_df <- as.data.frame(rbindlist(comparisson.bio.bg.kg.RG.above.1.3))
+comparisson_bio_kg_RG_above_1.3_df[,c(1,2, 3, 5,7, 8, 9)] <- lapply(comparisson_bio_kg_RG_above_1.3_df[,c(1,2, 3, 5,7, 8, 9)], as.numeric)
+
+
+
+
+# 2.2. biomas comp RG trees < 1.3m height ---------------------------------
+
+
 # subset those trees that have a height above 1.3m and thus a DBH which allows them to be processed in TapeS
   HBI.RG.below.1 <- HBI_RG[HBI_RG$H_m < 1, ]
   
-# 2.1 calculate biomass via Wolff, Poorter, GHGI --------------------------
+# 2.2.1 calculate biomass via Wolff, Poorter, GHGI --------------------------
 
 # comparing the biomass per compartiment for trees under 1m: 
 #      - compartiments of poorter with with GHGI vs. Wollf input biomass 
@@ -276,8 +369,8 @@ poorter.bio.ag.bg.kg.RG.below.1.df <- as.data.frame(rbindlist(poorter.bio.ag.bg.
 
 
 
-# 2.1  differences in RG compartimentition ----------------------------------------------
-# 2.1.1. statistical characteristics of difference between Poorter bg options -------------------
+# 2.2.2  differences in RG compartimentition ----------------------------------------------
+# 2.2.2.1. statistical characteristics of difference between Poorter bg options -------------------
 HBI_RG_poorter_x_comparisson <- HBI.RG.below.1 %>% 
   mutate(stem_kg = wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem")/1000,
          bg_kg = Poorter_rg_RSR_RLR(wolff.bio.below.1m(H_cm, RG_Wolff_bio, compartiment = "stem"), LH_NH, compartiment = "bg"), 
