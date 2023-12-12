@@ -1333,9 +1333,9 @@ Poorter_rg_RSR_RLR <- function(ag.kg, spec, compartiment){ # instead of the spec
   ag_minus_x2 = ag.kg - bg.kg.x2
   
   # if x1 is lower then zero while x2 is higher then zero but below the stem mass choose x2, if not choose x1
-  bg_bio_kg = ifelse(bg.kg.x1 >= 0 & ag_minus_x1 < ag_minus_x2, bg.kg.x1, 
-                     ifelse(bg.kg.x2 >= 0 & ag_minus_x2 < ag_minus_x1, bg.kg.x2, 
-                            NA))
+   bg_bio_kg =  ifelse(bg.kg.x1 >= 0 & abs(ag_minus_x1) < abs(ag_minus_x2), bg.kg.x1, 
+                      ifelse(bg.kg.x2 >= 0 & abs(ag_minus_x2) < abs(ag_minus_x1), bg.kg.x2, 
+                             NA))
   
   # equation to transform belowground into foliage biomass : leaf:root-ratio
   bg_g <- bg_bio_kg*1000;             # belowground biomass in g (*1000)
@@ -1494,7 +1494,7 @@ N_all_com <- function(B, N_spec_w_rumpf, N_spec_f_BZE, N_spec_bg_Jacobsen, comp.
   
  # calculate nitrogen content in the aboveground and belowground compartiments but without sums (total or total aboveground N) 
   N <- case_when(
-    comp.trees == "ndl" ~ NA, # as.numeric(B)*as.numeric(n_con_f[N_spec_f_BZE]), # accordint to the BZE we don´t have to deliver this compartiments nitrogen stock so we wont 
+    comp.trees == "ndl" ~ 0, # as.numeric(B)*as.numeric(n_con_f[N_spec_f_BZE]), # accordint to the BZE we don´t have to deliver this compartiments nitrogen stock so we wont 
     comp.trees == "bg" ~ as.numeric(B)*as.numeric(n_con_bg[N_spec_bg_Jacobsen]), 
     !(comp.trees %in% ("ag, total, ndl, bg")) ~ as.numeric(B)*as.numeric(n_con_w[SP_compart_Rumpf]),
     TRUE ~ NA)

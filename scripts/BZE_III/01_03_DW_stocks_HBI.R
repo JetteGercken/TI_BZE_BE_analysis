@@ -86,7 +86,7 @@ DW_data <- DW_data %>%
 
 # 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
 # for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
-HBW_DW_whole <- DW_data[DW_data$dw_type %in% c(2, 5), ]
+HBW_DW_whole <- DW_data[DW_data$dw_type %in% c(2, 5)  & DW_data$decay  %in% c(1,2), ]
 # export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(HBW_DW_whole))
 # export list for volume
@@ -147,7 +147,7 @@ bio_dw_whole_ag_kg_df <- bio_dw_whole_kg_df %>%
 # 1.3.2. biomass broken deadwood trees (bruchstücke, 3) ------------------------------------------------------------------------
 # for broken deadwood trees above 1.3 m all compartiments except foliage ("ndl" ) are calculated via TapeS
 # export list for biomasse
-DW_data_broken <- DW_data[DW_data$dw_type == 3, ]
+DW_data_broken <- DW_data[DW_data$dw_type == 3  & DW_data$decay  %in% c(1,2), ]
 bio.dw.broken.kg.list <- vector("list", length = nrow(DW_data_broken))
 for (i in 1:nrow(DW_data_broken)){
   # i = 1
@@ -198,7 +198,7 @@ bio_dw_broken_kg_df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
 
 
 # 1.3.3. biomass for stumps -----------------------------------------------
-DW_data_stump <- DW_data[DW_data$dw_type == 4,]
+DW_data_stump <- DW_data[DW_data$dw_type == 4 & DW_data$decay  %in% c(1,2),]
 bio.dw.stump.kg.list <- vector("list", length = nrow(DW_data_stump))
 for (i in 1:nrow(DW_data_stump)){
   # i = 3
@@ -284,7 +284,8 @@ bio_dw_stump_kg_df <- as.data.frame(rbindlist(bio.dw.stump.kg.list))
 
 # 1.3.4. biomass for deadwood pieces --------------------------------------------------------
 bio_dw_pieces_kg_df <- DW_data %>% 
-  filter(dw_type %in% c(1, 6)) %>% 
+  filter(dw_type %in% c(1, 6) |
+           dw_type %in% c(2, 5, 3, 4) & decay > 2) %>% 
   mutate(
   compartiment =  "ag", 
   V_m3_tree = V_DW_cylinder(as.numeric(d_cm)/100, as.numeric(l_dm/10)),
@@ -322,12 +323,16 @@ DW_data <- DW_data %>%
 
 # 1.4.1. Nitrogen stock in compartiments -----------------------------------------
 N_dw_ag_comps_kg_df <- DW_data %>%
-  filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" |
-        # deselect summed up compartiments for whole trees, stumps and broken trees
+  # compartitioned deadwood trees
+  filter(dw_type %in% c(2, 5, 3, 4) & decay <=2 & compartiment != "ag" | # deselect summed up compartiments for whole trees, stumps and broken trees
+  # deadwood trees that could have been compartitioned if htey would´t be to decayed
+  # --> biomass is always "ag"
+           dw_type %in% c(2, 5, 3, 4) & decay > 2|
+  # uncompartionable deadwood trees --> biomass is always "ag"
            dw_type %in% c(1, 6)) %>% 
   mutate(N_kg_tree = case_when(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), 
                                # for all trees that are not copmartioned (meaning all trees that don´t have )
-                               dw_type %in% c(1, 6) & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sb"), 
+                               dw_type %in% c(1, 6) & compartiment == "ag" | dw_type %in% c(2, 5, 3, 4) & decay > 2 & compartiment =="ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sb"), 
                                TRUE ~ NA)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, dw_type, compartiment, N_kg_tree) 
 

@@ -194,8 +194,7 @@ trees <- trees %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-trees_update_4 <- trees %>% select(- c("Chr_code_ger", "H_SP_group","BWI_SP_group" , "Bio_SP_group",
-                                           "N_SP_group", "N_bg_SP_group", "N_f_SP_group_MoMoK"))
+trees_update_4 <- trees 
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
 write.csv2(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "trees_update_4", sep = "_"), ".csv"))
