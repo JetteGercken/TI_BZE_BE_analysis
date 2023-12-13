@@ -603,7 +603,7 @@ ggplot() +
 
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-forest_edges_HBI.man.sub.e1.nogeo <-  forest_edges_HBI.man%>% filter(e_form == 1)# %>% 
+forest_edges_HBI.man.sub.e1.nogeo <-  forest_edges_HBI.man%>% filter(e_form == 1) # %>% 
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
 
 triangle.e1.list.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID))
@@ -618,16 +618,13 @@ for(i in 1:length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID) ) {
   my.e.id <- forest_edges_HBI.man.sub.e1.nogeo[i, "e_ID"]
   my.e.form <- forest_edges_HBI.man.sub.e1.nogeo[i, "e_form"]
   
-  ## assign crs
-  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
-  
-  # select UTM corrdinates of the plot center by plot ID
-  # my.center.easting <- 0 #HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- 0 # HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select UTM corrdinates of the plot center by plot ID
+  # my.center.easting <-  HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle center and radius to calcualte intersections 
-  c.x0 = 0
-  c.y0 = 0
+  c.x0 = 0   
+  c.y0 = 0   
   c.r0 = 17.84
   c.rmax = 60
   
@@ -676,14 +673,14 @@ for(i in 1:length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID) ) {
   # creating the polar coordiantes of a turning point of a triangle by selecting the intersection of the 
   # line from the middle of the AB.inter-ray and the circle center (MC_line) with 
   # the 60m radius at the "shorter side" so the intersection of the MC_line with a 60m radius that has le lest distance to the MC point on the AB.inter-ray
-  turning.east <- X_inter_MC_shorter_side # + my.center.easting
-  turning.north <-  Y_inter_MC_shorter_side #+ my.center.northing 
+  turning.east <- X_inter_MC_shorter_side   # + my.center.easting
+  turning.north <-  Y_inter_MC_shorter_side # + my.center.northing
   
   # UTM coordiantes of corner points 
-  x1.east <- x.1 # + my.center.easting 
-  y1.north <- y.1  #+ my.center.northing 
-  x2.east <- x.2 # + my.center.easting 
-  y2.north <- y.2 #+ my.center.northing 
+  x1.east <- x.1   # + my.center.easting 
+  y1.north <- y.1  # + my.center.northing 
+  x2.east <- x.2   # + my.center.easting 
+  y2.north <- y.2  # + my.center.northing 
   
   # create dataframe that holds coordinates of the intersections of the AB line with a 60m radius and the turning pint of a diagonal line through the AB line with a 60m radius circle
   triangle.e1.df <- as.data.frame(cbind("lon" = c(turning.east, x1.east, x2.east, turning.east),
@@ -696,8 +693,12 @@ for(i in 1:length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID) ) {
                                              , x = "lon"
                                              , y = "lat"
                                              , polygon_id = "e_ID")
-  # assing crs
-  #sf::st_crs(triangle.e1.poly) <- my.utm.epsg
+  
+  ## georef
+  ## assign crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  ## assing crs
+  # sf::st_crs(triangle.e1.poly) <- my.utm.epsg
   
   print(plot(triangle.e1.poly, main = my.plot.id))
   
@@ -724,8 +725,8 @@ triangle.e1.coords.df.nogeo <- as.data.frame(triangle.e1.coords.list.nogeo) %>%
 ## loop to create list of polygones for edge form 1
 forest_edges_HBI.man.sub.e2.nogeo <- forest_edges_HBI.man %>%
   filter(e_form == 2) %>%  # nrow = 21
-  filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") #%>% 
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
+  filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") # %>% 
+# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
 
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) )
 triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID))
@@ -738,18 +739,14 @@ for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
   my.plot.id <- forest_edges_HBI.man.sub.e2.nogeo[i, "plot_ID"] 
   my.e.id <- forest_edges_HBI.man.sub.e2.nogeo[i, "e_ID"] 
   my.e.form <- forest_edges_HBI.man.sub.e2.nogeo[i, "e_form"]
-  #my.n.of.edges <- forest_edges_HBI.man %>% filter(plot_ID == my.plot.id) %>% group_by(plot_ID) %>% summarize(n = n()) %>% dplyr::pull(n)
   
-  # assign crs
-  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
-  
-  # select UTM corrdinates of the plot center
+  ## select UTM corrdinates of the plot center
   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle data
-  c.x0 = 0
-  c.y0 = 0
+  c.x0 = 0 
+  c.y0 = 0 
   c.r0 = 17.84
   c.rmax = 300
   
@@ -786,12 +783,12 @@ for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
   BT.y <- inter.for.triangle(b0.BT, b1.BT, c.x0, c.y0, c.rmax, x.B, y.B, x.T, y.T, coordinate = "y")                              # latitude, northing, HW, y 
   
   #calculate UTM coordiantes of triangle corners
-  T.east <- x.T # + my.center.easting                             # longitude, easting, RW, X
-  T.north <- y.T # + my.center.northing                           # latitude, northing, HW, y 
-  AT.x.east <-  AT.x # + my.center.easting                        # longitude, easting, RW, X
-  AT.y.north <- AT.y # + my.center.northing                       # latitude, northing, HW, y 
-  BT.x.east <- BT.x  # + my.center.easting                        # longitude, easting, RW, X
-  BT.y.north <- BT.y # + my.center.northing                       # latitude, northing, HW, y 
+  T.east <- x.T        # + my.center.easting                             # longitude, easting, RW, X
+  T.north <- y.T       # + my.center.northing                           # latitude, northing, HW, y 
+  AT.x.east <-  AT.x   # + my.center.easting                        # longitude, easting, RW, X
+  AT.y.north <- AT.y   # + my.center.northing                       # latitude, northing, HW, y 
+  BT.x.east <- BT.x    # + my.center.easting                        # longitude, easting, RW, X
+  BT.y.north <- BT.y   # + my.center.northing                       # latitude, northing, HW, y 
   
   # create dataframe with triangle corner UTM coordiantes
   triangle.e2.df <- as.data.frame(cbind("lon" = c(T.east, AT.x.east, BT.x.east, T.east),       # longitude, easting, RW, X
@@ -804,8 +801,11 @@ for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
                                             , x = "lon"
                                             , y = "lat"
                                             , polygon_id = "e_ID")
-  # assing crs
-  #sf::st_crs(triangle.e2.poly) <- my.utm.epsg
+  
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  ## assing crs
+  # sf::st_crs(triangle.e2.poly) <- my.utm.epsg
   
   # print triangle
   print(plot(triangle.e2.poly$geometry, main = my.plot.id))
@@ -839,9 +839,9 @@ forest_edges_HBI.man.sub.1.edge.nogeo <- forest_edges_HBI.man %>% # rows:84
   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
   # remove plots that have two edges
   anti_join(forest_edges_HBI.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
-              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")# %>% # 14 plots with 2 edges --> 28 rows -> 53 left
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding 
+              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")#  %>% # 14 plots with 2 edges --> 28 rows -> 53 left
+## remove plots that do now have a corresponding center coordiante in the HBI loc document
+ # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
 
 edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
 inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
@@ -849,7 +849,7 @@ inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.
 remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
 remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
 
-# loop for 17m radius circle
+# loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){ 
   # i = 48
   #i = which(grepl(50133, (forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
@@ -859,32 +859,32 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){
   my.e.form <- edge.poly.df.nogeo$e_form[edge.poly.df.nogeo$plot_ID == my.plot.id]
   my.e.id <- edge.poly.df.nogeo$e_ID[edge.poly.df.nogeo$plot_ID == my.plot.id]
   
-  # assign crs
-  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
-  # select UTM corrdinates of the plot center
+  ##  select UTM corrdinates of the plot center
   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
-  # select the circle polygone corresponding with the plot ID
-  # my.circle.17 <- sf::st_as_sf(circle.poly.df %>% filter(id == my.plot.id) %>% distinct())
   
   # circle data
-  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  # center.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
-  c.x0 = 0 
-  c.y0 = 0
+  c.x0 = 0 # + my.center.easting  
+  c.y0 = 0 # + my.center.northing 
   c.r3 = 17.84
   c.r2 = 12.62
   c.r1 = 5.64
+  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
   
   # build polygon (circlular buffer) around center point
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  ## assing crs to cirlce corodiantes
+  # sf::st_crs(circle.pt) <- my.utm.epsg
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
   
-  # select the respective polygones the circle is intersected by
+  
+  ## select the respective polygones the circle is intersected by
   my.poly <- sf::st_as_sf(edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id))
   
   # print the cirlce and edge polygone
@@ -990,20 +990,19 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){
     select(- c(CCS_r_m, inter_stat, area_m2))
   
   # join in stand info based on area of the edge segment by plot and edge ID
-  inter.area.df <- inter.area.df %>% left_join(., stand.df, 
-                                               by = c("plot_ID", "e_ID"))
+  inter.area.df <- inter.area.df %>% left_join(., stand.df, by = c("plot_ID", "e_ID"))
   
   
   # list with inter and remaining circle areas areas
   edges.list.nogeo[[i]] <- inter.area.df
   
-  # create lists with polgons of intersections if there are intersections, if there is non, save the polygone instead. 
+  # create lists with polgons of intersections if there are intersections, if there is non, save the edge triangle polygone instead. 
   inter.poly.list.nogeo[[i]] <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
   
   # testing if corect inter was saved: 
-  # i.plot <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
+  #  i.plot <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
   # plot(i.plot$geometry)
-  # plot(circle.17, add = T)
+  #  plot(circle.17, add = T)
   
   # save remaining circles polygones into list
   #plot(remaining.circle.poly.17)
@@ -1055,9 +1054,9 @@ forest_edges_HBI.man.sub.2.edges.nogeo <- forest_edges_HBI.man %>% # rows:84
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | 
                                               e_form == 2 & inter_status_AT_17 == "two I" | 
                                               e_form == 2 & inter_status_BT_17 == "two I") %>% 
-              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% # 14 plots iwth 2 edges --> 28 rows
+              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 14 plots iwth 2 edges --> 28 rows
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
+semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
 
 
 # prepare output lists
@@ -1081,22 +1080,25 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   # select plot ID of the respective circle 
   my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)[i]
   
-  # select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
+   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  
   
   #### build circle
   # circle data
-  
-  c.x0 = 0 
-  c.y0 = 0
+  c.x0 = 0    # + my.center.easting 
+  c.y0 = 0    # + my.center.northing
   c.r3 = 17.84
   c.r2 = 12.62
   c.r1 = 5.64
   # build polygon (circlular buffer) around center point
   center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  # center.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  ## assing crs to cirlce corodiantes
+  # sf::st_crs(circle.pt) <- my.utm.epsg
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
@@ -1115,8 +1117,8 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   my.e.form.2 <- my.plot.polys.df$e_form[2]
   
   # print edges and circle
-  # print(plot(circle.17$geometry), 
-  #       plot(my.poly.1$geometry,  add = T), 
+  # print(plot(circle.17$geometry),
+  #       plot(my.poly.1$geometry,  add = T),
   #       plot(my.poly.2$geometry, add = T))
   
   #### intersections between polygones and circles   
@@ -1271,7 +1273,6 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
     ))
   
   
-  
   # bind area datafames of all 3 circles together
   inter.area.df <- rbind(inter.area.df.17, inter.area.df.12,inter.area.df.5 )
  
@@ -1301,12 +1302,9 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   # create list with those plot ID where the two edges intersect within the radius of 17.84m
   intersection.between.edges.17 <- sf::st_intersection(
     sf::st_intersection(my.poly.1, circle.17), # intersection poly 1 and cirlce 17
-    sf::st_intersection(my.poly.2, circle.17) # intersection poly 2 and cirlce 17
-  )
+    sf::st_intersection(my.poly.2, circle.17)) # intersection poly 2 and cirlce 17
   intersection.warning.edges <- ifelse(nrow(intersection.between.edges.17) == 0, NA, intersection.between.edges.17$plot_ID)
   intersection.warning.edges.list.nogeo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
-  
-  
   
   ## save intersection polygones in list
   # poly.1
@@ -1325,7 +1323,6 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){
   rem.circle.multipoly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
   
 }
-
 # save areas into dataframe
 edges.list.two.edges.final.nogeo <- rbindlist(edges.list.two.edges.nogeo)
 edges.area.two.edges.df.nogeo <- as.data.frame(edges.list.two.edges.final.nogeo)
@@ -1364,9 +1361,6 @@ rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 
 # bind all edges area dataframes together
 all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2))
 
-
-
-
 # 3.2.2. sorting TREES into edge and remaining circle polygones ---------
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
 trees.one.edge.nogeo <- trees_data %>%
@@ -1375,22 +1369,25 @@ trees.one.edge.nogeo <- trees_data %>%
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
   anti_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+## remove plots that do now have a corresponding center coordiante in the HBI loc document
+# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
-
 for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
   #i = 997
-  
- # i = which(grepl(50133, (trees.one.edge.nogeo$plot_ID)))[7]
-  
+  # i = which(grepl(50133, (trees.one.edge.nogeo$plot_ID)))[7]
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.one.edge.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.one.edge.nogeo[i, "tree_ID"]
   my.inv <- trees.one.edge.nogeo[i, "inv"]
+  
+  ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
+  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
   # select the remaining cirlce we want to intersect the tree with
   my.rem.circle <- sf::st_as_sf(rem.circle.one.edge.df.nogeo %>% filter(plot_ID == my.plot.id) %>% distinct())
@@ -1408,11 +1405,6 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter$stand <- area.plot.df$stand[area.plot.df$e_ID == 1 | area.plot.df$e_ID == 2]
   
-  # # assign crs
-  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
-  # # select UTM corrdinates of the plot center
-  #my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  #my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # extract polar coordiantes of forest edge
   # point A 
@@ -1421,7 +1413,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
   # transform polar into cartesian coordiantes
-  tree.east <- x.tree #+ my.center.easting 
+  tree.east <- x.tree   # + my.center.easting 
   tree.north <-  y.tree # + my.center.northing
   
   # save cartesian coordiantes in dataframe
@@ -1436,7 +1428,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
   tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
-  # assing CRS to points
+  ## assing CRS to points
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
   # print(plot(my.inter$geometry), 
@@ -1484,7 +1476,7 @@ trees.two.edges.nogeo <- trees_data %>%
   # filter for trees located in plots htat haev only one forest edge
   semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
+## remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 tree.status.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
@@ -1498,6 +1490,12 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   my.plot.id <- trees.two.edges.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.two.edges.nogeo[i, "tree_ID"]
   my.inv <- trees.two.edges.nogeo[i, "inv"]
+  
+  ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
+  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
   # select the remaining cirlce we want to intersect the tree with
   my.rem.circle <- sf::st_as_sf(rem.circle.two.edges.df.nogeo %>% filter(plot_ID == my.plot.id) %>% distinct())
@@ -1518,12 +1516,6 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter.1$stand <- area.plot.df$stand[area.plot.df$e_ID == 1]
   my.inter.2$stand <- area.plot.df$stand[area.plot.df$e_ID == 2]
-  
-  # # assign crs
-  # my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
-  # # select UTM corrdinates of the plot center
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # extract polar coordiantes of forest edge
   # point A 
@@ -1548,7 +1540,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
   tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
-  # assing CRS to points
+  ## assing CRS to points
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
   # print(plot(my.rem.circle$geometry, col = "red"), 
@@ -1577,7 +1569,6 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   
   tree.points.two.edges.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
-  
 }
 # save tree corodiantes and status into dataframe
 tree.status.list.two.edges.final.nogeo <- rbindlist(tree.status.two.edges.list.nogeo)
@@ -1592,7 +1583,12 @@ two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tr
 
 
 # 3.2.2.3 plots with no edge edge: sorting trees into circle ---------
-trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.nogeo %>% select(plot_ID) %>% distinct(), by = "plot_ID")
+trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.nogeo %>% 
+                                   select(plot_ID) %>% 
+                                   distinct(), by = "plot_ID")#%>% 
+# remove plots that do now have a corresponding center coordiante in the HBI loc document
+# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
@@ -1604,12 +1600,20 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   my.tree.id <- trees.no.edge.nogeo[i, "tree_ID"]
   my.inv <- trees.two.edges.nogeo[i, "inv"]
   
+  ## georeference
+  ## select UTM corrdinates of the plot center
+  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  
   # extract polar coordiantes of forest edge
   # point A 
   dist.tree <- trees.no.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  
   
   # transform polar into cartesian coordiantes
   tree.east <- x.tree  # + my.center.easting 
@@ -1627,13 +1631,10 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
   tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
-  # assing CRS to points
+  ## assing CRS to points
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
-  # select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
-  
+ 
   #### build circle
   # circle data
   c.x0 = 0  # + my.center.easting
@@ -1643,8 +1644,9 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   c.r1 = 5.64
   # build polygon (circlular buffer) around center point
   center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  # center.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  ## assing crs to cirlce corodiantes
+  # sf::st_crs(circle.pt) <- my.utm.epsg
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
@@ -1736,7 +1738,10 @@ trees_update_1 <- trees_data %>%
          # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
          stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
          # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-         plot_A_ha = c_A(CCS_r_m)/10000)  # dividedd by 10 000 to transform m2 into hectar
+         plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
+# left_join(HBI_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
+# mutate(east_tree =  X_tree + RW_MED, 
+#        north_tree = Y_tree + HW_MED)
 
 
 

@@ -301,6 +301,17 @@ pick_utm_epsg <- function(lon){
 }
 
 
+pick_utm <- function(lon){
+  if(lon < 6){
+    utm <- 31
+  }else if(lon >= 6 & lon < 12){
+    utm <- 32
+  }else if(lon >= 12){
+    utm <- 33
+  }
+  return(utm)
+}
+
 # ----1.4.2. azimut -------------------------------------------------------
 azi <- function(x2, y2, x1, y1){
   azi = atan((x2 - x1)/(y2 - y1));
