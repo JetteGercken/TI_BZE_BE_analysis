@@ -17,13 +17,26 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")%>% mutate(inv_year = 2012, 
-                                                                                                     inv = inv_name(inv_year))
+HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
+# assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
+colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year", "inv")
+
 # this dataset contains the HBI forest edges info
 HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
 colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                                 "A_dist", "A_azi",  "B_dist", "B_azi", 
                                 "T_dist", "T_azi") # t = turning point 
+# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
+HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
+HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  
+                                       "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN"))
+colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
+
+# HBI point info
+HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
+colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
+
 
 # # import coordinates of polygones along all edges iin triangle shape
 all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
@@ -33,15 +46,23 @@ all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG
 
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
-# assign column names 
-                        # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year", "inv")
-
-
+# add inventory year and name to dataset
+# HBI point/ inventory info
+# create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
+HBI_inv_info$date <- as.Date(HBI_inv_info$date)
+HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
+# this line can be removed later
+HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
+                                        inv = inv_name(inv_year))
 
 # 1. calculations ---------------------------------------------------------
+
 # 1.1. assign gon according to exposition --------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
+  # join in inventory info
+  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
+            by = "plot_ID")  %>% 
+  # join in forest edge info
  left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
@@ -70,7 +91,12 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
   # filter for trees located in plots htat haev only one forest edge
   anti_join(forest_edges_HBI.man %>%
               #filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I")  %>% 
-              select(plot_ID, e_ID) %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID) %>% distinct(), by = "plot_ID") #%>% 
+              select(plot_ID, e_ID) %>% 
+              group_by(plot_ID) %>% 
+              summarise(n = n()) %>% 
+              filter(n > 1) %>% 
+              select(plot_ID) %>% 
+              distinct(), by = "plot_ID") #%>% 
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
@@ -95,13 +121,9 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
              filter(n > 1 ) %>% 
              select(plot_ID) %>% 
         distinct(), 
-       by = "plot_ID")
-  
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
+       by = "plot_ID") # %>% 
+## remove plots that do now have a corresponding center coordiante in the HBI loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-
-
-
 
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
@@ -109,8 +131,6 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # i = 213
   # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
-  # assign crs
-  #my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # regerneation sampling cirlce data
   my.plot.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
@@ -122,10 +142,15 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
                                                  HBI_RG_one_edge$CCS_nr == my.ccs.id & 
                                                  HBI_RG_one_edge$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
 
-  # circle data
-  # select UTM coordiantes of BZE (NSI point)
+  ## select georefference data
+  ## select UTM coordiantes of BZE (NSI point)
   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## assign crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  
+  
+  # circle data
   c.x0 = 0 # + my.center.easting
   c.y0 = 0 # + my.center.northing
   c.r3 = 17.84
@@ -134,7 +159,7 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   ccs.dist <- HBI_RG_one_edge$CCS_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]/100
   ccs.azi <- HBI_RG_one_edge$CCS_gon[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]
   x_CCS_center = ccs.dist*sin(ccs.azi * pi/200)  # + my.center.easting
-  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)  # + my.center.northing
+  y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)   # + my.center.northing
   
 ## create polyones
   # create polygone of regeneration sampling circle RG CCS 
@@ -143,8 +168,8 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
                                      "lat" = y_CCS_center)),
                  coords = c("lon", "lat")), # center point df
     my.ccs.r)                               # radius
-  # assing CRS to points
-  #sf::st_crs(tree.sf) <- my.utm.epsg
+  ##  assing CRS to points
+  #sf::st_crs(my.rg.ccs.poly) <- my.utm.epsg
   
   # create polygone of sampling circle
   circle.17 <- sf::st_buffer(
@@ -152,8 +177,8 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
                                      "lat" = c.y0)),
                  coords = c("lon", "lat")), # center point df
     c.r3)                                   # radius of outer 17.84 circle
-  # assing CRS to circle
-  #sf::st_crs(tree.sf) <- my.utm.epsg
+  ## assing CRS to circle
+  #sf::st_crs(circle.17) <- my.utm.epsg
   circle.17$stand <- unique(all_rem_circles_coords$stand[all_rem_circles_coords$plot_ID == my.plot.id])
   circle.17$plot_ID <- my.plot.id
   circle.17$e_ID <- 0
@@ -229,18 +254,16 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
 ## put dataframe in export list
   RG.CCS.one.edge[[i]] <- rg.edge.data
 
-  #print(my.plot.id)
-  
-  print(ggplot() +
+ 
+    print(ggplot() +
           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
                                                             "lat" = c.y0)),
                                         coords = c("lon", "lat"))), aes(),fill = NA)+
           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
                                                            "lat" = y_CCS_center)),
                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-         
-           geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
-           geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
+          geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
+          geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
           geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
           ggtitle(my.plot.id, my.ccs.id)
          )
@@ -274,8 +297,8 @@ HBI_RG_two_edges <- HBI_RG_loc %>%
               filter(n > 1 ) %>% 
               select(plot_ID) %>% 
               distinct(), 
-            by = "plot_ID")
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
+            by = "plot_ID")# %>% 
+## remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 
@@ -296,10 +319,15 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   my.e.id.1 <- HBI_RG_two_edges$e_ID[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id &  HBI_RG_two_edges$e_ID == 1] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
   my.e.id.2 <- HBI_RG_two_edges$e_ID[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id &  HBI_RG_two_edges$e_ID == 2] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
   
-  # circle data
-  # select UTM coordiantes of BZE (NSI point)
+  ## select georefference data
+  ## select UTM coordiantes of BZE (NSI point)
   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## assign crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  
+  
+  # circle data
   c.x0 = 0 # + my.center.easting
   c.y0 = 0 # + my.center.northing
   c.r3 = 17.84
@@ -322,7 +350,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
                                      "lat" = y_CCS_center)),
                  coords = c("lon", "lat")), # center point df
     my.ccs.r)                               # radius
-  # assing CRS to points
+  ## assign CRS to RG circle
   #sf::st_crs(my.rg.ccs.poly) <- my.utm.epsg
   
   # create polygone of sampling circle
@@ -331,7 +359,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
                                      "lat" = c.y0)),
                  coords = c("lon", "lat")), # center point df
     c.r3)                                   # radius of outer 17.84 circle
-  # assing CRS to circle
+  ## assign CRS to BZE circle
   #sf::st_crs(circle.17) <- my.utm.epsg
   circle.17$stand <- unique(all_rem_circles_coords$stand[all_rem_circles_coords$plot_ID == my.plot.id])
   circle.17$plot_ID <- my.plot.id
