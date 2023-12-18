@@ -528,8 +528,18 @@ RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)],
   # join stand and area data into dataset with regeneration CCS locations and size 
   # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
 # HBI_RG_loc update
-HBI_RG_loc_update_1 <- HBI_RG_loc %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") 
-HBI_RG_data_update_1 <- RG_data %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") 
+HBI_RG_loc_update_1 <- HBI_RG_loc %>% 
+  left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
+  # if there is not stand and area assigned because the plot doesn´t have an edge ... 
+  mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
+         area_m2 = ifelse(is.na(stand) & is.na(area_m2), c_A(CCS_max_dist_cm/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+  
+  
+HBI_RG_data_update_1 <- RG_data %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") %>%  
+  # if there is not stand and area assigned because the plot doesn´t have an edge ... 
+  mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
+       area_m2 = ifelse(is.na(stand) & is.na(area_m2), c_A(CCS_max_dist_cm/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+
 
 # 3.2. export  ------------------------------------------------------------
 write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_1$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))

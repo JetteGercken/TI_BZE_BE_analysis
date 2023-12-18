@@ -178,7 +178,8 @@ c_A <- function(r){
   return(circle_area)
 }
 
-# ----- 1.2 DBH class ----------------------------------------------------------
+# ----- 1.2 DBH  ----------------------------------------------------------
+# 1.2.1. DBH class --------------------------------------------------------
 DBH_c_function <- function(dbh){
   # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
   labs_DBH <- c(seq(5, 55, by = 5)) ; 
@@ -189,7 +190,7 @@ DBH_c_function <- function(dbh){
   return(DBH_c)
 }
 
-
+# 1.2.2. DBH correction --------------------------------------------------------
 # conversion of DBH from not-breastheight to brestheight diameter via BWI method
 # source: BWI Methodikband, 5.2.1.1. - BHD bei Probebäumen mit geänderter Messhöhe - Regressionsverfahren
 #         BWI Regressionsgleichung bereitgestellt von Heino Polley, verwendet in Datenerfassungssoftware 2002, 2008 und 2012
@@ -1522,6 +1523,12 @@ carbon <- function(B){
 
 
 
+# 1.14. KG to Tons --------------------------------------------------------
+
+ton <- function(kg){
+  t = kg/1000
+  return(t)
+}
 
 
 

@@ -152,8 +152,10 @@ N_ag_bg_kg_comps_df <- RG_data %>%
 N_total_kg_df <- 
 # total N_stock in kg
 rbind(N_ag_bg_kg_comps_df %>% 
+        # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
+        semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_no", "tree_ID", "inv", "inv_year")) %>% 
   # select compartiments "ndl", "fwb",  and add them together
-  filter(H_m > 1.3 & compartiment %in% c("ag", "bg", "total")) %>% 
+  filter(!(compartiment %in% c("ag", "bg", "total"))) %>% 
   group_by(plot_ID, CCS_no, tree_ID, inv, inv_year) %>% 
   summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
   mutate(compartiment = "ag") %>% 
@@ -161,8 +163,10 @@ rbind(N_ag_bg_kg_comps_df %>%
          "inv_year", "compartiment", "N_kg_tree"),
 # total N_stock in kg
 N_ag_bg_kg_comps_df %>% 
+ # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
+  semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_no", "tree_ID", "inv", "inv_year")) %>% 
   # select compartiments "ndl", "fwb", "bg" and add them together
-  filter(H_m > 1.3 & !(compartiment %in% c("ag", "total"))) %>% 
+  filter(!(compartiment %in% c("ag", "total"))) %>% 
   group_by(plot_ID, CCS_no, tree_ID, inv, inv_year) %>% 
   summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
   mutate(compartiment = "total") %>% 
