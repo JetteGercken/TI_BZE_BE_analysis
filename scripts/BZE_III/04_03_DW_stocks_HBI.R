@@ -367,9 +367,9 @@ DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 # 2. data export ----------------------------------------------------------
 # create export dataset
-DW_data_update_1 <- DW_data
+DW_data_update_4 <- DW_data
 
-write.csv2(DW_data_update_1, paste0(out.path.BZE3, paste(unique(DW_data_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
+write.csv2(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_1$inv)[1], "DW_update_4", sep = "_"), ".csv"))
 
 
 DW_data %>% filter(is.na(B_kg_tree))

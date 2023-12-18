@@ -5,7 +5,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_functions_library.R"))
+source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -19,7 +19,13 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
 HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm", "inv_year", "inv")
+colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm")
+
+# this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
+RG_data <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",")
+#  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
+colnames(RG_data) <- c("plot_ID", "CCS_no", "tree_ID", "SP_code", "H_cm", "D_class_cm")
+
 
 # this dataset contains the HBI forest edges info
 HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
@@ -38,12 +44,11 @@ HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
 colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 
 
-# # import coordinates of polygones along all edges iin triangle shape
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
-
+# creating dataset with information about the concentric sampling circles
+data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
+                          y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
+                          r0 = c(5.64, 12.62, 17.84), # darius in m
+                          rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # add inventory year and name to dataset
@@ -51,18 +56,66 @@ all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 HBI_inv_info$date <- as.Date(HBI_inv_info$date)
 HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
-# this line can be removed later
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
-                                        inv = inv_name(inv_year))
+# this line can be removed later it´s just because currently the incvenotry year is set to 1999
+HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
+HBI_RG_loc <- HBI_RG_loc %>% left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), by = "plot_ID") 
+RG_data <- RG_data %>%  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"),  by = "plot_ID") 
+
+
+# calcualte edge data: cooridnates of edges and intersection stati of the edge lines
+HBI_forest_edges <- HBI_forest_edges %>% 
+  filter(e_form %in% c("1", "2")) %>% 
+  # convert distance from cm to m
+  mutate(across(c("A_dist", "B_dist", "T_dist"), ~ (.x)/100)) %>% 
+  # find line parameters
+  # 1. calculate x and y coordinates for all edge points
+  mutate(X_A = ifelse(A_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], A_dist, A_azi, coordinate = "x"), NA), # if the value is marked -2 its equal to an NA
+         X_B = ifelse(B_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], B_dist, B_azi, coordinate = "x"), NA),
+         X_T = ifelse(T_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], T_dist, T_azi, coordinate = "x"), NA),
+         Y_A = ifelse(A_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], A_dist, A_azi, coordinate = "y"), NA), # if the value is marked -2 its equal to an NA
+         Y_B = ifelse(B_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], B_dist, B_azi, coordinate = "y"), NA),
+         Y_T = ifelse(T_azi != "-2", coord(data_circle$x0[1], data_circle$y0[1], T_dist, T_azi, coordinate = "y"), NA)) %>% 
+  # 2. calcualte slope ß1 = (y2-y1)/(x2-x1) hight/width
+  mutate(b1_AB = ifelse(e_form == "1", slope(X_A, Y_A, X_B, Y_B), NA), 
+         b1_AT = ifelse(e_form == "2", slope(X_T, Y_T, X_A, Y_A), NA),
+         b1_BT = ifelse(e_form == "2", slope(X_T, Y_T, X_B, Y_B), NA)) %>% 
+  # 3. intercept of line with y-axis b0 : insert known point: XA YA
+  # Y_A = b1_AB*X_A + b0_AB -- -b1_AB*X_A --> b0_AB =  Y_A - b1_AB*X_A
+  mutate(b0_AB = ifelse(e_form == "1", intercept(X_A, Y_A,  X_B, Y_B), NA), 
+         b0_AT = ifelse(e_form == "2", intercept(X_T, Y_T, X_A, Y_A), NA),
+         b0_BT = ifelse(e_form == "2", intercept(X_T, Y_T, X_B, Y_B), NA)) %>% 
+  ### 17m circle --> used for tree status also   
+  # find x coordinate of the interception between line and 17.84m circle: insert line equation in circle equation (function: intersection_line_circle)
+  # for AB line 
+  mutate(X1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_AB_17 = intersection.status(intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+                                                  intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")),
+         # for AT line
+         X1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2"), 
+         inter_status_AT_17 = intersection.status(intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"), 
+                                                  intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2")),
+         # for BT line
+         X1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"),
+         X2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_BT_17 = intersection.status(intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"), 
+                                                  intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")))
+
+
+
+# import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
+all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
+all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
+all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
+
+
 
 # 1. calculations ---------------------------------------------------------
 
 # 1.1. assign gon according to exposition --------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
-  # join in inventory info
-  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-            by = "plot_ID")  %>% 
-  # join in forest edge info
  left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
@@ -79,17 +132,16 @@ HBI_RG_loc <- HBI_RG_loc %>%
 
 
 
-
 # 2. sorting sampling circles into stands ---------------------------------
 # 2.1. plots with 1 edge: sorting sampling circles into stands ---------------------------------
 
 # subsetting the HBI_RG_loc dataset by filtering for plots that have only one intersecting edge
 HBI_RG_one_edge <- HBI_RG_loc %>% 
   # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+  semi_join(HBI_forest_edges %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
-  anti_join(forest_edges_HBI.man %>%
+  anti_join(HBI_forest_edges %>%
               #filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I")  %>% 
               select(plot_ID, e_ID) %>% 
               group_by(plot_ID) %>% 
@@ -126,7 +178,7 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 # for each plot_id and regeneration circle at plots with one edge only 
-RG.CCS.one.edge <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
+RG.CCS.one.edge.list <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # i = 213
   # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
@@ -252,7 +304,7 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
     
   
 ## put dataframe in export list
-  RG.CCS.one.edge[[i]] <- rg.edge.data
+  RG.CCS.one.edge.list[[i]] <- rg.edge.data
 
  
     print(ggplot() +
@@ -269,7 +321,7 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
          )
   }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
-RG.one.edge.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
+RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
 
 
 
@@ -303,7 +355,7 @@ HBI_RG_two_edges <- HBI_RG_loc %>%
 
 
 # for each plot_id and regeneration circle at plots with one edge only 
-RG.CCS.two.edges <- vector("list", length = nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])))
+RG.CCS.two.edges.list <- vector("list", length = nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # i = 34
   # i = which(grepl(50132, unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
@@ -443,7 +495,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
   
   ## put dataframe in export list
-  RG.CCS.two.edges[[i]] <- rg.edge.data
+  RG.CCS.two.edges.list[[i]] <- rg.edge.data
   
   #print(my.plot.id)
   
@@ -457,7 +509,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
 }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
-RG.two.edges.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
+RG_two_edges_stands_areas <- as.data.frame(rbindlist(RG.CCS.two.edges.list))
 
 
 
@@ -467,7 +519,7 @@ RG.two.edges.stands.areas <- as.data.frame(rbindlist(RG.CCS.one.edge))
 # 3.1. preparing data for export -----------------------------------------------
 
 ## bind stand and area of plots with one ad two edges together 
-RG_all_edges_stands_areas <- rbind(RG.one.edge.stands.areas, RG.two.edges.stands.areas)
+RG_all_edges_stands_areas <- rbind(RG_one_edge_stands_areas, RG_two_edges_stands_areas)
 
 ## harmonizig strings with HBI_RG datasets 
 RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)], as.integer) 
@@ -477,11 +529,11 @@ RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)],
   # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
 # HBI_RG_loc update
 HBI_RG_loc_update_1 <- HBI_RG_loc %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") 
-
+HBI_RG_data_update_1 <- RG_data %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") 
 
 # 3.2. export  ------------------------------------------------------------
-write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_update_1$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
-write.csv2(HBI_RG_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_1$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_RG_data_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_data_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
 
 
 
