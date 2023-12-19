@@ -532,13 +532,15 @@ HBI_RG_loc_update_1 <- HBI_RG_loc %>%
   left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
   # if there is not stand and area assigned because the plot doesn´t have an edge ... 
   mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
-         area_m2 = ifelse(is.na(stand) & is.na(area_m2), c_A(CCS_max_dist_cm/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+         area_m2 = ifelse(stand == "A" & is.na(area_m2), c_A(as.numeric(CCS_max_dist_cm)/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
   
   
-HBI_RG_data_update_1 <- RG_data %>% left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", c("CCS_no" = "CCS_nr")), multiple = "all") %>%  
-  # if there is not stand and area assigned because the plot doesn´t have an edge ... 
-  mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
-       area_m2 = ifelse(is.na(stand) & is.na(area_m2), c_A(CCS_max_dist_cm/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+HBI_RG_data_update_1 <- RG_data %>% left_join(.,HBI_RG_loc_update_1 %>% 
+                                                select(plot_ID, CCS_nr, stand, area_m2) %>% 
+                                                rename(CCS_no = CCS_nr), 
+                                              by = c("plot_ID", "CCS_no"), 
+                                              multiple = "all")
+ 
 
 
 # 3.2. export  ------------------------------------------------------------

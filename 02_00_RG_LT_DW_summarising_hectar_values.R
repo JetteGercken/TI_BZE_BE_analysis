@@ -27,66 +27,104 @@ tree_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_
 
 
 
+
+
+
+# CALCULATIONS ------------------------------------------------------------
+
+
+# 1. number of species/ DW types/ characteristics per plot -----------------------------------------------
+
+
+# 2. number of trees (LT/ DW/ RG) per hectar ----------------------------------------------
 # summarize all trees per plot, no further grouping variables
+n_ha_LT <-  tree_data %>% 
+      filter(compartiment == "ag") %>% 
+      group_by(plot_ID, CCS_r_m, plot_A_ha, inv_year) %>% 
+     # sum number of trees  per sampling circuit and reffer to hectare
+  reframe(no_trees_CCS_ha = n()/plot_A_ha) %>% 
+      distinct() %>% 
+      # now we summarise all the ha values of the cirlces per plot
+      group_by(plot_ID, inv_year) %>% 
+      summarise(n_ha = sum(no_trees_CCS_ha)) 
 
-
-tree_data %>% 
+n_ha_RG <- RG_data %>% 
   filter(compartiment == "ag") %>% 
+  mutate(plot_A_ha = area_m2/1000) %>% 
+  group_by(plot_ID, CCS_no, plot_A_ha, inv_year) %>% 
+  # sum number of trees  per sampling circuit and reffer to hectare
+  reframe(no_trees_CCS_ha = n()/plot_A_ha) %>% 
+  distinct() %>% 
+  # now we summarise all the ha values of the cirlces per plot
+  group_by(plot_ID, inv_year) %>% 
+  summarise(n_ha = sum(no_trees_CCS_ha))
+
+
+n_ha_DW <- DW_data %>% 
+  filter(compartiment == "ag") %>% 
+  mutate(plot_A_ha = c_A(12.62)/1000) %>% 
+  group_by(plot_ID, plot_A_ha, inv_year) %>% 
+  reframe(n_ha = n()/plot_A_ha) %>% 
+  distinct() 
+
+# 3. LTs: species distribution per plot by basal area -----------------------------
+
+
+
+
+# 4. stocks per plot ------------------------------------------------------
+# summarize all trees per plot, no further grouping variables
+tree_data  %>% 
+ # filter(compartiment == "ag") %>% 
   group_by(plot_ID, CCS_r_m, plot_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
   reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
             C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-            N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-          no_trees_CCS_ha = n()/plot_A_ha) %>% 
+            N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct() %>% 
   # now we summarise all the t/ha values of the cirlces per plot
   group_by(plot_ID, inv_year, compartiment) %>% 
   summarise(B_t_ha = sum(B_CCS_t_ha), 
             C_t_ha = sum(C_CCS_t_ha), 
-            N_t_ha = sum(N_CCS_t_ha), 
-            no_trees_ha = sum(no_trees_CCS_ha))
+            N_t_ha = sum(N_CCS_t_ha))
   
+
+
+RG_data %>% 
+  mutate(plot_A_ha = area_m2/1000) %>% 
+  group_by(plot_ID, CCS_no, plot_A_ha, inv_year, compartiment) %>% 
+  # convert Biomass into tons per hectar and sum it up per sampling circuit 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+          B_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          B_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+  distinct() %>% 
+  # now we summarise all the t/ha values of the cirlces per plot
+  group_by(plot_ID, inv_year, compartiment) %>% 
+  summarise(B_t_ha = sum(B_CCS_t_ha), 
+            C_t_ha = sum(B_CCS_t_ha), 
+            N_t_ha = sum(B_CCS_t_ha))
   
 
 RG_data %>% 
-  mutate(CCS_A_ha = area_m2)
-  group_by(plot_ID, CCS_no, area_m2, inv_year, compartiment) %>% 
+  mutate(CCS_A_ha = area_m2/1000) %>% 
+  group_by(plot_ID, CCS_no, CCS_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
-  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-          C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-          N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-          no_trees_CCS_ha = n()/plot_A_ha) %>% 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree)), # plot are is the area of the respecitve samplign circuit in ha 
+          C_CCS_t_ha = sum(ton(C_kg_tree)),
+          N_CCS_t_ha = sum(ton(N_kg_tree))) %>% 
   distinct() %>% 
   # now we summarise all the t/ha values of the cirlces per plot
   group_by(plot_ID, inv_year, compartiment) %>% 
-  summarise(B_t_ha = sum(B_CCS_t_ha), 
-            C_t_ha = sum(C_CCS_t_ha), 
-            N_t_ha = sum(N_CCS_t_ha), 
-            no_trees_ha = sum(no_trees_CCS_ha))
+  summarise(plot_A_ha = sum(CCS_A_ha),
+            B_t_ha = sum(B_CCS_t_ha)/plot_A_ha, 
+            C_t_ha = sum(C_CCS_t_ha)/plot_A_ha, 
+            N_t_ha = sum(N_CCS_t_ha)/plot_A_ha)
   
 
+ 
+    
 
 
-
-
-
-
-
- summary( tree_data %>% 
-    filter(compartiment == "ag") %>% 
-    group_by(plot_ID, CCS_r_m, plot_A_ha, inv_year, compartiment) %>% 
-    # convert Biomass into tons per hectar and sum it up per sampling circuit 
-    reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-            C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-            N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-            no_trees_CCS_ha = n()/plot_A_ha) %>% 
-    distinct() %>% 
-    # now we summarise all the t/ha values of the cirlces per plot
-    group_by(plot_ID, inv_year, compartiment) %>% 
-    summarise(B_t_ha = sum(B_CCS_t_ha), 
-              C_t_ha = sum(C_CCS_t_ha), 
-              N_t_ha = sum(N_CCS_t_ha), 
-              no_trees_ha = sum(no_trees_CCS_ha)))
 
 
 
