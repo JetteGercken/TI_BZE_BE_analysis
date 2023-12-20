@@ -17,9 +17,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-HBI_RG_loc <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",")
-# assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
-colnames(HBI_RG_loc) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "RG_inv_status", "CCS_max_dist_cm")
+HBI_RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv")), sep = ";", dec = ",") 
 
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
 RG_data <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",")
@@ -38,10 +36,17 @@ HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_H
                                        "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN"))
 colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
 
+
 # HBI point info
-HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
-colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
+HBI_inv_info <- read.delim(file = here(paste0(out.path.BZE3,"HBI_inv_info.csv")), sep = ";", dec = ",") 
+
+# import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
+all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
+all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
+all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
+
+
 
 
 # creating dataset with information about the concentric sampling circles
@@ -51,15 +56,6 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
                           rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
-# add inventory year and name to dataset
-# HBI point/ inventory info
-# create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
-HBI_inv_info$date <- as.Date(HBI_inv_info$date)
-HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
-# this line can be removed later it´s just because currently the incvenotry year is set to 1999
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
-HBI_RG_loc <- HBI_RG_loc %>% left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), by = "plot_ID") 
-RG_data <- RG_data %>%  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"),  by = "plot_ID") 
 
 
 # calcualte edge data: cooridnates of edges and intersection stati of the edge lines
@@ -104,12 +100,6 @@ HBI_forest_edges <- HBI_forest_edges %>%
 
 
 
-# import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
-
 
 
 # 1. calculations ---------------------------------------------------------
@@ -134,24 +124,7 @@ HBI_RG_loc <- HBI_RG_loc %>%
 
 # 2. sorting sampling circles into stands ---------------------------------
 # 2.1. plots with 1 edge: sorting sampling circles into stands ---------------------------------
-
-# subsetting the HBI_RG_loc dataset by filtering for plots that have only one intersecting edge
-HBI_RG_one_edge <- HBI_RG_loc %>% 
-  # filter only for trees that are located in plots with a forest edge
-  semi_join(HBI_forest_edges %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
-              select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
-  # filter for trees located in plots htat haev only one forest edge
-  anti_join(HBI_forest_edges %>%
-              #filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I")  %>% 
-              select(plot_ID, e_ID) %>% 
-              group_by(plot_ID) %>% 
-              summarise(n = n()) %>% 
-              filter(n > 1) %>% 
-              select(plot_ID) %>% 
-              distinct(), by = "plot_ID") #%>% 
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-
+## subsetting the HBI_RG_loc dataset by filtering for plots that have only one intersecting edge
 HBI_RG_one_edge <- HBI_RG_loc %>% 
   #filter for plots that we actually have coordiantes and areas for 
   semi_join(., all_areas_stands %>%
@@ -544,7 +517,7 @@ HBI_RG_data_update_1 <- RG_data %>% left_join(.,HBI_RG_loc_update_1 %>%
 
 
 # 3.2. export  ------------------------------------------------------------
-write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_1$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_1$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
 write.csv2(HBI_RG_data_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_data_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
 
 

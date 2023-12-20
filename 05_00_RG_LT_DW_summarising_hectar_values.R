@@ -95,8 +95,8 @@ RG_data %>%
   group_by(plot_ID, CCS_no, plot_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
   reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-          B_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-          B_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+          C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct() %>% 
   # now we summarise all the t/ha values of the cirlces per plot
   group_by(plot_ID, inv_year, compartiment) %>% 
@@ -106,12 +106,11 @@ RG_data %>%
   
 
 DW_data %>% 
-  mutate(CCS_A_ha = c_A(12.62)/10000) %>% 
   group_by(plot_ID, CCS_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
-  reframe(B_t_ha = sum(ton(B_kg_tree))/CCS_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
-          C_t_ha = sum(ton(C_kg_tree))/CCS_A_ha,
-          N_t_ha = sum(ton(N_kg_tree))/CCS_A_ha) %>% 
+  reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+          C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct()
  
 

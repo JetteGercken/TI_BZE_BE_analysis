@@ -23,6 +23,7 @@ DW_data <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_1
 # and if th estocking species fall in the category broadleafes the other tapes species code"
 HBI_forest_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 
+HBI_inv_info <- read.delim(file = here(paste0(out.path.BZE3,"HBI_inv_info.csv")), sep = ";", dec = ",") 
 
 # 0.4 dataprep  -----------------------------------------------------------
 

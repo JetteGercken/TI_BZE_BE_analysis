@@ -25,18 +25,13 @@ trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",",
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI point info
-HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+HBI_inv_info <- read.delim(file = here("output/out_data/HBI_inv_info.csv"), sep = ",", dec = ",") 
 # HBI forest edges (Waldränder) info
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 # species names & codes 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 
 
-# creating dataset with information about the concentric sampling circles
-data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
-                          y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
-                          r0 = c(5.64, 12.62, 17.84), # darius in m
-                          rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI trees
@@ -61,15 +56,6 @@ colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "HW_MED",  "LAT_MED",  "LON_MED", 
                        "LAT_MEAN", "LON_MEAN") 
 
-# HBI point/ inventory info
-HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
-colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
-# create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
-HBI_inv_info$date <- as.Date(HBI_inv_info$date)
-HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
-# this line can be removed later
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
-                                        inv = inv_name(inv_year))
 
 # Forest edges 
 colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form", 

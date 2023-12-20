@@ -76,9 +76,12 @@ tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",
 colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status")
 
 # regeneration inventory info
-RG_loc_info <-  read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv")), sep = ";", dec = ",") %>% 
-  rename(CCS_RG_inv_status = plot_inventory_status ) # bej
-  
+# regeneration                                                                                                   inv = inv_name(inv_year))
+# this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
+RG_loc_info <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+# assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
+colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
+
 ##DEADWOOD
 # deadwood inventory info 
 DW_inv_info <- read.delim(file = here("data/input/BZE2_HBI/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)  
@@ -107,7 +110,45 @@ tree_inv_info <- tree_inv_info %>%
 # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
   anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
 # remove plots where one of the three sampling circuits was not inventorable
-  filter("CCS_5_inv_status" != 3 | "CCS_12_inv_status" != 3 | "CCS_17_inv_status" !=3)
+  filter("CCS_5_inv_status" != 3 | "CCS_12_inv_status" != 3 | "CCS_17_inv_status" !=3) %>% 
+  # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+ pivot_longer(., "CCS_5_inv_status":"CCS_17_inv_status", names_to = "CCS_r_m", values_to = "CCS_LT_inv_status") %>% 
+  mutate(CCS_r_m = as.numeric(case_when(CCS_r_m == "CCS_5_inv_status" ~ 5.64, 
+                             CCS_r_m == "CCS_12_inv_status" ~ 12.62,
+                             CCS_r_m == "CCS_17_inv_status" ~ 17.84,
+                             TRUE~ NA))) %>% 
+  distinct() %>% 
+  arrange(plot_ID)
+
+
+#  plot_ID inv_year compartiment  B_t_ha C_t_ha  N_t_ha
+# here i create a dataset with DW plots that have status 2 
+# which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
+trees_stat_2 <- as.data.frame(tree_inv_info[tree_inv_info$CCS_LT_inv_status == 2, ])
+LT.data.stat.2.list <- vector("list", length = nrow(trees_stat_2))
+for (i in 1:nrow(trees_stat_2)) {
+  # i = 2
+  my.plot.id <- trees_stat_2[, "plot_ID"][i]
+  my.ccs.r <- trees_stat_2[, "CCS_r_m"][i]
+  my.plot.area <- c_A(my.ccs.r)/10000
+  my.inv.year <- trees_stat_2[, "inv_year"][i]
+  
+  
+  LT.data.stat.2.list[[i]] <- as.data.frame(cbind(
+    plot_ID = c(my.plot.id),
+    CCS_r_m = c(my.ccs.r),
+    plot_A_ha = c(my.plot.area), 
+    inv_year = c(my.inv.year),
+    compartiment = c("ag", "bg", "total"),
+    B_CCS_t_ha = c(0, 0, 0), 
+    C_CCS_t_ha = c(0, 0, 0), 
+    N_CCS_t_ha = c(0, 0, 0)))
+}
+LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
+
+
+
+
 
 # 2.2. RG dataset ------------------------------------------------------------
 RG_loc_info <- RG_loc_info %>% 
@@ -117,6 +158,31 @@ RG_loc_info <- RG_loc_info %>%
   anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
   # remove plots where one of the four sampling circuits was not inventorable
   filter("CCS_RG_inv_status" != 3)
+
+
+# here i create a dataset with RG plots that have status 2 
+# which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
+RG_stat_2 <- RG_loc_info[RG_loc_info$CCS_RW_inv_status == 2, ]
+RG.data.stat.2.list <- vector("list", length = nrow(RG_stat_2))
+for (i in 1:nrow(RG_stat_2)) {
+  # i = 1
+  my.plot.id <- RG_stat_2[, "plot_ID"][i]
+  my.ccs.no <- RG_stat_2[, "CCS_nr"][i]
+  my.plot.area <- c_A(as.numeric(RG_stat_2[, "CCS_max_dist_cm"][i])/100)
+  my.inv.year <- RG_stat_2[, "inv_year"][i]
+  
+  RG.data.stat.2.list[[i]] <- as.data.frame(cbind(
+    plot_ID = c(my.plot.id),
+    CCS_no = c(my.ccs.no),
+    plot_A_ha = c(my.plot.area), 
+    inv_year = c(my.inv.year),
+    compartiment = c("ag", "bg", "total"),
+    B_CCS_t_ha = c(0, 0, 0), 
+    C_CCS_t_ha = c(0, 0, 0), 
+    N_CCS_t_ha = c(0, 0, 0)))
+}
+RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
+
 
 
 
@@ -129,47 +195,55 @@ DW_inv_info <- DW_inv_info %>%
   filter("CCS_DW_inv_status" != 3) %>% 
   mutate(plot_A_ha = case_when(CCS_DW_inv_status == 4 ~ (c_A(data_circle$r0[2])/10000)*0.5, 
                                CCS_DW_inv_status == 5 ~ (c_A(data_circle$r0[2])/10000)*0.25,
-                               TRUE ~  (c_A(data_circle$r0[2])/10000) ))
+                               TRUE ~  (c_A(data_circle$r0[2])/10000)))
 
-# I need to find a way how to deal with plots that have status 2: 
-  # these plots will be in bedw
-  # but they will not be in the dw inventory itself
-  # however, I´ll have to include them in the biomass hectare calculations which means in script 05_00 
-  # here I´ll need to set the area of the circuit to 12.62^2*pi and the biomass to 0 t/ha
-  # the plots with status 2 will, however most likely not run through the inventory data
-# so I´ll create a dataset that holds only stock data which i can bind to the other stock data later in 05_00
+
+# here i create a dataset with DW plots that have status 2 
+# which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
+DW_stat_2 <- DW_inv_info[DW_inv_info$CCS_DW_inv_status == 2, ]
+DW.data.stat.2.list <- vector("list", length = nrow(DW_stat_2))
+for (i in 1:nrow(DW_stat_2)) {
+  # i = 1
+  my.plot.id <- DW_stat_2[, "plot_ID"][i]
+  my.plot.area <- DW_stat_2[, "plot_A_ha"][i]
+  my.inv.year <- DW_stat_2[, "inv_year"][i]
+  
+  DW.data.stat.2.list[[i]] <- as.data.frame(cbind(
+    plot_ID = c(my.plot.id),
+    plot_A_ha = c(my.plot.area), 
+    inv_year = c(my.inv.year),
+    compartiment = c("ag", "total"),
+    B_CCS_t_ha = c(0, 0), 
+    C_CCS_t_ha = c(0, 0), 
+    N_CCS_t_ha = c(0, 0)))
+}
+DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
+
+
+
 DW_update_1 <- DW_data %>% 
   semi_join(., DW_inv_info %>% select(plot_ID), by = "plot_ID") %>% 
   left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, CCS_DW_inv_status, plot_A_ha), by = "plot_ID")
 
-# here i create a dataset with DW plots that have status 2 
-# which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
-
-DW_data_stat_2 <- DW_inv_info[DW_inv_info$CCS_DW_inv_status == 2, ]
-DW.data.stat.2.list <- vector("list", length = nrow(DW_data_stat_2))
-for (i in DW_data_stat_2) {
-  my.plot.id <- DW_data_stat_2[, "plot_ID"][i]
-  my.plot.area <- DW_data_stat_2[, "plot_A_ha"][i]
-  my.inv.year <- DW_data_stat_2[, "inv_year"][i]
-  
-  cbind(
-    plot_ID = c(my.plot.id),
-  )
-  
-  
-}
-plot_ID CCS_A_ha inv_year compartiment    B_t_ha   C_t_ha     N_t_ha
 
 
 
-# 3. export dataset -------------------------------------------------------
+ 
+
+
+
+# 3. export dataset --------------------------------------------------------------------------------------------------------------
 write.csv2(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_inv_update_1", sep = "_"), ".csv"))
 write.csv2(DW_update_1, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
+write.csv2(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_stat_2", sep = "_"), ".csv"))
 
+write.csv2(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"))
+write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_stat_2", sep = "_"), ".csv"))
 
+write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
+write.csv2(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"))
 
-
-
+write.csv2(HBI_inv_info, paste0(out.path.BZE3, paste(unique(HBI_inv_info$inv)[1], "inv_info", sep = "_"), ".csv"))
 
 
 

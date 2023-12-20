@@ -21,8 +21,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # after they have been sorted into stands according to the forest edge data in script "01_forest_edges_HBI.R" or "01_forest_edges_BZE3.R" 
 HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)
-# HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
- 
+HBI_inv_info <- read.delim(file = here(paste0(out.path.BZE3,"HBI_inv_info.csv")), sep = ";", dec = ",") 
+
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 
@@ -35,6 +35,7 @@ HBI_trees <- HBI_trees %>%
 
 # create fake/ practice BZE3/ post dataset from HBI/ pre data
 BZE3_trees <-HBI_trees[1:10,] %>% 
+  left_join(., ) %>% 
   mutate(D_mm = D_mm+10,
          H_dm = as.numeric(H_dm)+10, 
          dist_cm= dist_cm+20, 
@@ -48,9 +49,7 @@ BZE3_trees <-HBI_trees[1:10,] %>%
                                            row_number() == 8 ~ 5,
                                            row_number() == 9 ~ 6,
                                            row_number() == 10 ~ 7,
-                                           TRUE ~ NA), 
-         inv_year = 2023, 
-         inv = inv_name(inv_year)) 
+                                           TRUE ~ NA)) 
   # mutate two new trees to simulate a case of tree_inventory_status == 6
 BZE3_trees <- rbind(
   BZE3_trees,
