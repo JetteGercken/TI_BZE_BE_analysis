@@ -15,15 +15,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-DW_data <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
-                    #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
-colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
+DW_data <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_1.csv"), sep = ";", dec = ",")
 
-# HBI point info
-HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-# HBI point/ inventory info
-HBI_inv_info <- HBI_inv_info %>% dplyr::select(bund_nr, datum, status )
-colnames(HBI_inv_info) <- c("plot_ID", "date", "plot_inventory_status")
 
 # HBI forest type info per plot  (Bestandestyp)
 # this i deed to later say "if the stocking species are mainly coniferous i need this secies group from tapeS
@@ -32,17 +25,6 @@ HBI_forest_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = "
 
 
 # 0.4 dataprep  -----------------------------------------------------------
-
-# 0.4.1. Inventory year & name --------------------------------------------------------
-# create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
-HBI_inv_info$date <- as.Date(HBI_inv_info$date)
-HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
-# this line can be removed later
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
-                                        inv = inv_name(inv_year))
-
-# join inventory jear and name into deadwood tree dataset
-DW_data <- DW_data %>% left_join(., HBI_inv_info %>% select(inv_year, inv, plot_ID), by = "plot_ID")
 
 # 0.4.2. species names -------------------------------------------------------------
 # 1 Nadelholz

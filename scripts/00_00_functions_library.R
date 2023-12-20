@@ -158,6 +158,15 @@ SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.cs
 #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
+
+# 0.4.4. create sampling cuicits dataset ------------------------------
+# creating dataset with information about the concentric sampling circles
+data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
+                          y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
+                          r0 = c(5.64, 12.62, 17.84), # darius in m
+                          rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
+
+
 # ----- 1. Functions -----------------------------------------------------------
 # this function exports tables with list columns to csv: 
 # https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
