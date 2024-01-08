@@ -53,40 +53,56 @@ getwd()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 # ----- 0.4 importing data -----------------------------------------------------
-# this dataset contains the BZE file tit_1 which display< info about the BZE inventory in general
-# so info that´s base of all sub. interniry
+## BZE 2
+# this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
+# so info that´s base of all sub inventories like trees, deadwood, regeneration
 HBI_inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(HBI_inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
-#BZE3_inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
-
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 HBI_inv_info$date <- as.Date(HBI_inv_info$date)
 HBI_inv_info$inv_year <- as.numeric(format(HBI_inv_info$date, "%Y"))
 # this line can be removed later
-HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year), 
-                                        inv = inv_name(inv_year))
+HBI_inv_info <- HBI_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
 
 
+## BZE 3
+# BZE3_inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 
-# living trees
+
+## LIVING TREES
+# this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
 tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% # be
   select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
             knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
             end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
 colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status")
+# HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+# here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
+trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+# HBI trees
+colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", 
+                          "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
+trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
+                                           age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 
-# regeneration inventory info
-# regeneration                                                                                                   inv = inv_name(inv_year))
-# this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
+
+## REGENERATION                                                                                                  
+# this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
 RG_loc_info <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
+# this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
+RG_data <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",")
+#  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
+colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
+
+
+ 
 
 ##DEADWOOD
 # deadwood inventory info 
 DW_inv_info <- read.delim(file = here("data/input/BZE2_HBI/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)  
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
-
 DW_data <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
 #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
@@ -95,20 +111,86 @@ colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm"
 
 
 
-# 1. create a list with the BZE plots that should be excluded -----------------
+
+# 1. data prep  --------------------------------------
+# 1.1. LIVING TREES -------------------------------------------------
+# 1.1.1. prepare tree data:species & inventory names ----------------------------------------------
+trees_data <- trees_data %>% 
+  # join in inventory info 
+  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), 
+            by = "plot_ID")  %>% 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>%
+  # join in the species names from x_bart to ensure the Dahm DBH correction function
+  left_join(., SP_names_com_ID_tapeS %>% 
+              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+            by = c("SP_code" = "char_code_ger_lowcase")) %>% 
+  mutate(DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing 
+         # calculate corrected BDH if measuringheight != 1.3m
+         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, BWI))) %>% 
+  # asssing corect samling circle diameter according to DBH of the tree to be able to join in the right plot area
+  mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
+                             DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
+                             DBH_cm >= 30 ~ 17.84, 
+                             TRUE ~ NA))
+
+# check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
+SP_NAs <- trees_data %>% 
+  anti_join(SP_names_com_ID_tapeS %>% 
+              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+            by = c("SP_code" = "char_code_ger_lowcase"))
+
+if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees dataset that do not match
+                                the species names and codes listed in x_bart")}else{"all fine"}
+
+
+
+# prepare the "cleaned" trees_data (withou plots that were unassessable) for export
+trees_update_0 <- trees_data
+
+
+# 1.2. REGENRATION --------------------------------------------------------
+RG_data <- RG_data %>%
+  # join  in inventory info
+  left_join(., HBI_inv_info %>% select(plot_ID, inv_year, inv), by = "plot_ID") %>% 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID")
+
+# prepare the "cleaned" trees_data (withou plots that were unassessable) for export
+RG_update_0 <- RG_data
+
+
+  
+
+# 1.3. DEADWOOD -----------------------------------------------------------
+DW_data <- DW_data %>% 
+  # join in inventory info 
+  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), 
+            by = "plot_ID")  %>% 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID")
+
+
+
+
+
+  
+# 2. data processing ------------------------------------------------------
+# 2.1. ALL - all plots & stand components ------------------------------------------------------------------------------------------------------------------------
+# create a list with the BZE plots that should be excluded -----------------
 # select plots that have a "Punktstatus (x_plotstatus_bze)" 
 HBI_plots_to_exclude <- HBI_inv_info %>% 
-  filter(plot_inv_status >= 21) %>% 
-  select(plot_ID)
+filter(plot_inv_status >= 21) %>% 
+select(plot_ID)
 
 
-# 2. remove not processable plots from LT, RG and DW ----------------------------
-# 2.1. trees dataset ------------------------------------------------------------
+# 2.2. LIVING TREES -------------------------------------------------------
+# 2.2.1. remove not preocessable plots and sampling circuits form tree_inventory_info dataset ------------------------------------------------------------
 tree_inv_info <- tree_inv_info %>% 
   # join  in inventory info
   left_join(., HBI_inv_info %>% select(plot_ID, inv_year, inv), by = "plot_ID") %>% 
 # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>%
 # remove plots where one of the three sampling circuits was not inventorable
   filter("CCS_5_inv_status" != 3 | "CCS_12_inv_status" != 3 | "CCS_17_inv_status" !=3) %>% 
   # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
@@ -121,6 +203,37 @@ tree_inv_info <- tree_inv_info %>%
   arrange(plot_ID)
 
 
+#  2.2.2. correct CCS_inv_status == 2 if necesarry ------------------------
+# check if CCS_LT_inv_status is actually accurate: 
+# this means if there is a CCS with status 2 there shouldn´t be any tree in that circuit
+tree_inv_info <- trees_data %>% 
+  # joining in tree inventory info with only status 2 CCS 
+  # in an optimal case they should not find any matches for circuits with the CCS_LT_inv_status == 2 in the tree dataset 
+  # cause trees should have not been assessed for circuits that were labelled as empty by assiging status 2 
+  left_join(., tree_inv_info,
+            by = c("plot_ID", "CCS_r_m", "inv_year", "inv")) %>%
+  # assign new inventory status to those circuits that were lablled 2 but still have trees inside that fit the 
+  # requirements to be in the respective sampling circle, so trees that have a diameter and/ or distance that fits into circuit 3 (17.84 m radius) 
+  # tho the cricuit is lablled "empty" by the status 2 
+  mutate(CCS_LT_inv_status_new = case_when(
+    CCS_LT_inv_status == 2 & CCS_r_m == 17.84 & DBH_cm >= 30 |
+      CCS_LT_inv_status == 2 & CCS_r_m == 17.84 & dist_cm >= 12.62 |
+      CCS_LT_inv_status == 2 & CCS_r_m == 17.84 & dist_cm  >= 12.62 & DBH_cm >= 30 | 
+      CCS_LT_inv_status == 2 & CCS_r_m == 12.62 & DBH_cm >= 10 & DBH_cm < 30  |
+      CCS_LT_inv_status == 2 & CCS_r_m == 5.64 & DBH_cm >= 7  & DBH_cm < 10  ~ 1,
+    TRUE ~ CCS_LT_inv_status
+  )) %>% 
+  # change name of old inventory status to "..._old"
+  rename("CCS_LT_inv_status_old" = "CCS_LT_inv_status") %>% 
+  # change name of new iventory status to plain "inventory status" without "new"
+  rename("CCS_LT_inv_status" = "CCS_LT_inv_status_new")  %>% 
+# create new tree_inv_info dataset with new and old tree sampling circuit status to export as update 
+  select(plot_ID, team, date, stand_spec, stand_type, structure, inv_year, inv, CCS_r_m, CCS_LT_inv_status, CCS_LT_inv_status_old) %>% 
+  distinct()%>% 
+  arrange(plot_ID)
+
+
+#  2.2.3. creating "empty" LT CCS for status 2 circuits ----------------------
 #  plot_ID inv_year compartiment  B_t_ha C_t_ha  N_t_ha
 # here i create a dataset with DW plots that have status 2 
 # which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
@@ -150,7 +263,8 @@ LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
 
 
 
-# 2.2. RG dataset ------------------------------------------------------------
+# 2.3. RG dataset ------------------------------------------------------------
+# 2.3.1. remove not preocessable plots and sampling circuits form RG_loc_info dataset ------------------------------------------------------------
 RG_loc_info <- RG_loc_info %>% 
   # join  in inventory info
   left_join(., HBI_inv_info %>% select(plot_ID, inv_year, inv), by = "plot_ID") %>% 
@@ -160,6 +274,26 @@ RG_loc_info <- RG_loc_info %>%
   filter("CCS_RG_inv_status" != 3)
 
 
+
+#  2.3.2. correcting status 2 circles that actually have trees ------------------------------------------------------------------
+RG_loc_info <- RG_data %>%
+  # join  RG_loc_info to RG_data
+ left_join(RG_loc_info, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
+  # if there are trees that match a plot and sampling circuit that is actually not supposed to be in the list 
+  # because its labelled "empty"
+  mutate(CCS_RG_inv_status_new = case_when(
+    CCS_RG_inv_status == 2 ~ 1, 
+    TRUE ~ CCS_RG_inv_status)) %>% 
+  # change name of old inventory status to "..._old"
+  rename("CCS_RG_inv_status_old" = "CCS_RG_inv_status") %>% 
+  # change name of new iventory status to plain "inventory status" without "new"
+  rename("CCS_RG_inv_status" = "CCS_RG_inv_status_new") %>% 
+  select("plot_ID", "CCS_nr", "CCS_position", "CCS_dist" , "CCS_RG_inv_status", "CCS_RG_inv_status_old", 
+         "CCS_max_dist_cm", "inv_year", "inv")  
+
+
+
+#  2.3.3. creating "empty" RG CCS for status 2 circuits ----------------------
 # here i create a dataset with RG plots that have status 2 
 # which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
 RG_stat_2 <- RG_loc_info[RG_loc_info$CCS_RW_inv_status == 2, ]
@@ -182,11 +316,14 @@ for (i in 1:nrow(RG_stat_2)) {
     N_CCS_t_ha = c(0, 0, 0)))
 }
 RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
+# there will appear the error "Fehler in RG.data.stat.2.list[[i]] <- as.data.frame(cbind(plot_ID = c(my.plot.id),  
+# :  Versuch weniger als ein Element aus integerOneIndex zu wählen" when the RG_loc_info doesn´t have any RG circles with the 
+# status 2 
 
 
 
-
-# 2.3. DW dataset ------------------------------------------------------------
+# 2.4. DW dataset --------------------------------------------------------------------------------------------------------------------------------
+# 2.4.1. remove not process able plots and sampling circuits form DW_inv_info data set ------------------------------------------------------------
 DW_inv_info <- DW_inv_info %>% 
   left_join(HBI_inv_info %>% select(plot_ID, inv, inv_year), by = "plot_ID") %>% 
   # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
@@ -198,6 +335,23 @@ DW_inv_info <- DW_inv_info %>%
                                TRUE ~  (c_A(data_circle$r0[2])/10000)))
 
 
+# 2.4.2. correcting status 2 circles that actually have trees ------------------------------------------------------------------
+DW_inv_info <- DW_data %>%
+  # join  DW_inv_info to DW_data
+  left_join(DW_inv_info, by = c("plot_ID", "inv_year", "inv")) %>% 
+  # if there are trees that match a plot and sampling circuit that is actually not supposed to be in the list 
+  # because its labelled "empty"
+  mutate(CCS_DW_inv_status_new = case_when(
+    CCS_DW_inv_status == 2 ~ 1, 
+    TRUE ~ CCS_DW_inv_status)) %>% 
+  # change name of old inventory status to "..._old"
+  rename("CCS_DW_inv_status_old" = "CCS_DW_inv_status") %>% 
+  # change name of new iventory status to plain "inventory status" without "new"
+  rename("CCS_DW_inv_status" = "CCS_DW_inv_status_new") %>%
+  select("plot_ID", "inv", "inv_year", "CCS_DW_inv_status", "CCS_DW_inv_status_old", "dist_cm", "azi", "plot_A_ha")
+
+
+# 2.4.3. creating empty plots for circuits labelled empty ------------------------------------------------------------------
 # here i create a dataset with DW plots that have status 2 
 # which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
 DW_stat_2 <- DW_inv_info[DW_inv_info$CCS_DW_inv_status == 2, ]
@@ -221,11 +375,13 @@ DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
 
 
-DW_update_1 <- DW_data %>% 
-  semi_join(., DW_inv_info %>% select(plot_ID), by = "plot_ID") %>% 
-  left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, CCS_DW_inv_status, plot_A_ha), by = "plot_ID")
 
-
+# 2.4.5. prepare DW_data for export ---------------------------------------
+DW_update_0 <- DW_data %>% 
+  # join in the plot area for the deadwood 
+ left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
+           multiple = "all",
+           by = "plot_ID")
 
 
  
@@ -233,16 +389,22 @@ DW_update_1 <- DW_data %>%
 
 
 # 3. export dataset --------------------------------------------------------------------------------------------------------------
+# deadwood
 write.csv2(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_inv_update_1", sep = "_"), ".csv"))
-write.csv2(DW_update_1, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
+write.csv2(DW_update_0, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
 write.csv2(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_stat_2", sep = "_"), ".csv"))
-
+# living trees
 write.csv2(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"))
 write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_stat_2", sep = "_"), ".csv"))
-
+write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "LT_update_0", sep = "_"), ".csv"))
+# regeneration
 write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
 write.csv2(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"))
+write.csv2(RG_update_0, paste0(out.path.BZE3, paste(unique(RG_update_0$inv)[1], "RG_update_1", sep = "_"), ".csv"))
 
+# all trees
+# this we just export so the inventory name and year are in the dataset and we don´t have to 
+# extract the date in the next data processing steps
 write.csv2(HBI_inv_info, paste0(out.path.BZE3, paste(unique(HBI_inv_info$inv)[1], "inv_info", sep = "_"), ".csv"))
 
 

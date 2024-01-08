@@ -15,17 +15,15 @@ here::here()
 getwd()
 
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
-
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # after they have been sorted into stands according to the forest edge data in script "01_forest_edges_HBI.R" or "01_forest_edges_BZE3.R" 
-HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_trees_update_1.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)
+HBI_trees <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_1.csv")), sep = ";", dec = ",")
 HBI_inv_info <- read.delim(file = here(paste0(out.path.BZE3,"HBI_inv_info.csv")), sep = ";", dec = ",") 
 
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
-
 # complete pre inventory dataset
 HBI_trees <- HBI_trees %>% 
   # these two columns are meant to prepare for the comming data sorting

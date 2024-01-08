@@ -271,3 +271,7 @@ write.csv2(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_upda
 write.csv2(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_update_3", sep = "_"), ".csv"))
 
 
+
+
+trees_data  %>% 
+  anti_join(., tree_inv_info %>% select("plot_ID", "CCS_r_m"), by = c("plot_ID", "CCS_r_m"))

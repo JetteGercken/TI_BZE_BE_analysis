@@ -1547,7 +1547,7 @@ ton <- function(kg){
 # the following part will allow to write the datasets instead of importing them
 # functionto write code that the returns a for a r readable list to save df in R skript permently
 # https://stackoverflow.com/questions/68649942/how-can-i-attach-dataframes-to-an-r-script
-dput(df)
+# dput(df)
 # i will have to do this for 
   # - x_bart
   # - x_tangenz
@@ -1555,7 +1555,8 @@ dput(df)
 # 2.1. x_bart ------------------------------------------------------------------
 # this is the result of a dput of SP_names_com_ID_tapes which will later on be x_bart, state now: 11.12.2023, 11:54
 #dput(SP_names_com_ID_tapeS)
-SP_names_com_ID_tapeS <-as.data.frame(structure(list(X = 1:232, 
+if(!exists('SP_names_com_ID_tapeS')){
+  SP_names_com_ID_tapeS <-as.data.frame(structure(list(X = 1:232, 
                              Nr_code = c(100L, 101L, 102L, 103L, 
                                          106L, 109L, 110L, 111L, 112L, 113L, 114L, 115L, 118L, 119L, 120L, 
                                         121L, 122L, 125L, 127L, 130L, 131L, 132L, 201L, 202L, 203L, 204L, 
@@ -2217,13 +2218,17 @@ SP_names_com_ID_tapeS <-as.data.frame(structure(list(X = 1:232,
                                        "BI", "KI", "KI", "ES", "BI", "BI", "BI", "BI", "EI", "BI", "BI", 
                                        "BI", "VB", "BI", "BI", "ES", "FI", "ES", "ES")), 
                       class = "data.frame", 
-                      row.names = c(NA, -232L)))
+                      row.names = c(NA, -232L)))}else{
+                        print("SP_names_com_ID_tapeS already exists")
+                      }
 
 
 # 2.2. Nitrogen content --------------------------------------------------------------------------------------------------------
 # 2.2.1. Nitrogen content wood ------------------------------------------------------------------------------------------
+# this is the result of a dput of N_con_w( nitrogen content in woody compartiments Rumpf et al. 2018), state now: 11.12.2023, 11:54
 # dput(N_con_w)
-N_con_w <- as.data.frame(
+if(!exists('N_con_w')){
+  N_con_w <- as.data.frame(
   structure(list(X = 1:48, SP_com = c("BU_stw", "BU_stwb", "BU_sw", 
                                     "BU_swb", "BU_fw", "EI_stw", "EI_stwb", "EI_sw", "EI_swb", "EI_fw", 
                                     "ES_stw", "ES_stwb", "ES_sw", "ES_swb", "ES_fw", "AH_stw", "AH_stwb", 
@@ -2274,12 +2279,15 @@ N_con_w <- as.data.frame(
                          "0.004339", "0.000794", "0.004339", "0.004058", "0.015201", "0.000701", 
                          "0.00391", "0.000701", "0.00391", "0.004203", "0.015166")), 
           class = "data.frame", 
-          row.names = c(NA, -48L)))
+          row.names = c(NA, -48L)))}else{
+            print("N_con_w already exists")
+          }
 
 
 # 2.2.2. Nitrogen content foliage -----------------------------------------
+# this is the result of a dput of N_con_f (nitrogen content in foliage), state now: 11.12.2023, 11:54
 #dput(N_con_f)
-N_con_f <- as.data.frame(
+if(!exists('N_con_f')){N_con_f <- as.data.frame(
   structure(list(X = 1:6, name = c("Birke", "Erle", "Gewoehnliche Fichte","Gewoehnliche Kiefer", "LB", "NB"), 
                  N_f_SP_group_MoMoK = c("BI", "ERL", "FI", "KI", "aLB", "aNB"), 
                  compartiment = c("ndl", "ndl", "ndl", "ndl", "ndl", "ndl"), 
@@ -2288,15 +2296,19 @@ N_con_f <- as.data.frame(
                  N_mean_gkg = c("27.9538461538462", "27.2095238095238", "14.1362851664451", "17.0535167934124", "27.581684981685", "15.5949009799288"), 
                  N_con = c("0.0279538461538462", "0.0272095238095238", "0.0141362851664451", "0.0170535167934124", "0.027581684981685", "0.0155949009799288")), 
             class = "data.frame", 
-            row.names = c(NA, -6L)))
+            row.names = c(NA, -6L)))}else{
+              print("N_con_f already exists")
+            }
 
 
 # 2.3. DBH transformation -------------------------------------------------
 
 
 # 2.3.1. DBH region -------------------------------------------------------
+# this is the output of a dput of DBH_region which is called neu_x_ld.csv in the BZE database, state now: 11.12.2023, 11:54
 # dput(DBH_region)
-DBH_region <- as.data.frame(
+if(!exists('DBH_region')){
+  DBH_region <- as.data.frame(
   structure(list(icode_reg = c(-9L, -2L, -1L, 1L, 2L, 3L, 4L, 5L,6L, 7L, 8L, 9L, 10L, 11L, 12L, 13L, 14L, 15L, 16L, 20L), 
                  reg_shortG = c("fehlt",  "nicht ausgeprägt", "nicht erhoben", "SH", "HH", "NI", "HB",
                                 "NW", "HE", "RP", "BW", "BY", "SL", "BE", "BB", "MV", "SN", "ST",  "TH", "TD"), 
@@ -2308,11 +2320,15 @@ DBH_region <- as.data.frame(
                  country = c(-9L, -2L, -1L, 1L, 1L, 3L, 3L, 5L,6L, 7L, 8L, 9L, 10L, 12L, 12L, 13L, 14L, 15L, 16L, 20L), 
                  region = c(-2L, -2L, -2L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 3L, 3L, 2L, 2L, 2L, 1L, 2L, 2L, 2L, -2L)), 
             class = "data.frame", 
-            row.names = c(NA, -20L)))
+            row.names = c(NA, -20L)))}else{
+              print("DBH_region already exists")
+            }
 
 # 2.3.2. DBH_tangenz ------------------------------------------------------
+# this is the output of a dput of DBH_region which is called neu_x_ld.csv in the BZE database, state now: 11.12.2023, 11:54
 #dput(DBH_tan)
-DBH_tan <- as.data.frame(
+if(!exists('DBH_tan')){
+  DBH_tan <- as.data.frame(
   structure(list(SP_BWI1 = c("AH", "AH", "AH", "BAH", "BAH", "BAH", 
                              "BI", "BI", "BI", "BLB", "BLB", "BLB", "BPA", "BPA", "BPA", "BU", 
                              "BU", "BU", "DGL", "DGL", "DGL", "EI", "EI", "EI", "EIB", "EIB", 
@@ -2357,4 +2373,6 @@ DBH_tan <- as.data.frame(
                             933L, 934L, 934L, 934L, 935L, 935L, 935L, 936L, 936L, 936L, 937L, 
                             937L, 937L)), 
             class = "data.frame", 
-            row.names = c(NA, -120L)))
+            row.names = c(NA, -120L)))}else{
+              print("DBH_tan already exists")
+            }

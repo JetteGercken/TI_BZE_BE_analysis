@@ -21,31 +21,16 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI point info
-HBI_inv_info <- read.delim(file = here("output/out_data/HBI_inv_info.csv"), sep = ",", dec = ",") 
+HBI_inv_info <- read.delim(file =  here(paste0(out.path.BZE3, "HBI_inv_info.csv")), sep = ",", dec = ",") 
 # HBI forest edges (Waldränder) info
 forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
-# species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
-
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
-# HBI trees
-colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status",
-                         "multi_stem",  "SP_code", 
-                         "age", "age_meth",
-                         "D_mm", "DBH_h_cm", "H_dm", "C_h_dm",
-                         "azi_gon", "dist_cm",
-                         "Kraft",  "C_layer")
-
-  
-trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem ,
-                                  dist_cm ,  azi_gon ,age ,  age_meth ,  SP_code ,  Kraft ,  
-                                  C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI locations
 HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW",
                               "K2_HW", "K3_RW", "K3_HW", "RW_MED",
@@ -64,36 +49,7 @@ colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form",
 
 # ----- 1. joining in external info  --------------------------------------
 # ----- 1.1. LIVING TREES -------------------------------------------------
-# ----- 1.1.1. species & inventory names ----------------------------------------------
-# ----- 1.1.1.1. HBI species & inventory ----------------------------------------------
-trees_data <- trees_data %>%
-  # join in inventory info
-   left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "plot_inventory_status", "inv_year", "inv"), 
-           by = "plot_ID")  %>% 
-  # join in the species names from x_bart to ensure the Dahm DBH correction function
-  left_join(., SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase"))%>% 
-  mutate(DBH_h_cm = ifelse(is.na(DBH_h_cm), 130, DBH_h_cm),        # assign DBH measuring height of 130cm when missing 
-         # cakcukate corrected BDH if measuringheight != 1.3m
-         DBH_cm = ifelse(DBH_h_cm == 130, as.numeric(D_mm)/10, DBH_Dahm(plot_ID, D_mm, DBH_h_cm, BWI))) 
-
-
-
-# check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
-SP_NAs <- trees_data %>% 
-  anti_join(SP_names_com_ID_tapeS %>% 
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-            by = c("SP_code" = "char_code_ger_lowcase"))
-
-if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees dataset that do not match
-                                the species names and codes listed in x_bart")}else{"all fine"}
-
-
-
-
-
-# ----- 1.1.2. forest edges -----------------------------------------------
+# ----- 1.1.1. forest edges -----------------------------------------------
 # filter for Waldrandform that imply that we have to do something about it
 # Edge form: 
 # 1 =	L = 	Linie
@@ -1004,8 +960,6 @@ for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){
   
   
 }
-
-
 # list of areas
 edges.area.list.final.nogeo <- rbindlist(edges.list.nogeo)
 edges.area.df.nogeo <- as.data.frame(edges.area.list.final.nogeo)
@@ -1700,13 +1654,7 @@ trees_update_1 <- trees_data %>%
               distinct(),
             by = c("plot_ID", "tree_ID", "inv")) %>% 
   rename(stand = t_stat) %>% 
-  # then join in plot area the tree reffers to due to it´s DBH which determines the sampling circuit it was found in 
-  # asssing corect samling circle diameter according to DBH of the tree to be able to join in the right plot area
-  mutate(CCS_r_m = case_when(DBH_cm >= 7  & DBH_cm < 10 ~ 5.64, 
-                             DBH_cm >= 10 & DBH_cm < 30 ~ 12.62, 
-                             DBH_cm >= 30 ~ 17.84, 
-                             TRUE ~ NA)) %>% 
-  # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
+ # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
   left_join(., all.edges.area.df.nogeo %>% 
               select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
              by = c("plot_ID", "CCS_r_m", "stand")) %>% 
@@ -1749,19 +1697,16 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 
 
 # 3.3.2. exporting data ---------------------------------------------------
-
 # exporting tree and edge/ plot area data
 write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"))
 write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))
 write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
-
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"))
 # export areas and stand info of all sampling circuits, edges and remaining circles
 write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
           
-
 # export list of plots where the both edge polygones intersect within the 17.84 radius
 write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
           

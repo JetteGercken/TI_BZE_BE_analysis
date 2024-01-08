@@ -20,10 +20,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 HBI_RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv")), sep = ";", dec = ",") 
 
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
-RG_data <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",")
-#  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
-colnames(RG_data) <- c("plot_ID", "CCS_no", "tree_ID", "SP_code", "H_cm", "D_class_cm")
-
+RG_data <- read.delim(file =  here(paste0(out.path.BZE3, "HBI_RG_update_1.csv")), sep = ";", dec = ",")
 
 # this dataset contains the HBI forest edges info
 HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
@@ -509,9 +506,8 @@ HBI_RG_loc_update_1 <- HBI_RG_loc %>%
   
   
 HBI_RG_data_update_1 <- RG_data %>% left_join(.,HBI_RG_loc_update_1 %>% 
-                                                select(plot_ID, CCS_nr, stand, area_m2) %>% 
-                                                rename(CCS_no = CCS_nr), 
-                                              by = c("plot_ID", "CCS_no"), 
+                                                select(plot_ID, CCS_nr, stand, area_m2),
+                                              by = c("plot_ID", "CCS_nr"), 
                                               multiple = "all")
  
 

@@ -15,7 +15,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-DW_data <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_1.csv"), sep = ";", dec = ",")
+DW_data <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_0.csv"), sep = ";", dec = ",")
 
 
 # HBI forest type info per plot  (Bestandestyp)
