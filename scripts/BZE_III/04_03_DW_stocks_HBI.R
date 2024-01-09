@@ -9,13 +9,12 @@ source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
-getwd()
 
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-DW_data <-  read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_0.csv"), sep = ";", dec = ",")
+DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"HBI_DW_update_0.csv")), sep = ";", dec = ",")
 
 
 # HBI forest type info per plot  (Bestandestyp)

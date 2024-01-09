@@ -6,8 +6,6 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-
-
 source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 
@@ -27,7 +25,7 @@ HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep =
 # HBI point info
 HBI_inv_info <- read.delim(file =  here(paste0(out.path.BZE3, "HBI_inv_info.csv")), sep = ",", dec = ",") 
 # HBI forest edges (Waldränder) info
-forest_edges_HBI <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
@@ -43,7 +41,7 @@ colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
 
 
 # Forest edges 
-colnames(forest_edges_HBI) <- c("plot_ID", "e_ID", "e_type", "e_form", 
+colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                                 "A_dist", "A_azi",  "B_dist", "B_azi", 
                                 "T_dist", "T_azi") # t = turning point 
 
@@ -87,7 +85,7 @@ trees_data <- trees_data %>%
          X_tree = coord(data_circle$x0[1], data_circle$y0[1], dist_m, azi_gon, coordinate = "x"), 
          Y_tree = coord(data_circle$x0[1], data_circle$y0[1], dist_m, azi_gon, coordinate = "y")) %>% 
   # join in the forest edge information per plot 
-  left_join(., forest_edges_HBI %>% 
+  left_join(., HBI_forest_edges %>% 
               select(plot_ID, e_ID, e_type, e_form), 
             by = "plot_ID", 
             multiple = "all") # this is necesarry since there are, apperently, multiple edges per plot 
@@ -98,7 +96,7 @@ trees_data <- trees_data %>%
 #   mutate(X_tree = x_coord(Dist_cm, azi_gon), 
 #          Y_tree = y_coord(Dist_cm, azi_gon)) %>% 
 #   # join in the forest edge information per plot 
-#   left_join(., forest_edges_HBI %>% 
+#   left_join(., HBI_forest_edges %>% 
 #               select(plot_ID, e_ID, e_type, e_form), 
 #             by = "plot_ID", 
 #             multiple = "all") # this is necesarry since there are, apperently, multiple edges per plot 
@@ -107,7 +105,7 @@ trees_data <- trees_data %>%
 
 # ----- 1.1.2.2. edge  point coordinates,  line parameters, intersections with circles -----------------------------------------------------------
 # set up line from 2 points manually
-forest_edges_HBI.man <- forest_edges_HBI %>% 
+HBI_forest_edges.man <- HBI_forest_edges %>% 
   filter(e_form %in% c("1", "2")) %>% 
   # convert distance from cm to m
   mutate(across(c("A_dist", "B_dist", "T_dist"), ~ (.x)/100)) %>% 
@@ -188,7 +186,7 @@ forest_edges_HBI.man <- forest_edges_HBI %>%
 trees_and_edges <-
   trees_data  %>% 
   # join in edges info per plot
-  left_join(., forest_edges_HBI.man %>% 
+  left_join(., HBI_forest_edges.man %>% 
               select(plot_ID, e_ID, e_type, e_form,
                      A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
                      X_A, X_B, X_T, Y_A, Y_B, Y_T,
@@ -228,7 +226,7 @@ ggplot() +
   # AB line
   geom_point(data = trees_and_edges %>%
                filter(e_form == "1") %>% 
-               inner_join(.,   forest_edges_HBI.man %>% 
+               inner_join(.,   HBI_forest_edges.man %>% 
                             filter(e_form == "1") %>% 
                             group_by(plot_ID) %>% 
                             summarize(n = n()) %>% 
@@ -241,7 +239,7 @@ ggplot() +
              aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              inner_join(.,   forest_edges_HBI.man %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
                            filter(e_form == "1") %>% 
                            group_by(plot_ID) %>% 
                            summarize(n = n()) %>% 
@@ -254,7 +252,7 @@ ggplot() +
             aes(x= X_value, y = Y_value))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              inner_join(.,   forest_edges_HBI.man %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
                            filter(e_form == "1") %>% 
                            group_by(plot_ID) %>% 
                            summarize(n = n()) %>% 
@@ -267,7 +265,7 @@ ggplot() +
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              inner_join(.,   forest_edges_HBI.man %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
                            filter(e_form == "1") %>% 
                            group_by(plot_ID) %>% 
                            summarize(n = n()) %>% 
@@ -280,7 +278,7 @@ ggplot() +
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              inner_join(.,   forest_edges_HBI.man %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
                            filter(e_form == "1") %>% 
                            group_by(plot_ID) %>% 
                            summarize(n = n()) %>% 
@@ -293,7 +291,7 @@ ggplot() +
             aes(x= X_value, y = Y_value, colour = X_name))+
   geom_line(data = trees_and_edges %>% 
               filter(e_form == "1") %>% 
-              inner_join(.,   forest_edges_HBI.man %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
                            filter(e_form == "1") %>% 
                            group_by(plot_ID) %>% 
                            summarize(n = n()) %>% 
@@ -307,7 +305,7 @@ ggplot() +
   # trees
   geom_point(data =  trees_and_edges %>% filter(e_form == "1"), 
              # %>% 
-             #   inner_join(.,   forest_edges_HBI.man %>% 
+             #   inner_join(.,   HBI_forest_edges.man %>% 
              #                filter(e_form == "1" ) %>% 
              #                group_by(plot_ID) %>% 
              #                summarize(n = n()) %>% 
@@ -545,20 +543,20 @@ ggplot() +
 
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-forest_edges_HBI.man.sub.e1.nogeo <-  forest_edges_HBI.man%>% filter(e_form == 1) # %>% 
+HBI_forest_edges.man.sub.e1.nogeo <-  HBI_forest_edges.man%>% filter(e_form == 1) # %>% 
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
 
-triangle.e1.list.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID))
-triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID)*4)
+triangle.e1.list.nogeo <- vector("list", length = length(HBI_forest_edges.man.sub.e1.nogeo$plot_ID))
+triangle.e1.coords.nogeo <- vector("list", length = length(HBI_forest_edges.man.sub.e1.nogeo$plot_ID)*4)
 
-for(i in 1:length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID) ) {
+for(i in 1:length(HBI_forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # i = 2
-  # i = which(grepl(50086, forest_edges_HBI.man.sub.e1$plot_ID))
+  # i = which(grepl(50086, HBI_forest_edges.man.sub.e1$plot_ID))
   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
-  my.plot.id <- forest_edges_HBI.man.sub.e1.nogeo[i, "plot_ID"] 
-  my.e.id <- forest_edges_HBI.man.sub.e1.nogeo[i, "e_ID"]
-  my.e.form <- forest_edges_HBI.man.sub.e1.nogeo[i, "e_form"]
+  my.plot.id <- HBI_forest_edges.man.sub.e1.nogeo[i, "plot_ID"] 
+  my.e.id <- HBI_forest_edges.man.sub.e1.nogeo[i, "e_ID"]
+  my.e.form <- HBI_forest_edges.man.sub.e1.nogeo[i, "e_form"]
   
   ## select UTM corrdinates of the plot center by plot ID
   # my.center.easting <-  HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -572,13 +570,13 @@ for(i in 1:length(forest_edges_HBI.man.sub.e1.nogeo$plot_ID) ) {
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <- forest_edges_HBI.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges_HBI.man.sub.e1.nogeo[i, "A_azi"] 
+  dist.A <- HBI_forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
+  azi.A <- HBI_forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
   x.A <- dist.A*sin(azi.A)       # this is: easting, longitude, RW
   y.A <- dist.A*cos(azi.A)       # this is: northing, latitude, HW
   # point B
-  dist.B <- forest_edges_HBI.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges_HBI.man.sub.e1.nogeo[i, "B_azi"] 
+  dist.B <- HBI_forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
+  azi.B <- HBI_forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
   x.B <- dist.B*sin(azi.B)      # this is: easting, longitude, RW
   y.B <- dist.B*cos(azi.B)      # this is: northing, latitude, HW
   
@@ -665,22 +663,22 @@ triangle.e1.coords.df.nogeo <- as.data.frame(triangle.e1.coords.list.nogeo) %>%
 # 3.2.1.2. nogeo creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## loop to create list of polygones for edge form 1
-forest_edges_HBI.man.sub.e2.nogeo <- forest_edges_HBI.man %>%
+HBI_forest_edges.man.sub.e2.nogeo <- HBI_forest_edges.man %>%
   filter(e_form == 2) %>%  # nrow = 21
   filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") # %>% 
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
 
-triangle.e2.list.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) )
-triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID))
+triangle.e2.list.nogeo <- vector("list", length = length(HBI_forest_edges.man.sub.e2.nogeo$plot_ID) )
+triangle.e2.coords.nogeo <- vector("list", length = length(HBI_forest_edges.man.sub.e2.nogeo$plot_ID))
 
-for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
+for(i in 1:length(HBI_forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # i = 1
-  # i = which(grepl(50023, forest_edges_HBI.man.sub.e2.nogeo$plot_ID)
+  # i = which(grepl(50023, HBI_forest_edges.man.sub.e2.nogeo$plot_ID)
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <- forest_edges_HBI.man.sub.e2.nogeo[i, "plot_ID"] 
-  my.e.id <- forest_edges_HBI.man.sub.e2.nogeo[i, "e_ID"] 
-  my.e.form <- forest_edges_HBI.man.sub.e2.nogeo[i, "e_form"]
+  my.plot.id <- HBI_forest_edges.man.sub.e2.nogeo[i, "plot_ID"] 
+  my.e.id <- HBI_forest_edges.man.sub.e2.nogeo[i, "e_ID"] 
+  my.e.form <- HBI_forest_edges.man.sub.e2.nogeo[i, "e_form"]
   
   ## select UTM corrdinates of the plot center
   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -694,20 +692,20 @@ for(i in 1:length(forest_edges_HBI.man.sub.e2.nogeo$plot_ID) ) {
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <- forest_edges_HBI.man.sub.e2.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges_HBI.man.sub.e2.nogeo[i, "A_azi"] 
+  dist.A <- HBI_forest_edges.man.sub.e2.nogeo[i, "A_dist"] 
+  azi.A <- HBI_forest_edges.man.sub.e2.nogeo[i, "A_azi"] 
   x.A <- dist.A*sin(azi.A)   # longitude, easting, RW, X
   y.A <- dist.A*cos(azi.A)   # latitude, northing, HW, y 
   
   # point B
-  dist.B <- forest_edges_HBI.man.sub.e2.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges_HBI.man.sub.e2.nogeo[i, "B_azi"] 
+  dist.B <- HBI_forest_edges.man.sub.e2.nogeo[i, "B_dist"] 
+  azi.B <- HBI_forest_edges.man.sub.e2.nogeo[i, "B_azi"] 
   x.B <- dist.B*sin(azi.B)   # longitude, easting, RW, X
   y.B <- dist.B*cos(azi.B)   # latitude, northing, HW, y 
   
   # point T
-  dist.T <- forest_edges_HBI.man.sub.e2.nogeo[i, "T_dist"] 
-  azi.T <- forest_edges_HBI.man.sub.e2.nogeo[i, "T_azi"] 
+  dist.T <- HBI_forest_edges.man.sub.e2.nogeo[i, "T_dist"] 
+  azi.T <- HBI_forest_edges.man.sub.e2.nogeo[i, "T_azi"] 
   x.T <- dist.T*sin(azi.T)   # longitude, easting, RW, X
   y.T <- dist.T*cos(azi.T)   # latitude, northing, HW, y 
   
@@ -776,28 +774,28 @@ triangle.e2.coords.df.nogeo <- as.data.frame(triangle.e2.coords.list.nogeo) %>% 
 # bind polygone dataframes together
 edge.poly.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo) # rows: 83
 # createa dataframe with plots that have only one forest edges
-forest_edges_HBI.man.sub.1.edge.nogeo <- forest_edges_HBI.man %>% # rows:84
+HBI_forest_edges.man.sub.1.edge.nogeo <- HBI_forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
   # remove plots that have two edges
-  anti_join(forest_edges_HBI.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+  anti_join(HBI_forest_edges.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")#  %>% # 14 plots with 2 edges --> 28 rows -> 53 left
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
  # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
 
-edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
-inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
-#inter.poly.NA.list <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge$plot_ID)))
-remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
-remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
+edges.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+inter.poly.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+#inter.poly.NA.list <- vector("list", length = length(unique(HBI_forest_edges.man.sub.1.edge$plot_ID)))
+remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID)))
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
-for (i in 1:length(unique(forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID))){ 
+for (i in 1:length(unique(HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID))){ 
   # i = 48
-  #i = which(grepl(50133, (forest_edges_HBI.man.sub.1.edge.nogeo$plot_ID)))
+  #i = which(grepl(50133, (HBI_forest_edges.man.sub.1.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
-  my.plot.id <- forest_edges_HBI.man.sub.1.edge.nogeo[i, "plot_ID"]
+  my.plot.id <- HBI_forest_edges.man.sub.1.edge.nogeo[i, "plot_ID"]
   my.e.form <- edge.poly.df.nogeo$e_form[edge.poly.df.nogeo$plot_ID == my.plot.id]
   my.e.id <- edge.poly.df.nogeo$e_ID[edge.poly.df.nogeo$plot_ID == my.plot.id]
   
@@ -984,14 +982,14 @@ rem.circle.one.edge.df.nogeo <- rbind(rem.circle.poly.df.nogeo, rem.circle.multi
 # 3.2.1.3.1. loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
-forest_edges_HBI.man.sub.2.edges.nogeo <- forest_edges_HBI.man %>% # rows:84
+HBI_forest_edges.man.sub.2.edges.nogeo <- HBI_forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
   filter(e_form == 1 | 
            e_form == 2 & inter_status_AT_17 == "two I" | 
            e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
   #filter(inter_status_AB_17 == "two I") %>% 
   # remove plots that have two edges
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | 
+  semi_join(HBI_forest_edges.man %>% filter(e_form == 1 | 
                                               e_form == 2 & inter_status_AT_17 == "two I" | 
                                               e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 14 plots iwth 2 edges --> 28 rows
@@ -1001,24 +999,24 @@ semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_
 
 # prepare output lists
 # list to save areas in
-edges.list.two.edges.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+edges.list.two.edges.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 # list to save the first intersection polygone per plot in
-inter.poly.1.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+inter.poly.1.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 # list to save the second intersection polygone per plot in
-inter.poly.2.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+inter.poly.2.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 # list to save the remaining circle polygones per plot in
-rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 # list to save the remaining circle MULTIpolygones per plot in
-rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 # list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
-intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
 
-for (i in 1:length(unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID))){ 
+for (i in 1:length(unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID))){ 
   #i = 1
-  # i = which(grepl(50075, unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)))
+  # i = which(grepl(50075, unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
-  my.plot.id <- unique(forest_edges_HBI.man.sub.2.edges.nogeo$plot_ID)[i]
+  my.plot.id <- unique(HBI_forest_edges.man.sub.2.edges.nogeo$plot_ID)[i]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
    # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
@@ -1305,10 +1303,10 @@ all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.no
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
 trees.one.edge.nogeo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+  semi_join(HBI_forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
-  anti_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
+  anti_join(HBI_forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
@@ -1410,11 +1408,11 @@ tree.points.one.edge.df.nogeo <- as.data.frame(tree.points.list.one.edge.final.n
 # intersection of trees with 2 edges
 trees.two.edges.nogeo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2) %>% 
+  semi_join(HBI_forest_edges.man %>% filter(e_form == 1 | e_form == 2) %>% 
               #& inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
-  semi_join(forest_edges_HBI.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+  semi_join(HBI_forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")

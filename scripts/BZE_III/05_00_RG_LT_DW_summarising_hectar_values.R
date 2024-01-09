@@ -86,13 +86,14 @@ tree_data  %>%
   group_by(plot_ID, inv_year, compartiment) %>% 
   summarise(B_t_ha = sum(B_CCS_t_ha), 
             C_t_ha = sum(C_CCS_t_ha), 
-            N_t_ha = sum(N_CCS_t_ha))
+            N_t_ha = sum(N_CCS_t_ha)) %>% 
+  mutate(stand_component = "LT")
   
 
 
 RG_data %>% 
   mutate(plot_A_ha = area_m2/10000) %>% 
-  group_by(plot_ID, CCS_no, plot_A_ha, inv_year, compartiment) %>% 
+  group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
   reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
           C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
@@ -102,22 +103,37 @@ RG_data %>%
   group_by(plot_ID, inv_year, compartiment) %>% 
   summarise(B_t_ha = sum(B_CCS_t_ha), 
             C_t_ha = sum(B_CCS_t_ha), 
-            N_t_ha = sum(B_CCS_t_ha))
+            N_t_ha = sum(B_CCS_t_ha))%>% 
+  mutate(stand_component = "RG")
   
 
 DW_data %>% 
-  group_by(plot_ID, CCS_A_ha, inv_year, compartiment) %>% 
+  group_by(plot_ID, plot_A_ha, inv_year, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
   reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
           C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
           N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-  distinct()
+  distinct()%>% 
+  mutate(stand_component = "DW")
  
 
  
     
 
-
+summary(tree_data  %>% 
+  # filter(compartiment == "ag") %>% 
+  group_by(plot_ID, CCS_r_m, plot_A_ha, inv_year, compartiment) %>% 
+  # convert Biomass into tons per hectar and sum it up per sampling circuit 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+          C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+  distinct() %>% 
+  # now we summarise all the t/ha values of the cirlces per plot
+  group_by(plot_ID, inv_year, compartiment) %>% 
+  summarise(B_t_ha = sum(B_CCS_t_ha), 
+            C_t_ha = sum(C_CCS_t_ha), 
+            N_t_ha = sum(N_CCS_t_ha)) %>% 
+  mutate(stand_component = "LT"))
 
 
 

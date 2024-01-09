@@ -3,30 +3,30 @@
 "2";50001;"Tilo Schindler; Karin Morgenstern";"2011-08-26";1;2;1;2012;"HBI";12,62;1;1
 "3";50002;"Tilo Schindler; Karin Morgenstern";"2011-08-27";1;2;1;2012;"HBI";17,84;1;1
 "4";50002;"Tilo Schindler; Karin Morgenstern";"2011-08-27";1;2;1;2012;"HBI";12,62;1;1
-"5";50003;"Tilo Schindler; Karin Morgenstern";"2012-03-17";1;3;1;2012;"HBI";12,62;1;1
-"6";50003;"Tilo Schindler; Karin Morgenstern";"2012-03-17";1;3;1;2012;"HBI";5,64;1;1
-"7";50004;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;1;1;2012;"HBI";17,84;1;1
-"8";50004;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;1;1;2012;"HBI";12,62;1;1
+"5";50003;"Tilo Schindler; Karin Morgenstern";"2012-03-17";1;3;1;2012;"HBI";5,64;1;1
+"6";50003;"Tilo Schindler; Karin Morgenstern";"2012-03-17";1;3;1;2012;"HBI";12,62;1;1
+"7";50004;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;1;1;2012;"HBI";12,62;1;1
+"8";50004;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;1;1;2012;"HBI";17,84;1;1
 "9";50005;"Tilo Schindler; Karin Morgenstern";"2011-08-27";1;8;1;2012;"HBI";12,62;1;1
 "10";50005;"Tilo Schindler; Karin Morgenstern";"2011-08-27";1;8;1;2012;"HBI";17,84;1;1
-"11";50006;"Tilo Schindler; Karin Morgenstern";"2011-08-26";4;8;1;2012;"HBI";17,84;1;1
+"11";50006;"Tilo Schindler; Karin Morgenstern";"2011-08-26";4;8;1;2012;"HBI";12,62;1;1
 "12";50006;"Tilo Schindler; Karin Morgenstern";"2011-08-26";4;8;1;2012;"HBI";5,64;1;1
-"13";50006;"Tilo Schindler; Karin Morgenstern";"2011-08-26";4;8;1;2012;"HBI";12,62;1;1
+"13";50006;"Tilo Schindler; Karin Morgenstern";"2011-08-26";4;8;1;2012;"HBI";17,84;1;1
 "14";50007;"Tilo Schindler; Karin Morgenstern";"2011-08-26";1;8;2;2012;"HBI";5,64;1;1
 "15";50007;"Tilo Schindler; Karin Morgenstern";"2011-08-26";1;8;2;2012;"HBI";12,62;1;1
 "16";50007;"Tilo Schindler; Karin Morgenstern";"2011-08-26";1;8;2;2012;"HBI";17,84;1;1
 "17";50008;"Tilo Schindler; Karin Morgenstern";"2012-03-18";1;2;1;2012;"HBI";12,62;1;1
 "18";50008;"Tilo Schindler; Karin Morgenstern";"2012-03-18";1;2;1;2012;"HBI";17,84;1;1
 "19";50009;"Tilo Schindler; Karin Morgenstern";"2012-03-17";1;1;1;2012;"HBI";17,84;1;1
-"20";50010;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;7;1;2012;"HBI";12,62;1;1
-"21";50010;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;7;1;2012;"HBI";5,64;1;1
+"20";50010;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;7;1;2012;"HBI";5,64;1;1
+"21";50010;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;7;1;2012;"HBI";12,62;1;1
 "22";50011;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;5;1;2012;"HBI";17,84;1;1
 "23";50011;"Tilo Schindler; Karin Morgenstern";"2012-03-15";1;5;1;2012;"HBI";12,62;1;1
-"24";50012;"KT";"2011-11-08";1;5;2;2012;"HBI";17,84;1;1
-"25";50012;"KT";"2011-11-08";1;5;2;2012;"HBI";12,62;1;1
-"26";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";17,84;1;1
-"27";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";12,62;1;1
-"28";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";5,64;1;1
+"24";50012;"KT";"2011-11-08";1;5;2;2012;"HBI";12,62;1;1
+"25";50012;"KT";"2011-11-08";1;5;2;2012;"HBI";17,84;1;1
+"26";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";5,64;1;1
+"27";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";17,84;1;1
+"28";50013;"KT";"2011-11-08";1;5;1;2012;"HBI";12,62;1;1
 "29";50014;"Tilo Schindler; Karin Morgenstern";"2011-08-25";1;5;2;2012;"HBI";5,64;1;1
 "30";50014;"Tilo Schindler; Karin Morgenstern";"2011-08-25";1;5;2;2012;"HBI";12,62;1;1
 "31";50014;"Tilo Schindler; Karin Morgenstern";"2011-08-25";1;5;2;2012;"HBI";17,84;1;1
@@ -157,8 +157,8 @@
 "156";50074;"Tilo Schindler; Karin Morgenstern";"2011-11-22";1;1;1;2012;"HBI";12,62;1;1
 "157";50074;"Tilo Schindler; Karin Morgenstern";"2011-11-22";1;1;1;2012;"HBI";17,84;1;1
 "158";50075;"Tilo Schindler; Karin Morgenstern";"2011-11-24";1;6;1;2012;"HBI";17,84;1;2
-"159";50076;"Tilo Schindler; Karin Morgenstern";"2011-11-25";1;1;1;2012;"HBI";12,62;1;1
-"160";50076;"Tilo Schindler; Karin Morgenstern";"2011-11-25";1;1;1;2012;"HBI";17,84;1;1
+"159";50076;"Tilo Schindler; Karin Morgenstern";"2011-11-25";1;1;1;2012;"HBI";17,84;1;1
+"160";50076;"Tilo Schindler; Karin Morgenstern";"2011-11-25";1;1;1;2012;"HBI";12,62;1;1
 "161";50077;"Tilo Schindler; Karin Morgenstern";"2011-09-09";1;5;2;2012;"HBI";12,62;1;1
 "162";50077;"Tilo Schindler; Karin Morgenstern";"2011-09-09";1;5;2;2012;"HBI";5,64;1;1
 "163";50077;"Tilo Schindler; Karin Morgenstern";"2011-09-09";1;5;2;2012;"HBI";17,84;1;1

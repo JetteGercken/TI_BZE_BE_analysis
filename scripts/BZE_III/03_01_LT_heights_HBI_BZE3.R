@@ -7,14 +7,11 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-
-
 source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
-getwd()
 
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
@@ -22,7 +19,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # hbi BE dataset: 
   # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-  # here we import a dataset called "HBI_trees_update_2.csv" which contains plot area and stand data additionally to the original tree data
+  # here we import a dataset called "HBI_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
 # currently we can´t tho, cause the sorting regarding tree inventory status is just a simulation at the moment so the data are manipulated
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_1.csv")), sep = ";", dec = ",", stringsAsFactors=FALSE) 
 
@@ -272,6 +269,3 @@ write.csv2(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_up
 
 
 
-
-trees_data  %>% 
-  anti_join(., tree_inv_info %>% select("plot_ID", "CCS_r_m"), by = c("plot_ID", "CCS_r_m"))

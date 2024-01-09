@@ -45,7 +45,6 @@ all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG
 
 
 
-
 # creating dataset with information about the concentric sampling circles
 data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
                           y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
@@ -53,8 +52,6 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
                           rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
-
-
 # calcualte edge data: cooridnates of edges and intersection stati of the edge lines
 HBI_forest_edges <- HBI_forest_edges %>% 
   filter(e_form %in% c("1", "2")) %>% 
@@ -99,9 +96,8 @@ HBI_forest_edges <- HBI_forest_edges %>%
 
 
 
-# 1. calculations ---------------------------------------------------------
-
-# 1.1. assign gon according to exposition --------------------------------
+# 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
+# 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
 HBI_RG_loc <- HBI_RG_loc %>% 
  left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
@@ -498,23 +494,25 @@ RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)],
   # join stand and area data into dataset with regeneration CCS locations and size 
   # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
 # HBI_RG_loc update
-HBI_RG_loc_update_1 <- HBI_RG_loc %>% 
+HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
   left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
   # if there is not stand and area assigned because the plot doesn´t have an edge ... 
   mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
          area_m2 = ifelse(stand == "A" & is.na(area_m2), c_A(as.numeric(CCS_max_dist_cm)/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
   
   
-HBI_RG_data_update_1 <- RG_data %>% left_join(.,HBI_RG_loc_update_1 %>% 
-                                                select(plot_ID, CCS_nr, stand, area_m2),
-                                              by = c("plot_ID", "CCS_nr"), 
-                                              multiple = "all")
+HBI_RG_data_update_2 <- RG_data %>% 
+  left_join(.,HBI_RG_loc_update_2 %>% 
+              select(plot_ID, CCS_nr, stand, area_m2),
+            by = c("plot_ID", "CCS_nr"), 
+            multiple = "all") %>% 
+  arrange(plot_ID, CCS_nr, tree_ID)
  
 
 
 # 3.2. export  ------------------------------------------------------------
-write.csv2(HBI_RG_loc_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_1$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
-write.csv2(HBI_RG_data_update_1, paste0(out.path.BZE3, paste(unique(HBI_RG_data_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
+write.csv2(HBI_RG_loc_update_2, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
+write.csv2(HBI_RG_data_update_2, paste0(out.path.BZE3, paste(unique(HBI_RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
 
 
 
