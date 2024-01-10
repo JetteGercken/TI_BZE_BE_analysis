@@ -242,8 +242,9 @@ tree_inv_info <- trees_data %>%
   # joining in tree inventory info with only status 2 CCS 
   # in an optimal case they should not find any matches for circuits with the CCS_LT_inv_status == 2 in the tree dataset 
   # cause trees should have not been assessed for circuits that were labelled as empty by assiging status 2 
-  left_join(., tree_inv_info,
-            by = c("plot_ID", "CCS_r_m", "inv_year", "inv")) %>%
+  left_join(., tree_inv_info, by = c("plot_ID", "CCS_r_m", "inv_year", "inv")) %>%
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
   # assign new inventory status to those circuits that were lablled 2 but still have trees inside that fit the 
   # requirements to be in the respective sampling circle, so trees that have a diameter and/ or distance that fits into circuit 3 (17.84 m radius) 
   # tho the cricuit is lablled "empty" by the status 2 
@@ -280,26 +281,29 @@ for (i in 1:nrow(trees_stat_2)) {
   my.plot.area <- c_A(my.ccs.r)/10000
   my.inv.year <- trees_stat_2[, "inv_year"][i]
   
-  
-  LT.data.stat.2.list[[i]] <- as.data.frame(cbind(
-    plot_ID = c(my.plot.id),
-    CCS_r_m = c(my.ccs.r),
-    plot_A_ha = c(my.plot.area), 
-    inv_year = c(my.inv.year),
-    compartiment = c("ag", "bg", "total"),
-    B_CCS_t_ha = c(0, 0, 0), 
-    C_CCS_t_ha = c(0, 0, 0), 
-    N_CCS_t_ha = c(0, 0, 0)))
+  if(nrow(trees_stat_2) != 0 && isTRUE(trees_stat_2)){
+    LT.staus.2.df <- as.data.frame(cbind(
+        plot_ID = c(my.plot.id),
+        CCS_r_m = c(my.ccs.r),
+        plot_A_ha = c(my.plot.area), 
+        inv_year = c(my.inv.year),
+        compartiment = c("ag", "bg", "total"),
+        B_CCS_t_ha = c(0, 0, 0), 
+        C_CCS_t_ha = c(0, 0, 0), 
+        N_CCS_t_ha = c(0, 0, 0)))}else{
+      LT.staus.2.df = data.frame()
+    }
+  LT.data.stat.2.list[[i]] <- LT.staus.2.df
 }
 LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
 
 
 #  2.2.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
-trees_data_update_0 <- trees_data %>% 
-  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>%
-  # select only trees in CCSs that are assigned status 1
-  semi_join(., tree_inv_info,by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
+trees_update_0 <- trees_data %>% 
+ # select only trees in CCSs that are assigned status 1 
+  # and are already sorted for uninventorable plots (Plotstatus >= 21)
+  semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status == 1),
+            by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
 
 
 
@@ -308,7 +312,7 @@ trees_data_update_0 <- trees_data %>%
 
 # 2.3. RG dataset ---------------------------------------------------------------------------------------------------------------------------------------------------
 # 2.3.1. remove not preocessable plots and sampling circuits form RG_loc_info dataset ------------------------------------------------------------
-RG_loc_info <- RG_loc_info %>% 
+RG_loc_info <- RG_loc_info
   # join  in inventory info
   left_join(., HBI_inv_info %>% select(plot_ID, inv_year, inv), by = c("plot_ID")) %>% 
   # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
@@ -324,8 +328,11 @@ RG_CCS_to_exclude <- RG_loc_info %>%
 #  2.3.3. correcting status 2 circles that actually have trees ------------------------------------------------------------------
 RG_loc_info <- RG_data %>%
   # join  RG_loc_info to RG_data
- left_join(RG_loc_info, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
+  left_join(., RG_loc_info, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
+  # exclude CCS with status 3
   anti_join(., RG_CCS_to_exclude, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
   # if there are trees that match a plot and sampling circuit that is actually not supposed to be in the list 
   # because its labelled "empty"
   mutate(CCS_RG_inv_status_new = case_when(
@@ -338,7 +345,8 @@ RG_loc_info <- RG_data %>%
   select("plot_ID", "CCS_nr", "CCS_position", "CCS_dist" , "CCS_RG_inv_status", "CCS_RG_inv_status_old", 
          "CCS_max_dist_cm", "inv_year", "inv") %>% 
   distinct()%>% 
-  arrange(plot_ID, CCS_nr)
+  arrange(plot_ID, CCS_nr) %>% 
+  mutate(CCS_max_dist_cm = ifelse(is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
 
 
 #  2.3.4. creating "empty" RG CCS for status 2 circuits ----------------------
@@ -350,18 +358,24 @@ for (i in 1:nrow(RG_stat_2)) {
   # i = 1
   my.plot.id <- RG_stat_2[, "plot_ID"][i]
   my.ccs.no <- RG_stat_2[, "CCS_nr"][i]
-  my.plot.area <- c_A(as.numeric(RG_stat_2[, "CCS_max_dist_cm"][i])/100)
+  my.plot.area <- (c_A(as.numeric(RG_stat_2[, "CCS_max_dist_cm"][i])/100))/10000 # plot are in hectar 
   my.inv.year <- RG_stat_2[, "inv_year"][i]
   
-  RG.data.stat.2.list[[i]] <- as.data.frame(cbind(
-    plot_ID = c(my.plot.id),
-    CCS_no = c(my.ccs.no),
-    plot_A_ha = c(my.plot.area), 
-    inv_year = c(my.inv.year),
-    compartiment = c("ag", "bg", "total"),
-    B_CCS_t_ha = c(0, 0, 0), 
-    C_CCS_t_ha = c(0, 0, 0), 
-    N_CCS_t_ha = c(0, 0, 0)))
+  if(nrow(RG_stat_2) != 0 && isTRUE(RG_stat_2)){
+    RG.status.2.df <- as.data.frame(cbind(
+      plot_ID = c(my.plot.id),
+      CCS_nr = c(my.ccs.no),
+      plot_A_ha = c(my.plot.area), 
+      inv_year = c(my.inv.year),
+      compartiment = c("ag", "bg", "total"),
+      B_t_ha = c(0, 0, 0), 
+      C_t_ha = c(0, 0, 0), 
+      N_t_ha = c(0, 0, 0)))
+  }else{
+    RG.status.2.df = data.frame()
+    }
+  
+  RG.data.stat.2.list[[i]] <- RG.status.2.df
 }
 RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 # there will appear the error "Fehler in RG.data.stat.2.list[[i]] <- as.data.frame(cbind(plot_ID = c(my.plot.id),  
@@ -371,13 +385,11 @@ RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 
 
 #  2.3.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
-RG_data_update_1 <- RG_data %>% 
-  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
-  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
+RG_update_1 <- RG_data %>% 
+  # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+   semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
   
   
-
 
 
 
@@ -404,6 +416,8 @@ DW_CCS_to_exclude <- DW_inv_info %>%
 DW_inv_info <- DW_data %>%
   # join  DW_inv_info to DW_data
   left_join(., DW_inv_info, by = c("plot_ID", "inv_year", "inv")) %>% 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
   # remove CCS with inv status 3
   anti_join(., DW_CCS_to_exclude, by = c("plot_ID", "inv_year", "inv")) %>% 
   # if there are trees that match a plot and sampling circuit that is actually not supposed to be in the list 
@@ -429,28 +443,33 @@ for (i in 1:nrow(DW_stat_2)) {
   my.plot.id <- DW_stat_2[, "plot_ID"][i]
   my.plot.area <- DW_stat_2[, "plot_A_ha"][i]
   my.inv.year <- DW_stat_2[, "inv_year"][i]
+
   
-  DW.data.stat.2.list[[i]] <- as.data.frame(cbind(
-    plot_ID = c(my.plot.id),
-    plot_A_ha = c(my.plot.area), 
-    inv_year = c(my.inv.year),
-    compartiment = c("ag", "total"),
-    B_CCS_t_ha = c(0, 0), 
-    C_CCS_t_ha = c(0, 0), 
-    N_CCS_t_ha = c(0, 0)))
+  if(nrow(DW_stat_2) != 0 && isTRUE(DW_stat_2)){
+    DW.status.2.df <- as.data.frame(cbind(
+      plot_ID = c(my.plot.id),
+      plot_A_ha = c(my.plot.area), 
+      inv_year = c(my.inv.year),
+      compartiment = c("ag", "bg", "total"),
+      B_CCS_t_ha = c(0, 0, 0), 
+      C_CCS_t_ha = c(0, 0, 0), 
+      N_CCS_t_ha = c(0, 0, 0)))
+  }else{
+    DW.status.2.df = data.frame()
+  }
+  
+  DW.data.stat.2.list[[i]] <- DW.status.2.df
 }
 DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
 
 # 2.4.5. prepare DW_data for export ---------------------------------------
 DW_update_1 <- DW_data %>% 
-  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., HBI_plots_to_exclude, by = "plot_ID")%>% 
-  # remove trees in CCS with status 3 
+ # remove trees in CCS with status 3 
   semi_join(., DW_inv_info %>% filter(CCS_DW_inv_status == 1),
             by = c("plot_ID", "inv", "inv_year")) %>% 
   # join in the plot area for the deadwood 
-left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
+  left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
            by = c("plot_ID", "inv", "inv_year"))
 
 
@@ -461,16 +480,16 @@ left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
 # 3. export dataset --------------------------------------------------------------------------------------------------------------
 # deadwood
 write.csv2(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_inv_update_1", sep = "_"), ".csv"))
-write.csv2(DW_update_0, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
+write.csv2(DW_update_1, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
 write.csv2(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_stat_2", sep = "_"), ".csv"))
 # living trees
 write.csv2(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"))
 write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_stat_2", sep = "_"), ".csv"))
-write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "LT_update_0", sep = "_"), ".csv"))
+write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(trees_update_0$inv)[1], "LT_update_0", sep = "_"), ".csv"))
 # regeneration
 write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
 write.csv2(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"))
-write.csv2(RG_update_0, paste0(out.path.BZE3, paste(unique(RG_update_0$inv)[1], "RG_update_1", sep = "_"), ".csv"))
+write.csv2(RG_update_1, paste0(out.path.BZE3, paste(unique(RG_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
 
 # all trees
 # this we just export so the inventory name and year are in the dataset and we don´t have to 
