@@ -290,7 +290,9 @@ for (i in 1:nrow(trees_stat_2)) {
         compartiment = c("ag", "bg", "total"),
         B_CCS_t_ha = c(0, 0, 0), 
         C_CCS_t_ha = c(0, 0, 0), 
-        N_CCS_t_ha = c(0, 0, 0)))}else{
+        N_CCS_t_ha = c(0, 0, 0), 
+        BA_CCS_m2_ha = c(0, 0, 0), 
+        n_trees_CCS_ha = c(0, 0, 0)))}else{
       LT.staus.2.df = data.frame()
     }
   LT.data.stat.2.list[[i]] <- LT.staus.2.df
