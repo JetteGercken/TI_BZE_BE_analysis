@@ -99,6 +99,7 @@ if(nrow(trees_stat_2)!= 0 && isTRUE(trees_stat_2)){
 
 
 # 1.2.2. Plot, species: stocks per hektar ------------------------------------------------------
+view(LT_SP_BCNBA_ha)
 
 LT_SP_BCNBA_ha <- tree_data %>% 
   group_by(plot_ID, CCS_r_m, inv_year, SP_code, compartiment) %>% 
@@ -116,7 +117,7 @@ LT_SP_BCNBA_ha <- tree_data %>%
             BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
   mutate(stand_component = "LT") %>% 
   #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
-  left_join(LT_BCNBA_ha %>% 
+  left_join(LT_BCNBAn_ha %>% 
               select(plot_ID, inv_year, compartiment, BA_m2_ha) %>% 
               rename(BA_m2_ha_total = BA_m2_ha),
             by = c("plot_ID", "inv_year", "compartiment"), ) %>% 
@@ -125,100 +126,96 @@ LT_SP_BCNBA_ha <- tree_data %>%
   select(-"BA_m2_ha_total")
 
 # 1.2.3. plot: species composition ------------------------------------------------------
-
-for (i in length(unique(trees_data$plot_ID))) {
-  # i = 1
-  my.plot.id <- unique(trees_data$plot_ID)[i]
+besttype_list <- vector("list", length = length(unique(tree_data$plot_ID)))
+for (i in 1:length(unique(tree_data$plot_ID))) {
+  # i = 142
+  my.plot.id <- unique(tree_data$plot_ID)[i]
+  my.inv.year <- unique(tree_data$inv_year[tree_data$plot_ID == my.plot.id])
   my.sp.p.df <- unique(LT_SP_BCNBA_ha[LT_SP_BCNBA_ha$plot_ID == my.plot.id, ][, c("plot_ID", 
                                                                            "inv_year", 
                                                                            "SP_code",
-                                                                           "BA_m2_ha", "BA_percent")])%>% 
-    left_join(., 
-              SP_names_com_ID_tapeS %>%
-                mutate(char_code_ger_lowcase = tolower(Chr_code_ger)) %>%
-                select(char_code_ger_lowcase, LH_NH, bot_genus), 
-              by = c("SP_code" = "char_code_ger_lowcase"))  
+                                                                           "BA_m2_ha", "BA_percent")])
   
   # calcaulte the composition / ration of coniferous and broadaleafed trees per plot  
   my.BLCF.p.df <- my.sp.p.df %>% 
+    left_join(., SP_names_com_ID_tapeS %>% 
+                 mutate(char_code_ger_lowcase = tolower(Chr_code_ger)) %>% 
+                select(char_code_ger_lowcase, LH_NH), 
+             by = c("SP_code" = "char_code_ger_lowcase")) %>% 
     group_by(plot_ID, inv_year, LH_NH) %>% 
     summarize(BA_m2_ha = sum(BA_m2_ha), 
               BA_per_LHNH = sum(BA_percent))
+ 
+   # exptract the share of coniferous or broadleafed species at the plot
+    # if there are no broadleafed/ coniferous species and the search returns an empty variable, set the share to 0 
+  my.CF.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"])
+  my.BL.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) 
+  
+  # select the species with the highest basal area share
+  main.sp.p.df <- (my.sp.p.df %>% arrange(desc(BA_percent)))[1,] 
+  # assign the stand type group to the species with the highest basal area share
+  my.standtype.spec <- standtype(SP_names_com_ID_tapeS$bot_genus[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == main.sp.p.df$SP_code],
+                                SP_names_com_ID_tapeS$LH_NH[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == main.sp.p.df$SP_code])
     
-  my.best.TY.p.df <- my.sp.p.df %>% 
-    mutate(besttype_SP_group = case_when(bot_genus == "Picea" ~ "FI", 
-                                         bot_genus == "Pinus" ~ "KI",
-                                         !(bot_genus %in% c("Picea", "Pinus")) & LH_NH == "NB" ~ "aNH", 
-                                         bot_genus == "Fagus" ~ "BU", 
-                                         bot_genus == "Quercus" ~ "EI", 
-                                         !(bot_genus %in% c("Fagus", "Quercus")) & LH_NH == "LB" ~ "aLH", 
-                                         TRUE ~ NA)) %>% 
-    group_by(plot_ID,  inv_year, besttype_SP_group, LH_NH) %>% 
-    summarise(BA_percent = sum(BA_percent)) %>% 
-     left_join(.,  my.sp.p.df %>% 
-                group_by(plot_ID, inv_year, LH_NH) %>% 
-                summarize(BA_m2_ha = sum(BA_m2_ha), 
-                          BA_per_LHNH = sum(BA_percent)) %>%  
-                select("plot_ID", "inv_year", "LH_NH","BA_per_LHNH" ), 
-              by = c("plot_ID", "inv_year", "LH_NH")) %>% 
-    mutate(besttype = (case_when(besttype_SP_group == "FI" & BA_percent >= 70 ~ "Fi-Rein" , 
-                                       besttype_SP_group == "KI" & BA_percent >= 70 ~ "Ki-Rein",
-                                       besttype_SP_group == "aNH" & BA_percent >= 70 ~ "sonst-Nd",
-                                       besttype_SP_group == "BU" & BA_percent >= 70 ~ "Bu-Rein" , 
-                                       besttype_SP_group == "EI" & BA_percent >= 70 ~ "Ei-Rein",
-                                       besttype_SP_group == "aLH" & BA_percent >= 70 ~ "sonst-Ld",
-                                       besttype_SP_group %in% c("BU", "EI", "aLH") & BA_percent < 70 &
-                                         LH_NH == "LB" & BA_per_LHNH >30 ~ "Nd-Ld-Misch", 
-                                       besttype_SP_group %in% c("FI", "KI", "aNH") & BA_percent < 70 &
-                                         LH_NH == "NB" & BA_per_LHNH >30 ~ "Lb-Nd-Misch", 
-                                       besttype_SP_group %in% c("FI", "KI", "aNH") & BA_percent < 70 &
-                                         LH_NH == "LB" & BA_per_LHNH < 30 ~ "Nb-Lb<30", 
-                                       besttype_SP_group %in% c("BU", "EI", "aLH") & BA_percent < 70 &
-                                         LH_NH == "NB" & BA_per_LHNH >30 ~ "Lb-NB<30", 
-                                       TRUE ~ NA)))
+  # assign standtype to mono-species stand, if basal area is >= 70%
+  besttype.mono <- case_when(my.standtype.spec == "FI" & main.sp.p.df$BA_percent >= 70 ~ "Fi-Rein" , 
+                             my.standtype.spec == "KI" & main.sp.p.df$BA_percent >= 70 ~ "Ki-Rein",
+                             my.standtype.spec == "aNH" & main.sp.p.df$BA_percent >= 70 ~ "sonst-Nd",
+                             my.standtype.spec == "BU" & main.sp.p.df$BA_percent >= 70 ~ "Bu-Rein" , 
+                             my.standtype.spec == "EI" & main.sp.p.df$BA_percent >= 70 ~ "Ei-Rein",
+                             my.standtype.spec == "aLH" & main.sp.p.df$BA_percent >= 70 ~ "sonst-Ld", 
+                          TRUE ~ NA)
   
+  # if its not a single species stand we have to reassess the stand conditions
+    # check if we can identify a Nadelholzmischbestand or Laubbolzmischbestand 
+    # which means the overall share of conifers or broadleaved trees  
+    besttype.strong.mix <- ifelse(is.na(besttype.mono) &  
+                             # if there area more CF then BL trees (CF min 50%, BL <50%)
+                               my.CF.share > my.BL.share & 
+                             # but there is still a high amount of BL trees >30%
+                                my.BL.share < 50 & my.BL.share >= 30, "Nd-Lb-Misch", 
+                             ifelse(is.na(besttype.mono) & 
+                                      # if there are more BL then CF (BL min 50%, BL <50%)
+                                      my.BL.share > my.CF.share & 
+                                      # but there is still a high amount of BL trees >30%
+                                      my.CF.share < 50 & my.CF.share >= 30, "Lb-Nd-Misch", 
+                                    NA))
   
-  
-  #%>% 
-    left_join(.,  my.sp.p.df %>% 
-                group_by(plot_ID, inv_year, LH_NH) %>% 
-                summarize(BA_m2_ha = sum(BA_m2_ha), 
-                          BA_per_LHNH = sum(BA_percent)) %>%  
-                select("plot_ID", "inv_year", "LH_NH","BA_per_LHNH" ), 
-              by = c("plot_ID", "inv_year", "LH_NH"))  
-
+  # assign stand types for stands wich are dominated by one catedory (CF, BL) but have a low amount 
+  # of 
+  besttype.mix  <- ifelse(is.na(besttype.mono) & is.na(besttype.strong.mix) & 
+                            # if there area more CF then BL trees (CF min 50%, BL <50%)
+                            my.CF.share > my.BL.share & 
+                              # but there is still a high amount of BL trees >30%
+                              my.BL.share <= 30, "Nd-Lb-Misch", 
+                            ifelse(is.na(besttype.mono) & 
+                                     # if there are more BL then CF (BL min 50%, BL <50%)
+                                     my.BL.share > my.CF.share & 
+                                     # but there is still a high amount of CF trees >30%
+                                     my.CF.share <= 30, "Lb-Nd-Misch", 
+                                   NA))
+    
+ 
+  besttype.final <- ifelse(!is.na(besttype.mono) & 
+                             is.na(besttype.strong.mix) & 
+                             is.na(besttype.mix), besttype.mono, 
+                           ifelse(is.na(besttype.mono) &
+                                    !is.na(besttype.strong.mix) &
+                                    is.na(besttype.mix), besttype.strong.mix, 
+                                  ifelse(is.na(besttype.mono) & 
+                                           is.na(besttype.strong.mix) &
+                                           !is.na(besttype.mix), besttype.mix, NA))) 
      
-           
-    
-  ))
   
+  besttype_list[[i]] <- as.data.frame(cbind(
+    plot_ID = c(my.plot.id), 
+    inv_year = c(my.inv.year), 
+    dom_SP = c(main.sp.p.df$SP_code), 
+    stand_type = c(besttype.final))) %>% 
+    distinct()
   
 }
-
-
-LT_SP_composition <- 
-  LT_SP_BCNBA_ha %>% filter(compartiment == "ag") %>% 
-  select(plot_ID, inv_year, SP_code, BA_percent) %>% 
-  distinct() %>% 
-# now we try to introduce the stand type tpp 
-  left_join(., 
-            SP_names_com_ID_tapeS %>%
-              mutate(char_code_ger_lowcase = tolower(Chr_code_ger)) %>%
-              select(char_code_ger_lowcase, LH_NH, bot_genus), 
-            by = c("SP_code" = "char_code_ger_lowcase"))  %>% 
-  mutate(besttype_SP_group = case_when(bot_genus == "Picea" ~ "FI", 
-                                       bot_genus == "Pinus" ~ "KI",
-                                       !(bot_genus %in% c("Picea", "Pinus")) & LH_NH == "NB" ~ "aNH", 
-                                       bot_genus == "Fagus" ~ "BU", 
-                                       bot_genus == "Quercus" ~ "EI", 
-                                       !(bot_genus %in% c("Fagus", "Quercus")) & LH_NH == "LB" ~ "aLH", 
-                                       TRUE ~ NA)) %>% 
-  group_by(plot_ID,  inv_year, besttype_SP_group, LH_NH) %>% 
-  summarise(BA_percent = sum(BA_percent)) %>% 
-  
-  
-
-    
+stand_TY_P <- as.data.frame(rbindlist(besttype_list))   
 
 
 

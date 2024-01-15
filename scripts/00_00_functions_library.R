@@ -1542,6 +1542,26 @@ ton <- function(kg){
 
 
 
+
+
+
+# 1.15 assign stand type species group ------------------------------------
+
+standtype <- function(bot.genus, LH.NH){ 
+  sttype_SP_group = case_when(bot.genus == "Picea" ~ "FI", 
+                              bot.genus == "Pinus" ~ "KI",
+                              !(bot.genus %in% c("Picea", "Pinus")) & LH.NH == "NB" ~ "aNH", 
+                              bot.genus == "Fagus" ~ "BU", 
+                              bot.genus == "Quercus" ~ "EI", 
+                              !(bot.genus %in% c("Fagus", "Quercus")) & LH.NH == "LB" ~ "aLH", 
+                              TRUE ~ NA);
+  return(sttype_SP_group)
+}
+
+
+
+
+
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------
 # if womeone does not have the x-bart tables or the info about the nitrogen content but still wants to use this functions 
 # the following part will allow to write the datasets instead of importing them
