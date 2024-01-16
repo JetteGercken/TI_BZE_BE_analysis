@@ -571,9 +571,6 @@ HBI_trees <- rbind(HBI_trees %>%
   arrange(plot_ID, tree_ID)
 
 
-view(HBI_trees %>% filter(old_tree_ID != tree_ID))
-
-
 # tree inventory status == 5 ----------------------------------------------
 # this inventory status means that the tree should have been assessed in the previous 
 # invenotry but wasn´t

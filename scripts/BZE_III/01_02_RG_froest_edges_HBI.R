@@ -34,9 +34,6 @@ HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_H
 colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
 
 
-# HBI point info
-HBI_inv_info <- read.delim(file = here(paste0(out.path.BZE3,"HBI_inv_info.csv")), sep = ";", dec = ",") 
-
 # import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
 all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
 all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")

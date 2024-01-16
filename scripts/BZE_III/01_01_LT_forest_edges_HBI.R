@@ -22,8 +22,6 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
-# HBI point info
-HBI_inv_info <- read.delim(file =  here(paste0(out.path.BZE3, "HBI_inv_info.csv")), sep = ",", dec = ",") 
 # HBI forest edges (Waldränder) info
 HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
 
@@ -176,347 +174,6 @@ HBI_forest_edges.man <- HBI_forest_edges %>%
 # In argument: `X_inter_AT_17_triangle = case_when(...)`.
 # Caused by warning in `sqrt()`:
 #   ! NaNs wurden erzeugt
-
-#----1.1.2.3. tree-edge-status by combining tree and edge data ---------------------------------------
-# next step will be to join the forest edges dataset into the trees datset, 
-# via b0 and b1 and then compare the calculated tree_y with the functions result
-# if the tree_y is higher then the function_y we have to do something with the tree...
-# etc. assiningg another plot iD or something. 
-
-trees_and_edges <-
-  trees_data  %>% 
-  # join in edges info per plot
-  left_join(., HBI_forest_edges.man %>% 
-              select(plot_ID, e_ID, e_type, e_form,
-                     A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
-                     X_A, X_B, X_T, Y_A, Y_B, Y_T,
-                     b1_AB, b1_AT, b1_BT, b0_AB, b0_AT, b0_BT, 
-                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, 
-                     X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17, 
-                     X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
-                     X_inter_AT_triangle_60, X_inter_BT_triangle_60, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60),
-            by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
-  # the following two functions work, however the processign through loops and polygoens which follows under section 3
-  # works better and more efficient & precise
-  mutate(t_status_AB_ABT = tree.status(e_form,
-                                       0, 0, data_circle$r0[3],
-                                       b0_AB, b1_AB,
-                                       X_tree, Y_tree,
-                                       X_A, Y_A, X_T, Y_T, b0_AT, b1_AT,
-                                       data_circle$rmax[3]*2,
-                                       X_B, Y_B,  b0_BT, b1_BT)) %>%   
-  # ---- 1.1.2.4. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
- # this is necesarry to make the function work. why exactly remains unclear 
-  mutate(id_func = row_number()) %>%
-  group_by(id_func) %>% 
-  mutate(edge_A_method = edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "method"), 
-       plot_A =  edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "area_m2")) %>% 
-  ungroup()
-
-
-
-# ----- 2. visualization  -------------------------------------------------
-# ----- 2.1.   Living trees visualization forest edges -----------------------------------
-# ----- 2.1.1. AB lines, edge form 1, visualization forest edges -----------------------------------
-# plotting trees and interception lines divided in t_line_status
-#AB line
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  # AB line
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "1") %>% 
-               inner_join(.,   HBI_forest_edges.man %>% 
-                            filter(e_form == "1") %>% 
-                            group_by(plot_ID) %>% 
-                            summarize(n = n()) %>% 
-                            filter(n <= 1), 
-                          by = "plot_ID") %>% 
-               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:5], names(.)[6:9]), 
-             aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              inner_join(.,   HBI_forest_edges.man %>% 
-                           filter(e_form == "1") %>% 
-                           group_by(plot_ID) %>% 
-                           summarize(n = n()) %>% 
-                           filter(n <= 1), 
-                         by = "plot_ID") %>% 
-              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              inner_join(.,   HBI_forest_edges.man %>% 
-                           filter(e_form == "1") %>% 
-                           group_by(plot_ID) %>% 
-                           summarize(n = n()) %>% 
-                           filter(n <= 1), 
-                         by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              inner_join(.,   HBI_forest_edges.man %>% 
-                           filter(e_form == "1") %>% 
-                           group_by(plot_ID) %>% 
-                           summarize(n = n()) %>% 
-                           filter(n <= 1), 
-                         by = "plot_ID") %>% 
-              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              inner_join(.,   HBI_forest_edges.man %>% 
-                           filter(e_form == "1") %>% 
-                           group_by(plot_ID) %>% 
-                           summarize(n = n()) %>% 
-                           filter(n <= 1), 
-                         by = "plot_ID") %>% 
-              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              inner_join(.,   HBI_forest_edges.man %>% 
-                           filter(e_form == "1") %>% 
-                           group_by(plot_ID) %>% 
-                           summarize(n = n()) %>% 
-                           filter(n <= 1), 
-                         by = "plot_ID") %>% 
-              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "1"), 
-             # %>% 
-             #   inner_join(.,   HBI_forest_edges.man %>% 
-             #                filter(e_form == "1" ) %>% 
-             #                group_by(plot_ID) %>% 
-             #                summarize(n = n()) %>% 
-             #                filter(n <= 1), 
-             #              by = "plot_ID"),
-             aes(X_tree, Y_tree, colour = edge_A_method))+
-  theme_bw()+
-  facet_wrap(~plot_ID)
-
-
-# ----- 2.1.2. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
-# forest edge type 2 
-# if the # i removed, this part allows to plot plots with forest edges with a turning point
-# AT line
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "T"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # intersections choosen to draw the triangle AT
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # BT line 
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "T"))+
-  geom_line(data = trees_and_edges %>%
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # intersections choosen to draw the triangle BT
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour =  edge_A_method))+
-  theme_bw()+ 
-  facet_wrap(~plot_ID)  
-
-
-
-  
-# ----- 2.1.3. visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
-# plotting trees and interception lines divided in t_line_status
-#AB line
-ggplot() +  
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  ### AB line
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "1") %>% 
-               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:5], names(.)[6:9]), 
-             aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-             select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-             select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>%
-              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-             select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "1") %>% 
-              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),
-                      names(.)[2:3], names(.)[4:5]),  
-            aes(x= X_value, y = Y_value, colour = X_name))+
-  # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "1"), #%>% 
-            aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
-  #theme_bw()+
-  #facet_wrap(~plot_ID)
-  
-  # forest edge type 2 
-  # if the # i removed, this part allows to plot plots with forest edges with a turning point
-  ### AT line
-  # ggplot() +  
-  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
-  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "T"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # intersections choosen to draw the triangle AT
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # BT line 
-  geom_point(data = trees_and_edges %>%
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "T"))+
-  geom_line(data = trees_and_edges %>%
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # intersections choosen to draw the triangle BT
-  geom_point(data = trees_and_edges %>% 
-               filter(e_form == "2") %>% 
-               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
-               to_long(keys = c("X_name",  "Y_name"),
-                       values = c( "X_value", "Y_value"),  
-                       names(.)[2:3], names(.)[4:5]), 
-             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
-  geom_line(data = trees_and_edges %>% 
-              filter(e_form == "2") %>% 
-              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
-              to_long(keys = c("X_name",  "Y_name"),
-                      values = c( "X_value", "Y_value"),  
-                      names(.)[2:3], names(.)[4:5]), 
-            aes(x= X_value, y = Y_value))+
-  # trees
-  geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
-             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
-  theme_bw()+ 
-  facet_wrap(~plot_ID) 
-
 
 
 # 3. georefferencing edge data ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1530,13 +1187,13 @@ trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.no
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
-  #i =1
-  #i = which(grepl(50080, unique(trees.one.edge$plot_ID)))
+  #i = 2173
+  #i = which(grepl(50146, unique(trees.no.edge.nogeo$plot_ID)))
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.no.edge.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.no.edge.nogeo[i, "tree_ID"]
-  my.inv <- trees.two.edges.nogeo[i, "inv"]
+  my.inv <- trees.no.edge.nogeo[i, "inv"]
   
   ## georeference
   ## select UTM corrdinates of the plot center
@@ -1623,7 +1280,7 @@ all.trees.points.df.nogeo <-
   rbind(two.and.one.edge.trees.points.df.nogeo , 
         tree.points.no.edges.df.nogeo) %>% 
   mutate(across(plot_ID:tree_ID, ~ as.integer(.x))) %>% 
-  left_join(., trees_and_edges %>% 
+  left_join(., trees_data %>% 
               select(plot_ID, tree_ID, DBH_cm), 
             by = c("plot_ID", "tree_ID"), 
             multiple = "all")
@@ -1645,7 +1302,7 @@ all.trees.status.df[,c(1,2, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 4, 5)],
 all.edges.area.df.nogeo[,c(1,2, 3, 5)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 5)], as.numeric) 
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
-trees_update_1 <- trees_data %>%  
+trees_update_1 <-trees_data%>%  
  # join in stand of each tree
   left_join(., all.trees.status.df %>% 
               select(plot_ID, tree_ID, inv, t_stat) %>% 
@@ -1698,7 +1355,6 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 # exporting tree and edge/ plot area data
 write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"))
 write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))
-write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
           
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"))
@@ -1775,7 +1431,7 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 2
-  # i = which(grepl(50141, unique(trees_data$plot_ID)))
+  # i = which(grepl(50005, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   
@@ -1785,6 +1441,11 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   c.poly.12 <- sf::st_buffer(c.pt, 12.62)
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
   
+  all.trees.points.df.nogeo.sp <- all.trees.points.df.nogeo %>% 
+    filter(plot_ID == my.plot.id) %>% 
+    left_join(trees_data %>% 
+                filter(plot_ID == my.plot.id) %>%
+                select(plot_ID, tree_ID, SP_code), by = c("plot_ID", "tree_ID"))
   
   print(ggplot() +
           ggtitle(my.plot.id)+
@@ -1793,13 +1454,13 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
           geom_sf(data = c.poly.5, aes(alpha = 0))+
           geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
           geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+ 
-          geom_sf(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
-                  aes(color = all.trees.points.df.nogeo$t_stat[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
-                      size =  all.trees.points.df.nogeo$DBH_cm[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+          geom_sf(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
+                  aes(color = all.trees.points.df.nogeo.sp$t_stat[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
+                      size =  all.trees.points.df.nogeo.sp$DBH_cm[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
           guides(color=guide_legend(title="tree status"))+
           guides(size=guide_legend(title="DBH cm"))+
-          geom_sf_text(data = all.trees.points.df.nogeo$geometry[all.trees.points.df.nogeo$plot_ID == my.plot.id], 
-                       aes(label = all.trees.points.df.nogeo$tree_ID[all.trees.points.df.nogeo$plot_ID == my.plot.id]))+
+          geom_sf_text(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
+                       aes(label = all.trees.points.df.nogeo.sp$tree_ID[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
           xlim(-30, 30)+
           ylim(-30, 30)
         
@@ -1807,8 +1468,352 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   
 }
 
+# ----- 2. visualization  -------------------------------------------------
 
- 
+#----2.2. visual prep: tree-edge-status by combining tree and edge data ---------------------------------------
+# next step will be to join the forest edges dataset into the trees datset, 
+# via b0 and b1 and then compare the calculated tree_y with the functions result
+# if the tree_y is higher then the function_y we have to do something with the tree...
+# etc. assiningg another plot iD or something. 
+
+trees_and_edges <-
+  trees_data  %>% 
+  # join in edges info per plot
+  left_join(., HBI_forest_edges.man %>% 
+              select(plot_ID, e_ID, e_type, e_form,
+                     A_dist, A_azi, B_dist, B_azi, T_dist, T_azi, 
+                     X_A, X_B, X_T, Y_A, Y_B, Y_T,
+                     b1_AB, b1_AT, b1_BT, b0_AB, b0_AT, b0_BT, 
+                     X1_inter_AB_17, X2_inter_AB_17, Y1_inter_AB_17, Y2_inter_AB_17, inter_status_AB_17, 
+                     X1_inter_AT_17, X2_inter_AT_17, Y1_inter_AT_17, Y2_inter_AT_17, inter_status_AT_17, 
+                     X1_inter_BT_17, X2_inter_BT_17,  Y1_inter_BT_17, Y2_inter_BT_17, inter_status_BT_17,
+                     X_inter_AT_triangle_60, X_inter_BT_triangle_60, Y_inter_AT_triangle_60, Y_inter_BT_triangle_60),
+            by = c("plot_ID", "e_ID", "e_type", "e_form")) %>% 
+  # the following two functions work, however the processign through loops and polygoens which follows under section 3
+  # works better and more efficient & precise
+  mutate(t_status_AB_ABT = tree.status(e_form,
+                                       0, 0, data_circle$r0[3],
+                                       b0_AB, b1_AB,
+                                       X_tree, Y_tree,
+                                       X_A, Y_A, X_T, Y_T, b0_AT, b1_AT,
+                                       data_circle$rmax[3]*2,
+                                       X_B, Y_B,  b0_BT, b1_BT)) %>%   
+  # ---- 1.1.2.4. assigning plot area by according to diameter class (klubschwelle)  ---------------------------------------
+# this is necesarry to make the function work. why exactly remains unclear 
+mutate(id_func = row_number()) %>%
+  group_by(id_func) %>% 
+  mutate(edge_A_method = edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "method"), 
+         plot_A =  edge.A(e_form, DBH_cm,  X_A, X_B, X_T, Y_A, Y_B, Y_T, T_dist, t_status_AB_ABT, output = "area_m2")) %>% 
+  ungroup()
+
+
+# ecport treees and edges dataset  ----------------------------------------
+write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
+
+
+# ----- 2.1.   Living trees visualization forest edges -----------------------------------
+# ----- 2.1.1. AB lines, edge form 1, visualization forest edges -----------------------------------
+# plotting trees and interception lines divided in t_line_status
+#AB line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  # AB line
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "1") %>% 
+               inner_join(.,   HBI_forest_edges.man %>% 
+                            filter(e_form == "1") %>% 
+                            group_by(plot_ID) %>% 
+                            summarize(n = n()) %>% 
+                            filter(n <= 1), 
+                          by = "plot_ID") %>% 
+               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:5], names(.)[6:9]), 
+             aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              inner_join(.,   HBI_forest_edges.man %>% 
+                           filter(e_form == "1") %>% 
+                           group_by(plot_ID) %>% 
+                           summarize(n = n()) %>% 
+                           filter(n <= 1), 
+                         by = "plot_ID") %>% 
+              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  # trees
+  geom_point(data =  trees_and_edges %>% filter(e_form == "1"), 
+             # %>% 
+             #   inner_join(.,   HBI_forest_edges.man %>% 
+             #                filter(e_form == "1" ) %>% 
+             #                group_by(plot_ID) %>% 
+             #                summarize(n = n()) %>% 
+             #                filter(n <= 1), 
+             #              by = "plot_ID"),
+             aes(X_tree, Y_tree, colour = edge_A_method))+
+  theme_bw()+
+  facet_wrap(~plot_ID)
+
+
+# ----- 2.1.2. ABT lines, edge form 2, Visualisation forest edges -----------------------------------
+# forest edge type 2 
+# if the # i removed, this part allows to plot plots with forest edges with a turning point
+# AT line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle AT
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # BT line 
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = trees_and_edges %>%
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle BT
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # trees
+  geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
+             aes(X_tree, Y_tree, colour =  edge_A_method))+
+  theme_bw()+ 
+  facet_wrap(~plot_ID)  
+
+
+
+
+# ----- 2.1.3. visulaliszing forest edge_form 1 and edge_form 2 together using m_s_status --------
+# plotting trees and interception lines divided in t_line_status
+#AB line
+ggplot() +  
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  ### AB line
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "1") %>% 
+               select(plot_ID, X1_inter_AB_17, X2_inter_AB_17, X_A, X_B, Y1_inter_AB_17, Y2_inter_AB_17, Y_A, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:5], names(.)[6:9]), 
+             aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              select(plot_ID, X_A, X_B, Y_A, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              select(plot_ID, X1_inter_AB_17, X_A, Y1_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>%
+              select(plot_ID, X2_inter_AB_17, X_A, Y2_inter_AB_17, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              select(plot_ID, X1_inter_AB_17, X_B, Y1_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "1") %>% 
+              select(plot_ID, X2_inter_AB_17, X_B, Y2_inter_AB_17, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),
+                      names(.)[2:3], names(.)[4:5]),  
+            aes(x= X_value, y = Y_value, colour = X_name))+
+  # trees
+  geom_point(data =  trees_and_edges %>% filter(e_form == "1"), #%>% 
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+  #theme_bw()+
+  #facet_wrap(~plot_ID)
+  
+  # forest edge type 2 
+  # if the # i removed, this part allows to plot plots with forest edges with a turning point
+  ### AT line
+  # ggplot() +  
+  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = r0))+ # Draw ggplot2 plot with circle representing sampling circuits 
+  # geom_circle(data = data_circle, aes(x0 = x0, y0 = y0, r = rmax*2))+ # Draw ggplot2 plot with circle representing sampling circuits
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_A, X_T, Y_A, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle AT
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "A_Intercept"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_inter_AT_triangle_60, X_A, Y_inter_AT_triangle_60, Y_A) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # BT line 
+  geom_point(data = trees_and_edges %>%
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "T"))+
+  geom_line(data = trees_and_edges %>%
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_B, X_T, Y_B, Y_T) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # intersections choosen to draw the triangle BT
+  geom_point(data = trees_and_edges %>% 
+               filter(e_form == "2") %>% 
+               select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+               to_long(keys = c("X_name",  "Y_name"),
+                       values = c( "X_value", "Y_value"),  
+                       names(.)[2:3], names(.)[4:5]), 
+             aes(x= X_value, y = Y_value, colour = "B_intercept"))+
+  geom_line(data = trees_and_edges %>% 
+              filter(e_form == "2") %>% 
+              select(plot_ID, X_inter_BT_triangle_60, X_B, Y_inter_BT_triangle_60, Y_B) %>% 
+              to_long(keys = c("X_name",  "Y_name"),
+                      values = c( "X_value", "Y_value"),  
+                      names(.)[2:3], names(.)[4:5]), 
+            aes(x= X_value, y = Y_value))+
+  # trees
+  geom_point(data =  trees_and_edges %>% filter(e_form == "2"), 
+             aes(X_tree, Y_tree, colour = t_status_AB_ABT))+
+  theme_bw()+ 
+  facet_wrap(~plot_ID) 
+
+
+
 
 # Notes:  -----------------------------------------------------------------
 

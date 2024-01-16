@@ -26,7 +26,7 @@ DW_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_4.
 DW_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_stat_2.csv"), sep = ";", dec = ",")
 # this dataset contains the data of the tree inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
 tree_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_4.csv"), sep = ";", dec = ",")
-LT_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"), sep = ";", dec = ",")
+trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"), sep = ";", dec = ",") %>% select(-X)
 
 
 
@@ -59,9 +59,9 @@ LT_n_ha <-  tree_data %>%
 # 1.2. stocks per hektar ------------------------------------------------------
 # 1.2.1. Plot: stocks per hektar ------------------------------------------------------
 
-if(nrow(trees_stat_2)!= 0 && isTRUE(trees_stat_2)){
+if(nrow(trees_stat_2)!= 0){
   LT_BCNBAn_ha <- rbind(tree_data  %>% 
-                          group_by(plot_ID, CCS_r_m, inv_year, compartiment) %>% 
+                          group_by(plot_ID, plot_A_ha, CCS_r_m, inv_year, compartiment) %>% 
                           # convert Biomass into tons per hectar and sum it up per sampling circuit 
                           reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
                                   C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
