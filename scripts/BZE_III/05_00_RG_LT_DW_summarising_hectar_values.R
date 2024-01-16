@@ -25,7 +25,7 @@ RG_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_RG_stat_2.
 DW_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_update_4.csv"), sep = ";", dec = ",")
 DW_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_DW_stat_2.csv"), sep = ";", dec = ",")
 # this dataset contains the data of the tree inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
-tree_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_4.csv"), sep = ";", dec = ",")
+trees_data <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_4.csv"), sep = ";", dec = ",")
 trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"), sep = ";", dec = ",") %>% select(-X)
 
 
@@ -36,31 +36,22 @@ trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat
 
 # 1. LIVING TREES -----------------------------------------------
 
-# 1.1. number of trees  per hectar ----------------------------------------------
-# we have to calcualte this separately because the stocks per area are being calcualted per com
-# summarize all trees per plot, no further grouping variables
-LT_n_ha <-  tree_data %>% 
-      filter(compartiment == "ag") %>% 
-      group_by(plot_ID, CCS_r_m, plot_A_ha, inv_year) %>% 
-     # sum number of trees  per sampling circuit and reffer to hectare
-  reframe(n_trees_CCS_ha = n()/plot_A_ha) %>% 
-      distinct() %>% 
-      # now we summarise all the ha values of the cirlces per plot
-      group_by(plot_ID, inv_year) %>% 
-      summarise(n_ha = sum(n_trees_CCS_ha)) 
-
-
-
 
 # 1.2. number of speices per plot -----------------------------------------
-
+n_SP_plot <- trees_data %>%
+  filter(compartiment == "ag") %>%
+  select(plot_ID, inv_year, SP_code) %>% 
+  group_by(plot_ID, inv_year) %>% 
+  distinct() %>% 
+  summarise(n_SP = n())
+  
 
 
 # 1.2. stocks per hektar ------------------------------------------------------
 # 1.2.1. Plot: stocks per hektar ------------------------------------------------------
 
 if(nrow(trees_stat_2)!= 0){
-  LT_BCNBAn_ha <- rbind(tree_data  %>% 
+  LT_BCNBAn_ha <- rbind(trees_data  %>% 
                           group_by(plot_ID, plot_A_ha, CCS_r_m, inv_year, compartiment) %>% 
                           # convert Biomass into tons per hectar and sum it up per sampling circuit 
                           reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -78,7 +69,7 @@ if(nrow(trees_stat_2)!= 0){
               BA_m2_ha = sum(BA_CCS_m2_ha), 
               n_ha = sum(n_trees_CCS_ha)) %>% 
     mutate(stand_component = "LT")}else{
-      LT_BCNBAn_ha <- tree_data %>% 
+      LT_BCNBAn_ha <- trees_data %>% 
         group_by(plot_ID, CCS_r_m, inv_year, compartiment) %>% 
         # convert Biomass into tons per hectar and sum it up per sampling circuit 
         reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -99,9 +90,7 @@ if(nrow(trees_stat_2)!= 0){
 
 
 # 1.2.2. Plot, species: stocks per hektar ------------------------------------------------------
-view(LT_SP_BCNBA_ha)
-
-LT_SP_BCNBA_ha <- tree_data %>% 
+LT_SP_BCNBA_ha <- trees_data %>% 
   group_by(plot_ID, CCS_r_m, inv_year, SP_code, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
   reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -126,11 +115,11 @@ LT_SP_BCNBA_ha <- tree_data %>%
   select(-"BA_m2_ha_total")
 
 # 1.2.3. plot: species composition ------------------------------------------------------
-besttype_list <- vector("list", length = length(unique(tree_data$plot_ID)))
-for (i in 1:length(unique(tree_data$plot_ID))) {
-  # i = 142
-  my.plot.id <- unique(tree_data$plot_ID)[i]
-  my.inv.year <- unique(tree_data$inv_year[tree_data$plot_ID == my.plot.id])
+besttype_list <- vector("list", length = length(unique(trees_data$plot_ID)))
+for (i in 1:length(unique(trees_data$plot_ID))) {
+  # i = 1
+  my.plot.id <- unique(trees_data$plot_ID)[i]
+  my.inv.year <- unique(trees_data$inv_year[trees_data$plot_ID == my.plot.id])
   my.sp.p.df <- unique(LT_SP_BCNBA_ha[LT_SP_BCNBA_ha$plot_ID == my.plot.id, ][, c("plot_ID", 
                                                                            "inv_year", 
                                                                            "SP_code",
@@ -173,26 +162,26 @@ for (i in 1:length(unique(tree_data$plot_ID))) {
                              # if there area more CF then BL trees (CF min 50%, BL <50%)
                                my.CF.share > my.BL.share & 
                              # but there is still a high amount of BL trees >30%
-                                my.BL.share < 50 & my.BL.share >= 30, "Nd-Lb-Misch", 
+                                my.BL.share < 50 & my.BL.share > 30, "Nd-Lb-Misch", 
                              ifelse(is.na(besttype.mono) & 
                                       # if there are more BL then CF (BL min 50%, BL <50%)
                                       my.BL.share > my.CF.share & 
                                       # but there is still a high amount of BL trees >30%
-                                      my.CF.share < 50 & my.CF.share >= 30, "Lb-Nd-Misch", 
+                                      my.CF.share < 50 & my.CF.share > 30, "Lb-Nd-Misch", 
                                     NA))
   
   # assign stand types for stands wich are dominated by one catedory (CF, BL) but have a low amount 
   # of 
   besttype.mix  <- ifelse(is.na(besttype.mono) & is.na(besttype.strong.mix) & 
                             # if there area more CF then BL trees (CF min 50%, BL <50%)
-                            my.CF.share > my.BL.share & 
+                            my.CF.share >= 70 & 
                               # but there is still a high amount of BL trees >30%
-                              my.BL.share <= 30, "Nd-Lb-Misch", 
+                              my.BL.share <= 30, "Nd-Lb<30", 
                             ifelse(is.na(besttype.mono) & 
                                      # if there are more BL then CF (BL min 50%, BL <50%)
-                                     my.BL.share > my.CF.share & 
+                                     my.BL.share >= 70 & 
                                      # but there is still a high amount of CF trees >30%
-                                     my.CF.share <= 30, "Lb-Nd-Misch", 
+                                     my.CF.share <= 30, "Lb-Nd<30", 
                                    NA))
     
  
@@ -222,9 +211,41 @@ stand_TY_P <- as.data.frame(rbindlist(besttype_list))
 # 1.3 forestry summary ----------------------------------------------------
 
 # this shoudl contain the BA, Dg, Hg, 
+trees_data %>% 
+  filter(C_layer == 1 & compartiment == "ag") %>% 
+  group_by(plot_ID, CCS_r_m, inv_year, SP_code) %>% 
+  summarize(mean_DBH_CCS = mean(DBH_cm), 
+            sd_DBH_CCS = sd(DBH_cm),
+            mean_H_CCS = mean(H_m), 
+            sd_H_CCS = sd(H_m), 
+            mean_BA_m2_CCS = mean(BA_m2), 
+            n_trees_CCS = n()) %>% 
+  group_by(plot_ID, inv_year, SP_code) %>% 
+  reframe(mean_DBH_cm = mean(mean_DBH_CCS), 
+            mean_H_m = mean(mean_H_CCS), 
+            mean_BA_m2 = mean(mean_BA_m2_CCS), 
+            mean_BA_m2_tree = mean_BA_m2_CCS/n_trees_CCS, 
+          D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100
+          )
+    
 
-
-
+# trees_data %>%     
+#  filter(C_layer == 1 & compartiment == "ag") %>% 
+#   group_by(inv, plot_ID, stand, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
+#   reframe(no_trees_CC = n(),
+#             BA_m2_CCS = sum(BA_m2)/plot_A_ha,                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
+#             no_trees_CCS = no_trees_CC/CC_A_ha,
+#             mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
+#             mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
+#   group_by(inv, plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
+#   summarize(no_trees_ha = sum(no_trees_CC_ha),                                # calculate number of trees per plot
+#             BA_m2_ha = sum(BA_m2_CCS),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
+#             mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
+#             mean_H_m = mean(mean_H_m_CC),              # calculate mean of height across all sampling circuit to account for represnation of different trees in the sampling circuits
+#             mean_BA_m2_tree = BA_m2_ha/no_trees_ha,
+#             H_g = sum(mean(na.omit(mean_H_m))*BA_m2_ha)/sum(BA_m2_ha),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+#             mean_DBH_mm = mean(mean_DBH_mm),                           # mean diameter per species per canopy layer per plot
+#             D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100)
 
 
   
