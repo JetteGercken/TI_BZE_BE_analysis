@@ -208,7 +208,42 @@ stand_TY_P <- as.data.frame(rbindlist(besttype_list))
 
 
 
-# 1.3 forestry summary ----------------------------------------------------
+# 1.3 average values ----------------------------------------------------
+
+# 1.3.1. create "pseudo stands" -------------------------------------------
+
+for (i in 1:length(unique(trees_data$plot_ID))) {
+  # i = 1
+  my.plot.id <- unique(trees_data$plot_ID)[i]
+  # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
+  my.tree.df <- trees_data[trees_data$plot_ID == my.plot.id & trees_data$compartiment == "ag", ] 
+  my.n.ha.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = n()/plot_A_ha) %>% distinct()
+  my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
+  
+  my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
+  my.n.rep.5 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 5.64]
+  my.n.rep.12 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 12.62]
+  my.n.rep.17 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]
+  
+  # repeat every tree per circle by the number this tree would be repeated by to reach it´s ha number
+  # so every tree id repeated as often as it would be represented on a hectar)
+  my.tree.df <- rbind(
+    # 5m circle
+    my.tree.df[my.tree.df$CCS_r_m == 5.64, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 5.64, ])), 
+                                                each = my.n.rep.5), ],
+  # 12m circle
+    my.tree.df[my.tree.df$CCS_r_m == 12.62, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 12.62, ])), 
+                                                each = my.n.rep.12 ), ],
+  # 17m circle
+   my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
+                                                each = my.n.rep.17), ])
+  
+  
+}
+LT_BCNBAn_ha %>% select(plot_ID, n_ha)
+
+
+
 
 # this shoudl contain the BA, Dg, Hg, 
 trees_data %>% 
