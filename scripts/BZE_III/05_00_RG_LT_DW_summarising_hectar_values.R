@@ -38,7 +38,7 @@ trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat
 
 
 # 1.2. number of speices per plot -----------------------------------------
-n_SP_plot <- trees_data %>%
+LT_n_SP_plot <- trees_data %>%
   filter(compartiment == "ag") %>%
   select(plot_ID, inv_year, SP_code) %>% 
   group_by(plot_ID, inv_year) %>% 
@@ -212,6 +212,8 @@ stand_TY_P <- as.data.frame(rbindlist(besttype_list))
 
 # 1.3.1. create "pseudo stands" -------------------------------------------
 
+LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
+LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 for (i in 1:length(unique(trees_data$plot_ID))) {
   # i = 1
   my.plot.id <- unique(trees_data$plot_ID)[i]
@@ -221,75 +223,51 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
   
   my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
-  my.n.rep.5 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 5.64]
-  my.n.rep.12 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 12.62]
-  my.n.rep.17 <- my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]
   
   # repeat every tree per circle by the number this tree would be repeated by to reach it´s ha number
   # so every tree id repeated as often as it would be represented on a hectar)
-  my.tree.df <- rbind(
+    # https://stackoverflow.com/questions/11121385/repeat-rows-of-a-data-frame
+  my.tree.rep.df <- rbind(
     # 5m circle
     my.tree.df[my.tree.df$CCS_r_m == 5.64, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 5.64, ])), 
-                                                each = my.n.rep.5), ],
+                                                each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 5.64]), ],
   # 12m circle
     my.tree.df[my.tree.df$CCS_r_m == 12.62, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 12.62, ])), 
-                                                each = my.n.rep.12 ), ],
+                                                each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 12.62] ), ],
   # 17m circle
    my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
-                                                each = my.n.rep.17), ])
+                                                each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
+              
+  LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
+    group_by(plot_ID, inv, SP_code) %>% 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
+              sd_DBH_cm = sd(DBH_cm),
+              Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+              mean_BA_m2 = mean(BA_m2),
+              mean_H_m = mean(H_m), 
+              sd_H_m = sd(H_m), 
+              Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2)))
   
+  LT_avg_P_list[[i]] <- my.tree.rep.df %>% 
+    group_by(plot_ID, inv) %>% 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
+              sd_DBH_cm = sd(DBH_cm),
+              Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+              mean_BA_m2 = mean(BA_m2),
+              mean_H_m = mean(H_m), 
+              sd_H_m = sd(H_m), 
+              Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2)))
   
 }
-LT_BCNBAn_ha %>% select(plot_ID, n_ha)
+LT_avg_SP_P <- as.data.frame(rbindlist(LT_avg_SP_P_list))
 
 
-
-
-# this shoudl contain the BA, Dg, Hg, 
-trees_data %>% 
-  filter(C_layer == 1 & compartiment == "ag") %>% 
-  group_by(plot_ID, CCS_r_m, inv_year, SP_code) %>% 
-  summarize(mean_DBH_CCS = mean(DBH_cm), 
-            sd_DBH_CCS = sd(DBH_cm),
-            mean_H_CCS = mean(H_m), 
-            sd_H_CCS = sd(H_m), 
-            mean_BA_m2_CCS = mean(BA_m2), 
-            n_trees_CCS = n()) %>% 
-  group_by(plot_ID, inv_year, SP_code) %>% 
-  reframe(mean_DBH_cm = mean(mean_DBH_CCS), 
-            mean_H_m = mean(mean_H_CCS), 
-            mean_BA_m2 = mean(mean_BA_m2_CCS), 
-            mean_BA_m2_tree = mean_BA_m2_CCS/n_trees_CCS, 
-          D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100
-          )
-    
-
-# trees_data %>%     
-#  filter(C_layer == 1 & compartiment == "ag") %>% 
-#   group_by(inv, plot_ID, stand, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
-#   reframe(no_trees_CC = n(),
-#             BA_m2_CCS = sum(BA_m2)/plot_A_ha,                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
-#             no_trees_CCS = no_trees_CC/CC_A_ha,
-#             mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
-#             mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
-#   group_by(inv, plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
-#   summarize(no_trees_ha = sum(no_trees_CC_ha),                                # calculate number of trees per plot
-#             BA_m2_ha = sum(BA_m2_CCS),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
-#             mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
-#             mean_H_m = mean(mean_H_m_CC),              # calculate mean of height across all sampling circuit to account for represnation of different trees in the sampling circuits
-#             mean_BA_m2_tree = BA_m2_ha/no_trees_ha,
-#             H_g = sum(mean(na.omit(mean_H_m))*BA_m2_ha)/sum(BA_m2_ha),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
-#             mean_DBH_mm = mean(mean_DBH_mm),                           # mean diameter per species per canopy layer per plot
-#             D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100)
-
-
-  
 
 
 # 2. REGENERATION ---------------------------------------------------------
 # 2.1. plot area - sum off all sampling circuits ---------------------------
 # if there are plots that are labelled empty but have to included in the eare calcualtion 
-if(nrow(RG_stat_2) != 0 && isTRUE(RG_stat_2)){
+if(nrow(RG_stat_2) != 0){
   RG_plot_A_ha <- rbind(RG_data %>% 
                           mutate(plot_A_ha = area_m2/10000) %>% 
                           select(plot_ID, inv_year, CCS_nr, plot_A_ha) %>% 
@@ -297,28 +275,46 @@ if(nrow(RG_stat_2) != 0 && isTRUE(RG_stat_2)){
                         RG_stat_2 %>% 
                           select(plot_ID, inv_year, CCS_nr, plot_A_ha)) %>% 
     group_by(plot_ID, inv_year) %>% 
-    summarise(plot_A_ha = sum(plot_A_ha))}else{
+    summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))}else{
       RG_plot_A_ha <- RG_data %>% 
         mutate(plot_A_ha = area_m2/10000) %>% 
         select(plot_ID, inv_year, CCS_nr, plot_A_ha) %>% 
         distinct() %>% 
         group_by(plot_ID, inv_year) %>%
-        summarise(plot_A_ha = sum(plot_A_ha))
+        summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))
     }
 
 
 
-# 2.1. number of RG plants  per hectar ----------------------------------------------
-n_ha_RG <- RG_data %>% 
-  left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+# 2.2. number of RG  plants  per hectar ----------------------------------------------
+RG_n_ha <- RG_data %>% 
   filter(compartiment == "ag") %>% 
-  group_by(plot_ID, CCS_nr, plot_A_ha, inv_year) %>% 
+  left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+  group_by(plot_ID, inv_year, compartiment) %>% 
   # sum number of trees  per sampling circuit
-  summarise(n_trees_CCS = n()) %>% 
-  # summarise all the tree numers values of the individual cirlces per plot and reffer them to the plot area
-  group_by(plot_ID, inv_year, plot_A_ha) %>% 
-  reframe(n_ha = sum(n_trees_CCS)/plot_A_ha) %>% 
+  reframe(n_ha = n()/plot_A_ha) %>% 
   distinct()
+
+# 2.3. number of RG  species per hectar ----------------------------------------------
+RG_n_SP_plot <- RG_data %>%
+  filter(compartiment == "ag") %>%
+  select(plot_ID, inv_year, SP_code) %>% 
+  group_by(plot_ID, inv_year) %>% 
+  distinct() %>% 
+  summarise(n_SP = n())
+
+# 2.4. RG stocks, n trees per hectar ----------------------------------------------
+RG_BCNn_ha <- RG_data %>% 
+  left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+  group_by(plot_ID, inv_year, compartiment) %>% 
+  # sum number of trees  per sampling circuit
+  reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+          C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+  distinct() %>% 
+  left_join(RG_n_ha %>% select(plot_ID, inv_year, n_ha), by = c("plot_ID", "inv_year"))
+
+
 
 
 
