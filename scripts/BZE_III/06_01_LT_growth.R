@@ -14,3 +14,6 @@ getwd()
 
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
+# vorräte: über alle jahre 
+# einzelbaumdurchmesser
+# veränderung grundflächenanteil

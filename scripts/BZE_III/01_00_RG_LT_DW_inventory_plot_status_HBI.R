@@ -131,6 +131,10 @@ colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_
                           "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
+# HBI forest edges
+forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+
 
 
 ## REGENERATION                                                                                                  
@@ -194,6 +198,14 @@ SP_NAs <- trees_data %>%
 
 if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees dataset that do not match
                                 the species names and codes listed in x_bart")}else{"all fine"}
+
+
+
+# 1.2.2. forest edges dataset ---------------------------------------------
+forest_edges <- forest_edges %>% 
+  # join in inventory info 
+  left_join(., HBI_inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID")
+  
 
 
 
@@ -308,7 +320,11 @@ trees_update_0 <- trees_data %>%
   semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status == 1),
             by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
 
-
+#  2.2.6. clearing forest edges dataset and prepare for export (waldraender.csv) ---------------------------------------------------------------------------------------
+forest_edges_update_1 <- forest_edges %>% 
+  # here we can sort for plots with and without trees, since that doesn´t matter for the CCS and their edges
+  semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status %in% c(1,2)),
+            by = c("plot_ID", "inv_year", "inv"))
 
 
 
@@ -491,6 +507,8 @@ write.csv2(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1
 write.csv2(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"))
 write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_stat_2", sep = "_"), ".csv"))
 write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(trees_update_0$inv)[1], "LT_update_0", sep = "_"), ".csv"))
+write.csv2(forest_edges_update_1, paste0(out.path.BZE3, paste(unique(forest_edges_update_1$inv)[1], "forest_edges_update_1", sep = "_"), ".csv"))
+
 # regeneration
 write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
 write.csv2(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"))
