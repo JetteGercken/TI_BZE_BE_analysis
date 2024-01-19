@@ -420,6 +420,8 @@ RG_update_1 <- RG_data %>%
 # 2.4. DW dataset --------------------------------------------------------------------------------------------------------------------------------
 # 2.4.1. remove not process able plots and sampling circuits form DW_inv_info data set ------------------------------------------------------------
 DW_inv_info <- DW_inv_info %>% 
+  # join  in inventory info
+  left_join(., HBI_inv_info %>% select(plot_ID, inv_year, inv), by = c("plot_ID")) %>% 
   # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
   anti_join(., HBI_plots_to_exclude, by = "plot_ID") %>% 
   mutate(plot_A_ha = case_when(CCS_DW_inv_status == 4 ~ (c_A(data_circle$r0[2])/10000)*0.5, 

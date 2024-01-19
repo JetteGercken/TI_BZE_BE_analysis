@@ -21,18 +21,18 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
+geo_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, "HBI_forest_edges_update_1.csv")), sep = ";", dec = ",")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
-HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW",
+geo_loc <- geo_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW",
                               "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                               "HW_MED",  "LAT_MED",  "LON_MED", 
                               "LAT_MEAN", "LON_MEAN"))
-colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW",
+colnames(geo_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                        "HW_MED",  "LAT_MED",  "LON_MED", 
                        "LAT_MEAN", "LON_MEAN") 
@@ -185,7 +185,7 @@ forest_edges.man <- forest_edges %>%
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1) # %>% 
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
 
 triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID))
 triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
@@ -201,8 +201,8 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   my.inv.year <- forest_edges.man.sub.e1.nogeo[i, "inv_year"]
   
   ## select UTM corrdinates of the plot center by plot ID
-  # my.center.easting <-  HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <-  geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle center and radius to calcualte intersections 
   c.x0 = 0   
@@ -306,7 +306,7 @@ triangle.e1.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e1.coords.nogeo)
 forest_edges.man.sub.e2.nogeo <- forest_edges.man %>%
   filter(e_form == 2) %>%  # nrow = 21
   filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") # %>% 
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")  # nrow = 21
 
 # preparing output dataset
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID) )
@@ -322,8 +322,8 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   my.inv.year <- forest_edges.man.sub.e2.nogeo[i, "inv_year"]
   
   ## select UTM corrdinates of the plot center
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle data
   c.x0 = 0 
@@ -419,7 +419,7 @@ forest_edges.man.sub.1.edge.nogeo <- forest_edges.man %>% # rows:84
   anti_join(forest_edges.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")#  %>% # 14 plots with 2 edges --> 28 rows -> 53 left
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
- # semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
+ # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
 
 # prepare output datasets
 edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID)))
@@ -440,8 +440,8 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
   my.inv.year <- forest_edges.man.sub.1.edge.nogeo[i, "inv_year"]
   
   ##  select UTM corrdinates of the plot center
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   ## select crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -634,7 +634,7 @@ forest_edges.man.sub.2.edges.nogeo <- forest_edges.man %>% # rows:84
                                               e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% # 14 plots iwth 2 edges --> 28 rows
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
-semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
+semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
 
 
 # prepare output lists
@@ -660,8 +660,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   my.inv.year <- unique(forest_edges.man.sub.2.edges.nogeo[i, c("plot_ID", "inv_year")])[, "inv_year"]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-   # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-   # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+   # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+   # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   ## select crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -954,22 +954,22 @@ trees.one.edge.nogeo <- trees_data %>%
   # filter for trees located in plots htat haev only one forest edge
   anti_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
-  #i = 997
+  #i = 1
   # i = which(grepl(50133, (trees.one.edge.nogeo$plot_ID)))[7]
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.one.edge.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.one.edge.nogeo[i, "tree_ID"]
-  my.inv <- trees.one.edge.nogeo[i, "inv"]
+  my.inv.year <- trees.one.edge.nogeo[i, "inv_year"]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   ## select crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -1004,7 +1004,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   tree.coord.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(tree.east),
     "lat" = c(tree.north)
   ))
@@ -1030,7 +1030,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   tree.status.list.nogeo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(as.numeric(tree.coord.df$lon)),
     "lat" = c(as.numeric(tree.coord.df$lat)),
     "t_stat" = c(tree_status))) 
@@ -1039,13 +1039,10 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   tree.points.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
 }
-
 # save tree corodiantes and status into dataframe
-tree.status.list.one.edge.final.nogeo <- rbindlist(tree.status.list.nogeo)
-tree.status.one.edge.df.nogeo <- as.data.frame(tree.status.list.one.edge.final.nogeo)
+tree.status.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.status.list.nogeo))
 # save tree sf into dataframe
-tree.points.list.one.edge.final.nogeo <- rbindlist(tree.points.list.nogeo)
-tree.points.one.edge.df.nogeo <- as.data.frame(tree.points.list.one.edge.final.nogeo)
+tree.points.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.points.list.nogeo))
 
 
 
@@ -1061,7 +1058,7 @@ trees.two.edges.nogeo <- trees_data %>%
   semi_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 tree.status.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
 tree.points.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
@@ -1073,11 +1070,11 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.two.edges.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.two.edges.nogeo[i, "tree_ID"]
-  my.inv <- trees.two.edges.nogeo[i, "inv"]
+  my.inv.year <- trees.two.edges.nogeo[i, "inv_year"]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   ## select crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -1116,7 +1113,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   tree.coord.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(tree.east),
     "lat" = c(tree.north)
   ))
@@ -1146,7 +1143,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   tree.status.two.edges.list.nogeo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(as.numeric(tree.coord.df$lon)),
     "lat" = c(as.numeric(tree.coord.df$lat)),
     "t_stat" = c(tree_status))) 
@@ -1161,7 +1158,11 @@ tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final
 tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
 tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
 # bind the tree point datafarmes of one and two edges plots together
-two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) %>% mutate(plot_ID = as.integer(plot_ID)) 
+# bind the tree point datafarmes of one and two edges plots together
+two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
+# this step i separated in case both of the rbinded dfs are empty and the mutate wouldn´t grip
+two.and.one.edge.trees.points.df.nogeo <- two.and.one.edge.trees.points.df.nogeo %>% mutate(plot_ID = as.integer(plot_ID)) 
+
 
 
 
@@ -1171,7 +1172,60 @@ trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.no
                                    select(plot_ID) %>% 
                                    distinct(), by = "plot_ID")#%>% 
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+
+
+# there may be no egdges or edges with no trees in this case only the last loop will run: 
+# so what we need are 3 versions of the final dataset: 
+# 1. there are no edges --> if forest_edges.man is epmty, we don´t filter the trees at all
+# 2. there are only plots with 1 edge --> the forest_edges.man.sub.one.edge.df is not empty so that this loop ran
+# 3. there are only plots with 2 edges --> the forest_edges.man.sub.two.edges.df is not empty so that this loop ran
+# this should work because the forest_edges.man.sub are filtered by forest_edges_man and don´t depend on each other
+# https://www.learnbyexample.org/r-if-else-elseif-statement/
+
+## there are no edges 
+if(nrow(forest_edges) == 0){
+  trees.no.edge.nogeo <- trees_data#%>% 
+  # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+  # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+  
+  ## there are no trees in plots with two edges
+} else if (nrow(tree.status.one.edge.df.nogeo) == 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
+  trees.no.edge.nogeo <- trees_data %>% 
+    anti_join(., tree.status.two.edges.df.nogeo %>% 
+                select(plot_ID) %>% 
+                distinct(), by = "plot_ID")#%>% 
+  # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+  # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+  
+  ## there are no trees in plots with one edge
+}else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) == 0){
+  trees.no.edge.nogeo <- trees_data %>% 
+    anti_join(., tree.status.one.edge.df.nogeo %>% 
+                select(plot_ID) %>% 
+                distinct(), by = "plot_ID")#%>% 
+  # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+  # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+  
+  ## there are plots with two and one edges and trees inside it 
+}else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
+  trees.no.edge.nogeo <- trees_data %>% 
+    anti_join(., tree.status.one.edge.df.nogeo %>% 
+                select(plot_ID) %>% 
+                distinct(), by = "plot_ID") %>% 
+    anti_join(., tree.status.two.edges.df.nogeo %>% 
+                select(plot_ID) %>% 
+                distinct(), by = "plot_ID")#%>% 
+  # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+  # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+  
+  ## this is if there are edges but they don´t have trees
+}else{
+  trees.no.edge.nogeo <- trees_data#%>% 
+  # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+  # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+}
+
 
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
 tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
@@ -1182,12 +1236,12 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.no.edge.nogeo[i, "plot_ID"] 
   my.tree.id <- trees.no.edge.nogeo[i, "tree_ID"]
-  my.inv <- trees.no.edge.nogeo[i, "inv"]
+  my.inv.year <- trees.no.edge.nogeo[i, "inv_year"]
   
   ## georeference
   ## select UTM corrdinates of the plot center
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   ## select crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -1207,7 +1261,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   tree.coord.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(as.numeric(tree.east)),
     "lat" = c(as.numeric(tree.north))
   ))
@@ -1245,7 +1299,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   tree.status.no.edge.list.nogeo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
-    "inv" = c(my.inv),
+    "inv_year" = c(my.inv.year),
     "lon" = c(as.numeric(tree.coord.df$lon)),
     "lat" = c(as.numeric(tree.coord.df$lat)),
     "t_stat" = c(tree_status))
@@ -1255,23 +1309,21 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   
   
 }
-
 # save tree corodiantes and status into dataframe
-tree.status.no.edges.final.nogeo <- rbindlist(tree.status.no.edge.list.nogeo)
-tree.status.no.edges.df.nogeo <- as.data.frame(tree.status.no.edges.final.nogeo)
+tree.status.no.edges.df.nogeo <- as.data.frame(rbindlist(tree.status.no.edge.list.nogeo))
 # save tree sf into dataframe
-tree.points.list.no.edges.final.nogeo <- rbindlist(tree.points.no.edge.list.nogeo)
-tree.points.no.edges.df.nogeo <- as.data.frame(tree.points.list.no.edges.final.nogeo)
+tree.points.no.edges.df.nogeo <- as.data.frame(rbindlist(tree.points.no.edge.list.nogeo))
 
 
 # bind all tree point.sf dataframes (with & without edges together)
 all.trees.points.df.nogeo <- 
-  rbind(two.and.one.edge.trees.points.df.nogeo , 
+  rbind(tree.points.one.edge.df.nogeo , 
+        tree.points.two.edges.df.nogeo,
         tree.points.no.edges.df.nogeo) %>% 
   mutate(across(plot_ID:tree_ID, ~ as.integer(.x))) %>% 
   left_join(., trees_data %>% 
-              select(plot_ID, tree_ID, DBH_cm), 
-            by = c("plot_ID", "tree_ID"), 
+              select(plot_ID, tree_ID, inv_year, DBH_cm), 
+            by = c("plot_ID", "tree_ID", "inv_year"), 
             multiple = "all")
 
 
@@ -1287,16 +1339,16 @@ all.trees.status.df <-
 # 3.3.1.1. harmonzing strings for join --------------------------------------------------------
 # harmonize strings of all.trees.status.df and   
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
-all.trees.status.df[,c(1,2, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 4, 5)], as.numeric)
-all.edges.area.df.nogeo[,c(1,2, 3, 5)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 5)], as.numeric) 
+all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4, 5)], as.numeric)
+all.edges.area.df.nogeo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 4, 6)], as.numeric) 
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
 trees_update_1 <-trees_data%>%  
  # join in stand of each tree
   left_join(., all.trees.status.df %>% 
-              select(plot_ID, tree_ID, inv, t_stat) %>% 
+              select(plot_ID, tree_ID, inv_year, t_stat) %>% 
               distinct(),
-            by = c("plot_ID", "tree_ID", "inv")) %>% 
+            by = c("plot_ID", "tree_ID", "inv_year")) %>% 
   rename(stand = t_stat) %>% 
  # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
   left_join(., all.edges.area.df.nogeo %>% 
@@ -1317,7 +1369,7 @@ trees_update_1 <-trees_data%>%
          stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
          # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
          plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
-# left_join(HBI_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
+# left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
 # mutate(east_tree =  X_tree + RW_MED, 
 #        north_tree = Y_tree + HW_MED)
 
@@ -1343,7 +1395,7 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"))
-write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))
+if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))}
           
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"))

@@ -1,4 +1,0 @@
-"","plot_ID","tree_ID","tree_inventory_status","multi_stem","Dist_cm","azi_gon","age","age_meth","SP_code","DBH_class","Kraft","C_layer","H_dm","C_h_dm","D_mm","DBH_h_cm","DBH_cm","inv","old_tree_ID","new_tree_inventory_status","plot_inventory_status","inv_year"
-"1",50001,5,2,NA,1694,218,72,6,"gki",NA,2,1,NA,NA,372,130,37.2,"post",5,2,-9,2023
-"2",50001,6,3,NA,1158,238,72,6,"gki",NA,3,1,NA,NA,283,130,28.3,"post",6,3,-9,2023
-"3",50001,10,7,NA,809,311,72,6,"gki",NA,2,1,224,167,333,130,33.3,"post",10,7,-9,2023

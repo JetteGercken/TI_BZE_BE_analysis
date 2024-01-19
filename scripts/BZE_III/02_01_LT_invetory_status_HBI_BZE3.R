@@ -36,7 +36,7 @@ BZE3_trees <-HBI_trees[1:10,] %>%
   mutate(inv_year = 2023, 
          inv = inv_name(inv_year), 
          D_mm = D_mm+10,
-         H_dm = as.numeric(H_dm)+10, 
+         H_dm = ifelse(H_dm %in% c(-9, -1), H_dm, (as.numeric(H_dm)+10)), 
          dist_cm= dist_cm+20, 
          old_tree_inventory_status = case_when(row_number() == 1 ~ -9,
                                            row_number() == 2 ~ -1,
@@ -667,5 +667,8 @@ BZE3_trees_removed <- BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1)
 write.csv2(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"))
 write.csv2(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "removed", "2", sep = "_"), ".csv"))
 write.csv2(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "update","2", sep = "_"), ".csv"))
-write.csv2(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "update","2", sep = "_"), ".csv"))
+write.csv2(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "removed","2", sep = "_"), ".csv"))
 
+
+
+write.csv2(BZE3_trees, paste0(out.path.BZE3, paste(unique(BZE3_trees$inv)[1], "LT", "update","0", "demo", sep = "_"), ".csv"))
