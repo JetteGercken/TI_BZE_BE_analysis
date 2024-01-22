@@ -16,6 +16,7 @@
 #  install.packages("broom")
 #  install.packages("purrr")
 #  install.packages("devtools")
+#  install.packages("plyr")
 #  ## laTex
 #  install.packages("stargazer")  #for compatability with Latex
 #  install.packages("tikzDevice") #for compatability with Latex#
@@ -63,6 +64,7 @@ require(broom)
 require(purrr)
 require(remotes)
 require(devtools)
+#require(plyr)
 # laTex
 require(stargazer)  #for compatability with Latex
 require(tikzDevice) #for compatability with Latex

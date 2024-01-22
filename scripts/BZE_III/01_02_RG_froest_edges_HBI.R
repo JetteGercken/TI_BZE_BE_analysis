@@ -487,17 +487,27 @@ RG_all_edges_stands_areas <- rbind(RG_one_edge_stands_areas, RG_two_edges_stands
 ## harmonizig strings with HBI_RG datasets 
 RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)], as.integer) 
 
+
 ## joining stand and area info into RG datasets
   # join stand and area data into dataset with regeneration CCS locations and size 
   # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
 # HBI_RG_loc update
-HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
-  left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
-  # if there is not stand and area assigned because the plot doesn´t have an edge ... 
-  mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
-         area_m2 = ifelse(stand == "A" & is.na(area_m2), c_A(as.numeric(CCS_max_dist_cm)/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+if(exists('RG_all_edges_stands_areas') && nrow(RG_all_edges_stands_areas) != 0){
+  HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
+    left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
+    # if there is not stand and area assigned because the plot doesn´t have an edge ... 
+    mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
+           area_m2 = ifelse(stand == "A" & is.na(area_m2), c_A(as.numeric(CCS_max_dist_cm)/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
+  }else{
+  HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
+    # if there is not stand and area assigned because the plot doesn´t have an edge ... 
+    mutate(stand =  "A",   # ... the stand is set to A
+           area_m2 = c_A(as.numeric(CCS_max_dist_cm)/100)) # ... the area is calculated from CCS_max_dist_cm
   
-  
+}
+
+
+## join in stand and plot area data in RG_data set   
 HBI_RG_data_update_2 <- RG_data %>% 
   left_join(.,HBI_RG_loc_update_2 %>% 
               select(plot_ID, CCS_nr, stand, area_m2),
