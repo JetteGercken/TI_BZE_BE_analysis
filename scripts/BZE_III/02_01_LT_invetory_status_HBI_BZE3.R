@@ -32,7 +32,8 @@ HBI_trees <- HBI_trees %>%
 
 
 # create fake/ practice BZE3/ post dataset from HBI/ pre data
-BZE3_trees <-HBI_trees[1:10,] %>% 
+BZE3_trees <- HBI_trees %>%
+  filter(plot_ID == 50001) %>% 
   mutate(inv_year = 2023, 
          inv = inv_name(inv_year), 
          D_mm = D_mm+10,
@@ -48,14 +49,14 @@ BZE3_trees <-HBI_trees[1:10,] %>%
                                            row_number() == 8 ~ 5,
                                            row_number() == 9 ~ 6,
                                            row_number() == 10 ~ 7,
-                                           TRUE ~ NA), 
+                                           TRUE ~ 1), 
          tree_inventory_status = old_tree_inventory_status) 
   # mutate two new trees to simulate a case of tree_inventory_status == 6
 BZE3_trees <- rbind(
   BZE3_trees,
   BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 27, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+300, old_tree_inventory_status = 0, tree_inventory_status = 0),
   BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 28, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+100, old_tree_inventory_status = 0, tree_inventory_status = 0)
-  )
+)
 
 # creating dataset with information about the concentric sampling circles
 data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 

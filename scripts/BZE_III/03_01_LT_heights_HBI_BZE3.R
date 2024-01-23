@@ -23,8 +23,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # currently we can´t tho, cause the sorting regarding tree inventory status is just a simulation at the moment so the data are manipulated
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_1.csv")), sep = ";", dec = ",") %>% 
   select(-c("X.2", "X.1", "X"))
-BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_2.csv")), sep = ";", dec = ",")%>% 
-   select(-c("X.2", "X.1", "X.3", "X"))
+# BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_2.csv")), sep = ";", dec = ",")%>% 
+#    select(-c("X.2", "X.1", "X.3", "X"))
 
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
@@ -39,22 +39,22 @@ HBI_trees[,c("H_dm","C_h_dm")][HBI_trees[,c("H_dm","C_h_dm")]== -9] <- NA
 
 
 
-### BZE3_trees
-   # BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
-   #             "DBH_cm", "dist_m","CCS_r_m")] <- lapply(BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree", 
-   #                                                                    "DBH_cm", "dist_m",  "CCS_r_m")], as.numeric)
+## BZE3_trees
+#   BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
+#              "DBH_cm", "dist_m","CCS_r_m")] <- lapply(BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree", 
+#                                                                     "DBH_cm", "dist_m",  "CCS_r_m")], as.numeric)
 # change -2 in H_dm and C_h_dm to NA
 # https://stackoverflow.com/questions/14737773/replacing-occurrences-of-a-number-in-multiple-columns-of-data-frame-with-another
-   # BZE3_trees[,c("H_dm","C_h_dm")][BZE3_trees[,c("H_dm","C_h_dm")]== -2] <- NA
-   # BZE3_trees[,c("H_dm","C_h_dm")][BZE3_trees[,c("H_dm","C_h_dm")]== -9] <- NA
+ # BZE3_trees[,c("H_dm","C_h_dm")][BZE3_trees[,c("H_dm","C_h_dm")]== -2] <- NA
+ # BZE3_trees[,c("H_dm","C_h_dm")][BZE3_trees[,c("H_dm","C_h_dm")]== -9] <- NA
 
 
 # 1. joining in external info  -------------------------------------------------
 
-trees_total <-  HBI_trees %>% 
+trees_total <-  # HBI_trees %>% 
  # !!!!!! # CAUTION: here we would actually rbind the both inventory datasets together ####!!!!!!###
-   # rbind(HBI_trees, BZE3_trees %>% 
-   #         select(c(colnames(HBI_trees)))) %>%
+    rbind(HBI_trees, BZE3_trees %>% 
+            select(c(colnames(HBI_trees)))) %>%
 # calcualte diameter and change units -----------------------------------
   mutate(H_m = H_dm/10, 
          DBH_h_m = DBH_h_cm/100) %>%                               # change unit of DBH measuring height from cm into m by dividing by 100  

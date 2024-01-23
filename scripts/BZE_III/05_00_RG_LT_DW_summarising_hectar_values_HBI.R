@@ -1,5 +1,6 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
 # Analysis of the forest inventory accompanying the  national soil inventory
+# HBI 
 # stock per hectar summarising for regeneration (RG), living trees (LT) and 
 # deadwood (DW)
 
@@ -311,8 +312,9 @@ LT_SP_P <- LT_SP_BCNBA_ha  %>%
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_avg_SP_P, 
             by = c("plot_ID", "inv_year", "stand_component", "SP_code")) %>% 
+   # reorder
   select("stand_component" , "plot_ID", "inv_year", "dom_SP", "stand_type", "n_stands",   "SP_code", "compartiment",
-         "B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "mean_DBH_cm", "sd_DBH_cm", "Dg_cm",
+         "B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "BA_percent", "mean_DBH_cm", "sd_DBH_cm", "Dg_cm",
          "mean_BA_m2", "mean_H_m", "sd_H_m", "Hg_m")
 
 
@@ -452,9 +454,6 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 
 
 
-
-
-
 # 2.5. RG plotwise summary ------------------------------------------------
 RG_P <- RG_BCNn_ha %>% 
   left_join(., RG_n_SP_plot, 
@@ -476,7 +475,6 @@ n_ha_DW <- DW_data %>%
   reframe(n_plot = n()/plot_A_ha) %>% 
   distinct() %>% 
   mutate(stand_component = "DW")
-
 
 
 # 3.2. stocks per hectar deadwood -----------------------------------------
@@ -501,11 +499,14 @@ if(exists('RG_stat_2') == TRUE && nrow(DW_stat_2)!=0){
  
   
 
+# 3.3. DW summary by plot ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 DW_P <- DW_BCN_ha %>% 
   left_join(., n_ha_DW, 
             by = c("plot_ID", "inv_year", "stand_component"))
 
 
+
+# 3.4. DW summary stocks by deadwood type ------------------------------------------------------------------------------------------------------------------------------------------------------------
 DW_BCN_ha_DWTY <- DW_data %>% 
   group_by(plot_ID, inv_year, dw_type, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
@@ -514,7 +515,7 @@ DW_BCN_ha_DWTY <- DW_data %>%
           N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct()
 
-
+# 3.5. DW summary stocks by decay type ---------------------------------------------------------------------------------------------------------------------------
 DW_BCN_ha_DECTY <- DW_data %>% 
   group_by(plot_ID, inv_year, decay, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
@@ -523,6 +524,8 @@ DW_BCN_ha_DECTY <- DW_data %>%
           N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct()
 
+
+# 3.6. DW summary by species group -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 DW_BCN_ha_SP <- DW_data %>% 
   group_by(plot_ID, inv_year, dw_sp, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
@@ -530,6 +533,9 @@ DW_BCN_ha_SP <- DW_data %>%
           C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
           N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct()
+
+
+
 
 
 
@@ -564,11 +570,9 @@ LT_RG_DW_P <- rbind(
 
 
 # 4. data export ----------------------------------------------------------
-
 write.csv2(LT_BCNBAn_ha, paste0(out.path.BZE3, paste(inv_name(LT_BCNBAn_ha$inv_year)[1], "LT_stocks_ha_P", sep = "_"), ".csv"))
 write.csv2(LT_SP_BCNBA_ha, paste0(out.path.BZE3, paste(inv_name(LT_SP_BCNBA_ha$inv_year)[1], "LT_stocks_ha_P_SP", sep = "_"), ".csv"))
-
-
+write.csv2(LT_summary, paste0(out.path.BZE3, paste(inv_name(LT_summary$inv_year)[1], "LT_stocks_ha_P_SP_TY", sep = "_"), ".csv"))
 
 
 

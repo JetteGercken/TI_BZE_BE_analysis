@@ -22,11 +22,11 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # 0.3. data import --------------------------------------------------------
 BZE3_trees <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_update_4.csv"), sep = ";", dec = ",")
 BZE3_ha_stocks_P <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_stocks_ha_P.csv"), sep = ";", dec = ",")
-BZE3_ha_stocks_P_SP <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_stocks_ha_P_SP.csv"), sep = ";", dec = ",")
+BZE3_summary <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_stocks_ha_P_SP_TY.csv"), sep = ";", dec = ",")
 
 HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_4.csv"), sep = ";", dec = ",")
 HBI_ha_stocks_P <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stocks_ha_P.csv"), sep = ";", dec = ",")
-HBI_ha_stocks_P_SP <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stocks_ha_P_SP.csv"), sep = ";", dec = ",")
+HBI_summary <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stocks_ha_P_SP_TY.csv"), sep = ";", dec = ",")
 
 
 # 1. calculations ---------------------------------------------------------
@@ -41,20 +41,25 @@ HBI_ha_stocks_P_SP <- read.delim(file = here("output/out_data/out_data_BZE/HBI_L
 # for this inventory status 
 
 ## calculate averange annual diameter growth per single tree per species and plot 
-growth_df <- left_join(
+growth_dbh_tree_SP <- left_join(
   # select trees that are repeatedly inventory, or unknown status
   BZE3_trees %>% 
-    filter(tree_inventory_status %in% c(1, -9)) %>% 
+    filter(tree_inventory_status %in% c(1, -9) & compartiment == "ag") %>% 
     rename(BZE3_DBH_cm = DBH_cm) %>% 
     rename(BZE3_inv_year = inv_year) %>% 
     select(plot_ID, tree_ID, BZE3_inv_year, SP_code, BZE3_DBH_cm), 
   HBI_trees %>% 
     # select trees that were newly inventored, repeated inventory, or unknown status
-     filter(tree_inventory_status %in% c(0, 1, -9))%>% 
+     filter(tree_inventory_status %in% c(0, 1, -9) & compartiment == "ag")%>% 
      rename(HBI_DBH_cm = DBH_cm) %>% 
      rename(HBI_inv_year = inv_year) %>% 
      select(plot_ID, tree_ID, HBI_inv_year, SP_code, HBI_DBH_cm), 
    by = c("plot_ID", "tree_ID", "SP_code")) %>% 
+  # there may be trees that are new in BZE3 and havent been inventorised in HBI
+  # so we have to put these trees DBHs to 0 and the invenotry year to the one of the other trees
+  # to calculate the increment properly 
+  mutate(HBI_DBH_cm = ifelse(is.na(HBI_DBH_cm), 0, HBI_DBH_cm), 
+         HBI_inv_year = ifelse(is.na(HBI_inv_year), 2012, HBI_inv_year)) %>% 
   mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
          age_period = BZE3_inv_year- HBI_inv_year, 
          annual_growth_cm = DBH_growth_cm/age_period) %>% 
@@ -62,6 +67,87 @@ growth_df <- left_join(
   summarize(average_age_period_years = mean(age_period), 
             avg_annual_DBH_growth_cm = mean(annual_growth_cm))
 
+
+## calcualte average annual diameter growth per single tree per plot 
+growth_dbh_tree_P <- left_join(
+  # select trees that are repeatedly inventory, or unknown status
+  BZE3_trees %>% 
+    filter(tree_inventory_status %in% c(1, -9) & compartiment == "ag") %>% 
+    rename(BZE3_DBH_cm = DBH_cm) %>% 
+    rename(BZE3_inv_year = inv_year) %>% 
+    select(plot_ID, tree_ID, BZE3_inv_year, SP_code, BZE3_DBH_cm), 
+  HBI_trees %>% 
+    # select trees that were newly inventored, repeated inventory, or unknown status
+    filter(tree_inventory_status %in% c(0, 1, -9) & compartiment == "ag")%>% 
+    rename(HBI_DBH_cm = DBH_cm) %>% 
+    rename(HBI_inv_year = inv_year) %>% 
+    select(plot_ID, tree_ID, HBI_inv_year, SP_code, HBI_DBH_cm), 
+  by = c("plot_ID", "tree_ID", "SP_code")) %>% 
+  # there may be trees that are new in BZE3 and havent been inventorised in HBI
+  # so we have to put these trees DBHs to 0 and the invenotry year to the one of the other trees
+  # to calculate the increment properly 
+  mutate(HBI_DBH_cm = ifelse(is.na(HBI_DBH_cm), 0, HBI_DBH_cm), 
+         HBI_inv_year = ifelse(is.na(HBI_inv_year), 2012, HBI_inv_year)) %>% 
+  mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
+         age_period = BZE3_inv_year- HBI_inv_year, 
+         annual_growth_cm = DBH_growth_cm/age_period) %>% 
+  group_by(plot_ID) %>% 
+  summarize(average_age_period_years = mean(age_period), 
+            avg_annual_DBH_growth_cm = mean(annual_growth_cm))
+
+
+
+
+# 1.2 changes in BA composition -------------------------------------------
+# select all possible tree species per plot
+BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
+                    HBI_trees %>% select(plot_ID, SP_code) %>% distinct()) %>% 
+  distinct() %>% 
+  arrange(plot_ID) %>% 
+  left_join(., BZE3_summary %>% 
+              # filter for plot and species wise summary
+              filter(plot_ID != "all" & SP_code != "all") %>%
+              # select the BA percent
+              select(plot_ID, SP_code, BA_percent) %>% 
+              mutate(across(c("plot_ID"), as.integer)) %>% 
+              rename(BA_percent_BZE3 = BA_percent) %>% 
+              distinct(), 
+            by = c("plot_ID", "SP_code")) %>% 
+  left_join(., HBI_summary%>% 
+              # filter for plot and species wise summary
+              filter(plot_ID != "all" & SP_code != "all") %>%
+              # select the BA percent
+              select(plot_ID, SP_code, BA_percent) %>% 
+              mutate(across(c("plot_ID"), as.integer)) %>% 
+              rename(BA_percent_HBI = BA_percent) %>% 
+              distinct(), 
+            by = c("plot_ID", "SP_code")) %>%
+  # here we have to set the BA_percent that do not appear in the respective inventory to 0
+  mutate(BA_percent_BZE3 = ifelse(is.na(BA_percent_BZE3), 0, BA_percent_BZE3), 
+         BA_percent_HBI = ifelse(is.na(BA_percent_HBI), 0, BA_percent_HBI), 
+         BA_percent_difference = BA_percent_BZE3-BA_percent_HBI)
+  
+
+# 1.3 changes in stocks per ha --------------------------------------------
+stock_changes_P <- 
+BZE3_summary %>% 
+  filter(plot_ID != "all" & SP_code == "all") %>% 
+  select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
+  # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+              .cols= c(B_t_ha, C_t_ha, N_t_ha)) %>% 
+  left_join(., HBI_summary %>% 
+              filter(plot_ID != "all" & SP_code == "all") %>% 
+              select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
+              # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_HBI")}, .cols= c(B_t_ha, C_t_ha, N_t_ha)), 
+            by = c("plot_ID", "compartiment"))
+
+# substact columns edning on BZE3 from columns ednign with HBI 
+# https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
+pre_vars <- grep("_HBI", colnames(stock_changes_P), value=TRUE)
+post_vars <- grep("_BZE3", colnames(stock_changes_P), value=TRUE)
+stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- stock_changes_P[, post_vars] - stock_changes_P[, pre_vars]
 
 
 
