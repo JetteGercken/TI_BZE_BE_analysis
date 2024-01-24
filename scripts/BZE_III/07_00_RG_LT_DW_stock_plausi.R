@@ -168,7 +168,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 
 # 1.3.3. stocks per ha per plot per SP_group ----------------------------------------------------------------------------------------------------------------
-LT_SP_stock_ha <- trees_data %>% 
+LT_comparisson_BZE_BWI_SP <- trees_data %>% 
   group_by(plot_ID, CCS_r_m, inv_year, BWI_comparisson_group, compartiment) %>% 
   # convert Biomass into tons per hectar and sum it up per sampling circuit 
   reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -191,22 +191,33 @@ LT_SP_stock_ha <- trees_data %>%
               rename(BA_m2_ha_total = BA_m2_ha),
             by = c("plot_ID", "inv_year", "compartiment"), ) %>% 
   distinct() %>% 
-  mutate(BA_percent = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
-  # filter for comparitments that are represented in 
+  mutate(BA_percent_BZE = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
+  # filter for comparitments that are represented in BWI dataset too
   filter(compartiment %in% c("ag", "bg", "total")) %>% 
-  mutate(B_t_ha_mono = B_t_ha/(BA_percent/100), 
-         C_t_ha_mono = C_t_ha/(BA_percent/100),
-         BA_m2_ha_mono = BA_m2_ha/(BA_percent/100), 
-         n_ha_mono = n_ha/(BA_percent/100)) %>% 
+# 1.3.4. create pseudo-mono-species stands --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  mutate(B_t_ha_BZE = B_t_ha/(BA_percent_BZE/100), 
+         C_t_ha_BZE = C_t_ha/(BA_percent_BZE/100),
+         BA_m2_ha_BZE= BA_m2_ha/(BA_percent_BZE), 
+         n_ha_BZE = n_ha/(BA_percent_BZE/100)) %>% 
   select(- c(BA_m2_ha_total,  B_t_ha, C_t_ha,  N_t_ha, BA_m2_ha, n_ha)) %>% 
   left_join(., BWI_LT_stocks %>% 
-              rename("BA_percent_BWI" = "BA_percent") %>% 
-              rename("n_ha_BWi" = "n_ha") %>% 
-              mutate(across(c("plot_ID"), ~ tons())),
+              mutate(across(c("B_kg_ha", "C_kg_ha"), ~ ton(.x))) %>% 
+              # https://stackoverflow.com/questions/71389851/in-r-dplyr-package-a-question-about-function-rename-with
+              rename_with(., ~ paste0(str_sub(c("B_kg_ha", "C_kg_ha"), end=-6), "t_ha_BWI"), c("B_kg_ha", "C_kg_ha")) %>% 
+              # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_BZE")}, .cols= c(BA_percent, BA_m2_ha, n_ha)),
             by = c("BWI_comparisson_group", "compartiment", "stand_component"))
-  
-  
 
+
+# 1.3.5. calcualte differences between BWI and BZE ------------------------------------------------------------------------------------------------------------------------------------
+# substact columns edning on BWI from columns ednign with BZE 
+# https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
+BZE_vars <- sort(grep("_BZE", colnames(LT_comparisson_BZE_BWI_SP), value=TRUE) )
+BWI_vars <- sort(grep("_BWI", colnames(LT_comparisson_BZE_BWI_SP), value=TRUE))
+LT_comparisson_BZE_BWI_SP[, paste0(str_sub(BZE_vars, end=-4), "_diff")] <- LT_comparisson_BZE_BWI_SP[, BZE_vars] - LT_comparisson_BZE_BWI_SP[, BWI_vars]
+
+
+view(LT_comparisson_BZE_BWI_SP)
 
 
 
