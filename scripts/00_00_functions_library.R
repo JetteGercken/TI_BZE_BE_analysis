@@ -1563,6 +1563,29 @@ standtype <- function(bot.genus, LH.NH){
 
 
 
+# 1.16. assign SD class for plausibility test and visulalization ----------
+
+SD_class <- function(sd_pred_diff, diff_b){
+  # call it group 1 if the difference is below or equal the respective SD
+  # call it group 2 if the difference is below or equal the 2 times respective SD (SD*2)
+  # call it group 3 if the difference is below or equal the 3 times respective SD (SD*3)
+  # call it group 4 if the difference is higher the  3 times the respective SD (SD*4)
+  
+  # transfer negative differnce in postiive ones to enable comparisson with SD with is +/- 
+  diff_b_betrag = ifelse(diff_b <0, diff_b*(-1), diff_b);  
+  
+  sd_cl_1 = 1*sd_pred_diff ;
+  sd_cl_2 = 2*sd_pred_diff ;
+  sd_cl_3 = 3*sd_pred_diff ;
+  
+  sd_cl_df <- ifelse(diff_b_betrag <= sd_cl_1 , "1",
+                     ifelse(diff_b_betrag > sd_cl_1  & diff_b_betrag <= sd_cl_2 , "2",
+                            ifelse(diff_b_betrag > sd_cl_2  & diff_b_betrag <= sd_cl_3 , "3", 
+                                   ifelse(diff_b_betrag > sd_cl_3 , "4", "5"))));
+  return(sd_cl_df)
+}
+
+
 
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------
 # if womeone does not have the x-bart tables or the info about the nitrogen content but still wants to use this functions 
