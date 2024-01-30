@@ -6,7 +6,7 @@
 # ----- 0. SETUP --------------------------------------------------------------------------------------------------------------------
 
 # ----- 0.1. packages and functions -------------------------------------------------------------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory ------------------------------------------------------------------------------------------------------
 here::here()
@@ -19,7 +19,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_4.csv")), sep = ";", dec = ",")
 trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"), sep = ";", dec = ",") %>% select(-X)
 HBI_summary <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
-BWI_LT_stocks <- read.delim(file = here("data/input/General/BWI_LT_stocks_zielmerkmale.csv"), sep = ";", dec = ",")
+BWI_LT_stocks <- read.delim(file = here("data/input/General/BWI_NW_LT_stocks_zielmerkmale.csv"), sep = ";", dec = ",")
 
 # create pseudo monocultures:
 # carbon stock of species per hectar divided by 1 Hektar mulitplied with the actual area covered by the species according to basal area 
@@ -217,19 +217,20 @@ BWI_vars <- sort(grep("_BWI", colnames(LT_comparisson_BZE_BWI_SP), value=TRUE))
 LT_comparisson_BZE_BWI_SP[, paste0(str_sub(BZE_vars, end=-5), "_diff")] <- LT_comparisson_BZE_BWI_SP[, BZE_vars] - LT_comparisson_BZE_BWI_SP[, BWI_vars]
 
 
-
+summary(LT_comparisson_BZE_BWI_SP)
 
 # 1.3.6. linear model to explain differences in Biomass between BW ------------------------------------------------------------------
 LT_comparisson_BZE_BWI_SP <- 
 LT_comparisson_BZE_BWI_SP %>% 
   # 1. introducte table with coefficients from lm with for B_t_ha_diff = b0 + b1*BA_m2_ha_diff + b2*Nt_diff
   left_join(.,LT_comparisson_BZE_BWI_SP %>% 
+              # filter(compartiment == "ag") %>% 
               # 1.2. fit linear model with 
-            lm_table(B_t_ha_diff ~ BA_m2_ha_diff + n_ha_diff, "BWI_comparisson_group", output = "table") %>% 
-            select(BWI_comparisson_group, b0, b1, Rsqr) %>% 
+            lm_table(B_t_ha_diff ~ BA_m2_ha_diff + n_ha_diff, c("BWI_comparisson_group", "compartiment"), output = "table") %>% 
+            select(BWI_comparisson_group,compartiment, b0, b1, b2, Rsqr) %>% 
             # 1.3. replace NAs with 0 
             mutate(., across(c("b0","b1","b2", "Rsqr"), ~ replace(., is.na(.), 0))),
-          by = "BWI_comparisson_group") %>% 
+          by = c("BWI_comparisson_group", "compartiment")) %>% 
   # 2. predict the expectable B_diff at the given basal area and tree number difference
   mutate(B_diff_pred = b0 + b1*BA_m2_ha_diff + b2*n_ha_diff,  
   # 3. calculate difference between calculated values and predicted values 
@@ -245,16 +246,15 @@ LT_comparisson_BZE_BWI_SP <- LT_comparisson_BZE_BWI_SP %>%
 
 
 
-
-
 # 1.3.7. visualizing SD differences  --------------------------------------
-for (i in 1:length(BWI_sp_groups)) {
+for (i in 1:length(unique(LT_comparisson_BZE_BWI_SP$BWI_comparisson_group))) {
    #i = 8
   my.bwi.sp.group <- unique(LT_comparisson_BZE_BWI_SP$BWI_comparisson_group)[i]
   
 print(
   LT_comparisson_BZE_BWI_SP %>% 
-    filter(BWI_comparisson_group == my.bwi.sp.group) %>% 
+    filter(BWI_comparisson_group == my.bwi.sp.group & compartiment == "ag") %>% 
+    # ggplot(., aes(x = n_ha_diff))+
     ggplot(., aes(x = BA_m2_ha_diff))+
     geom_point(aes(y = B_t_ha_diff))+
     # https://stackoverflow.com/questions/15624656/label-points-in-geom-point
@@ -265,7 +265,7 @@ print(
     geom_smooth(aes(y = (B_diff_pred+2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
     geom_smooth(aes(y = (B_diff_pred-2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
     #geom_vline(xintercept = 0)+
-    #geom_hline(yintercept=0)+
+    geom_hline(yintercept=0)+
     #xlim(max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff))+
     #ylim(max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff))+
     # geom_line()+
