@@ -8,7 +8,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -431,7 +431,9 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
     summarise(B_t_ha = sum(B_t_ha),
               C_t_ha = sum(C_t_ha),
               N_t_ha = sum(N_t_ha)) %>% 
-    left_join(RG_n_ha %>% select(plot_ID, inv_year, n_ha), by = c("plot_ID", "inv_year")) %>% 
+    # join in number of plants per ha
+       # we have to calcualte it outside the loop and reframe because not all compartiments are present at all trees thus the number of counts per compartiment will change 
+    left_join(., RG_n_ha %>% select(plot_ID, inv_year, n_ha), by = c("plot_ID", "inv_year")) %>% 
     mutate(stand_component = "RG", 
            n_ha = ifelse(is.na(n_ha), 0, n_ha))
 }else{
@@ -453,14 +455,148 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 }
 
 
-
-# 2.5. RG plotwise summary ------------------------------------------------
+# 2.5. RG plotwise summary ---------------------------------------------------------------------------------------------
 RG_P <- RG_BCNn_ha %>% 
   left_join(., RG_n_SP_plot, 
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
-  mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP))
+  mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP), 
+         stand = "all", 
+         SP_code = "all")
 
 
+
+# 2.6. RG big summary combining all grouping variables --------------------
+if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
+  RG_SP_ST_BCN_ha <- plyr::rbind.fill(
+    RG_data %>%
+      left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+      group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, stand, compartiment, SP_code) %>% 
+      # sum number of trees  per sampling circuit
+      reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+              C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+              N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+      distinct() , 
+    RG_stat_2 %>% 
+      select(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, B_t_ha, C_t_ha, N_t_ha)
+  ) %>% 
+    arrange(plot_ID) %>% 
+    group_by(plot_ID, plot_A_ha, inv_year, stand, compartiment, SP_code) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha))%>% 
+    mutate(stand_component = "RG") 
+}else{
+  RG_SP_ST_BCN_ha <-     RG_data %>%
+    left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+    group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, stand, compartiment, SP_code) %>% 
+    # sum stocks of trees  per sampling circuit, stand, compartiment, and SP_code
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct()
+    arrange(plot_ID) %>% 
+    group_by(plot_ID, plot_A_ha, inv_year, stand, compartiment, SP_code) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha)) %>% 
+    mutate(stand_component = "RG")
+}
+
+
+
+
+
+# 2.7. RG summary by plot and species, without grouping by stand ---------------------------------------------------------
+if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
+  RG_SP_BCN_ha <- plyr::rbind.fill(
+    RG_data %>%
+      left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+      group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, SP_code) %>% 
+      # sum number of trees  per sampling circuit
+      reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+              C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+              N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+      distinct() , 
+    RG_stat_2 %>% 
+      select(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, B_t_ha, C_t_ha, N_t_ha)
+  ) %>% 
+    arrange(plot_ID) %>% 
+    group_by(plot_ID, plot_A_ha, inv_year, compartiment, SP_code) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha)) %>% 
+    mutate(stand = "all", 
+           stand_component = "RG")
+}else{
+  RG_SP_BCN_ha <-     RG_data %>%
+    left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+    group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, SP_code) %>% 
+    # sum stocks of trees  per sampling circuit, compartiment, and SP_code
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct()
+  arrange(plot_ID) %>% 
+    # summ up the individual circuits stocks 
+    group_by(plot_ID, plot_A_ha, inv_year, compartiment, SP_code) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha)) %>% 
+    mutate(stand = "all", 
+           stand_component = "RG")
+}
+
+# 2.7. RG summary by plot and species, without grouping by stand ---------------------------------------------------------
+if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
+  RG_ST_BCN_ha <- plyr::rbind.fill(
+    RG_data %>%
+      left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+      group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, stand) %>% 
+      # sum number of trees  per sampling circuit
+      reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+              C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+              N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+      distinct() , 
+    RG_stat_2 %>% 
+      select(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, B_t_ha, C_t_ha, N_t_ha)
+  ) %>% 
+    arrange(plot_ID) %>% 
+    group_by(plot_ID, plot_A_ha, inv_year, compartiment, stand) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha)) %>% 
+    mutate(SP_code = "all", 
+           stand_component = "RG")
+}else{
+  RG_ST_BCN_ha <-     RG_data %>%
+    left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
+    group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, stand) %>% 
+    # sum stocks of trees  per sampling circuit, compartiment, and stand
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct()
+  arrange(plot_ID) %>% 
+    # summ up the individual circuits stocks 
+    group_by(plot_ID, plot_A_ha, inv_year, compartiment, stand) %>%
+    summarise(B_t_ha = sum(B_t_ha),
+              C_t_ha = sum(C_t_ha),
+              N_t_ha = sum(N_t_ha)) %>% 
+    mutate(SP_code = "all", 
+           stand_component = "RG")
+}
+
+  
+
+# 2.8. big summary of all RG grouping variables combined  -----------------
+RG_summary <- plyr::rbind.fill(
+  # dataset with RG data grouped by plot, inventory, stand, compartiment, sp_code
+  RG_SP_ST_BCN_ha, 
+  RG_SP_BCN_ha, 
+  RG_ST_BCN_ha, 
+  RG_P
+) %>% 
+  arrange(plot_ID) 
 
 
 
@@ -472,7 +608,7 @@ RG_P <- RG_BCNn_ha %>%
 n_ha_DW <- DW_data %>% 
   filter(compartiment == "ag") %>% 
   group_by(plot_ID, inv_year) %>% 
-  reframe(n_plot = n()/plot_A_ha) %>% 
+  reframe(n_ha = n()/plot_A_ha) %>% 
   distinct() %>% 
   mutate(stand_component = "DW")
 
@@ -506,35 +642,88 @@ DW_P <- DW_BCN_ha %>%
 
 
 
-# 3.4. DW summary stocks by deadwood type ------------------------------------------------------------------------------------------------------------------------------------------------------------
-DW_BCN_ha_DWTY <- DW_data %>% 
-  group_by(plot_ID, inv_year, dw_type, compartiment) %>% 
-  # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
-  reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
-          C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-          N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-  distinct()
 
-# 3.5. DW summary stocks by decay type ---------------------------------------------------------------------------------------------------------------------------
-DW_BCN_ha_DECTY <- DW_data %>% 
-  group_by(plot_ID, inv_year, decay, compartiment) %>% 
-  # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
-  reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
-          C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-          N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-  distinct()
+# 3.4. DW big summary over all grouping variables -------------------------
+DW_summary <- 
+ rbind( # finest output: plot, inv, species, deadwood type, decay type, compartiment
+# 3.5. DW summary per plot per SP per DW type per Dec state ---------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_sp, dw_type, decay, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct(),
+# 3.6. DW summary per plot per inventory per species per deadwood type, not per decay states anymore --------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_sp, dw_type, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(decay = "all"), 
+# 3.7. DW summary per plot per inventory per species per decay type, not per deadwood states anymore --------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_sp, decay, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(dw_type = "all"),
+# 3.8. DW summary per plot per inventory per deadwood type per decay type, not per species anymore --------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_type, decay, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(dw_sp = "all"), 
+# 3.9. DW summary per plot per inventory per species group, not per deadwood type per decay type anymore --------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_sp, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(decay = "all", 
+           dw_type = "all"), 
+# 3.10. DW summary per plot per inventory per decay type, not distinguished by deadwood type and species group anymore --------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, decay, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(dw_sp = "all", 
+           dw_type = "all"), 
+# 3.11. DW summary by plot, inventory and deadwood type, not distinguished by species and decay type anymore ---------------------------------------------------------------------------
+  DW_data %>% 
+    group_by(plot_ID, inv_year, dw_type, compartiment) %>% 
+    # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
+    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
+            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+    distinct() %>% 
+    mutate(dw_sp = "all", 
+           decay = "all"))%>%  # finishing rbind 
+    arrange(plot_ID) %>% 
+    mutate(stand_component = "DW")
 
-
-# 3.6. DW summary by species group -------------------------------------------------------------------------------------------------------------------------------------------------------------------
-DW_BCN_ha_SP <- DW_data %>% 
-  group_by(plot_ID, inv_year, dw_sp, compartiment) %>% 
-  # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
-  reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
-          C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-          N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-  distinct()
-
-
+# adding summery per plot without further grouping to dataset
+ DW_summary <- plyr::rbind.fill(
+   DW_summary, 
+   DW_P %>% 
+     select(-c(plot_A_ha)) %>% 
+     mutate(dw_sp = "all", 
+            dw_type = "all", 
+            decay = "all")) %>% 
+   distinct() %>% 
+  arrange(plot_ID)
 
 
 
