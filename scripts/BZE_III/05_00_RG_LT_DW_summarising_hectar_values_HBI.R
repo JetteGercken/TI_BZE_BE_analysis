@@ -738,8 +738,6 @@ LT_RG_DW_P <- rbind(
         RG_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
         DW_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
         DW_P %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")),
-  
-      
       # total plot data over all stand components
       rbind(LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
             RG_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),

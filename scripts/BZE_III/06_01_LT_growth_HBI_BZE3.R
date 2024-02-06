@@ -6,7 +6,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -39,6 +39,34 @@ HBI_summary <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stock
 # respective tree in the current inventory and add the tree to the previous inventory with
 # the same ID, tree status 0 and the reduced diameter
 # for this inventory status 
+
+## calculate averange annual diameter growth per single tree per species and plot 
+growth_dbh_tree_SP_layer <- left_join(
+  # select trees that are repeatedly inventory, or unknown status
+  BZE3_trees %>% 
+    filter(tree_inventory_status %in% c(1, -9) & compartiment == "ag") %>% 
+    rename(BZE3_DBH_cm = DBH_cm) %>% 
+    rename(BZE3_inv_year = inv_year) %>% 
+    select(plot_ID, tree_ID, BZE3_inv_year, C_layer, SP_code, BZE3_DBH_cm), 
+  HBI_trees %>% 
+    # select trees that were newly inventored, repeated inventory, or unknown status
+    filter(tree_inventory_status %in% c(0, 1, -9) & compartiment == "ag")%>% 
+    rename(HBI_DBH_cm = DBH_cm) %>% 
+    rename(HBI_inv_year = inv_year) %>% 
+    select(plot_ID, tree_ID, HBI_inv_year, C_layer, SP_code, HBI_DBH_cm), 
+  by = c("plot_ID", "tree_ID", "C_layer", "SP_code")) %>% 
+  # there may be trees that are new in BZE3 and havent been inventorised in HBI
+  # so we have to put these trees DBHs to 0 and the invenotry year to the one of the other trees
+  # to calculate the increment properly 
+  mutate(HBI_DBH_cm = ifelse(is.na(HBI_DBH_cm), 0, HBI_DBH_cm), 
+         HBI_inv_year = ifelse(is.na(HBI_inv_year), 2012, HBI_inv_year)) %>% 
+  mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
+         age_period = BZE3_inv_year- HBI_inv_year, 
+         annual_growth_cm = DBH_growth_cm/age_period) %>% 
+  group_by(plot_ID, SP_code, C_layer) %>% 
+  summarize(average_age_period_years = mean(age_period), 
+            avg_annual_DBH_growth_cm = mean(annual_growth_cm))
+
 
 ## calculate averange annual diameter growth per single tree per species and plot 
 growth_dbh_tree_SP <- left_join(
