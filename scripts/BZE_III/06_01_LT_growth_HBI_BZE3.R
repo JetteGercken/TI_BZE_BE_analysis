@@ -79,14 +79,8 @@ summarize_data <- function(data, Value, group_vars) {
 }
 
 
-summarize_data <- function(data, group_vars, columns) {
-  data %>%
-    group_by(across(all_of(group_vars), .names = "{.col}")) %>%
-    summarise(across(all_of(columns), mean, na.rm = TRUE))
-}
 
-group_vars <- c("plot_ID", "SP_code", "C_layer")
-summarize_data(dbh_growth_tree, group_vars, c("age_period", "annual_growth_cm"))
+summarize_data(dbh_growth_tree, c("plot_ID", "SP_code", "C_layer"), c("age_period", "annual_growth_cm"), operation = "mean_df")
 
 
 dbh_growth_tree %>%

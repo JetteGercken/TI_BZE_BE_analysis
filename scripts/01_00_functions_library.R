@@ -1587,6 +1587,24 @@ SD_class <- function(sd_pred_diff, diff_b){
 
 
 
+
+#1.17.  summarize data with varying grouing variables ---------------------------
+summarize_data <- function(data, group_vars, columns, operation) {
+  mean_df <- data %>%
+    group_by(across(all_of(group_vars), .names = "{.col}")) %>%
+    summarise(across(all_of(columns), mean, na.rm = TRUE))
+  sum_df <- data %>%
+    group_by(across(all_of(group_vars), .names = "{.col}")) %>%
+    summarise(across(all_of(columns), sum, na.rm = TRUE))
+  switch(operation, 
+         mean_df = mean_df, 
+         sum_df = sum_df)
+}
+
+
+
+
+
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------
 # if womeone does not have the x-bart tables or the info about the nitrogen content but still wants to use this functions 
 # the following part will allow to write the datasets instead of importing them
@@ -2421,3 +2439,6 @@ if(!exists('DBH_tan')){
             row.names = c(NA, -120L)))}else{
               print("DBH_tan already exists")
             }
+
+
+

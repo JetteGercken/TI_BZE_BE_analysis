@@ -614,18 +614,19 @@ n_ha_DW <- DW_data %>%
 
 
 # 3.2. stocks per hectar deadwood -----------------------------------------
-if(exists('RG_stat_2') == TRUE && nrow(DW_stat_2)!=0){
-  DW_BCN_ha <- rbind(DW_data %>% 
-  group_by(plot_ID, plot_A_ha, inv_year, compartiment) %>% 
+# create one very fine grouped summary for deadwood which we sum up into different groups later on 
+if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
+  DW_BCN_ha_SP_TY_DEC_P <- plyr::rbind.fill(DW_data %>% 
+  group_by(plot_ID, inv_year, dw_sp, dw_type, decay, compartiment) %>% 
   # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
   reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
           C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
           N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
   distinct(), 
- DW_stat_2 %>% select(-X)) %>% 
+ DW_stat_2 %>% select(-X, plot_A_ha)) %>% 
   mutate(stand_component = "DW")}else{
-    DW_BCN_ha<- DW_data %>% 
-      group_by(plot_ID, plot_A_ha, inv_year, compartiment) %>% 
+    DW_BCN_ha_SP_TY_DEC_P <- DW_data %>% 
+      group_by(plot_ID, inv_year, dw_sp, dw_type, decay, compartiment, plot_A_ha) %>% 
       # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
       reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
@@ -633,7 +634,13 @@ if(exists('RG_stat_2') == TRUE && nrow(DW_stat_2)!=0){
       distinct()
   }
  
+
   
+summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+               c("plot_ID", "inv_year", "dw_sp", "dw_type", "compartiment"), 
+               c("B_t_ha", "C_t_ha", "N_t_ha"), 
+               operation = "sum_df") %>% 
+  mutate(decay = "all")
 
 # 3.3. DW summary by plot ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 DW_P <- DW_BCN_ha %>% 
@@ -644,6 +651,66 @@ DW_P <- DW_BCN_ha %>%
 
 
 # 3.4. DW big summary over all grouping variables -------------------------
+DW_summary_trial <- 
+  plyr::rbind.fill(
+    # grouped by species, decay type, deadwoodtype, plot, compartiment, inventory
+    DW_BCN_ha_SP_TY_DEC_P,
+    # grouped by species, deadwoodtype, plot, compartiment, inventory. not by decay type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "dw_sp", "dw_type", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(decay = "all"),
+    # grouped by species, decay, plot, compartiment, inventory, not by deadwood type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "dw_sp", "decay", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(dw_type = "all"),
+    # grouped by deadwoodtype, decay, plot, compartiment, inventory, not by species type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "dw_type", "decay", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(dw_sp = "all"),
+    # grouped by deadwoodtype, plot, compartiment, inventory, not by species and decay type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "dw_type", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(dw_sp = "all", 
+             decay = "all"),
+    # grouped by decay, plot, compartiment, inventory, not by species and deadwood type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "decay", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(dw_sp = "all", 
+             dw_type = "all"),
+    # grouped by species group, plot, compartiment, inventory, not by decay and deadwood type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "dw_sp", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(decay = "all", 
+             dw_type = "all"),
+    # grouped by species group, plot, compartiment, inventory, not by decay and deadwood type anymore
+    summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
+                   c("plot_ID", "inv_year", "compartiment"), 
+                   c("B_t_ha", "C_t_ha", "N_t_ha"), 
+                   operation = "sum_df") %>% 
+      mutate(decay = "all", 
+             dw_type = "all", 
+             dw_sp = "all")
+    ) %>% 
+  left_join(., n_ha_DW, 
+            by = c("plot_ID", "inv_year")) %>% 
+  distinct() %>% 
+  arrange(plot_ID) %>% 
+  mutate(stand_component = "DW")
+
+
+
 DW_summary <- 
  rbind( # finest output: plot, inv, species, deadwood type, decay type, compartiment
 # 3.5. DW summary per plot per SP per DW type per Dec state ---------------
