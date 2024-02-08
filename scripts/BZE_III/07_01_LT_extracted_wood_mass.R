@@ -20,10 +20,10 @@ HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_
 growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_dbh_growth.csv"), sep = ";", dec = ",")
 
 
-# 1. calculations ---------------------------------------------------------
-
-# 1.1. find  trees in HBI dataset that were found removed in BZE3  --------
-trees_harvest <- HBI_trees %>% 
+# 1. calculations --------------------------------------------------------------------------------------
+# 1.1. find  trees in HBI dataset that were found removed in BZE3  ------------------------------------
+# filter join for trees that are labelled with tree inventory status 2 in the BZE3 (post) inventory 
+trees_harvested <- HBI_trees %>% 
   semi_join(., BZE3_trees_removed %>% filter(tree_inventory_status == 2), 
             by = c("plot_ID", "tree_ID"))
 
@@ -33,7 +33,9 @@ trees_harvest <- HBI_trees %>%
 # if we can´t find average growth in this group, select growth by plot, stand, species
 # if we can´t find average growth in this group, select growth by plot, species
 # if we can´t find average growth in this group, select growth by species
-
+for (i in 1:length(trees_harvested)) {
+  
+}
 
 
 
