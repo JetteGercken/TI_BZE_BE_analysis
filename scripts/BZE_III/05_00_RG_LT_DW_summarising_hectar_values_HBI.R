@@ -94,7 +94,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   N_t_ha = sum(N_CCS_t_ha),
                   BA_m2_ha = sum(BA_CCS_m2_ha), 
                   n_ha = sum(n_trees_CCS_ha)) %>% 
-        mutate(stand_component = "LT")
+        mutate(stand_component = "LT", 
+               stand = "all", 
+               SP_code = "all")
     }
 
 
@@ -411,62 +413,9 @@ RG_n_SP_plot <- RG_data %>%
   summarise(n_SP = n()) %>% 
   mutate(stand_component = "RG")
 
-# 2.4. RG stocks, n trees per hectar ----------------------------------------------
 
-if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
-  RG_BCNn_ha <- rbind(
-    RG_data %>%
-      left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
-      group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment) %>% 
-      # sum number of trees  per sampling circuit
-      reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-              C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-              N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-      distinct() , 
-    RG_stat_2 %>% 
-      select(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment, B_t_ha, C_t_ha, N_t_ha)
-  ) %>% 
-    arrange(plot_ID) %>% 
-    group_by(plot_ID, plot_A_ha, inv_year, compartiment) %>%
-    summarise(B_t_ha = sum(B_t_ha),
-              C_t_ha = sum(C_t_ha),
-              N_t_ha = sum(N_t_ha)) %>% 
-    # join in number of plants per ha
-       # we have to calcualte it outside the loop and reframe because not all compartiments are present at all trees thus the number of counts per compartiment will change 
-    left_join(., RG_n_ha %>% select(plot_ID, inv_year, n_ha), by = c("plot_ID", "inv_year")) %>% 
-    mutate(stand_component = "RG", 
-           n_ha = ifelse(is.na(n_ha), 0, n_ha))
-}else{
-  RG_BCNn_ha <- RG_data %>%
-    left_join(., RG_plot_A_ha, by = c("plot_ID", "inv_year")) %>% 
-    group_by(plot_ID, CCS_nr, plot_A_ha, inv_year, compartiment) %>% 
-    reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-            C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-    distinct() %>% 
-    arrange(plot_ID) %>% 
-    group_by(plot_ID, plot_A_ha, inv_year, compartiment) %>%
-    summarise(B_t_ha = sum(B_t_ha),
-              C_t_ha = sum(C_t_ha),
-              N_t_ha = sum(N_t_ha)) %>% 
-    left_join(RG_n_ha %>% select(plot_ID, inv_year, n_ha), by = c("plot_ID", "inv_year")) %>% 
-    mutate(stand_component = "RG", 
-           n_ha = ifelse(is.na(n_ha), 0, n_ha))
-}
-
-
-# 2.5. RG plotwise summary ---------------------------------------------------------------------------------------------
-RG_P <- RG_BCNn_ha %>% 
-  left_join(., RG_n_SP_plot, 
-            by = c("plot_ID", "inv_year", "stand_component")) %>% 
-  mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP), 
-         stand = "all", 
-         SP_code = "all")
-
-
-
-# 2.6. RG big summary combining all grouping variables --------------------------------------------------------
-# 2.6.1. RG summary by plot, inventory, compartiment, species and  -------------------------------------------
+# 2.4. RG big summary combining all grouping variables --------------------------------------------------------
+# 2.4.1. RG summary by plot, inventory, compartiment, species and  -------------------------------------------
 if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
   RG_SP_ST_BCN_ha <- plyr::rbind.fill(
     RG_data %>%
@@ -504,20 +453,20 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 }
 
 
-# 2.6.2. RG summary by plot and species, without grouping by stand ---------------------------------------------------------
+# 2.4.2. RG summary by plot and species, without grouping by stand ---------------------------------------------------------
 RG_summary <- plyr::rbind.fill(
   summarize_data(RG_SP_ST_BCN_ha,
                c("stand_component", "plot_ID", "inv_year", "compartiment", "SP_code"),  # variables to group by
                c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
                operation = "sum_df") %>% # statistical operation 
     mutate(stand = "all"),
-# 2.6.3. RG summary by plot and stand, without grouping by species ---------------------------------------------------------
+# 2.4.3. RG summary by plot and stand, without grouping by species ---------------------------------------------------------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv_year", "compartiment", "stand"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
                  operation = "sum_df") %>% # statistical operation 
     mutate(SP_code = "all"),
-# 2.6.4. RG summary by plot, inventory, compartiment, not by speci --------
+# 2.4.4. RG summary by plot, inventory, compartiment, not by speci --------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv_year", "compartiment"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
@@ -534,17 +483,6 @@ RG_summary <- plyr::rbind.fill(
 ) %>% # close rbind
   distinct() %>% 
   arrange(plot_ID)
-
-
-# 2.8. big summary of all RG grouping variables combined  -----------------
-RG_summary <- plyr::rbind.fill(
-  # dataset with RG data grouped by plot, inventory, stand, compartiment, sp_code
-  RG_SP_ST_BCN_ha, 
-  RG_SP_BCN_ha, 
-  RG_ST_BCN_ha, 
-  RG_P
-) %>% 
-  arrange(plot_ID) 
 
 
 
