@@ -13,7 +13,6 @@ getwd()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 # 0.3. data import --------------------------------------------------------
 # tree data
-BZE3_trees <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_update_4.csv"), sep = ";", dec = ",")
 BZE3_trees_removed <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_removed_2.csv"), sep = ";", dec = ",")
 HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_3.csv"), sep = ";", dec = ",")
 # growth
@@ -102,30 +101,28 @@ trees_harvested <- trees_harvested %>%
 # 1.3. Biomass ------------------------------------------------------------
 # now we will calcualte the Biomass of the trees with the "new" diameter at the middle of the harvest period
 # which means we run all biomass loops from 04_01_LT_stocks again
-# 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))
-
-# 1. calculations ---------------------------------------------------------
+# 1.3.1. data preparation ---------------------------------------------------------
+trees_harvested <- trees_harvested %>% mutate(H_m = as.numeric(H_m))
 
 
 # 1.1. biomass -----------------------------------------------------------------
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
-bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
-for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
+bio.ag.kg.list <- vector("list", length = nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])))
+for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
   # i = 60
-  # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
+  # i = trees_harvested %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
-  # select one tree ID and plot ID for each individual tree per plot through unique(trees_data[, c("plot_ID", "tree_ID")])
-  my.plot.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
-  my.tree.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
-  BL.or.CF <- unique(trees_data$LH_NH[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])
+  # select one tree ID and plot ID for each individual tree per plot through unique(trees_harvested[, c("plot_ID", "tree_ID")])
+  my.plot.id <- unique(trees_harvested[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
+  my.tree.id <- unique(trees_harvested[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
+  BL.or.CF <- unique(trees_harvested$LH_NH[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])
   
   # select variales for tree object: tapes species, diameter, diameter measuring height, tree height
-  spp = na.omit(unique(trees_data$tpS_ID[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id]))
-  Dm = na.omit(as.list(as.numeric(unique(trees_data$DBH_cm[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])))) 
-  Hm = na.omit(as.list(as.numeric(unique(trees_data$DBH_h_cm[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])/100)))
-  Ht = na.omit(as.numeric(unique(trees_data$H_m[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])))
+  spp = na.omit(unique(trees_harvested$tpS_ID[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))
+  Dm = na.omit(as.list(as.numeric(unique(trees_harvested$DBH_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))) 
+  Hm = na.omit(as.list(as.numeric(unique(trees_harvested$DBH_h_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])/100)))
+  Ht = na.omit(as.numeric(unique(trees_harvested$H_m[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))
   # create tapes compartiments
   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
   
@@ -140,11 +137,11 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
   
   
   bio.info.df <- as.data.frame(cbind(
-    "plot_ID" = c(as.integer(trees_data$plot_ID[trees_data$plot_ID == my.plot.id & trees_data$tree_ID == my.tree.id])), 
-    "tree_ID" = c(as.integer(trees_data$tree_ID[trees_data$plot_ID == my.plot.id & trees_data$tree_ID == my.tree.id])), 
-    "inv" = c(trees_data$inv[trees_data$plot_ID == my.plot.id & trees_data$tree_ID == my.tree.id]), 
-    "inv_year" = c(as.integer(trees_data$inv_year[trees_data$plot_ID == my.plot.id & trees_data$tree_ID == my.tree.id])),
-    "LH_NH" = c(trees_data$LH_NH[trees_data$plot_ID == my.plot.id & trees_data$tree_ID == my.tree.id]),
+    "plot_ID" = c(as.integer(trees_harvested$plot_ID[trees_harvested$plot_ID == my.plot.id & trees_harvested$tree_ID == my.tree.id])), 
+    "tree_ID" = c(as.integer(trees_harvested$tree_ID[trees_harvested$plot_ID == my.plot.id & trees_harvested$tree_ID == my.tree.id])), 
+    "inv" = c(trees_harvested$inv[trees_harvested$plot_ID == my.plot.id & trees_harvested$tree_ID == my.tree.id]), 
+    "inv_year" = c(as.integer(trees_harvested$inv_year[trees_harvested$plot_ID == my.plot.id & trees_harvested$tree_ID == my.tree.id])),
+    "LH_NH" = c(trees_harvested$LH_NH[trees_harvested$plot_ID == my.plot.id & trees_harvested$tree_ID == my.tree.id]),
     "compartiment" = c(bio.df$compartiment),
     "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
   ) ) %>% 
@@ -164,20 +161,20 @@ bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
 
 # 1.1.2. biomass belowground compartiments ----------------------------------
-bio.bg.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
-for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
+bio.bg.kg.list <- vector("list", length = nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])))
+for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
   # i = 60
-  # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
+  # i = trees_harvested %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
-  my.plot.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
-  my.tree.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
-  #my.inv <-  unique(trees_data[, c("plot_ID", "tree_ID")])[,"inv"][i]
-  BL.or.CF <- unique(trees_data$LH_NH[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])
+  my.plot.id <- unique(trees_harvested[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
+  my.tree.id <- unique(trees_harvested[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
+  #my.inv <-  unique(trees_harvested[, c("plot_ID", "tree_ID")])[,"inv"][i]
+  BL.or.CF <- unique(trees_harvested$LH_NH[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])
   
   # select variales for tree object
-  spp = unique(trees_data$Bio_SP_group[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])
-  dbh.cm = as.numeric(unique(trees_data$DBH_cm[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id]))
+  spp = unique(trees_harvested$Bio_SP_group[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])
+  dbh.cm = as.numeric(unique(trees_harvested$DBH_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))
   
   
   # calculate biomass per compartiment
@@ -186,8 +183,8 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)), 
-    "inv" = unique(trees_data$inv[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id]), 
-    "inv_year" = c(as.integer(unique(trees_data$inv_year[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id]))),
+    "inv" = unique(trees_harvested$inv[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]), 
+    "inv_year" = c(as.integer(unique(trees_harvested$inv_year[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))),
     "compartiment" = c("bg"),
     "B_kg_tree" = c(as.numeric(B_kg_tree))
   ) ) 
@@ -228,7 +225,7 @@ bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
 # 1.1.4. join biomass into tree dataset -----------------------------------
 
-trees_data <- trees_data %>% left_join(., 
+trees_harvested <- trees_harvested %>% left_join(., 
                                        rbind(bio_ag_kg_df , 
                                              bio_bg_kg_df, 
                                              bio_total_kg_df), 
@@ -237,7 +234,7 @@ trees_data <- trees_data %>% left_join(.,
 
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
-N_ag_bg_kg_df <- trees_data %>%
+N_ag_bg_kg_df <- trees_harvested %>%
   filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
   mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
@@ -263,7 +260,7 @@ N_total_kg_df <-
 
 
 # 1.2.3. join Nitrogen stocks into tree dataset -----------------------------------
-trees_data <- trees_data %>% left_join(., 
+trees_harvested <- trees_harvested %>% left_join(., 
                                        rbind(N_ag_bg_kg_df , 
                                              N_total_kg_df), 
                                        by = c("plot_ID", "tree_ID", "inv", "inv_year", "compartiment"), 
@@ -276,10 +273,9 @@ trees_harvested <- trees_harvested %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-stock_harvested <- trees_harvested 
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
-write.csv2(stock_harvested, paste0(out.path.BZE3, paste(unique(stock_harvested$inv)[1], "LT_update_4", sep = "_"), ".csv"))
+write.csv2(trees_harvested, paste0(out.path.BZE3, paste(unique(trees_harvested$inv)[1], unique(BZE3_trees_removed$inv)[1], "LT_stock_removed", sep = "_"), ".csv"))
 
 
 

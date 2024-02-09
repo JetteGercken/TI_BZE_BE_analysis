@@ -69,7 +69,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                   BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
                                   n_trees_CCS_ha = n()/plot_A_ha) %>% 
                           distinct(), 
-                        trees_stat_2)%>% 
+                        trees_stat_2) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv_year, compartiment) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
@@ -531,7 +531,7 @@ DW_P <- DW_BCN_ha %>%
 
 
 # 3.4. DW big summary including all grouping variables and combinations -------------------------
-DW_summary_trial <- 
+DW_summary <- 
   plyr::rbind.fill(
 # 3.4.1. grouped by species, decay type, deadwoodtype, plot, compartiment, inventory ------------------------------------------------------------------
     DW_BCN_ha_SP_TY_DEC_P,
@@ -617,9 +617,59 @@ LT_RG_DW_P <- rbind(
 
 
 # 4. data export ----------------------------------------------------------
-write.csv2(LT_BCNBAn_ha, paste0(out.path.BZE3, paste(inv_name(LT_BCNBAn_ha$inv_year)[1], "LT_stocks_ha_P", sep = "_"), ".csv"))
-write.csv2(LT_SP_BCNBA_ha, paste0(out.path.BZE3, paste(inv_name(LT_SP_BCNBA_ha$inv_year)[1], "LT_stocks_ha_P_SP", sep = "_"), ".csv"))
-write.csv2(LT_summary, paste0(out.path.BZE3, paste(inv_name(LT_summary$inv_year)[1], "LT_stocks_ha_P_SP_TY", sep = "_"), ".csv"))
+write.csv2(LT_summary, paste0(out.path.BZE3, paste(LT_summary$inv[1], "LT_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(RG_summary, paste0(out.path.BZE3, paste(RG_summary$inv[1], "RG_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks_ha_all_groups", sep = "_"), ".csv"))
+
+
+
+
+# 5. visuals --------------------------------------------------------------
+
+
+# 5.1. biomass compartiments ----------------------------------------------
+# pie chart of the percentage of biomass a compartiment averagely accumulates 
+# per single tree 
+# per plot 
+
+# 5.1.1. single tree biomass compartiments by species  --------------------
+LT_B_percent_SP <- LT_summary %>% 
+  filter(SP_code != "all" & 
+           plot_ID != "all") %>% 
+  select(stand_component, plot_ID, inv_year, SP_code, compartiment, B_t_ha) %>% 
+  group_by(stand_component, inv_year, SP_code, compartiment) %>% 
+  summarise(B_t_ha = mean(B_t_ha)) %>% 
+  pivot_wider(names_from = compartiment, values_from = B_t_ha) %>% 
+  # calcualte the percentage each compartiment contributes to the total bioass of a tree of 
+  # the respective species at the respective plot
+  # https://stackoverflow.com/questions/47821241/how-to-divide-a-number-of-columns-by-one-column
+  mutate(across(c(ag:total),.fns = ~./total*100)) %>% 
+  pivot_longer(., ag:total, 
+               names_to = "compartiment", 
+               values_to = "B_t_ha_percent")
+
+for (i in 1:length(unique(LT_B_percent_SP$SP_code))) {
+  # i = 1
+  my.sp <- unique(LT_B_percent_SP$SP_code)[i]
+  
+  print(LT_B_percent_P %>% 
+    filter(compartiment != "total" & SP_code == my.sp) %>% 
+    ggplot(., aes(x="", y=B_t_ha_percent, fill=compartiment)) +
+    geom_bar(stat="identity", width=1) +
+      ggtitle(paste(my.sp))+
+    coord_polar("y", start=0)+
+      theme_void()
+    )
+  
+  
+}
+
+
+
+# 5.1.2. plotwise / ha values biomass compartiments -----------------------
+
+
+
 
 
 
