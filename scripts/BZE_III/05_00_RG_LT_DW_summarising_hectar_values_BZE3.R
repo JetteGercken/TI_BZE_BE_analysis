@@ -7,7 +7,7 @@
 # ----- 0. SETUP -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ----- 0.1. packages and functions ------------------------------------------------------------------------------------------------------------------------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 here::here()
@@ -17,16 +17,20 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # ----- 0.3 data import ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# livgn trees
+# this dataset contains the data of the tree inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ";", dec = ",")
+trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ";", dec = ",") %>% select(-X)
+
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
-RG_data <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_RG_update_4.csv"), sep = ";", dec = ",")
-RG_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_RG_stat_2.csv"), sep = ";", dec = ",")
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
+RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ";", dec = ",")
+
+# deadwood
 # this dataset contains the data of the deadwood inventory of the HBI (BZE2), including info about species groups and B, C, N stocks per tree 
-DW_data <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_DW_update_4.csv"), sep = ";", dec = ",")
-DW_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_DW_stat_2.csv"), sep = ";", dec = ",")
-# this dataset contains the data of the tree inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
-trees_data <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_update_4.csv"), sep = ";", dec = ",")
-trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_stat_2.csv"), sep = ";", dec = ",") %>% select(-X)
+DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
+DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ";", dec = ",")
 
 
 # CALCULATIONS ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------

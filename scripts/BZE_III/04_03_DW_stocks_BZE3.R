@@ -1,7 +1,7 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
 # Analysis of the forest inventory accompanying the peat land soil inventory
 # Deadwood biomass, carbon and nitrogen stock
-# HBI
+# BZE3 
 
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages & functions  ---------------------------------------------------------
@@ -14,13 +14,13 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"HBI_DW_update_1.csv")), sep = ";", dec = ",")
+DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"BZE3_DW_update_1.csv")), sep = ";", dec = ",")
 
 
 # HBI forest type info per plot  (Bestandestyp)
 # this i deed to later say "if the stocking species are mainly coniferous i need this secies group from tapeS
 # and if th estocking species fall in the category broadleafes the other tapes species code"
-forest_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+forest_info <- read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 
 # 0.4 dataprep  -----------------------------------------------------------
 
@@ -34,16 +34,16 @@ DW_data <- DW_data %>%
   # join in forest type from HBI forst.csv
   left_join(., 
             forest_info %>% 
-   # assign forest types into coniferus vs broadleaved categories based on x_forest code table
+              # assign forest types into coniferus vs broadleaved categories based on x_forest code table
               mutate(LH_NH_stand = case_when(besttyp %in% c(4, 5, 7, 8, 10, 91 ) ~ "LB",
-                                       besttyp %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
-                                       TRUE ~ NA)) %>% 
-                       select(bund_nr, LH_NH_stand), 
-                     by = c("plot_ID" = "bund_nr")) %>% 
+                                             besttyp %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
+                                             TRUE ~ NA)) %>% 
+              select(bund_nr, LH_NH_stand), 
+            by = c("plot_ID" = "bund_nr")) %>% 
   mutate(SP_code =  case_when(dw_sp == 1 | (dw_sp == 4 & LH_NH_stand == "NB") ~ "gfi",  # Fi
-                             dw_sp == 2 | (dw_sp == 4 & LH_NH_stand == "LB") ~ "rbu", # BU
-                             dw_sp == 3 ~ "sei",                                   # EI   
-                             TRUE ~ NA) ) %>% 
+                              dw_sp == 2 | (dw_sp == 4 & LH_NH_stand == "LB") ~ "rbu", # BU
+                              dw_sp == 3 ~ "sei",                                   # EI   
+                              TRUE ~ NA) ) %>% 
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)),
             by = c("SP_code" = "char_code_ger_lowcase")) %>%  
@@ -66,7 +66,7 @@ DW_data <- DW_data %>%
 
 # 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
 # for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
- DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2), ]
+DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2), ]
 # export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
@@ -91,13 +91,13 @@ for (i in 1:nrow( DW_data_whole)){
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-
+  
   # calculate biomass
   bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
     pivot_longer(cols = stw:fwb,
                  names_to = "compartiment", 
                  values_to = "B_kg_tree") %>% 
-          # apply the biomass reduction factor to the biomass of deadwoodto account for decay state
+    # apply the biomass reduction factor to the biomass of deadwoodto account for decay state
     mutate(B_kg_tree = rdB_DW(B_kg_tree, my.decay.type, my.dw.spec))
   
   # create export dataframe
@@ -111,7 +111,7 @@ for (i in 1:nrow( DW_data_whole)){
   ))
   
   bio.dw.whole.kg.list[[i]] <- bio.info.df
-
+  
 }
 bio_dw_whole_kg_df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
 
@@ -206,7 +206,7 @@ for (i in 1:nrow(DW_data_stump)){
   
   # create object with estimated DBH and height 
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
- 
+  
   
   
   ## calcualte biomass and bark-stump ratio for the "pseudo" tree 
@@ -224,14 +224,14 @@ for (i in 1:nrow(DW_data_stump)){
              wood_ag_ratio = stw/ag)
   }else{
     ratio.df <- as.data.frame(
-    tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp)
-  ) %>% # momo = F if heigh low, mono = T if height normal
-    mutate(ag = stw + stb) %>% 
-    #apply the biomass reduction factor to the biomass of deadwoodto account for decay state
-    mutate(across(stw:ag, ~rdB_DW( .x, my.decay.type, my.dw.spec) )) %>% 
-    # calcualte bark:total stump biomass
-    mutate(bark_ag_ratio = stb/ag, 
-           wood_ag_ratio = stw/ag)
+      tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp)
+    ) %>% # momo = F if heigh low, mono = T if height normal
+      mutate(ag = stw + stb) %>% 
+      #apply the biomass reduction factor to the biomass of deadwoodto account for decay state
+      mutate(across(stw:ag, ~rdB_DW( .x, my.decay.type, my.dw.spec) )) %>% 
+      # calcualte bark:total stump biomass
+      mutate(bark_ag_ratio = stb/ag, 
+             wood_ag_ratio = stw/ag)
   }
   
   # calcualte Biomass vie Volume cylinder function and wood density 
@@ -243,8 +243,8 @@ for (i in 1:nrow(DW_data_stump)){
     "B_kg_tree" = c(ag.B.kg, # ag biomass
                     ag.B.kg*as.numeric(ratio.df$wood_ag_ratio), # stump wood biomass
                     ag.B.kg*as.numeric(ratio.df$bark_ag_ratio)) # stump bark biomass
-                    ))
-
+  ))
+  
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
     "tree_ID" = c(my.tree.id), 
@@ -254,7 +254,7 @@ for (i in 1:nrow(DW_data_stump)){
     "B_kg_tree" = c(as.numeric(bio.df$B_kg_tree))
   ) )
   
-   
+  
   bio.dw.stump.kg.list[[i]] <- bio.info.df
   
 }
@@ -267,9 +267,9 @@ bio_dw_pieces_kg_df <- DW_data %>%
   filter(dw_type %in% c(1, 6) |
            dw_type %in% c(2, 5, 3, 4) & decay > 2) %>% 
   mutate(
-  compartiment =  "ag", 
-  V_m3_tree = V_DW_cylinder(as.numeric(d_cm)/100, as.numeric(l_dm/10)),
-  B_kg_tree = B_DW(V_m3_tree, dec_type_BWI, dw_sp)) %>% 
+    compartiment =  "ag", 
+    V_m3_tree = V_DW_cylinder(as.numeric(d_cm)/100, as.numeric(l_dm/10)),
+    B_kg_tree = B_DW(V_m3_tree, dec_type_BWI, dw_sp)) %>% 
   select("plot_ID", "tree_ID", "inv", "inv_year", "compartiment", "B_kg_tree")
 
 
@@ -305,10 +305,10 @@ DW_data <- DW_data %>%
 N_dw_ag_comps_kg_df <- DW_data %>%
   # compartitioned deadwood trees
   filter(dw_type %in% c(2, 5, 3, 4) & decay <=2 & compartiment != "ag" | # deselect summed up compartiments for whole trees, stumps and broken trees
-  # deadwood trees that could have been compartitioned if htey would´t be to decayed
-  # --> biomass is always "ag"
+           # deadwood trees that could have been compartitioned if htey would´t be to decayed
+           # --> biomass is always "ag"
            dw_type %in% c(2, 5, 3, 4) & decay > 2|
-  # uncompartionable deadwood trees --> biomass is always "ag"
+           # uncompartionable deadwood trees --> biomass is always "ag"
            dw_type %in% c(1, 6)) %>% 
   mutate(N_kg_tree = case_when(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), 
                                # for all trees that are not copmartioned (meaning all trees that don´t have )
@@ -332,11 +332,11 @@ N_dw_ag_kg_df <- N_dw_ag_comps_kg_df %>%
 
 # 1.4.3. join Nitrogen stocks into deadwood dataset -----------------------------------
 DW_data <- DW_data %>% left_join(., 
-                             rbind(N_dw_ag_comps_kg_df , 
-                                   N_dw_ag_kg_df), 
-                             by = c("plot_ID", "tree_ID", "inv", "inv_year",
-                                    "dw_type", "compartiment"), 
-                             multiple = "all")
+                                 rbind(N_dw_ag_comps_kg_df , 
+                                       N_dw_ag_kg_df), 
+                                 by = c("plot_ID", "tree_ID", "inv", "inv_year",
+                                        "dw_type", "compartiment"), 
+                                 multiple = "all")
 
 
 

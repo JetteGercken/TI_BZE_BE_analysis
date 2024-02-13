@@ -1,6 +1,6 @@
 # Thuenen Institute - Bodenschutz und Waldzustand
 # Analysis of the forest inventory accompanying the peat land soil inventory
-# sorting the sampling circuits according to their inventory status 
+# sorting the sampling circuits according to their inventory status BZE3
 
 # this script should sort every sampling circle, may it be a living trees plot, 
 # a regeneration plot or a deadwood plot accoridnt to it´s invenory status (Aufnahmemöglichkeit)
@@ -8,80 +8,80 @@
 # the inventory status code displays the following information: 
 ## ALL PLOTS & STAND COMPONENTS
 # Punktstatus (x_plotstatus_bze)
-    # -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
-    # -1 Merkmal nicht erhoben
-    # 0 BZE-Punkt wurde in allen Erhebungen beprobt
-    # 1 BZE-Punkt wurde bei BZE II und III, aber nicht BZE I beprobt
-    # 3 BZE-Punkt wurde bei BZE I und III, aber nicht BZE II beprobt
-  # -- Neuanlage bei der BZE III
-    # 11 Neuanlage: Erstaufforstung
-    # 12 Neuanlage: Wiederaufforstung
-    # 13 Neuanlage: Sukzession
-    # 14 Neuanlage: Rasterverschiebung
-    # 15 Neuanlage: Rasterumstellung
-    # 16 Neuanlage: BZE-Punkt wurde nicht gefunden / nicht beprobt
-    # 17 Neuanlage: Punkt wurde bisher nicht aufgenommen, obwohl zur Waldfläche gehörend
-    # 19 Neuanlage: Sonstiges
-  # -- Ausfall bei der BZE III
-    # 21 Ausfall: Umwandlung in Nichtwald oder Nichtholzboden
-    # 22 Ausfall: Punkt nicht gefunden und deswegen Neuanlage
-    # 23 Ausfall: Punkt nicht mehr erreichbar (z. B: Truppenübungsplatz, Moorrenaturierung)
-    # 24 Ausfall: keine Probenahmeerlaubnis
-    # 25 Ausfall: Rasterverschiebung
-    # 26 Ausfall: Rasterumstellung (Netzweite geändert)
-    # 27 Ausfall: Rasterüberprüfung (Punkt gehört nicht zum Rasternetz)
-    # 28 Ausfall: Eichenprozessionsspinner (EPS)
-    # 29 Ausfall: Gesundheitsgefahr (außer EPS)
-    # 30 Ausfall: Arbeitsschutz
-    # 39 Ausfall: sonstiges
-    # 40 Ausfall: Koordinaten oder Punktnummernfehler
-    # 50 Ausfall: WZE-Punkt aber kein BZE-Punkt
-    # 60 Ausfall: Level II-Punkt
+# -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
+# -1 Merkmal nicht erhoben
+# 0 BZE-Punkt wurde in allen Erhebungen beprobt
+# 1 BZE-Punkt wurde bei BZE II und III, aber nicht BZE I beprobt
+# 3 BZE-Punkt wurde bei BZE I und III, aber nicht BZE II beprobt
+# -- Neuanlage bei der BZE III
+# 11 Neuanlage: Erstaufforstung
+# 12 Neuanlage: Wiederaufforstung
+# 13 Neuanlage: Sukzession
+# 14 Neuanlage: Rasterverschiebung
+# 15 Neuanlage: Rasterumstellung
+# 16 Neuanlage: BZE-Punkt wurde nicht gefunden / nicht beprobt
+# 17 Neuanlage: Punkt wurde bisher nicht aufgenommen, obwohl zur Waldfläche gehörend
+# 19 Neuanlage: Sonstiges
+# -- Ausfall bei der BZE III
+# 21 Ausfall: Umwandlung in Nichtwald oder Nichtholzboden
+# 22 Ausfall: Punkt nicht gefunden und deswegen Neuanlage
+# 23 Ausfall: Punkt nicht mehr erreichbar (z. B: Truppenübungsplatz, Moorrenaturierung)
+# 24 Ausfall: keine Probenahmeerlaubnis
+# 25 Ausfall: Rasterverschiebung
+# 26 Ausfall: Rasterumstellung (Netzweite geändert)
+# 27 Ausfall: Rasterüberprüfung (Punkt gehört nicht zum Rasternetz)
+# 28 Ausfall: Eichenprozessionsspinner (EPS)
+# 29 Ausfall: Gesundheitsgefahr (außer EPS)
+# 30 Ausfall: Arbeitsschutz
+# 39 Ausfall: sonstiges
+# 40 Ausfall: Koordinaten oder Punktnummernfehler
+# 50 Ausfall: WZE-Punkt aber kein BZE-Punkt
+# 60 Ausfall: Level II-Punkt
 # plots to exclude: everything with ID >=21
 
 
 ## LIVING TREES
 # Status der Bestandsaufnahmeplots (x_hbi_status) --> reffers to whole assessment of trees 
-    # -9 = Merkmal vergessen, nicht rekonstruierbar oder unbekannt - Status is unknown, was not assesed or canot be reconstructed
-    # -1 = Merkmal nicht erhoben  - status was not assessed
-    #  1 = Aufnahme erfolgte am HBI-Mittelpunkt  - the plot is at the same position as an HBI plot --> repetitive inventory
-    #  2 = Aufnahme erfolgte an neuem Bezugspunkt - plot in not at the same posticion as in the previous invenotry --> new inventory
-    #  3 = Aufnahme erfolgte an BWI-Punkt (nur BB/BY) - the plot is at the same position as an BWI plot --> repetitive inventory
-   ## plot stati to exclude: 3 ????
-   ## plot stati to change:
-   ## only trees with have bestandesaufnahmeplotstatus of 2 can be used for growth calc
+# -9 = Merkmal vergessen, nicht rekonstruierbar oder unbekannt - Status is unknown, was not assesed or canot be reconstructed
+# -1 = Merkmal nicht erhoben  - status was not assessed
+#  1 = Aufnahme erfolgte am HBI-Mittelpunkt  - the plot is at the same position as an HBI plot --> repetitive inventory
+#  2 = Aufnahme erfolgte an neuem Bezugspunkt - plot in not at the same posticion as in the previous invenotry --> new inventory
+#  3 = Aufnahme erfolgte an BWI-Punkt (nur BB/BY) - the plot is at the same position as an BWI plot --> repetitive inventory
+## plot stati to exclude: 3 ????
+## plot stati to change:
+## only trees with have bestandesaufnahmeplotstatus of 2 can be used for growth calc
 
 # status der Bestandesaufnahme --> reffers to the respective samping circle 
-    # -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
-    # -1 Merkmal nicht erhoben
-    # 1 Aufnahme wurde erfolgreich durchgeführt
-    # 2 Aufnahme war nicht möglich, keine Objekte vorhanden
-    # 3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
+# -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
+# -1 Merkmal nicht erhoben
+# 1 Aufnahme wurde erfolgreich durchgeführt
+# 2 Aufnahme war nicht möglich, keine Objekte vorhanden
+# 3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
 ## plot stati to exclude: 3  --> find trees that match the CCS and remove them 
 ## create "LT_CCS_to_exclude" dataset
 
 
 ## REGENERATION
 # status der Verjüngungsaufnahme
-    # -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
-    # -2 Merkmal nicht vorhanden
-    # -1 Merkmal nicht erhoben
-    #  1 Aufnahme wurde erfolgreich durchgeführt
-    #  2 Aufnahme war nicht möglich, keine Objekte vorhanden
-    #  3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
+# -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
+# -2 Merkmal nicht vorhanden
+# -1 Merkmal nicht erhoben
+#  1 Aufnahme wurde erfolgreich durchgeführt
+#  2 Aufnahme war nicht möglich, keine Objekte vorhanden
+#  3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
 ## plot stati to exclude: 3  --> find trees that match the CCS and remove them 
 ## create "RT_CCS_to_exclude" dataset
 
 
 ## DEADWOOD
 # status der Totholzaufnahme
-    # -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
-    # -1 Merkmal nicht erhoben
-    # 1 Aufnahme wurde erfolgreich durchgeführt
-    # 2 Aufnahme war nicht möglich, keine Objekte vorhanden
-    # 3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
-    # 4 Aufnahme auf 0,5 der Probekreisfläche
-    # 5 Aufnahme auf 0,25 der Probekreisfläche
+# -9 Merkmal vergessen, nicht rekonstruierbar oder unbekannt
+# -1 Merkmal nicht erhoben
+# 1 Aufnahme wurde erfolgreich durchgeführt
+# 2 Aufnahme war nicht möglich, keine Objekte vorhanden
+# 3 Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)
+# 4 Aufnahme auf 0,5 der Probekreisfläche
+# 5 Aufnahme auf 0,25 der Probekreisfläche
 ## plot stati to exclude: 3  --> find trees that match the CCS and remove them 
 ## create "DW_CCS_to_exclude" dataset
 
@@ -102,18 +102,16 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
+inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 inv_info$date <- as.Date(inv_info$date)
 inv_info$inv_year <- as.numeric(format(inv_info$date, "%Y"))
-# this line can be removed later
-inv_info <- inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
 
 
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
-tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% # be
+tree_inv_info <-  read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% # be
   select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
             knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
             end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
@@ -121,38 +119,38 @@ colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_typ
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                     TRUE ~ hbi_status))
+                                                                 TRUE ~ hbi_status))
 
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
 # HBI trees
 colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", 
                           "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI forest edges
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
 colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
 
 
 
 ## REGENERATION                                                                                                  
 # this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-RG_loc_info <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+RG_loc_info <- read.delim(file = here("data/input/BZE3/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
-RG_data <- read.delim(file = here("data/input/BZE2_HBI/bejb.csv"), sep = ",", dec = ",")
+RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ",", dec = ",")
 #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
 
- 
+
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE2_HBI/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)  
+DW_inv_info <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)  
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
-DW_data <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ",")
+DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", dec = ",")
 #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 # join inventory jear and name into deadwood tree dataset
@@ -204,7 +202,7 @@ if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees datas
 forest_edges <- forest_edges %>% 
   # join in inventory info 
   left_join(., inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID")
-  
+
 
 
 
@@ -231,14 +229,14 @@ DW_data <- DW_data %>%
 tree_inv_info <- tree_inv_info %>% 
   # join  in inventory info
   left_join(., inv_info %>% select(plot_ID, inv_year, inv), by = "plot_ID") %>% 
-# remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
   anti_join(., plots_to_exclude, by = "plot_ID") %>%
- # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
- pivot_longer(., "CCS_5_inv_status":"CCS_17_inv_status", names_to = "CCS_r_m", values_to = "CCS_LT_inv_status") %>% 
+  # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+  pivot_longer(., "CCS_5_inv_status":"CCS_17_inv_status", names_to = "CCS_r_m", values_to = "CCS_LT_inv_status") %>% 
   mutate(CCS_r_m = as.numeric(case_when(CCS_r_m == "CCS_5_inv_status" ~ 5.64, 
-                             CCS_r_m == "CCS_12_inv_status" ~ 12.62,
-                             CCS_r_m == "CCS_17_inv_status" ~ 17.84,
-                             TRUE~ NA))) %>% 
+                                        CCS_r_m == "CCS_12_inv_status" ~ 12.62,
+                                        CCS_r_m == "CCS_17_inv_status" ~ 17.84,
+                                        TRUE~ NA))) %>% 
   distinct() %>% 
   arrange(plot_ID)
 
@@ -274,7 +272,7 @@ tree_inv_info <- tree_inv_info %>%
   rename("CCS_LT_inv_status_old" = "CCS_LT_inv_status") %>% 
   # change name of new iventory status to plain "inventory status" without "new"
   rename("CCS_LT_inv_status" = "CCS_LT_inv_status_new")  %>% 
-# create new tree_inv_info dataset with new and old tree sampling circuit status to export as update 
+  # create new tree_inv_info dataset with new and old tree sampling circuit status to export as update 
   select(plot_ID, team, date, stand_spec, stand_type, structure, inv_year, inv, CCS_r_m, CCS_LT_inv_status, CCS_LT_inv_status_old) %>% 
   distinct()%>% 
   arrange(plot_ID)
@@ -295,18 +293,18 @@ for (i in 1:nrow(trees_stat_2)) {
   
   if(nrow(trees_stat_2) != 0){
     LT.staus.2.df <- as.data.frame(cbind(
-        plot_ID = c(my.plot.id),
-        CCS_r_m = c(my.ccs.r),
-        plot_A_ha = c(my.plot.area), 
-        inv_year = c(my.inv.year),
-        compartiment = c("ag", "bg", "total"),
-        B_CCS_t_ha = c(0, 0, 0), 
-        C_CCS_t_ha = c(0, 0, 0), 
-        N_CCS_t_ha = c(0, 0, 0), 
-        BA_CCS_m2_ha = c(0, 0, 0), 
-        n_trees_CCS_ha = c(0, 0, 0)))}else{
-      LT.staus.2.df = data.frame()
-    }
+      plot_ID = c(my.plot.id),
+      CCS_r_m = c(my.ccs.r),
+      plot_A_ha = c(my.plot.area), 
+      inv_year = c(my.inv.year),
+      compartiment = c("ag", "bg", "total"),
+      B_CCS_t_ha = c(0, 0, 0), 
+      C_CCS_t_ha = c(0, 0, 0), 
+      N_CCS_t_ha = c(0, 0, 0), 
+      BA_CCS_m2_ha = c(0, 0, 0), 
+      n_trees_CCS_ha = c(0, 0, 0)))}else{
+        LT.staus.2.df = data.frame()
+      }
   LT.data.stat.2.list[[i]] <- LT.staus.2.df
 }
 LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
@@ -314,7 +312,7 @@ LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
 
 #  2.2.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
 trees_update_0 <- trees_data %>% 
- # select only trees in CCSs that are assigned status 1 
+  # select only trees in CCSs that are assigned status 1 
   # and are already sorted for uninventorable plots (Plotstatus >= 21)
   semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status == 1),
             by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
@@ -394,7 +392,7 @@ for (i in 1:nrow(RG_stat_2)) {
       N_t_ha = c(0, 0, 0)))
   }else{
     RG.status.2.df = data.frame()
-    }
+  }
   
   RG.data.stat.2.list[[i]] <- RG.status.2.df
 }
@@ -408,9 +406,9 @@ RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 #  2.3.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
 RG_update_1 <- RG_data %>% 
   # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-   semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
-  
-  
+  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
+
+
 
 
 
@@ -465,7 +463,7 @@ for (i in 1:nrow(DW_stat_2)) {
   my.plot.id <- DW_stat_2[, "plot_ID"][i]
   my.plot.area <- DW_stat_2[, "plot_A_ha"][i]
   my.inv.year <- DW_stat_2[, "inv_year"][i]
-
+  
   
   if(nrow(DW_stat_2) != 0){
     DW.status.2.df <- as.data.frame(cbind(
@@ -487,15 +485,15 @@ DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
 # 2.4.5. prepare DW_data for export ---------------------------------------
 DW_update_1 <- DW_data %>% 
- # remove trees in CCS with status 3 
+  # remove trees in CCS with status 3 
   semi_join(., DW_inv_info %>% filter(CCS_DW_inv_status == 1),
             by = c("plot_ID", "inv", "inv_year")) %>% 
   # join in the plot area for the deadwood 
   left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
-           by = c("plot_ID", "inv", "inv_year"))
+            by = c("plot_ID", "inv", "inv_year"))
 
 
- 
+
 
 
 

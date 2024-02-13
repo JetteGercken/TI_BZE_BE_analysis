@@ -6,7 +6,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 
 # ----- 0.2. working directory -------------------------------------------------
@@ -21,9 +21,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-geo_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
+geo_loc <- read.delim(file = here("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv"), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
-forest_edges <- read.delim(file = here(paste0(out.path.BZE3, "HBI_forest_edges_update_1.csv")), sep = ";", dec = ",")
+forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ";", dec = ",")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
