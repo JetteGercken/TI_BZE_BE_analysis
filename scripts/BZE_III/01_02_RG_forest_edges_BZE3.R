@@ -5,7 +5,7 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -16,29 +16,29 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
-# this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-HBI_RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv")), sep = ";", dec = ",") 
+# this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 (BZE2) 
+RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv")), sep = ";", dec = ",") 
 
-# this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
-RG_data <- read.delim(file =  here(paste0(out.path.BZE3, "HBI_RG_update_1.csv")), sep = ";", dec = ",")
+# this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3 (BZE2), including stand and area info
+RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ";", dec = ",")
 
-# this dataset contains the HBI forest edges info
-HBI_forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
-colnames(HBI_forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
+# this dataset contains the BZE3 forest edges info
+forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
+colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                                 "A_dist", "A_azi",  "B_dist", "B_azi", 
                                 "T_dist", "T_azi") # t = turning point 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-HBI_loc <- read.delim(file = here("data/input/BZE2_HBI/location_HBI.csv"), sep = ";", dec = ",")
-HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  
+BZE3_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  inv_name((RG_loc$inv_year)[1]), ".csv")), sep = ";", dec = ",")
+BZE3_loc <- BZE3_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  
                                        "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN"))
-colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
+colnames(BZE3_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
 
 
 # import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(HBI_RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
+all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
+all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
+all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
 
 
 
@@ -50,7 +50,7 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # calcualte edge data: cooridnates of edges and intersection stati of the edge lines
-HBI_forest_edges <- HBI_forest_edges %>% 
+forest_edges <- forest_edges %>% 
   filter(e_form %in% c("1", "2")) %>% 
   # convert distance from cm to m
   mutate(across(c("A_dist", "B_dist", "T_dist"), ~ (.x)/100)) %>% 
@@ -95,8 +95,8 @@ HBI_forest_edges <- HBI_forest_edges %>%
 
 # 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
-HBI_RG_loc <- HBI_RG_loc %>% 
- left_join(., HBI_forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
+RG_loc <- RG_loc %>% 
+  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -114,8 +114,8 @@ HBI_RG_loc <- HBI_RG_loc %>%
 
 # 2. sorting sampling circles into stands ---------------------------------
 # 2.1. plots with 1 edge: sorting sampling circles into stands ---------------------------------
-## subsetting the HBI_RG_loc dataset by filtering for plots that have only one intersecting edge
-HBI_RG_one_edge <- HBI_RG_loc %>% 
+## subsetting the RG_loc dataset by filtering for plots that have only one intersecting edge
+RG_one_edge <- RG_loc %>% 
   #filter for plots that we actually have coordiantes and areas for 
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
@@ -129,38 +129,38 @@ HBI_RG_one_edge <- HBI_RG_loc %>%
   # silter for plots that have only one forest edge
   anti_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
-                      e_ID %in% c("1", "2")) %>% 
-             select(plot_ID, e_ID) %>% 
-             group_by(plot_ID) %>% 
-             summarise(n = n()) %>% 
-             filter(n > 1 ) %>% 
-             select(plot_ID) %>% 
-        distinct(), 
-       by = "plot_ID") # %>% 
-## remove plots that do now have a corresponding center coordiante in the HBI loc document
-#semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+                       e_ID %in% c("1", "2")) %>% 
+              select(plot_ID, e_ID) %>% 
+              group_by(plot_ID) %>% 
+              summarise(n = n()) %>% 
+              filter(n > 1 ) %>% 
+              select(plot_ID) %>% 
+              distinct(), 
+            by = "plot_ID") # %>% 
+## remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#semi_join(BZE3_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 # for each plot_id and regeneration circle at plots with one edge only 
-RG.CCS.one.edge.list <- vector("list", length = nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])))
-for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
+RG.CCS.one.edge.list <- vector("list", length = nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")])))
+for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # i = 213
-  # i = which(grepl(50132, unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  # i = which(grepl(50132, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   
   # regerneation sampling cirlce data
-  my.plot.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
-  my.ccs.id <- unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
+  my.plot.id <- unique(RG_one_edge[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
+  my.ccs.id <- unique(RG_one_edge[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
   
   # select edge ID 
-  my.e.id <- HBI_RG_one_edge$e_ID[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
-  my.ccs.r <- (HBI_RG_one_edge$CCS_max_dist_cm[HBI_RG_one_edge$plot_ID == my.plot.id & 
-                                                 HBI_RG_one_edge$CCS_nr == my.ccs.id & 
-                                                 HBI_RG_one_edge$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
-
+  my.e.id <-  RG_one_edge$e_ID[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
+  my.ccs.r <- ( RG_one_edge$CCS_max_dist_cm[ RG_one_edge$plot_ID == my.plot.id & 
+                                                  RG_one_edge$CCS_nr == my.ccs.id & 
+                                                  RG_one_edge$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
+  
   ## select georefference data
   ## select UTM coordiantes of BZE (NSI point)
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- BZE3_loc[BZE3_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- BZE3_loc[BZE3_loc$plot_ID == my.plot.id, "HW_MED"]
   ## assign crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -171,12 +171,12 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   c.r3 = 17.84
   
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
-  ccs.dist <- HBI_RG_one_edge$CCS_dist[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]/100
-  ccs.azi <- HBI_RG_one_edge$CCS_gon[HBI_RG_one_edge$plot_ID == my.plot.id & HBI_RG_one_edge$CCS_nr == my.ccs.id]
+  ccs.dist <-  RG_one_edge$CCS_dist[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id]/100
+  ccs.azi <-  RG_one_edge$CCS_gon[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id]
   x_CCS_center = ccs.dist*sin(ccs.azi * pi/200)  # + my.center.easting
   y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)   # + my.center.northing
   
-## create polyones
+  ## create polyones
   # create polygone of regeneration sampling circle RG CCS 
   my.rg.ccs.poly <- sf::st_buffer(
     sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
@@ -201,89 +201,89 @@ for (i in 1:nrow(unique(HBI_RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   circle.17$CCS_r_m <- c.r3
   
   # create polygone of edge triangle
-   edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
-                                      , x = "X"
-                                      , y = "Y"
-                                      , keep = TRUE)
-   
+  edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
+                                     , x = "X"
+                                     , y = "Y"
+                                     , keep = TRUE)
   
- # create polygon of remaining circle
-   circle.edge.inter <- sf::st_intersection(circle.17, edge.poly)
-   # if there is no intersection between the edge and the cirlce, 
-    if(isTRUE(nrow(circle.edge.inter) == 0)){
-      # the whole circle polygon is set as the remaining circle 
-     rem.circle.17 <- circle.17}else{
-       # else the remaining area/ polyon after the inersection is deducted is passed on as remaining circle
-       rem.circle.17 <- sf::st_difference(circle.17, st_geometry(circle.edge.inter))
-     }
-   
-   
+  
+  # create polygon of remaining circle
+  circle.edge.inter <- sf::st_intersection(circle.17, edge.poly)
+  # if there is no intersection between the edge and the cirlce, 
+  if(isTRUE(nrow(circle.edge.inter) == 0)){
+    # the whole circle polygon is set as the remaining circle 
+    rem.circle.17 <- circle.17}else{
+      # else the remaining area/ polyon after the inersection is deducted is passed on as remaining circle
+      rem.circle.17 <- sf::st_difference(circle.17, st_geometry(circle.edge.inter))
+    }
+  
+  
   ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
-   # since we´d have to find a way to first export and then mport and convert multipolygones 
-   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
+  # since we´d have to find a way to first export and then mport and convert multipolygones 
+  # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
   # rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
   #                                 , x = "X"
   #                                 , y = "Y"
   #                                 , keep = TRUE)
-
- ## check for intersections
+  
+  ## check for intersections
   # with edge-intersection-polygon
   intersection.with.edge <- sf::st_intersection(my.rg.ccs.poly, edge.poly)
   # with remaining circle polygon
   intersection.with.rem.circle <- sf::st_intersection(my.rg.ccs.poly, rem.circle.17)
   
-## set the stand of the rg circle according to its intersections: https://www.geeksforgeeks.org/nested-if-else-statement-in-r/
-    my.stand.rg <- list(c(intersection.with.rem.circle$stand, intersection.with.edge$stand))
-                         
-## determine area of the rg circle (stands) according to it´s intersection
-   my.rg.A.m2 <- list(c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge)))
-   
- ## safe intersection info (stand and area) of the RG CCS into dataframe
-    rg.edge.data <- as.data.frame(cbind(
-      "plot_ID" = c(rep(my.plot.id, times = length(unlist(my.stand.rg)))), 
-      "CCS_nr" = c(rep(my.ccs.id, times = length(unlist(my.stand.rg)))), 
-      "stand" =  c(unlist(my.stand.rg)), 
-      "area_m2"= c(unlist(my.rg.A.m2)) 
-    ))
-    
-  ## assign the whole CCS area to the stand that covers 2/3rds of the RG CCS area
-    # determine 2/3 of the RG CCS area 
-    rg.ccs.A.0.6 <- sf::st_area(my.rg.ccs.poly)*(2/3)
-    
-    # select the row that includes the stand that covers 2/3 of the RG CCS area, 
-    # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
-    rg.0.6.data <- rg.edge.data[rg.edge.data$area_m2 >= rg.ccs.A.0.6, ]
-    # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
-    # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
-    # since we cannot sort them into stands by location as we don´t know their location
-    
-    if(isTRUE(nrow(rg.0.6.data)== 0)){
-      rg.edge.data[1,]$stand <- NA
-      rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
-    }else{
-      rg.edge.data <- rg.0.6.data
-      rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
-    }
-    
+  ## set the stand of the rg circle according to its intersections: https://www.geeksforgeeks.org/nested-if-else-statement-in-r/
+  my.stand.rg <- list(c(intersection.with.rem.circle$stand, intersection.with.edge$stand))
   
-## put dataframe in export list
+  ## determine area of the rg circle (stands) according to it´s intersection
+  my.rg.A.m2 <- list(c(st_area(intersection.with.rem.circle), st_area(intersection.with.edge)))
+  
+  ## safe intersection info (stand and area) of the RG CCS into dataframe
+  rg.edge.data <- as.data.frame(cbind(
+    "plot_ID" = c(rep(my.plot.id, times = length(unlist(my.stand.rg)))), 
+    "CCS_nr" = c(rep(my.ccs.id, times = length(unlist(my.stand.rg)))), 
+    "stand" =  c(unlist(my.stand.rg)), 
+    "area_m2"= c(unlist(my.rg.A.m2)) 
+  ))
+  
+  ## assign the whole CCS area to the stand that covers 2/3rds of the RG CCS area
+  # determine 2/3 of the RG CCS area 
+  rg.ccs.A.0.6 <- sf::st_area(my.rg.ccs.poly)*(2/3)
+  
+  # select the row that includes the stand that covers 2/3 of the RG CCS area, 
+  # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
+  rg.0.6.data <- rg.edge.data[rg.edge.data$area_m2 >= rg.ccs.A.0.6, ]
+  # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
+  # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
+  # since we cannot sort them into stands by location as we don´t know their location
+  
+  if(isTRUE(nrow(rg.0.6.data)== 0)){
+    rg.edge.data[1,]$stand <- NA
+    rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+  }else{
+    rg.edge.data <- rg.0.6.data
+    rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+  }
+  
+  
+  ## put dataframe in export list
   RG.CCS.one.edge.list[[i]] <- rg.edge.data
-
- 
-    print(ggplot() +
+  
+  
+  print(ggplot() +
           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
                                                             "lat" = c.y0)),
                                         coords = c("lon", "lat"))), aes(),fill = NA)+
           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
-                                                           "lat" = y_CCS_center)),
-                                       coords = c("lon", "lat"))), aes(),fill = NA)+
+                                                            "lat" = y_CCS_center)),
+                                        coords = c("lon", "lat"))), aes(),fill = NA)+
           geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
           geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
           geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
           ggtitle(my.plot.id, my.ccs.id)
-         )
-  }
-# bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
+  )
+}
+# bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into  RG dataset later      
 RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
 
 
@@ -291,7 +291,7 @@ RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
 
 # 2.2. plots with 2 edges: sorting sampling circles into stands ---------------------------------
 # subsetting data
-HBI_RG_two_edges <- HBI_RG_loc %>% 
+RG_two_edges <- RG_loc %>% 
   #filter for plots that we actually have coordiantes and areas for 
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
@@ -314,30 +314,30 @@ HBI_RG_two_edges <- HBI_RG_loc %>%
               distinct(), 
             by = "plot_ID")# %>% 
 ## remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+# semi_join(BZE3_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 
 # for each plot_id and regeneration circle at plots with one edge only 
-RG.CCS.two.edges.list <- vector("list", length = nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])))
-for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
+RG.CCS.two.edges.list <- vector("list", length = nrow(unique(RG_two_edges[c("plot_ID", "CCS_nr")])))
+for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # i = 34
-  # i = which(grepl(50132, unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  # i = which(grepl(50132, unique( RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # assign crs
   # my.utm.epsg <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs +type=crs"
   
   # regerneation sampling cirlce data
-  my.plot.id <- unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
-  my.ccs.id <- unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
+  my.plot.id <- unique( RG_two_edges[c("plot_ID", "CCS_nr")])[, "plot_ID"][i]  # plot id of respecctive regereation satelite
+  my.ccs.id <- unique( RG_two_edges[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
   
   # select edge ID 
-  my.e.id.1 <- HBI_RG_two_edges$e_ID[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id &  HBI_RG_two_edges$e_ID == 1] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
-  my.e.id.2 <- HBI_RG_two_edges$e_ID[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id &  HBI_RG_two_edges$e_ID == 2] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
+  my.e.id.1 <-  RG_two_edges$e_ID[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id &   RG_two_edges$e_ID == 1] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
+  my.e.id.2 <-  RG_two_edges$e_ID[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id &   RG_two_edges$e_ID == 2] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
   
   ## select georefference data
   ## select UTM coordiantes of BZE (NSI point)
-  # my.center.easting <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- HBI_loc[HBI_loc$plot_ID == my.plot.id, "HW_MED"]
+  # my.center.easting <- BZE3_loc[BZE3_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- BZE3_loc[BZE3_loc$plot_ID == my.plot.id, "HW_MED"]
   ## assign crs
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
@@ -349,12 +349,12 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
   # spatial data of RG sampling circle
   # select regeneration sampling circuit radius 
-  my.ccs.r <- (HBI_RG_two_edges$CCS_max_dist_cm[HBI_RG_two_edges$plot_ID == my.plot.id & 
-                                                  HBI_RG_two_edges$CCS_nr == my.ccs.id & 
-                                                  HBI_RG_two_edges$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
+  my.ccs.r <- ( RG_two_edges$CCS_max_dist_cm[ RG_two_edges$plot_ID == my.plot.id & 
+                                                   RG_two_edges$CCS_nr == my.ccs.id & 
+                                                   RG_two_edges$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
-  ccs.dist <-unique( HBI_RG_two_edges$CCS_dist[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id]/100)
-  ccs.azi <- unique(HBI_RG_two_edges$CCS_gon[HBI_RG_two_edges$plot_ID == my.plot.id & HBI_RG_two_edges$CCS_nr == my.ccs.id])
+  ccs.dist <-unique(  RG_two_edges$CCS_dist[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id]/100)
+  ccs.azi <- unique( RG_two_edges$CCS_gon[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id])
   x_CCS_center = ccs.dist*sin(ccs.azi* pi/200)  # + my.center.easting
   y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)  # + my.center.northing
   
@@ -384,9 +384,9 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
   # create polygone of edge 1 triangle
   edge.poly.1 <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id.1) 
-                                     , x = "X"
-                                     , y = "Y"
-                                     , keep = TRUE)
+                                       , x = "X"
+                                       , y = "Y"
+                                       , keep = TRUE)
   
   # create polygone of edge 2 triangle
   edge.poly.2 <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id.2) 
@@ -403,7 +403,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
       # else the remaining area/ polyon after the inersection is deducted is passed on as remaining circle
       rem.circle.17.1 <- sf::st_difference(circle.17, st_geometry(circle.edge.1.inter))
     }
-
+  
   ## create polygon of remaining circle after circle-edge.2 intersection
   circle.edge.2.inter <- sf::st_intersection(rem.circle.17.1, edge.poly.2)
   # if there is no intersection between the edge and the cirlce, 
@@ -471,7 +471,7 @@ for (i in 1:nrow(unique(HBI_RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   )
   
 }
-# bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into HBI_RG dataset later      
+# bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into BZE3_RG dataset later      
 RG_two_edges_stands_areas <- as.data.frame(rbindlist(RG.CCS.two.edges.list))
 
 
@@ -484,22 +484,22 @@ RG_two_edges_stands_areas <- as.data.frame(rbindlist(RG.CCS.two.edges.list))
 ## bind stand and area of plots with one ad two edges together 
 RG_all_edges_stands_areas <- rbind(RG_one_edge_stands_areas, RG_two_edges_stands_areas)
 
-## harmonizig strings with HBI_RG datasets 
+## harmonizig strings with BZE3_RG datasets 
 RG_all_edges_stands_areas[,c(1,2)] <- lapply(RG_all_edges_stands_areas[,c(1,2)], as.integer) 
 
 
 ## joining stand and area info into RG datasets
-  # join stand and area data into dataset with regeneration CCS locations and size 
-  # details (HBI_RG_loc) as well as into regeneration individual plant info dataset (HBI_RG)
-# HBI_RG_loc update
+# join stand and area data into dataset with regeneration CCS locations and size 
+# details (RG_loc) as well as into regeneration individual plant info dataset (BZE3_RG)
+# RG_loc update
 if(exists('RG_all_edges_stands_areas') && nrow(RG_all_edges_stands_areas) != 0){
-  HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
+  RG_loc_update_2 <- RG_loc %>% 
     left_join(.,RG_all_edges_stands_areas, by = c("plot_ID", "CCS_nr"), multiple = "all") %>% 
     # if there is not stand and area assigned because the plot doesn´t have an edge ... 
     mutate(stand = ifelse(is.na(stand) & is.na(area_m2), "A", stand),   # ... the stand is set to A
            area_m2 = ifelse(stand == "A" & is.na(area_m2), c_A(as.numeric(CCS_max_dist_cm)/100), area_m2)) # ... the area is calculated from CCS_max_dist_cm
-  }else{
-  HBI_RG_loc_update_2 <- HBI_RG_loc %>% 
+}else{
+  RG_loc_update_2 <- RG_loc %>% 
     # if there is not stand and area assigned because the plot doesn´t have an edge ... 
     mutate(stand =  "A",   # ... the stand is set to A
            area_m2 = c_A(as.numeric(CCS_max_dist_cm)/100)) # ... the area is calculated from CCS_max_dist_cm
@@ -508,24 +508,22 @@ if(exists('RG_all_edges_stands_areas') && nrow(RG_all_edges_stands_areas) != 0){
 
 
 ## join in stand and plot area data in RG_data set   
-HBI_RG_data_update_2 <- RG_data %>% 
-  left_join(.,HBI_RG_loc_update_2 %>% 
+RG_data_update_2 <- RG_data %>% 
+  left_join(.,RG_loc_update_2 %>% 
               select(plot_ID, CCS_nr, stand, area_m2),
             by = c("plot_ID", "CCS_nr"), 
             multiple = "all") %>% 
   arrange(plot_ID, CCS_nr, tree_ID)
- 
+
 
 
 # 3.2. export  ------------------------------------------------------------
-write.csv2(HBI_RG_loc_update_2, paste0(out.path.BZE3, paste(unique(HBI_RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
-write.csv2(HBI_RG_data_update_2, paste0(out.path.BZE3, paste(unique(HBI_RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
+write.csv2(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
+write.csv2(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
 
 
 
 
 # notes -------------------------------------------------------------------
-
-
 
 

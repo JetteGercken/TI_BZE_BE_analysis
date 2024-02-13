@@ -25,13 +25,14 @@
 #  install.packages("ggplot2")
 #  install.packages("reshape2") #for multiple y values
 #  install.packages("ggforce") #for zooming in parts of the plot
-# install.packages("ggforce")             # Install ggforce package
+#  install.packages("ggrepel")
 #  options(tz="CA")
 #  install.packages("reshape2")
-#  # analysis
+#  install.packages("gridExtra")
+## analysis
 #  install.packages("corrplot")
 #  install.packages("AICcmodavg")
-#  # forest related
+## forest related
 #   install.packages("forestmangr")
 #  install.packages("rBDAT")
 #  install.packages("TapeR")
@@ -73,6 +74,8 @@ require(ggthemes)
 require(ggplot2)
 require(reshape2) #for multiple y values
 require(ggforce) #for zooming in parts of the plot
+require(ggrepel)
+require(gridExtra)
 options(tz="CA")
 # analysis
 require(corrplot)
