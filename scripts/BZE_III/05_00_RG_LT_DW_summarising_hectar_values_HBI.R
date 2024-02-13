@@ -82,7 +82,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               BA_m2_ha = sum(BA_CCS_m2_ha), 
               n_ha = sum(n_trees_CCS_ha)) %>% 
     mutate(stand_component = "LT")}else{
-      LT_BCNBAn_ha_SP_ST_P <- trees_data %>% 
+      LT_BCNBAn_ha <- trees_data %>% 
         group_by(plot_ID, CCS_r_m, inv_year, compartiment) %>% 
         # convert Biomass into tons per hectar and sum it up per sampling circuit 
         reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -107,13 +107,14 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 # 1.4.2. plot, species, stand: stocks per ha, finest summary --------------
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
-  LT_BCNBAn_ha_SP_ST_P <- plyr::rbind.fill(trees_data  %>% 
+  LT_SP_ST_P_BCNBAn_ha <- plyr::rbind.fill(trees_data  %>% 
                                              group_by(plot_ID, plot_A_ha, CCS_r_m, inv_year, stand, SP_code, compartiment) %>% 
                                              # convert Biomass into tons per hectar and sum it up per sampling circuit 
                                              reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
                                                      C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                                      N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-                                                     BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha) %>% 
+                                                     BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
+                                                     n_trees_CCS_ha = n()/plot_A_ha) %>% 
                                              distinct(), 
                                            trees_stat_2) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
@@ -121,9 +122,10 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     summarise(B_t_ha = sum(B_CCS_t_ha), 
               C_t_ha = sum(C_CCS_t_ha), 
               N_t_ha = sum(N_CCS_t_ha), 
-              BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
+              BA_m2_ha = sum(BA_CCS_m2_ha), 
+              n_ha = sum(n_trees_CCS_ha)) %>% 
     mutate(stand_component = "LT")}else{
-      LT_BCNBAn_ha_SP_ST_P <- trees_data %>% 
+      LT_SP_ST_P_BCNBAn_ha <- trees_data %>% 
         group_by(plot_ID, CCS_r_m, inv_year, stand, SP_code, compartiment) %>% 
         # convert Biomass into tons per hectar and sum it up per sampling circuit 
         reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
@@ -140,9 +142,20 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
         mutate(stand_component = "LT")
     }
 
-# 1.4.3. Plot, species: stocks per hektar ------------------------------------------------------
-LT_BCNBAn_ha <- summarize_data(LT_BCNBAn_ha_SP_ST_P, c("plot_ID", "inv_year", "compartiment", "SP_code"), 
-               c("B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha"), operation = "sum_df") %>% 
+# 1.4.3. Plot, stand: stocks per hektar ------------------------------------------------------
+LT_ST_BCNBAn_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha, 
+               c("plot_ID", "inv_year", "compartiment", "stand"), 
+               c("B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "n_ha"), 
+               operation = "sum_df") %>% 
+  mutate(stand_component = "LT", 
+         SP_code = "all") 
+
+
+# 1.4.4. Plot, species: stocks per hektar ------------------------------------------------------
+LT_SP_BCNBA_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha, 
+                                 c("plot_ID", "inv_year", "compartiment", "SP_code"), 
+                                 c("B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha"), 
+                                 operation = "sum_df") %>% 
   mutate(stand_component = "LT", 
          stand = "all") %>% 
   #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
@@ -156,9 +169,8 @@ LT_BCNBAn_ha <- summarize_data(LT_BCNBAn_ha_SP_ST_P, c("plot_ID", "inv_year", "c
   
 
 
-
-
-# 1.4.3. plot: species composition ------------------------------------------------------
+# 1.5. plot: stand type ------------------------------------------------------
+# 1.5.1. calcualte species composition and assing stand type ------------------------------------------------------
 # requires the species plot wise summary
 besttype_list <- vector("list", length = length(unique(trees_data$plot_ID)))
 for (i in 1:length(unique(trees_data$plot_ID))) {
@@ -281,10 +293,28 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
 }
 LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list)) 
 
+# 1.5.2. summrizing LT data by stand type ---------------------------------
+LT_TY <- LT_P %>% 
+  group_by(stand_type, compartiment, stand_component, inv_year) %>% 
+  summarise(B_t_ha = mean(B_t_ha),
+            C_t_ha = mean(C_t_ha), 
+            N_t_ha = mean(N_t_ha)) %>% 
+  left_join(., 
+            LT_P %>% 
+              filter(compartiment == "ag") %>%
+              group_by(stand_type, compartiment, stand_component, inv_year) %>% 
+              summarise(BA_m2_ha = mean(BA_m2_ha), 
+                        n_ha = mean(n_ha), 
+                        n_SP = mean(n_SP)) %>% 
+              ungroup() %>% 
+              select(-c("compartiment")), 
+            by = c("stand_type", "stand_component", "inv_year")) %>% 
+  mutate(plot_ID = "all", 
+         dom_SP = "all", 
+         SP_code = "all")
 
-
-# 1.5 average values ----------------------------------------------------
-# 1.5.1. create "pseudo stands" -------------------------------------------
+# 1.6. average values ----------------------------------------------------
+# 1.6.1. create "pseudo stands" -------------------------------------------
 LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 for (i in 1:length(unique(trees_data$plot_ID))) {
@@ -313,7 +343,8 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
               
   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv_year, SP_code) %>% 
-    summarise(mean_DBH_cm = mean(DBH_cm), 
+    summarise(stand = "all", 
+              mean_DBH_cm = mean(DBH_cm), 
               sd_DBH_cm = sd(DBH_cm),
               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
               mean_BA_m2 = mean(BA_m2),
@@ -325,6 +356,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   LT_avg_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv_year) %>% 
     summarise(SP_code = "all",
+              stand = "all",
               mean_DBH_cm = mean(DBH_cm), 
               sd_DBH_cm = sd(DBH_cm),
               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
@@ -340,21 +372,29 @@ LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
 
 
-# 1.6. binding LT data together -------------------------------------------------------------------------------------------------------
-# 1.6.1. LT Species data -------------------------------------------------------------------------------------------------------------
+# 1.7. binding LT data together -------------------------------------------------------------------------------------------------------
+# 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
+LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>%  
+  select(-(n_ha))
+  
+
+# 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
 LT_SP_P <- LT_SP_BCNBA_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year', 'n_stands'), as.integer),
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_avg_SP_P, 
-            by = c("plot_ID", "inv_year", "stand_component", "SP_code")) %>% 
-   # reorder
-  select("stand_component" , "plot_ID", "inv_year", "dom_SP", "stand_type", "n_stands",   "SP_code", "compartiment",
-         "B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "BA_percent", "mean_DBH_cm", "sd_DBH_cm", "Dg_cm",
-         "mean_BA_m2", "mean_H_m", "sd_H_m", "Hg_m")
+            by = c("plot_ID", "inv_year", "stand_component", "SP_code")) 
 
 
-# 1.6.2. LT plot data ----------------------------------------------------------------------------------------------------------------
+# 1.7.2. LT stand data ----------------------------------------------------
+LT_ST_P <- LT_ST_BCNBAn_ha  %>%  
+  left_join(., LT_stand_TY_P %>% 
+              mutate_at(c('plot_ID', 'inv_year'), as.integer),
+            by = c("plot_ID", "inv_year", "stand_component"))
+
+
+# 1.7.3. LT plot data ----------------------------------------------------------------------------------------------------------------
 LT_P <- LT_BCNBAn_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year'), as.integer),
@@ -362,49 +402,26 @@ LT_P <- LT_BCNBAn_ha  %>%
   left_join(., LT_avg_P, 
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_n_SP_plot, 
-            by = c("plot_ID", "inv_year", "stand_component")) %>% 
-  select("stand_component" , "plot_ID", "inv_year", "dom_SP", "stand_type", "n_stands",   "SP_code", "compartiment",
-         "B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "n_ha" , "mean_DBH_cm", "sd_DBH_cm", "Dg_cm",
-         "mean_BA_m2", "mean_H_m", "sd_H_m", "Hg_m" , "n_SP" )
-
-
-
-
-# 1.6.3. summrizing LT data by stock type ---------------------------------
-
-LT_TY <- LT_P %>% 
-  group_by(stand_type, compartiment, stand_component, inv_year) %>% 
-  summarise(B_t_ha = mean(B_t_ha),
-          C_t_ha = mean(C_t_ha), 
-          N_t_ha = mean(N_t_ha)) %>% 
-     left_join(., 
-               LT_P %>% 
-                 filter(compartiment == "ag") %>%
-                 group_by(stand_type, compartiment, stand_component, inv_year) %>% 
-                 summarise(BA_m2_ha = mean(BA_m2_ha), 
-                           n_ha = mean(n_ha), 
-                           n_SP = mean(n_SP)) %>% 
-                 ungroup() %>% 
-                 select(-c("compartiment")), 
-               by = c("stand_type", "stand_component", "inv_year")) %>% 
-  mutate(plot_ID = "all", 
-         dom_SP = "all", 
-         SP_code = "all")
-    
-           
+            by = c("plot_ID", "inv_year", "stand_component"))
   
-
-# 1.6.4. rbinding LT data together ----------------------------------------
-LT_summary <- plyr::rbind.fill(LT_SP_P, LT_P, LT_TY) %>% 
+  
+# 1.7.4. rbinding LT data together ----------------------------------------
+LT_summary <- plyr::rbind.fill(LT_SP_P,
+                               LT_ST_P,
+                               LT_P, 
+                               LT_TY) %>% 
   arrange(plot_ID)
 
 # to get only stand type summarised data one had to filter for: 
-   # plot_ID == "all" & SP_code == "all"
+   # plot_ID == "all" & SP_code == "all" & stand  == "all"
 # to get the plotwise summarised data one has to filter for: 
-   # plot_ID != "all" & SP_code == "all"
-# to get the species wise summarised data one has to filter for: 
-   # plot_ID != "all" & SP_code != "all"
-
+   # plot_ID != "all" & SP_code == "all" & stand  == "all"
+# to get the species & plotwise wise summarised data one has to filter for: 
+   # plot_ID != "all" & SP_code != "all" & stand == "all"
+# to get the stand & plotwise  wise summarised data one has to filter for: 
+# plot_ID != "all" & SP_code == "all" & stand != "all"
+# to get the stand , species & plotwise  wise summarised data one has to filter for: 
+# plot_ID != "all" & SP_code != "all" & stand != "all"
 
 
 # 2. REGENERATION ---------------------------------------------------------
