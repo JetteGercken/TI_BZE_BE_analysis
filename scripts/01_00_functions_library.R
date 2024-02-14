@@ -1204,7 +1204,7 @@ GHGI_bB <- function(spec, d){
   b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw = 2.529000); #shwr =2.529000, shwrs = 2.290300);
   # this would return the root + stump biomas for soft hardwoods but only the root biomass for all other species groups
   # ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))
-  return(b0[spec]*d^b1[spec]) 
+  return(b0[spec]*dbh^b1[spec]) 
 }
 
 # 1.11.3. regeneration ---------------------------------------------------------------

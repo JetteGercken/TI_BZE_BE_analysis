@@ -248,34 +248,55 @@ LT_comparisson_BZE_BWI_SP <- LT_comparisson_BZE_BWI_SP %>%
 
 # 1.3.7. visualizing SD differences  --------------------------------------
 for (i in 1:length(unique(LT_comparisson_BZE_BWI_SP$BWI_comparisson_group))) {
-   #i = 8
+   i = 1
   my.bwi.sp.group <- unique(LT_comparisson_BZE_BWI_SP$BWI_comparisson_group)[i]
   
+ print(
+   LT_comparisson_BZE_BWI_SP %>% 
+     filter(BWI_comparisson_group == my.bwi.sp.group & compartiment == "bg") %>% 
+     # ggplot(., aes(x = n_ha_diff))+
+     ggplot(., aes(x = BA_m2_ha_diff))+
+     geom_point(aes(y = B_t_ha_diff))+
+     # https://stackoverflow.com/questions/15624656/label-points-in-geom-point
+     geom_text(aes(y = B_t_ha_diff, label=ifelse(SD_class %in% c(3, 4, 5),as.character(plot_ID),'')),hjust=0,vjust=0)+
+     geom_smooth(aes(y = B_diff_pred, color = "B_diff_pred"), se = FALSE)+
+     geom_smooth(aes(y = (B_diff_pred+SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+     geom_smooth(aes(y = (B_diff_pred-SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
+     geom_smooth(aes(y = (B_diff_pred+2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
+     geom_smooth(aes(y = (B_diff_pred-2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
+     #geom_vline(xintercept = 0)+
+     geom_hline(yintercept=0)+
+     #xlim(max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff))+
+     #ylim(max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff))+
+     # geom_line()+
+     # facet_wrap(~BWI_comparisson_group)+
+     xlab("difference BA m2 per hectar (BZE-BWI)") +
+     ylab("difference biomass t per hectar (BZE-BWI)")+
+     ggtitle(paste("comparisson stands: B diff vs. BA diff by BWI species:", my.bwi.sp.group))+
+     theme_light()+
+     theme(legend.position = "right")
+   )
+
+
+
 print(
   LT_comparisson_BZE_BWI_SP %>% 
-    filter(BWI_comparisson_group == my.bwi.sp.group & compartiment == "ag") %>% 
+    filter(BWI_comparisson_group == my.bwi.sp.group & compartiment == "bg") %>% 
     # ggplot(., aes(x = n_ha_diff))+
-    ggplot(., aes(x = BA_m2_ha_diff))+
-    geom_point(aes(y = B_t_ha_diff))+
-    # https://stackoverflow.com/questions/15624656/label-points-in-geom-point
-    geom_text(aes(y = B_t_ha_diff, label=ifelse(SD_class %in% c(3, 4, 5),as.character(plot_ID),'')),hjust=0,vjust=0)+
-    geom_smooth(aes(y = B_diff_pred, color = "B_diff_pred"), se = FALSE)+
-    geom_smooth(aes(y = (B_diff_pred+SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
-    geom_smooth(aes(y = (B_diff_pred-SD_SP_B_diff), color = "SD_class 1"), se = FALSE)+
-    geom_smooth(aes(y = (B_diff_pred+2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
-    geom_smooth(aes(y = (B_diff_pred-2*SD_SP_B_diff), color = "SD_class 2"), se = FALSE)+
-    #geom_vline(xintercept = 0)+
+    ggplot()+
+    geom_point(aes(x = B_t_ha_BZE, y = B_t_ha_BWI))+
     geom_hline(yintercept=0)+
     #xlim(max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$BA_m2_ha_diff))+
     #ylim(max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff)*(-1), max(LT_comparisson_BZE_BWI_SP$B_t_ha_diff))+
     # geom_line()+
     # facet_wrap(~BWI_comparisson_group)+
-    xlab("difference BA m2 per hectar (BZE-BWI)") +
-    ylab("difference biomass t per hectar (BZE-BWI)")+
-    ggtitle(paste("comparisson stands: B diff vs. BA diff by BWI species:", my.bwi.sp.group))+
+    xlab("biomass t per hectar (BZE)") +
+    ylab("biomass t per hectar (BWI)")+
+    ggtitle(paste("BZE vs. BWI beloground biomass per pseudo mono stand t/ha", my.bwi.sp.group))+
     theme_light()+
     theme(legend.position = "right")
-  )
+)
+
   
   
 }

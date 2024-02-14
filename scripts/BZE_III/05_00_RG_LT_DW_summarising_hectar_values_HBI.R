@@ -574,10 +574,10 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
  
 
 
-# 3.4. DW summary by plot ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-DW_P <- DW_BCN_ha %>% 
-  left_join(., n_ha_DW, 
-            by = c("plot_ID", "inv_year", "stand_component"))
+# # 3.4. DW summary by plot ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# DW_P <- DW_BCN_ha %>% 
+#   left_join(., n_ha_DW, 
+#             by = c("plot_ID", "inv_year", "stand_component"))
 
 
 
@@ -645,15 +645,19 @@ DW_summary <-
 
 # 4. creating dataset with all stand components ---------------------------
 LT_RG_DW_P <- rbind(
-  rbind(LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-        RG_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-        DW_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-        DW_P %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")),
+  # plotwise summar yof tree dataset
+  LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+        RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+        DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% 
+  # as there is no bg and total compartiment, this filter will only select ag compartiments
+          filter(compartiment %in% c("ag", "bg", "total")),
+        # take all "ag" compartiments of DW and assign them to the compartiment "total" as well, so we can create a row of total stocks for all stand components
+        DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total"),
       # total plot data over all stand components
       rbind(LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-            RG_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-            DW_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
-            DW_P %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")
+            RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+            DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
+            DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")
             ) %>% 
     arrange(plot_ID)%>% 
     group_by(plot_ID, inv_year, compartiment) %>% 
@@ -661,8 +665,7 @@ LT_RG_DW_P <- rbind(
               C_t_ha = sum(C_t_ha),
               N_t_ha = sum(N_t_ha)) %>% 
     mutate(stand_component = "all")) %>% 
-  arrange(plot_ID) %>% 
-  select(-plot_A_ha)
+  arrange(plot_ID) 
 
 
 
@@ -677,13 +680,57 @@ write.csv2(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks
 
 # 5. visuals --------------------------------------------------------------
 
-
 # 5.1. biomass compartiments ----------------------------------------------
 # pie chart of the percentage of biomass a compartiment averagely accumulates 
 # per single tree 
 # per plot 
 
 # 5.1.1. average hectar Biomass per compartiment by species  ------------------------
+avg_B_t_ha_biospgroups <- trees_data  %>% 
+  group_by(plot_ID, plot_A_ha, CCS_r_m, inv_year, Bio_SP_group, compartiment) %>% 
+  # convert Biomass into tons per hectar and sum it up per sampling circuit 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+          C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
+          BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha) %>%
+  distinct() %>% 
+  # now we summarise all the t/ha values of the cirlces per plot
+  group_by(plot_ID, inv_year, Bio_SP_group, compartiment) %>% 
+  summarise(B_t_ha = sum(B_CCS_t_ha), 
+            C_t_ha = sum(C_CCS_t_ha), 
+            N_t_ha = sum(N_CCS_t_ha), 
+            BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
+  group_by(inv_year, Bio_SP_group, compartiment) %>% 
+  summarise(B_t_ha = mean(B_t_ha)) %>% 
+  pivot_wider(names_from = compartiment, values_from = B_t_ha) %>% 
+  # calcualte the percentage each compartiment contributes to the total bioass of a tree of 
+  # the respective species at the respective plot
+  # https://stackoverflow.com/questions/47821241/how-to-divide-a-number-of-columns-by-one-column
+  mutate(across(c(ag:total),.fns = ~./total*100)) %>% 
+  pivot_longer(., ag:total, 
+               names_to = "compartiment", 
+               values_to = "B_t_ha_percent")
+
+avg_B_tree_biospgroups <- trees_data  %>% 
+  #mutate(B_t_tree = ton(B_kg_tree)) %>% 
+  group_by(inv_year, Bio_SP_group, compartiment) %>% 
+  summarise(B_kg_tree = mean(B_kg_tree)) %>% 
+  filter(compartiment %in% c("ag", "bg")) %>% 
+  pivot_wider(names_from = compartiment, values_from = B_kg_tree) %>%
+  arrange(Bio_SP_group) %>%
+  # calcualte the percentage each compartiment contributes to the total bioass of a tree of 
+  # the respective species at the respective plot
+  # https://stackoverflow.com/questions/47821241/how-to-divide-a-number-of-columns-by-one-column
+  mutate(across(c(ag:bg),.fns = ~./ag*100)) %>% 
+  pivot_longer(., ag:bg, 
+               names_to = "compartiment", 
+               values_to = "B_t_ha_percent")
+  
+  
+  
+
+
+
 LT_B_percent_SP <- LT_summary %>% 
   filter(SP_code != "all" & 
            plot_ID != "all") %>% 
@@ -699,84 +746,27 @@ LT_B_percent_SP <- LT_summary %>%
                names_to = "compartiment", 
                values_to = "B_t_ha_percent")
 
+# prepare list for ag compartiment plots to arrage them in grid
+p_ag_comp <- list()
+# prepare list for ag compartiment plots to arrage them in grid
+p_total <- list()
 for (i in 1:length(unique(LT_B_percent_SP$SP_code))) {
   # i = 1
   my.sp <- unique(LT_B_percent_SP$SP_code)[i]
   
   # plot all aboveground compartiments in relation to the total biomass
-  print(LT_B_percent_SP %>% 
-          filter(!(compartiment %in% c("total", "ag", "bg")) & SP_code == my.sp) %>% 
+  p.ag.comp <- LT_B_percent_SP %>% 
+          filter(!(compartiment %in% c("total", "ag")) & SP_code == my.sp) %>% 
           mutate(csum = rev(cumsum(rev(B_t_ha_percent))), 
                  pos = B_t_ha_percent/2 + lead(csum, 1),
                  pos = if_else(is.na(pos), B_t_ha_percent/2, pos)) %>% 
           ggplot(., aes(x="", y=B_t_ha_percent, fill = compartiment)) +
-          geom_col(width = 1, color = 1) +
-          ggtitle(paste("average Biomass in t/ ha per compartiment of species", my.sp," across all plots"))+
-          coord_polar("y", start=0)+
-          geom_label_repel(aes(y = pos, 
-                                  label = paste0(compartiment,": ", 
-                                                 as.integer(B_t_ha_percent), "%")),
-                           size = 4.5, nudge_x = 1, show.legend = F) +
-          guides(fill = guide_legend(title = "compartiment")) +
-          theme_void()
-    )
-  
-  # print ag and bg compartiment in relation to 
-  print(LT_B_percent_SP %>% 
-          filter(compartiment %in% c("ag", "bg") & SP_code == my.sp) %>% 
-          mutate(csum = rev(cumsum(rev(B_t_ha_percent))), 
-                 pos = B_t_ha_percent/2 + lead(csum, 1),
-                 pos = if_else(is.na(pos), B_t_ha_percent/2, pos)) %>% 
-          ggplot(., aes(x="", y=B_t_ha_percent, fill = compartiment)) +
-          geom_col(width = 1, color = 1) +
-          ggtitle(paste("average Biomass in t/ ha per compartiment of species", my.sp," across all plots"))+
-          coord_polar("y", start=0)+
-          geom_label_repel(aes(y = pos, 
-                               label = paste0(compartiment,": ", 
-                                              as.integer(B_t_ha_percent), "%")),
-                           size = 4.5, nudge_x = 1, show.legend = F) +
-          guides(fill = guide_legend(title = "compartiment")) +
-          theme_void() )
-  
-}
-
-
-
-# 5.1.2. plotwise / ha values biomass compartiments -----------------------
-LT_B_percent_tree_SP <-  trees_data %>% 
-  select(plot_ID, inv_year, SP_code, compartiment, B_kg_tree) %>% 
-  group_by(inv_year, SP_code, compartiment) %>% 
-  summarise(B_kg_tree = mean(B_kg_tree)) %>% 
-  pivot_wider(names_from = compartiment, values_from = B_kg_tree) %>% 
-  # calcualte the percentage each compartiment contributes to the total bioass of a tree of 
-  # the respective species at the respective plot
-  # https://stackoverflow.com/questions/47821241/how-to-divide-a-number-of-columns-by-one-column
-  mutate(across(c(ag:total),.fns = ~./total*100)) %>% 
-  pivot_longer(., ag:total, 
-               names_to = "compartiment", 
-               values_to = "B_kg_tree_percent")
-
-# prepare list for ag compartiment plots to arrage them in grid
-p_ag_comp <- list()
-# prepare list for ag compartiment plots to arrage them in grid
-p_total <- list()
-for (i in 1:length(unique(LT_B_percent_tree_SP$SP_code))) {
-  # i = 1
-  my.sp <- unique(LT_B_percent_tree_SP$SP_code)[i]
-  
-  # plot all aboveground compartiments in relation to the total biomass
-  p.ag.comp <- LT_B_percent_tree_SP %>% 
-          filter(!(compartiment %in% c("total", "ag", "bg")) & SP_code == my.sp) %>% 
-          mutate(csum = rev(cumsum(rev(B_kg_tree_percent))), 
-                 pos = B_kg_tree_percent/2 + lead(csum, 1),
-                 pos = if_else(is.na(pos), B_kg_tree_percent/2, pos)) %>% 
-          ggplot(., aes(x="", y=B_kg_tree_percent, fill = compartiment)) +
           geom_col(width = 1, color = 1) +
           # ggtitle(paste("average Biomass in kg per singe tree per compartiment of species", my.sp," across all plots"))+
     ggtitle(paste(my.sp))+
     coord_polar("y", start=0)+
           geom_label_repel(aes(y = pos, 
-                               label = paste0(compartiment,": ", as.integer(B_kg_tree_percent), "%")),
+                               label = paste0(compartiment,": ", as.integer(B_t_ha_percent), "%")),
                            size = 4.5, nudge_x = 1, show.legend = F) +
     guides(fill = "none")+ 
     # guides(fill = guide_legend(title = "compartiment")) +
@@ -784,19 +774,19 @@ for (i in 1:length(unique(LT_B_percent_tree_SP$SP_code))) {
   print(p.ag.comp)
   
   # print ag and bg compartiment in relation to 
-  p.total.comp <- LT_B_percent_tree_SP %>% 
+  p.total.comp <- LT_B_percent_SP %>% 
           filter(compartiment %in% c("ag", "bg") & SP_code == my.sp) %>% 
-          mutate(csum = rev(cumsum(rev(B_kg_tree_percent))), 
-                 pos = B_kg_tree_percent/2 + lead(csum, 1),
-                 pos = if_else(is.na(pos), B_kg_tree_percent/2, pos)) %>% 
-          ggplot(., aes(x="", y=B_kg_tree_percent, fill = compartiment)) +
+          mutate(csum = rev(cumsum(rev(B_t_ha_percent))), 
+                 pos = B_t_ha_percent/2 + lead(csum, 1),
+                 pos = if_else(is.na(pos), B_t_ha_percent/2, pos)) %>% 
+          ggplot(., aes(x="", y=B_t_ha_percent, fill = compartiment)) +
           geom_col(width = 1, color = 1) +
           # ggtitle(paste("average Biomass in kg per singe tree per compartiment of species", my.sp," across all plots"))+
     ggtitle(paste(my.sp))+
     coord_polar("y", start=0)+
           geom_label_repel(aes(y = pos, 
                                label = paste0(compartiment,": ", 
-                                              as.integer(B_kg_tree_percent), "%")),
+                                              as.integer(B_t_ha_percent), "%")),
                            size = 4.5, nudge_x = 1, show.legend = F) +
     # remove legend for  https://statisticsglobe.com/remove-legend-ggplot2-r
     guides(fill = "none")+ 
@@ -818,6 +808,88 @@ do.call(grid.arrange, p_total)
 
 
 
+
+
+# 5.1. biomass compartiments ----------------------------------------------
+# pie chart of the percentage of biomass a compartiment averagely accumulates 
+# per single tree 
+# per plot 
+
+# 5.1.1. average hectar Biomass per compartiment by species  ------------------------
+LT_N_percent_SP <- LT_summary %>% 
+  filter(SP_code != "all" & 
+           plot_ID != "all") %>% 
+  select(stand_component, plot_ID, inv_year, SP_code, compartiment, N_t_ha) %>% 
+  group_by(stand_component, inv_year, SP_code, compartiment) %>% 
+  summarise(N_t_ha = mean(N_t_ha)) %>% 
+  pivot_wider(names_from = compartiment, values_from = N_t_ha) %>% 
+  # calcualte the percentage each compartiment contributes to the total bioass of a tree of 
+  # the respective species at the respective plot
+  # https://stackoverflow.com/questions/47821241/how-to-divide-a-number-of-columns-by-one-column
+  mutate(across(c(ag:total),.fns = ~./total*100)) %>% 
+  pivot_longer(., ag:total, 
+               names_to = "compartiment", 
+               values_to = "N_t_ha_percent")
+
+# prepare list for ag compartiment plots to arrage them in grid
+p_ag_comp <- list()
+# prepare list for ag compartiment plots to arrage them in grid
+p_total <- list()
+for (i in 1:length(unique(LT_B_percent_SP$SP_code))) {
+  # i = 1
+  my.sp <- unique(LT_B_percent_SP$SP_code)[i]
+  
+  # plot all aboveground compartiments in relation to the total biomass
+  p.ag.comp <- LT_B_percent_SP %>% 
+    filter(!(compartiment %in% c("total", "ag", "bg")) & SP_code == my.sp) %>% 
+    mutate(csum = rev(cumsum(rev(B_kg_tree_percent))), 
+           pos = B_kg_tree_percent/2 + lead(csum, 1),
+           pos = if_else(is.na(pos), B_kg_tree_percent/2, pos)) %>% 
+    ggplot(., aes(x="", y=B_kg_tree_percent, fill = compartiment)) +
+    geom_col(width = 1, color = 1) +
+    # ggtitle(paste("average Biomass in kg per singe tree per compartiment of species", my.sp," across all plots"))+
+    ggtitle(paste(my.sp))+
+    coord_polar("y", start=0)+
+    geom_label_repel(aes(y = pos, 
+                         label = paste0(compartiment,": ", as.integer(B_kg_tree_percent), "%")),
+                     size = 4.5, nudge_x = 1, show.legend = F) +
+    guides(fill = "none")+ 
+    # guides(fill = guide_legend(title = "compartiment")) +
+    theme_void()
+  print(p.ag.comp)
+  
+  # print ag and bg compartiment in relation to 
+  p.total.comp <- LT_B_percent_tree_SP %>% 
+    filter(compartiment %in% c("ag", "bg") & SP_code == my.sp) %>% 
+    mutate(csum = rev(cumsum(rev(B_kg_tree_percent))), 
+           pos = B_kg_tree_percent/2 + lead(csum, 1),
+           pos = if_else(is.na(pos), B_kg_tree_percent/2, pos)) %>% 
+    ggplot(., aes(x="", y=B_kg_tree_percent, fill = compartiment)) +
+    geom_col(width = 1, color = 1) +
+    # ggtitle(paste("average Biomass in kg per singe tree per compartiment of species", my.sp," across all plots"))+
+    ggtitle(paste(my.sp))+
+    coord_polar("y", start=0)+
+    geom_label_repel(aes(y = pos, 
+                         label = paste0(compartiment,": ", 
+                                        as.integer(B_kg_tree_percent), "%")),
+                     size = 4.5, nudge_x = 1, show.legend = F) +
+    # remove legend for  https://statisticsglobe.com/remove-legend-ggplot2-r
+    guides(fill = "none")+ 
+    # guides(fill = guide_legend(title = "compartiment")) +
+    theme_void() 
+  print(p.total.comp)
+  
+  # save the ag compartiment plots in list
+  p_ag_comp[[i]] <- p.ag.comp
+  
+  # save the total compartiment plots in list
+  p_total[[i]] <- p.total.comp
+  
+  
+}
+# https://stackoverflow.com/questions/9315611/grid-of-multiple-ggplot2-plots-which-have-been-made-in-a-for-loop
+do.call(grid.arrange, p_ag_comp)
+do.call(grid.arrange, p_total)
 
 
 
