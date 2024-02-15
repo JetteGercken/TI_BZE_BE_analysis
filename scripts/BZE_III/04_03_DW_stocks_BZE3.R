@@ -51,7 +51,8 @@ DW_data <- DW_data %>%
   mutate(dec_type_BWI = case_when(decay == 1 | decay == 2 ~ 1, 
                                   decay == 3 ~ 2, 
                                   decay == 4 ~ 3, 
-                                  TRUE ~ 4))
+                                  TRUE ~ 4), 
+         ST_LY_type = case_when(decay %in% c()))
 
 # 1. calculations ---------------------------------------------------------------
 # 1 liegend; starkes Totholz; umfasst Stamm, Äste, Zweige,  abgebrochene Kronen, D ≥ 10 cm am dickeren Ende
