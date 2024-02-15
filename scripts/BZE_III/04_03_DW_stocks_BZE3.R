@@ -52,7 +52,9 @@ DW_data <- DW_data %>%
                                   decay == 3 ~ 2, 
                                   decay == 4 ~ 3, 
                                   TRUE ~ 4), 
-         ST_LY_type = case_when(decay %in% c()))
+         # assigning deadwood types into groups of standing / lying deadwood (S/L)
+         ST_LY_type = case_when(decay %in% c(2, 3, 4) ~ "S", 
+                                "L"))
 
 # 1. calculations ---------------------------------------------------------------
 # 1 liegend; starkes Totholz; umfasst Stamm, Äste, Zweige,  abgebrochene Kronen, D ≥ 10 cm am dickeren Ende

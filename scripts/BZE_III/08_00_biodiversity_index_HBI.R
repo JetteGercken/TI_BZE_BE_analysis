@@ -14,6 +14,7 @@
 # 9) mean DBH of standing deadwood
 # 10) treespecies richness and 
 # 11) tree species richness in the regeneration layer
+
 # ----- 0. SETUP --------------------------------------------------------------------------------------------------------------------
 
 # ----- 0.1. packages and functions -------------------------------------------------------------------------------------------------

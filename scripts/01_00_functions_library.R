@@ -1593,6 +1593,9 @@ SD_class <- function(sd_pred_diff, diff_b){
 
 #1.17.  summarize data with varying grouing variables ---------------------------
 summarize_data <- function(data, group_vars, columns, operation) {
+  sd_df <- data %>%
+    group_by(across(all_of(group_vars), .names = "{.col}")) %>%
+    summarise(across(all_of(columns), sd, na.rm = TRUE))
   mean_df <- data %>%
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
     summarise(across(all_of(columns), mean, na.rm = TRUE))
@@ -1600,6 +1603,7 @@ summarize_data <- function(data, group_vars, columns, operation) {
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
     summarise(across(all_of(columns), sum, na.rm = TRUE))
   switch(operation, 
+         sd_df = sd_df,
          mean_df = mean_df, 
          sum_df = sum_df)
 }

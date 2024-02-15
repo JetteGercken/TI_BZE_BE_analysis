@@ -51,7 +51,10 @@ DW_data <- DW_data %>%
   mutate(dec_type_BWI = case_when(decay == 1 | decay == 2 ~ 1, 
                                   decay == 3 ~ 2, 
                                   decay == 4 ~ 3, 
-                                  TRUE ~ 4))
+                                  TRUE ~ 4),
+         # assigning deadwood types into groups of standing / lying deadwood (S/L)
+         ST_LY_type = case_when(decay %in% c(2, 3, 4) ~ "S", 
+                                TRUE ~ "L"))
 
 # 1. calculations ---------------------------------------------------------------
 # 1 liegend; starkes Totholz; umfasst Stamm, Äste, Zweige,  abgebrochene Kronen, D ≥ 10 cm am dickeren Ende
@@ -66,7 +69,7 @@ DW_data <- DW_data %>%
 
 # 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
 # for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
- DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2), ]
+DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2), ]
 # export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
@@ -352,7 +355,7 @@ DW_data_update_4 <- DW_data
 write.csv2(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"))
 
 
-#DW_data %>% filter(is.na(B_kg_tree))
+DW_data_update_4 %>% filter(is.na(B_kg_tree))
 
 
 
