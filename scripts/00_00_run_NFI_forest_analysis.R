@@ -25,7 +25,9 @@
   # 04_xx --> stocks
   # 05_xx --> summarising hectar values
   # 06_xx --> growth
-  # 07_xx --> plausibility tests
+  # 07_xx --> extracted wood biomass
+  # 08_xx --> biodiversity index
+  # 09_xx --> plausibility tests
 
 # the inventory in concern is indicated by the end of the scripts name 
   # _HBI --> Harmonisierende Bestandesinventur
@@ -33,12 +35,13 @@
 
 
 #### common/ general operations -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # functions & packages
 source(paste0(here(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
-
+source(paste0(here(), "/scripts/02_00_connect_R_PostgrSQL.R"))
 # sort species into species groups required for data sorting & analysis
-source(paste0(here(), "/scripts/02_00_species_groups.R"))
+source(paste0(here(), "/scripts/03_00_species_groups.R"))
 
 
 

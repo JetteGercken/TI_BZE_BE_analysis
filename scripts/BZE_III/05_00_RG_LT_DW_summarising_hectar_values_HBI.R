@@ -297,25 +297,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
 }
 LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list)) 
 
-# 1.5.2. summrizing LT data by stand type ---------------------------------
-LT_TY <- LT_P %>% 
-  group_by(stand_type, compartiment, stand_component, inv_year) %>% 
-  summarise(B_t_ha = mean(B_t_ha),
-            C_t_ha = mean(C_t_ha), 
-            N_t_ha = mean(N_t_ha)) %>% 
-  left_join(., 
-            LT_P %>% 
-              filter(compartiment == "ag") %>%
-              group_by(stand_type, compartiment, stand_component, inv_year) %>% 
-              summarise(BA_m2_ha = mean(BA_m2_ha), 
-                        n_ha = mean(n_ha), 
-                        n_SP = mean(n_SP)) %>% 
-              ungroup() %>% 
-              select(-c("compartiment")), 
-            by = c("stand_type", "stand_component", "inv_year")) %>% 
-  mutate(plot_ID = "all", 
-         dom_SP = "all", 
-         SP_code = "all")
+
 
 # 1.6. average values ----------------------------------------------------
 # 1.6.1. create "pseudo stands" -------------------------------------------
@@ -407,9 +389,30 @@ LT_P <- LT_BCNBAn_ha  %>%
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_n_SP_plot, 
             by = c("plot_ID", "inv_year", "stand_component"))
+
+
+
+# 1.7.4. summrizing LT data by stand type ---------------------------------
+LT_TY <- LT_P %>% 
+  group_by(stand_type, compartiment, stand_component, inv_year) %>% 
+  summarise(B_t_ha = mean(B_t_ha),
+            C_t_ha = mean(C_t_ha), 
+            N_t_ha = mean(N_t_ha)) %>% 
+  left_join(., 
+            LT_P %>% 
+              filter(compartiment == "ag") %>%
+              group_by(stand_type, compartiment, stand_component, inv_year) %>% 
+              summarise(BA_m2_ha = mean(BA_m2_ha), 
+                        n_ha = mean(n_ha), 
+                        n_SP = mean(n_SP)) %>% 
+              ungroup() %>% 
+              select(-c("compartiment")), 
+            by = c("stand_type", "stand_component", "inv_year")) %>% 
+  mutate(plot_ID = "all", 
+         dom_SP = "all", 
+         SP_code = "all")  
   
-  
-# 1.7.4. rbinding LT data together ----------------------------------------
+# 1.7.5. rbinding LT data together ----------------------------------------
 LT_summary <- plyr::rbind.fill(LT_SP_P,
                                LT_ST_P,
                                LT_P, 
@@ -724,9 +727,9 @@ LT_RG_DW_P <- rbind(
 
 
 # 4. data export ----------------------------------------------------------
-write.csv2(LT_summary, paste0(out.path.BZE3, paste(LT_summary$inv[1], "LT_stocks_ha_all_groups", sep = "_"), ".csv"))
-write.csv2(RG_summary, paste0(out.path.BZE3, paste(RG_summary$inv[1], "RG_stocks_ha_all_groups", sep = "_"), ".csv"))
-write.csv2(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(LT_summary, paste0(out.path.BZE3, paste(inv_name(LT_summary$inv_year[1]), "LT_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(RG_summary, paste0(out.path.BZE3, paste(inv_name(RG_summary$inv_year[1]), "RG_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(DW_summary, paste0(out.path.BZE3, paste(inv_name(DW_summary$inv_year[1]), "DW_stocks_ha_all_groups", sep = "_"), ".csv"))
 
 
 

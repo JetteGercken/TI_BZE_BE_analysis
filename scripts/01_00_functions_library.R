@@ -7,6 +7,9 @@
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
 # install.packages("usethis")
+ # install.packages('RPostgreSQL')
+ # install.packages("RPostgres")
+ # install.packages("DBI")
 #  install.packages("here")
 #  install.packages("readr")
 #  install.packages("tidyverse")
@@ -55,6 +58,9 @@
 # ----- 0.2. require   ---------------------------------------------------------
 # datamanagement
 require(usethis)
+library(RPostgreSQL)
+library(RPostgres)
+library(DBI)
 require(here)
 require(readr)
 require(tidyverse)
