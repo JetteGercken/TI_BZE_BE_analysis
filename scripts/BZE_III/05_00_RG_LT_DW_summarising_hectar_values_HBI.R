@@ -80,7 +80,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               N_t_ha = sum(N_CCS_t_ha), 
               BA_m2_ha = sum(BA_CCS_m2_ha), 
               n_ha = sum(n_trees_CCS_ha)) %>% 
-    mutate(stand_component = "LT")}else{
+    mutate(stand_component = "LT",
+           stand = "all", 
+           SP_code = "all")}else{
       LT_BCNBAn_ha <- trees_data %>% 
         group_by(plot_ID, CCS_r_m, inv_year, compartiment) %>% 
         # convert Biomass into tons per hectar and sum it up per sampling circuit 
@@ -687,7 +689,7 @@ DW_summary <-
             by = c("plot_ID", "inv_year")) %>% 
   mutate(decay = "all", 
          dw_type = "all", 
-         dw_sp = "all")%>% filter(is.na(B_t_ha))  
+         dw_sp = "all") 
 ) %>%  # close rbind
   # add stand component for those datasets where it´s not included yet
   mutate(stand_component = "DW") %>% 

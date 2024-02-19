@@ -1598,6 +1598,7 @@ SD_class <- function(sd_pred_diff, diff_b){
 
 
 #1.17.  summarize data with varying grouing variables ---------------------------
+# chatGBT helped me here 
 summarize_data <- function(data, group_vars, columns, operation) {
   sd_df <- data %>%
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
@@ -1614,6 +1615,32 @@ summarize_data <- function(data, group_vars, columns, operation) {
          sum_df = sum_df)
 }
 
+
+
+
+# 1.18. biodiversity index variabels --------------------------------------
+
+
+# 1.18.1. RMS root mean square ----------------------------------------------
+# https://www.statisticshowto.com/quadratic-mean/
+RMS <- function(x){
+  rms = sqrt(sum(x^2)/length(x));
+  return(rms)
+} 
+
+
+
+# 1.18.2. biodiv index variable score -------------------------------------------------
+# Reference: 
+# Storch, F., Dormann, C.F. & Bauhus, 
+# J. Quantifying forest structural diversity based on large-scale inventory data: 
+# a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
+# https://doi.org/10.1186/s40663-018-0151-1
+
+FSI <- function(x, x.min, x.max){
+  variable.score = (x - x.min)/(x.max - x.min);
+  return(variable.score)
+}
 
 
 

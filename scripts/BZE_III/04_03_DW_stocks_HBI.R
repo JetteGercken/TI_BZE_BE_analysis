@@ -53,7 +53,7 @@ DW_data <- DW_data %>%
                                   decay == 4 ~ 3, 
                                   TRUE ~ 4),
          # assigning deadwood types into groups of standing / lying deadwood (S/L)
-         ST_LY_type = case_when(decay %in% c(2, 3, 4) ~ "S", 
+         ST_LY_type = case_when(decay %in% c(2, 3) ~ "S", 
                                 TRUE ~ "L"))
 
 # 1. calculations ---------------------------------------------------------------
