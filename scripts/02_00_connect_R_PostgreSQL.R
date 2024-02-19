@@ -22,7 +22,7 @@ con <-dbConnect(RPostgres::Postgres())
 
 #  1.2. PostgreSQL credentials --------------------------------------------------
 # name of database
-db <- 'bze3_altdaten'  #provide the name of your db
+db <- 'bze2'  #provide the name of your db
 # host of database: thuenen server --> VPN proably need to be activated 
 host_db <- '134.110.100.88'   # i.e. 'ec2-54-83-201-96.compute-1.amazonaws.com'  
 # database port or any other port specified by the DBA
@@ -41,11 +41,11 @@ con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port,
 # as we ahve nested tables/ databases we have to add the server, database, sheme and table 
 #  https://stackoverflow.com/questions/58289494/how-do-i-access-nested-sql-tables-in-r
 dbListTables(con,  "bze3_altdaten.data" ) 
-
+dbListTables(con,  "bze2.bze2_bestock" ) 
 
 # https://stackoverflow.com/questions/15520361/permission-denied-for-relation-in-postgresql
 dbSendQuery(con, "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA data TO hgercken;")
-res <- dbSendQuery(con, "SELECT * FROM data.beab;")
+res <- dbSendQuery(con, "SELECT * FROM bze2_bestock.b2be;")
 dbFetch(res)
 dbClearResult(res)
 DBI::dbGetQuery(con, "SELECT * FROM data.beab;")
