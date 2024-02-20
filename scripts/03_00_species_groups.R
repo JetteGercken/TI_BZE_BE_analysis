@@ -16,9 +16,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # species names & codes 
 #SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
 # the join always works like this: 
-# left_join(., SP_names_com_ID_tapeS %>% 
-#             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#           by = c("SP_code" = "char_code_ger_lowcase"))
+  # left_join(., SP_names_com_ID_tapeS %>% 
+  #             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+  #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
 # this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
@@ -32,12 +32,21 @@ SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = "
 SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
+# bark diversity for storch FSI index
+bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
+fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
+
+
 # ----- 1.2.2. species list BZE --------------------------------------------------------------
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
 
+colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
+bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
+                                 bot_species = gsub(".* ", "", species))
 
+colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")
 
 # ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
@@ -350,7 +359,16 @@ write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
 
 
- 
+bark_TY_species_groups_1 <- SP_names_com_ID_tapeS %>% 
+  left_join(., bark_div %>% select(species, bot_genus, bot_species, bark_type), 
+            by = c("bot_name" = "species", "bot_genus", "bot_species")) 
+
+bark_TY_species_groups_2 <- 
+bark_TY_species_groups_1 %>% filter(is.na(bark_type)) %>% 
+  left_join(., bark_div %>%
+              select(bot_genus, bark_type),
+            by = "bot_genus") 
 
 
+bark_TY_species_groups_2 %>% filter(is.na(bark_type.y)) %>% select(bot_genus) %>% distinct()# 32 species remain that cannot be allocated to group
 

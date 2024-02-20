@@ -1,0 +1,35 @@
+﻿Tree species;Fruct. age;Pollination;Fruit type
+Acer pseudoplatanus;30;cross + animal;schizocarpic fruit
+Betula spp.;25;cross + wind;wingnut
+Populus balsamifera;10;cross + wind;capsule fruit
+Fagus sylvatica;60;cross + wind;nut
+Pseudotsuga menziesii;25;cross + wind;cone
+Quercus spp.;65;cross + wind;nut
+Sorbus torminalis;15;cross + animal;apple fruit
+Larix decidua;35;cross + wind;cone
+Alnus spp.;25;cross + wind;cone
+Fraxinus excelsior;40;cross + wind;nut
+Acer campestre;40;cross + animal;schizocarpic fruit
+Picea abies;55;cross + wind;cone
+Carpinus betulus;25;cross + wind;nut
+Larix kaempferi;35;cross + wind;cone
+Castanea sativa;25;cross + animal;capsule fruit
+Pinus spp.;40;cross + wind;cone
+Prunus avium;20;cross + wind;drupe
+Tilia spp.;40;cross + animal;nut
+Populus balsamifera;10;cross + wind;capsule fruit
+Quercus rubra;50;cross + wind;nut
+Robinia pseudoacacia;20;cross + animal;legume
+Acer platanoides;30;cross + animal;schizocarpic fruit
+Pinus nigra;40;cross + wind;cone
+broadleaf species;0;0;0
+conifer species;0;0;0
+Abies alba;60;cross + wind;cone
+Ulmus spp;35;self;wingnut
+Sorbus spp.;10;cross + animal;apple fruit
+Salix spp.;15;cross + animal;capsule fruit
+Sorbus domestica;10;cross + animal;apple fruit
+Taxus baccata;30;wind;cone
+Sorbus aria;15;cross + animal;apple fruit
+Malus sylvestris;15;cross + animal;apple fruit
+Pyrus pyraster;15;cross + animal;apple fruit

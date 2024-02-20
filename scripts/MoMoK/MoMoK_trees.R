@@ -16,6 +16,7 @@
 #  install.packages("broom")
 #  install.packages("purrr")
 #  install.packages("devtools")
+# install.packages("readxl")
 #  ## laTex
 #  install.packages("stargazer")  #for compatability with Latex
 #  install.packages("tikzDevice") #for compatability with Latex#
@@ -62,6 +63,7 @@ library("broom")
 library("purrr")
  library("remotes")
  library("devtools")
+library("readxl")     
 # laTex
 library("stargazer")  #for compatability with Latex
 library("tikzDevice") #for compatability with Latex
@@ -103,19 +105,74 @@ momok.out.home <-("output/out_data/out_data_momok/")
 
 # ----- 1. DATA ----------------------------------------------------------------
 # ----- 1.1. import ------------------------------------------------------------
+### RAW DATA
+# 1. create input path for raw xls: 
+  momok.in.path.original <- ("//wo-sfs-001v-ew/INSTITUT/a7forum/LEVEL I/BZE/Moormonitoring/Standorte/")
+ # this is the path for the raw data where i want the xlsx to be copied into
+  momok.in.path.raw <- paste0(here::here(), "/data/raw/MoMoK/")
+  momok.in.path.input <- paste0(here::here(), "/data/input/MoMoK/")
+# 2. get names of files i want to copy from hte original MOMOK folder to our R folders: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
+  momok.in.files.original <- ("Lagemessungen_Bestandeserfassung_MoMoK_ges_2.xlsx")
+#3.  copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
+ #  3.a) from original folder to raw data folder in MOMOK R structure
+file.copy(from = paste0(momok.in.path.original, momok.in.files.original),
+                       to = paste0(momok.in.path.raw, momok.in.files.original), 
+                       overwrite = TRUE)
+#  3.b) from raw data folder in MOMOK R structure to input data folder in MOMOK R structure
+file.copy(from = paste0(momok.in.path.raw, momok.in.files.original),
+         to = paste0(momok.in.path.input, momok.in.files.original), 
+         overwrite = TRUE)
+
+# https://www.geeksforgeeks.org/how-to-read-a-xlsx-file-with-multiple-sheets-in-r/
+# 4. now we extract the single sheets from the xlxs in the input folder: 
+  # 4.a) select file name and path   
+   fname <- paste0(momok.in.path.input, momok.in.files.original)
+   # 4.b) create list of all sheets in the excel file (fname)
+   sheets <- readxl::excel_sheets(fname)
+   # 4.c) extract all sheets in the file into one tibble, where each sheet is one list / tibble entry
+   tibble <- lapply(sheets, function(x) readxl::read_excel(fname, sheet = x)) 
+   # 4.d) transform each element of the tibble in a dataframe 
+   data_frame <- lapply(tibble, as.data.frame) 
+   # 4.e) assigning names to data frames in the tibble accordint to the sheet name
+   names(data_frame) <-  sheets 
+   
+# 5. transform and export all elements of the dataframe list to csv into MOMOK input folder    
+for (i in 1:length(data_frame)) {
+  # i = 3
+  # select dataframe 
+  my.df <- as.data.frame(data_frame[[i]])
+  # select dataframe names according to sheet name
+  my.df.name.old <- names(data_frame)[[i]]
+  # rename the datasets except Lagemessungen
+  my.df.name.new <- ifelse(my.df.name.old ==  "Einzelbaummessungen", "trees_MoMoK_total", 
+                               ifelse(my.df.name.old ==  "Verjuengung", "RG_MoMoK_total", 
+                                      ifelse(my.df.name.old ==  "Totholz", "DW_MoMoK_total",
+                                             ifelse(my.df.name.old == "Forstl Daten & Bestandesbeschr.", "forstl_daten_bestandesbeschr", 
+                                                    my.df.name.old )))) 
+  # export sheets individually in input momok data 
+    write.csv2(my.df, paste0(momok.in.path.input,  my.df.name.new,".csv"))
+}  
+   
+ 
+ 
+ 
 # LIVING TREES
 # as the CSVs come from excel with German settings, the delimiter is ';' and the decimals are separated by ','
 # which is why I use "delim" to import the data: https://biostats-r.github.io/biostats/workingInR/005_Importing_Data_in_R.html
 trees_total <- read.delim(file = here("data/input/MoMoK/trees_MoMoK_total.csv"), sep = ";", dec = ",") %>% 
-  select(-Bemerkung) %>% 
+ select(-c("X", "Bemerkung")) %>% 
   filter(!is.na("MoMoK_Nr"))
 
 # DEADWOOD: table containing deadwood inventory data of the MoMoK plots
-DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)# %>% 
-  #mutate(tpS_ID = NA) # this is just for the function, let´s see if it works
+DW_total <- read.delim(file = here("data/input/MoMoK/DW_MoMoK_total.csv"), sep = ";", dec = ",", stringsAsFactors=FALSE)%>% 
+  select(-c("X")) %>% 
+  filter(!is.na("MoMoK_Nr"))
+
 
 # REGENERATION:table containing regeneration inventory data of the MoMoK plots
-RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep = ";", dec = ",")
+RG_total <- read.delim(file = here("data/input/MoMoK/RG_MoMoK_total.csv"), sep = ";", dec = ",")%>% 
+  select(-c("X")) %>% 
+  filter(!is.na("MoMoK_Nr"))
 
 # this table displays the peatland specific conditions at the respective MoMoK plots
 site_info <- read.delim(file = here("data/input/MoMoK/momok_STO_plots.csv"), sep = ";", dec = ",")
@@ -152,11 +209,20 @@ BWI_DW_V_iB_TY <-read.delim(file = here("data/input/General/BWI_DW_V_iB_DW_type.
 
 # ----- 1.2. colnames, vector type --------------------------------------------------------
 # ----- 1.2.1. living trees --------------------------------------------------------------
+# [1]           "                           
+# [8]                                                          
+# [15]                  "Hoehe..dm."        "Kronenansatz..dm."
+# [22] "Distanz..cm."      "Azimut..Gon."      "Azimut...."  
+                         #  "MoMoK_Nr"  "Name"  "Bundeland"  "Datum_Aufnahme"    "Nr_PK"   
 colnames(trees_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", 
+                           # BNr" , "ZW",    "St",  "Baumart..Code." , "Baumart",  "Schi" 
                            "t_ID", "st_ID", "pieces", "SP_nr", "SP_code", "C_layer", 
+                           # "Kraft",  "Alt" , Alt.Meth", "BHD..mm.", "BHD.Hoehe..cm." ,  
                            "Kraft", "age", "age_m", "DBH_mm", "DBH_h_cm", 
-                           "DBH_p_mm", "DBH_class", "H_dm", "CH_dm", 
-                           "azimut_g", "azimut_d", "dist_m")
+                           # "Permanent.Maßband" ,"Punktdendrometer" , "BHD.Stufen", "Hoehe..dm." ,  "Kronenansatz..dm."  
+                           "DBH_p_mm", "Punktdendrometer", "DBH_class", "H_dm", "CH_dm", 
+                           # "Distanz..cm."      "Azimut..Gon."      "Azimut...."
+                           "dist_m", "azimut_g", "azimut_d")
 trees_total$C_layer <- as.numeric(trees_total$C_layer)
 # there was a mistake in the species abbreviations where Alnus glutinosa was abbreviated with RER (Roterle) instead of SER (Schwarzerle)
 trees_total$SP_code[trees_total$SP_code == "RER"] <- "SER"  
@@ -172,7 +238,9 @@ colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genu
 
 
 # ----- 1.2.3. dead wood --------------------------------------------------------------
+                       # "MoMoK_Nr"  "Name" "Bundesland"  "Datum"  "Nr_PK"  "Nr"  
 colnames(DW_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "t_ID",
+                        # "Baumartengruppe"  "TYP" "Hoehe.Laenge..dm." "Durchmesser..cm."  "Zersetzungsgrad"  
                         "SP_group", "DW_type", "L_dm", "D_cm", "dec_type")
 # changing DW variable D_cm from character into numeric variable
 # https://stackoverflow.com/questions/11936339/replace-specific-characters-within-strings
@@ -194,7 +262,9 @@ write.csv(DW_P_to_exclude_D, paste0(momok.out.home, "DW_P_to_exclude_D.csv"))
 
 
 # ----- 1.2.4. regeneration --------------------------------------------------------------
+                      #  "MoMoK_Nr"  "Name" "Bundeland""Datum" "Nr_VJ_PK"  "Lage"  
 colnames(RG_total) <- c("plot_ID", "loc_name", "state", "date", "CCS_nr", "CCS_position", 
+                        # "Distanz.MB..cm." "pk_maxdist..cm."
                         "dist_MB", "CCS_max_dist", "t_ID", "SP_number", "SP_code", "H_cm", "D_class_cm")
 RG_total$SP_code[RG_total$SP_code == "RER"] <- "SER"
 
@@ -737,7 +807,7 @@ GHGI_bB <- function(spec, d){
   b1 <- c(fi = 2.792465, ki = 2.739073, bu = 2.321997, ei= 2.440000, shw = 2.529000); #shwr =2.529000, shwrs = 2.290300);
    # this would return the root + stump biomas for soft hardwoods but only the root biomass for all other species groups
     # ifelse(spec != "shw", b0[spec]*d^b1[spec], (b0[spec]*d^b1[spec])+(0.000116*d^2.290300))
-  return(b0[spec]*d^b1[spec]) 
+  return(b0[spec]*dbh^b1[spec]) 
 }
 
 # ---- 1.3.4. DEADWOOD BIOMASS ----------------------------------------------------------
@@ -1418,6 +1488,7 @@ anti_join(trees_total %>% select(Chr_code_ger, SP_code, bot_name), SP_TapeS_test
   # FLB == Faulbaum == Rhamnus frangere is alocated to Rahmnus alaternus SWD
   # KD == 
   # MKI == BKI 
+SP_names_com_ID_tapeS %>% filter(bot_genus== "Salix")
 
 RG_total <- RG_total %>%
   # transforming german species codes into capital characters to harmonise them with SP_names datase
@@ -1430,7 +1501,8 @@ RG_total <- RG_total %>%
                               SP_code == "KD" ~ "SLB", 
                               SP_code == "RER" ~ "SER", 
                               SP_code == "MKI" ~ "BKI", 
-                             SP_code == "SAL-WEIDE" ~ "SWE", 
+                             SP_code == "SAL-WEIDE" ~ "SWE",
+                             SP_code == "WD" ~ "WEI",
                               TRUE ~ SP_code)) %>% 
   # 1. joining in general species dataset with botanical names, TapeS species groups, etc. 
   left_join(., SP_names_com_ID_tapeS %>% 
@@ -1486,7 +1558,6 @@ RG_total <- RG_total %>%
 
 
 # ----- 1.4.2.2.1. exclude plots with missing info ------------------------
-# filter for those tree species that cannot be linked to x_bart and tapeS
 RG_total %>% filter(is.na(tpS_ID)) %>% select(SP_code) %>% distinct()
 # here we save the plots to exclude from the calculation: 
 RG_P_to_exclude_SP <- RG_total %>% filter(is.na(tpS_ID))  
@@ -3616,7 +3687,6 @@ DW_P <- DW_total %>%
 
 summary(DW_P)
 
-
 write.csv(DW_P, paste0(momok.out.home, "DW_P_MoMoK.csv"))
 
 # ----- 2.5.4. REGENERATION plot level -------------------------------------------------------------------
@@ -3736,7 +3806,6 @@ RG_P <- RG_total %>%
          Nt_MA = (Nt_plot/plot_A_ha)*MoMok_A_ha) # number of RG trees per MA  
 
 
-
 summary(RG_P)
 write.csv(RG_P, paste0(momok.out.home, "RG_P_MoMoK.csv"))
 
@@ -3796,26 +3865,6 @@ plot_total <- anti_join(plot_total, plots.to.exclude.LT.RG.DW, by = "plot_ID")
 
 
 write.csv(plot_total, paste0(momok.out.home, "LB_RG_DW_Plot_MoMoK.csv"))
-
-
-# export Bucchenhorst side for Marvin: 
-plot_total %>% 
-  inner_join(., trees_total %>% 
-               select(plot_ID, loc_name, state) %>%
-               filter(state == "MV" & loc_name == "Buchenhorst") %>% 
-               distinct(),
-             by = "plot_ID") %>% 
-  select(compartiment, stand_component,  C_t_ha) %>% 
-  filter(compartiment %in% c("ag", "bg", "total")) %>%
-  mutate(compartiment = case_when(compartiment == "ag" ~ "oberirdisch", 
-                                  compartiment == "bg" ~ "unterirdisch", 
-                                  TRUE ~ "gesamt"),  
-         stand_component = case_when(stand_component == "LT" ~ "Oberstand", 
-                                     stand_component == "RG" ~ "Verjüngung", 
-                                     stand_component == "all" ~ "Gesamter Bestand", 
-                                     TRUE ~ "Totholz")) %>%
-  unite("component_compartiment", stand_component, compartiment, sep = " ") %>% 
-  pivot_wider(names_from = component_compartiment, values_from = C_t_ha)
 
 
 # ----- legend MoMoK output -----------------------------------------------
@@ -3885,6 +3934,44 @@ write.csv(legend_col_names, paste0(momok.out.home, "legend_MoMoK.csv"))
 file.copy(from = paste0(momok.out.home, momok.out.files),
           to = paste0(momok.out.path, momok.out.files), 
           overwrite = TRUE)
+
+
+
+
+
+
+
+
+
+
+# Exports requested -------------------------------------------------------
+
+
+# export Bucchenhorst side for Marvin: 
+Buchenhorst <- plot_total %>% 
+       inner_join(., trees_total %>% 
+                    select(plot_ID, loc_name, state) %>%
+                    filter(state == "MV" & loc_name == "Buchenhorst") %>% 
+                    distinct(),
+                  by = "plot_ID") %>% 
+       select(compartiment, stand_component,  C_t_ha) %>% 
+       filter(compartiment %in% c("ag", "bg", "total")) %>%
+       mutate(compartiment = case_when(compartiment == "ag" ~ "oberirdisch", 
+                                       compartiment == "bg" ~ "unterirdisch", 
+                                       TRUE ~ "gesamt"),  
+              stand_component = case_when(stand_component == "LT" ~ "Oberstand", 
+                                          stand_component == "RG" ~ "Verjüngung", 
+                                          stand_component == "all" ~ "Gesamter Bestand", 
+                                          TRUE ~ "Totholz")) %>%
+       unite("component_compartiment", stand_component, compartiment, sep = " ") %>% 
+       pivot_wider(names_from = component_compartiment, values_from = C_t_ha)
+
+write.csv2(Buchenhorst, paste0(momok.out.home, "Buchenhorst_Hektarwerte.csv")) 
+
+
+
+
+
 
 # ----- 4. PLAUSIBILTY  --------------------------------------------------------
 
