@@ -4,7 +4,7 @@
 
 
 # ----- 0.1. packages and functions --------------------------------------------
-source(paste0(getwd(), "/scripts/00_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
@@ -357,18 +357,70 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 
+bark_div <- 
+bark_div %>%
+  filter(bot_species != "spp." | !(bot_genus %in% c("conifer","broadleaf"))) %>% 
+  # solt those species out that allready have a spp. summary
+  anti_join(., bark_div %>%
+  filter(bot_species == "spp.") %>%
+    select(bot_genus) %>% 
+    distinct(), 
+  by = "bot_genus") %>% 
+  select(bot_genus, bark_type) %>% 
+  group_by(bot_genus) %>% distinct() %>% 
+  mutate(bot_name = "spp.")
 
+case_when(bot_genus == "Acer" & bot_species == "pseudoplatanus" ~ "Acer pseudoplatanus", 
+          bot_genus == "Acer" & bot_species == "campestre" ~ "Acer campestre",
+          bot_genus == "Acer" & bot_species == "platanoides" ~ "Acer platanoides",
+          bot_genus == "Acer" & bot_species %in% c("pseudoplatanus", "campestre", "platanoides") ~ "Acer platanoides",
+          
+          )
 
+# first check for those that we can join by their full botanical name 
 bark_TY_species_groups_1 <- SP_names_com_ID_tapeS %>% 
+  mutate(bot_genus = ifelse(bot_genus == "abies", "Abies", bot_genus)) %>% 
   left_join(., bark_div %>% select(species, bot_genus, bot_species, bark_type), 
             by = c("bot_name" = "species", "bot_genus", "bot_species")) 
-
+# seect those bark species that are meant to be apllied to a whole botanic genus --> ending with spp. 
 bark_TY_species_groups_2 <- 
 bark_TY_species_groups_1 %>% filter(is.na(bark_type)) %>% 
   left_join(., bark_div %>%
+              filter(bot_species == "spp.") %>% 
               select(bot_genus, bark_type),
             by = "bot_genus") 
 
+# now we select those species that do not account for a whole bot_genus and that dont have a bot_genus and species combination
+bark_TY_species_groups_3 <- bark_TY_species_groups_2 %>% 
+  filter(is.na(bark_type.y)) %>%
+  left_join(., bark_div %>% 
+  anti_join(bark_div %>% filter(bot_species == "spp.") %>% select(bot_genus), 
+            by = "bot_genus") %>% 
+  arrange(species) %>% 
+  select(bot_genus, bark_type) %>% 
+  distinct(), 
+  by = "bot_genus")
+
+
+(bark_TY_species_groups_3 %>% filter(is.na(bark_type)) %>% 
+  select(bot_genus) %>% distinct() %>% arrange(bot_genus))
 
 bark_TY_species_groups_2 %>% filter(is.na(bark_type.y)) %>% select(bot_genus) %>% distinct()# 32 species remain that cannot be allocated to group
+
+bark_div %>%
+  distinct() %>% 
+  arrange(bot_genus)
+
+
+
+
+rbind((bark_div %>% 
+  anti_join(bark_div %>% filter(bot_species == "spp.") %>% select(bot_genus) %>% distinct() %>% arrange(bot_genus), 
+            by = "bot_genus")) %>% select(bot_genus) %>% distinct() %>% arrange(bot_genus), 
+bark_div %>% filter(bot_species == "spp.") %>% select(bot_genus) %>% distinct() %>% arrange(bot_genus)) %>% 
+  arrange(bot_genus)
+
+
+
+
 
