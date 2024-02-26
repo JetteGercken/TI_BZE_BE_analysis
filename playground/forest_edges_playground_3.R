@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Thuenen Institute - Bodenschutz und Waldzustand
 # Analysis of the forest inventory accompanying the peat land soil inventory
 # forest edges playground 2

@@ -46,7 +46,9 @@ colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH
 bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
                                  bot_species = gsub(".* ", "", species))
 
-colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")
+colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")  
+fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species), 
+                                  bot_species = gsub(".* ", "", species))
 
 
 
@@ -416,7 +418,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                              LH_NH == "NB" & !(bot_genus %in% c("Pinus", 
                                                                                 "Pseudotsuga", "Abies",
                                                                                 "Larix")) ~ 'fi',
-                                           TRUE ~ 'other') %>% 
+                                           TRUE ~ 'other')) %>% 
            mutate(bark_type_SP_group = bot_name) %>%
            mutate(bark_type_SP_group = case_when( bot_genus == "Abies" ~ "Abies alba",
                                                   bot_genus == "Acer" & !(bot_species %in% c("pseudoplatanus", "campestre", "platanoides")) ~ "Acer spp.",
@@ -450,7 +452,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                                   !(bot_genus %in% c(unique(bark_div$bot_genus))) &  LH_NH == "LB" ~ "Fagus sylvatica", 
                                                   TRUE ~ bark_type_SP_group
            ))
-         )
+         
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
 write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
 

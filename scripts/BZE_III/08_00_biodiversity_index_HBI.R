@@ -51,8 +51,73 @@ DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_
 DW_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ";", dec = ",")
 
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",")
+
+bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
+colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
+bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
+                                 bot_species = gsub(".* ", "", species))
+
+fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
+colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")  
+fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species), 
+                                  bot_species = gsub(".* ", "", species))
 
 
+
+
+# 0.4. data prep -----------------------------------------------------------------------------------------
+bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
+colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
+bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
+                                 bot_species = gsub(".* ", "", species))
+
+bark_div <- 
+  plyr::rbind.fill(bark_div, 
+                   (bark_div %>% 
+                      # semi join (filter) for those trees that have multiple species listed and summarize their bark type and create a common group for them 
+                      # withthe bot_species spp. 
+                      semi_join(
+                        bark_div %>%
+                          # filter for those trees that are not already summarised to spp. groups or that are not conifer/ broadleaf overall group
+                          filter(bot_species != "spp." & !(bot_genus %in% c("conifer","broadleaf"))) %>% 
+                          # sort those species out that allready have a spp. summary but also separate species (e.g. Pinus nigra, Pinus spp.)
+                          anti_join(., bark_div %>%
+                                      filter(bot_species == "spp." | bot_genus %in% c("conifer","broadleaf")) %>%
+                                      select(bot_genus), 
+                                    by = "bot_genus") %>% 
+                          # select only bot_genus and bark type 
+                          select(bot_genus, bark_type) %>% 
+                          group_by(bot_genus) %>% 
+                          # count rows per species
+                          summarise(n_bark = n()) %>% 
+                          # filter for bot_geni that have more then one representative in the Storch table 
+                          filter(n_bark > 1),
+                        # finish the semi join 
+                        by = "bot_genus") %>% 
+                      # take the selected species and bark types and narrow them down 
+                      select(bot_genus, bark_type) %>% distinct() %>%
+                      # create "bot_species" column indicating summary with spp. 
+                      mutate(bot_species = "spp.") %>% 
+                      # create column "species" 
+                      unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))) %>% 
+  distinct() %>% arrange(species) %>%
+  mutate(., across(c("DBH_type_1", "DBH_type_2", "DBH_type_3"), ~ replace(., is.na(.), "omitted"))) %>% 
+  # define upper border for type 1
+  mutate(u_border_cm_TY1 = ifelse(DBH_type_1 %in% c("omitted", "?"), DBH_type_1, gsub('^.|..$', '', DBH_type_1))) %>% 
+  # define lower border for type 2
+  mutate(l_border_cm_TY2 = ifelse(DBH_type_2 %in% c("omitted", "?") | startsWith(DBH_type_2, ">"), DBH_type_2, gsub('.......$', '', DBH_type_2))) %>% 
+  # if the lower of type 2 is equal to the upper boarder of type 1 repleace type 2 l border with type 1 l border
+  mutate(l_border_cm_TY2 = ifelse(startsWith(l_border_cm_TY2, ">"), u_border_cm_TY1, l_border_cm_TY2)) %>% 
+  mutate(u_border_cm_TY2 = ifelse(DBH_type_2 %in% c("omitted", "?") | startsWith(DBH_type_2, ">"), DBH_type_2, gsub('^....|..$', '', DBH_type_2))) %>% 
+  mutate(u_border_cm_TY2 = ifelse(startsWith(u_border_cm_TY2, ">"), "omitted", u_border_cm_TY2)) %>% 
+  mutate(l_border_cm_TY3 = ifelse(DBH_type_3 %in% c("omitted", "?"), DBH_type_3, gsub('^.|..$', '', DBH_type_3))) 
+    
+    
+    
+    
+    
+     
 # 1. calculations -----------------------------------------------------------------------------------------------------------------------
 
 # 1.1. living trees -------------------------------------------------------------------------------------------------------------------
@@ -135,9 +200,78 @@ FSI_df <- FSI_df %>%
 # for many species to be found there (insects, fungi, yeasts, spiders, epiphytes). 
 # Tree diameter and bark-development phases are considered
 
-# here we have to open a new category in x_bart assinging all given species to their bark type 
-# an assistant should do this :/
 
+trees_data %>% 
+  left_join(SP_names_com_ID_tapeS %>% select(bot_name, bark_type_SP_group)) 
+
+for (i in 1:length(unique(trees_data$tree_ID))) {
+  
+  my.tree.id <- trees_data[i, "tree_ID"]
+  my.plot.id <- trees_data[i, "plot_ID"]
+  my.dbh.cm <-  trees_data[i, "DBH_cm"]
+  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_data[i, "Chr_code_ger"]]]
+  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp])
+  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp])
+  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp])
+  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp])
+  
+  
+  my.bark.ty <- 
+  case_when(# if there is an upper border for type 1 and the diameter is within it
+            !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
+            # if there is an upper and lower border for type 2 and the diamter is within it
+            !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
+              between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+           # if there is only a lower border for type 2 and the diameter is bejond it 
+           !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
+             my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+           # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+           !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
+             between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+           !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
+            # if there are no diameter specific bark types --> for most of the spp. species groups 
+           is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
+           TRUE ~ NA) 
+  
+ 
+  
+}
+    
+bark_type <- function(my.dbh.cm, chr.code.ger){
+  my.dbh.cm = trees_data$DBH_cm[1]
+  chr.code.ger = trees_data$Chr_code_ger[1]
+  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
+  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp]);
+  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp]);
+  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp]);
+  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp]);
+  
+  
+  my.bark.ty <- 
+    case_when(# if there is an upper border for type 1 and the diameter is within it
+      !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
+      # if there is an upper and lower border for type 2 and the diamter is within it
+      !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
+        between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      # if there is only a lower border for type 2 and the diameter is bejond it 
+      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
+        my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
+        between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
+      # if there are no diameter specific bark types --> for most of the spp. species groups 
+      is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
+      TRUE ~ NA) ;
+  
+  return(my.bark.ty)
+}
+
+trees_data %>% 
+  filter(compartiment == "ag") %>% 
+  mutate(id_func = row_number()) %>%
+  group_by(id_func) %>% 
+  mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger))
 
 # 1.1.6. volume of trees with DBH ≥ 40 cm ------------------------------------------------------------------
 
