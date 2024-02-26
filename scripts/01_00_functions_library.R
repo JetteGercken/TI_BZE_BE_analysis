@@ -1637,13 +1637,47 @@ RMS <- function(x){
 # a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
 # https://doi.org/10.1186/s40663-018-0151-1
 
-FSI <- function(x, x.min, x.max){
-  variable.score = (x - x.min)/(x.max - x.min);
+FSI <- function(x){
+  x.min = min(x);
+  x.max = max(x); 
+  variable.score = (as.numeric(x) - as.numeric(x.min))/(as.numeric(x.max) - as.numeric(x.min));
   return(variable.score)
 }
 
 
 
+# 1.18.3. bark type function ----------------------------------------------
+
+
+bark_type <- function(my.dbh.cm, chr.code.ger, output){
+  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
+  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp]);
+  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp]);
+  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp]);
+  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp]);
+  
+  
+  my.bark.ty <- 
+    case_when(# if there is an upper border for type 1 and the diameter is within it
+      !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
+      # if there is an upper and lower border for type 2 and the diamter is within it
+      !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
+        between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      # if there is only a lower border for type 2 and the diameter is bejond it 
+      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
+        my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
+        between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+      !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
+      # if there are no diameter specific bark types --> for most of the spp. species groups 
+      is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
+      TRUE ~ NA) ;
+  
+  switch(output, 
+         "bark_ty" = my.bark.ty, 
+         "bark_type_species" = my.bark.spp)
+}
 
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------
 # if womeone does not have the x-bart tables or the info about the nitrogen content but still wants to use this functions 

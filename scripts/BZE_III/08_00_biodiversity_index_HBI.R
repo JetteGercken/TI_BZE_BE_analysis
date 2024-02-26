@@ -55,8 +55,6 @@ SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.cs
 
 bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
 colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
-bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
-                                 bot_species = gsub(".* ", "", species))
 
 fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
 colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")  
@@ -67,11 +65,8 @@ fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species),
 
 
 # 0.4. data prep -----------------------------------------------------------------------------------------
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
 bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
                                  bot_species = gsub(".* ", "", species))
-
 bark_div <- 
   plyr::rbind.fill(bark_div, 
                    (bark_div %>% 
@@ -146,10 +141,10 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                              select(plot_ID)) %>% 
   # if the Rbind caused NAs to appear because there were whole plots without a any tree CCS then we have to set the respective variable to 0
   mutate(LT_RMS_DBH = ifelse(is.na(LT_RMS_DBH), 0, LT_RMS_DBH), 
-         LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH, min(LT_RMS_DBH), max(LT_RMS_DBH))))
+         LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
 }else{
   FSI_df <- LT_DBH_RMS %>% 
-    mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH, min(LT_RMS_DBH), max(LT_RMS_DBH))))
+    mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
   }
 
 
@@ -161,7 +156,7 @@ FSI_df <- FSI_df %>%
               filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, sd_DBH_cm) %>% 
               distinct() %>% 
-              mutate(LT_FSI_DBH_SD =  as.numeric(FSI(sd_DBH_cm, min(sd_DBH_cm), max(sd_DBH_cm))), 
+              mutate(LT_FSI_DBH_SD =  as.numeric(FSI(sd_DBH_cm)), 
                      plot_ID = as.integer(plot_ID)) %>% 
               rename("LT_sd_DBH_cm" = "sd_DBH_cm"), 
             by = "plot_ID")
@@ -174,7 +169,7 @@ FSI_df <- FSI_df %>%
               filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, sd_H_m) %>% 
               distinct() %>% 
-              mutate(LT_FSI_H_SD =  as.numeric(FSI(sd_H_m, min(sd_H_m), max(sd_H_m))), 
+              mutate(LT_FSI_H_SD =  as.numeric(FSI(sd_H_m)), 
                      plot_ID = as.integer(plot_ID)) %>% 
               rename("LT_sd_H_m" = "sd_H_m"), 
             by = "plot_ID")
@@ -188,7 +183,7 @@ FSI_df <- FSI_df %>%
               filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, n_SP) %>% 
               distinct() %>% 
-              mutate(LT_FSI_n_SP = as.numeric(FSI(n_SP, min(n_SP), max(n_SP))), 
+              mutate(LT_FSI_n_SP = as.numeric(FSI(n_SP)), 
                      plot_ID = as.integer(plot_ID)) %>% 
               rename("LT_n_SP" = "n_SP"), 
             by = "plot_ID")
@@ -201,15 +196,15 @@ FSI_df <- FSI_df %>%
 # Tree diameter and bark-development phases are considered
 
 
-trees_data %>% 
-  left_join(SP_names_com_ID_tapeS %>% select(bot_name, bark_type_SP_group)) 
-
-for (i in 1:length(unique(trees_data$tree_ID))) {
-  
-  my.tree.id <- trees_data[i, "tree_ID"]
-  my.plot.id <- trees_data[i, "plot_ID"]
-  my.dbh.cm <-  trees_data[i, "DBH_cm"]
-  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_data[i, "Chr_code_ger"]]]
+trees_sub <- trees_data %>% filter(compartiment == "ag")
+bark_TY_list <- vector("list", length = length(unique(trees_sub$tree_ID)))
+for (i in 1:length(unique(trees_sub$tree_ID))) {
+  # i = 2
+  my.tree.id <- trees_sub[i, "tree_ID"]
+  my.plot.id <- trees_sub[i, "plot_ID"]
+  my.inv <- trees_sub[i, "inv"]
+  my.dbh.cm <-  trees_sub[i, "DBH_cm"]
+  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_sub[i, "Chr_code_ger"]]]
   u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp])
   l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp])
   u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp])
@@ -233,47 +228,93 @@ for (i in 1:length(unique(trees_data$tree_ID))) {
            is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
            TRUE ~ NA) 
   
- 
-  
+  bark_TY_list[[i]] <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id),
+    "inv" = c(my.inv),
+    "bark_SP" = c(my.bark.spp),
+    "bark_TY" = c(my.bark.ty))
+  )
 }
-    
-bark_type <- function(my.dbh.cm, chr.code.ger){
-  my.dbh.cm = trees_data$DBH_cm[1]
-  chr.code.ger = trees_data$Chr_code_ger[1]
-  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
-  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp]);
-  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp]);
-  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp]);
-  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp]);
-  
-  
-  my.bark.ty <- 
-    case_when(# if there is an upper border for type 1 and the diameter is within it
-      !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
-      # if there is an upper and lower border for type 2 and the diamter is within it
-      !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
-        between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is only a lower border for type 2 and the diameter is bejond it 
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
-        my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
-        between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
-      # if there are no diameter specific bark types --> for most of the spp. species groups 
-      is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
-      TRUE ~ NA) ;
-  
-  return(my.bark.ty)
-}
+bark_type_df <- as.data.frame(rbindlist(bark_TY_list)) %>% 
+  mutate(across(c("plot_ID", "tree_ID"), as.integer))
 
-trees_data %>% 
-  filter(compartiment == "ag") %>% 
-  mutate(id_func = row_number()) %>%
-  group_by(id_func) %>% 
-  mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger))
+FSI_df <- FSI_df %>% left_join(., cbind(
+  # dataset with calcualted number of bark types per plot ID 
+  trees_data %>% 
+    left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
+    select(plot_ID, inv, bark_TY) %>% 
+    distinct() %>% 
+    group_by(plot_ID, inv) %>% 
+    summarise(LT_n_bark_TY = as.numeric(n())), 
+  # calculate FSI of bark diversity 
+  "LT_FSI_bark_TY" = c(FSI(as.numeric((trees_data %>% 
+                                         left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
+                                         select(plot_ID, inv, bark_TY) %>%
+                                         distinct() %>% 
+                                         group_by(plot_ID, inv) %>% 
+                                         summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY)))), 
+  by = c("plot_ID")) %>% 
+  distinct()
+
+
+
 
 # 1.1.6. volume of trees with DBH ≥ 40 cm ------------------------------------------------------------------
+trees_above_DBH_40 <- trees_data %>% filter(compartiment == "ag" & DBH_cm > 40) %>% distinct()
+V_above_DBH_40_list <- vector("list", length = nrow(trees_above_DBH_40))
+for (i in 1:nrow(trees_above_DBH_40)) {
+  # i = 1
+
+  # basic tree info
+  # select one tree ID and plot ID for each individual tree per plot through unique(trees_data[, c("plot_ID", "tree_ID")])
+  my.plot.id <- trees_above_DBH_40[i,"plot_ID"]
+  my.tree.id <- trees_above_DBH_40[i ,"tree_ID"]
+  my.inv <- trees_above_DBH_40[i ,"inv"]
+  
+  # select variales for tree object: tapes species, diameter, diameter measuring height, tree height
+  spp = na.omit(unique(trees_above_DBH_40$tpS_ID[trees_above_DBH_40$plot_ID==my.plot.id & trees_above_DBH_40$tree_ID==my.tree.id]))
+  Dm = na.omit(as.list(as.numeric(unique(trees_above_DBH_40$DBH_cm[trees_above_DBH_40$plot_ID==my.plot.id & trees_above_DBH_40$tree_ID==my.tree.id])))) 
+  Hm = na.omit(as.list(as.numeric(unique(trees_above_DBH_40$DBH_h_cm[trees_above_DBH_40$plot_ID==my.plot.id & trees_above_DBH_40$tree_ID==my.tree.id])/100)))
+  Ht = na.omit(as.numeric(unique(trees_above_DBH_40$H_m[trees_above_DBH_40$plot_ID==my.plot.id & trees_above_DBH_40$tree_ID==my.tree.id])))
+  
+  # create object  
+  obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  
+  # calculate biomass per compartiment
+  V.df <- as.data.frame(tprVolume(obj = obj.trees))[, 1] 
+  
+  # save volume and tree info into dataframe 
+  V.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(my.plot.id), 
+    "tree_ID" = c(my.tree.id), 
+    "inv" = c(my.inv), 
+    "V_m3_tree" = c(as.numeric(V.df)))) %>% 
+    distinct()
+  
+  # export volume dataframe
+  V_above_DBH_40_list[[i]] <- V.info.df
+  
+}
+LT_V_m3_DBH40 <- as.data.frame(rbindlist(V_above_DBH_40_list))
+
+
+
+# calculate FSI of trees with diameter above 40 cm over all plots 
+FSI_df<- 
+  FSI_df %>% 
+  left_join(., cbind(
+  # dataset with volume of trees over 40cm DBH per plot summed up in m3
+  LT_V_m3_DBH40 %>% 
+  group_by(plot_ID, inv) %>% 
+  summarise(LT_Vm340_plot = sum(as.numeric(V_m3_tree))),
+  # FSI of dataset with volume of trees over 40 cm DBH in m3 per plot 
+ "LT_FSI_V40" = FSI(as.numeric((LT_V_m3_DBH40 %>% 
+                      group_by(plot_ID, inv) %>% 
+                      summarise(LT_Vm3_40_plot = sum(as.numeric(V_m3_tree))))$LT_Vm3_40_plot))
+ ), 
+ by = c("plot_ID", "inv"))
+
 
 
 
@@ -292,7 +333,7 @@ FSI_df <- FSI_df %>%
   filter(plot_ID != "all" & decay == "all" & dw_type == "all" & dw_sp == "all") %>% 
   select(plot_ID, n_dec) %>% 
   distinct() %>% 
-  mutate(DW_FSI_n_dec = as.numeric(FSI(n_dec, min(n_dec), max(n_dec)))) %>% 
+  mutate(DW_FSI_n_dec = as.numeric(FSI(n_dec))) %>% 
   rename("DW_n_dec" = "n_dec"), 
   by = "plot_ID")
 
@@ -303,11 +344,9 @@ FSI_df <- FSI_df %>%
   group_by(plot_ID) %>%
   summarise(DW_LY_mean_D_cm = mean(d_cm)) %>% 
   distinct() %>% 
-  mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm, min(DW_LY_mean_D_cm), max(DW_LY_mean_D_cm)))), 
+  mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
   by = "plot_ID")
   
-
-
 
 # 1.2.3. mean DBH of standing deadwood -------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
@@ -316,7 +355,7 @@ FSI_df <- FSI_df %>%
   group_by(plot_ID) %>%
   summarise(DW_ST_mean_D_cm = mean(d_cm)) %>% 
   distinct() %>% 
-  mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm, min(DW_ST_mean_D_cm), max(DW_ST_mean_D_cm)))), 
+  mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
   by = "plot_ID")
 
 

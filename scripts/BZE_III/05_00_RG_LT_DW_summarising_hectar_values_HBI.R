@@ -105,7 +105,6 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     }
 
 
-
 # 1.4.2. plot, species, stand: stocks per ha, finest summary --------------
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   LT_SP_ST_P_BCNBAn_ha <- plyr::rbind.fill(trees_data  %>% 
@@ -383,12 +382,12 @@ LT_ST_P <- LT_ST_BCNBAn_ha  %>%
 
 
 # 1.7.3. LT plot data ----------------------------------------------------------------------------------------------------------------
-LT_P <- LT_BCNBAn_ha  %>%  
+LT_P <- LT_BCNBAn_ha %>% 
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year'), as.integer),
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_avg_P, 
-            by = c("plot_ID", "inv_year", "stand_component")) %>% 
+            by = c("plot_ID", "inv_year", "stand_component", "SP_code", "stand")) %>% 
   left_join(., LT_n_SP_plot, 
             by = c("plot_ID", "inv_year", "stand_component"))
 
@@ -724,7 +723,6 @@ LT_RG_DW_P <- rbind(
               N_t_ha = sum(N_t_ha)) %>% 
     mutate(stand_component = "all")) %>% 
   arrange(plot_ID) 
-
 
 
 
