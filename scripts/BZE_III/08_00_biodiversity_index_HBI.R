@@ -307,6 +307,7 @@ FSI_df<-
   # dataset with volume of trees over 40cm DBH per plot summed up in m3
   LT_V_m3_DBH40 %>% 
   group_by(plot_ID, inv) %>% 
+    mutate(plot_ID= as.integer(plot_ID)) %>% 
   summarise(LT_Vm340_plot = sum(as.numeric(V_m3_tree))),
   # FSI of dataset with volume of trees over 40 cm DBH in m3 per plot 
  "LT_FSI_V40" = FSI(as.numeric((LT_V_m3_DBH40 %>% 
@@ -321,6 +322,10 @@ FSI_df<-
 # 1.1.7. diversity of flowering and fructification trees ------------------------------------------------------------------
 # i guess this reffers to how many different fructificating and flowering trees are at a plot? or per ha? 
 # here we have to open a new column in x_bart divifing the trees in flowering & fructifying or not 
+
+
+
+
 
 
 
