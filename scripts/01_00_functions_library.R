@@ -1679,6 +1679,33 @@ bark_type <- function(my.dbh.cm, chr.code.ger, output){
          "bark_type_species" = my.bark.spp)
 }
 
+
+# 1.18.4. FSI LT fruit and pollination type -------------------------------
+fruit_type <- function(age, chr.code.ger, output){
+  #age = trees_data$age[1]
+  #chr.code.ger = trees_data$Chr_code_ger[1]
+  # select the correct fruit type species group, based on the fruit typ species group that is assinged to the german_character speices name in the x_bart dataset
+  my.fruit.spp <- SP_names_com_ID_tapeS$fruit_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
+  # select the fructivication age of he respective species group
+  my.fruct.age <- fruit_div$fruct_age[fruit_div$species == my.fruit.spp];
+  # if the age of the tree is above the fructivication age selet the fruit type belonging to that respective species
+  my.fruit.type <- ifelse(age >= my.fruct.age, fruit_div$fruit_type[fruit_div$species == my.fruit.spp], NA);
+  # ifthe age of the tree is above the fructivication age, select the pollination type belonging to that respective fruit type species group (my.fruit.spp)
+  my.poll.type <- ifelse(age >= my.fruct.age, fruit_div$pollination_type[fruit_div$species == my.fruit.spp], NA);
+  
+  switch (output,
+          "fruit" = my.fruit.type, 
+          "pollen" = my.poll.type
+  )
+  
+}
+
+
+
+
+
+
+
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------
 # if womeone does not have the x-bart tables or the info about the nitrogen content but still wants to use this functions 
 # the following part will allow to write the datasets instead of importing them

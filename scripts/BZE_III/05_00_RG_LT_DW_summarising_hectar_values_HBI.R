@@ -371,7 +371,7 @@ LT_SP_P <- LT_SP_BCNBA_ha  %>%
               mutate_at(c('plot_ID', 'inv_year', 'n_stands'), as.integer),
             by = c("plot_ID", "inv_year", "stand_component")) %>% 
   left_join(., LT_avg_SP_P, 
-            by = c("plot_ID", "inv_year", "stand_component", "SP_code")) 
+            by = c("plot_ID", "inv_year", "stand_component", "SP_code", "stand")) 
 
 
 # 1.7.2. LT stand data ----------------------------------------------------
