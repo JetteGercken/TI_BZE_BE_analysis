@@ -34,8 +34,36 @@
   # _BZE3 --> Bestandeserhebung zur Bodenzustandserhebung 3 
 
 
-#### common/ general operations -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+# !!!!!!!!!!!!!! ENTER YOUR CREDENTIAL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!
+# database username
+my_db_user <- 'hgercken'
+# database password
+my_db_password <- 'Ao1ieDahthaheoPh'
+# !!!!!!!!!!!!!! ENTER YOUR CREDENTIAL HERE !!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+# create database credentals dataset 
+con_df <- as.data.frame(cbind(
+  # name of database
+  db = 'bze2'  #provide the name of your db
+  # host of database: thuenen server --> VPN proably need to be activated 
+  ,host_db = '134.110.100.88'   # i.e. 'ec2-54-83-201-96.compute-1.amazonaws.com'  
+  # database port or any other port specified by the DBA
+  ,db_port = '5432'  # this info you can find in the PGadmin properties of the server
+  # database username
+  ,db_user = my_db_user  # 'henriette.gercken@thuenen.de'  
+  # database password
+  ,db_password = my_db_password # 'Jette$Thuenen_2024'
+))
+# write connection daataframe to sun conenction with database script
+write.csv(con_df, paste0(here("data/input/general"), "/connection_SQL.csv"))
+
+
+
+#### common/ general operations -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # functions & packages
 source(paste0(here(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
@@ -109,9 +137,18 @@ source(paste0(here(), "/scripts/BZE_III/05_00_RG_LT_DW_summarising_hectar_values
 
 
 
-##### growth -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##### biodiversity: forest structural diversity index (FSI) ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+## HBI structural diversity
+source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_HBI.R"))
+
+## BZE3 structural diversity
+source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_BZE3.R"))
+
+
+
+##### growth & changes -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # LT growth HBI & BZE3 together
-source(paste0(here(), "/scripts/BZE_III/06_01_LT_growth_HBI_BZE3.R"))
+source(paste0(here(), "/scripts/BZE_III/07_01_LT_growth_HBI_BZE3.R"))
 
 
 

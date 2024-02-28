@@ -3,6 +3,15 @@
 # biodiverseity index
 # HBI
 
+
+# Reference for structural dicersity index: 
+# Storch, F., Dormann, C.F. & Bauhus, J. 
+# Quantifying forest structural diversity based on large-scale inventory data: 
+# a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
+# https://doi.org/10.1186/s40663-018-0151-1
+
+
+
 # 1) quadratic mean diameter at breast height (DBH)
 # 2) standard deviation of DBH
 # 3) standard deviation of stand height
@@ -25,17 +34,17 @@
 # therefore it would be better to work only with the summaries, or, if summaries are created afterwards, join at least the plots in that have no
 # values 
 
-# 0.SETUP --------------------------------------------------------------------------------------------------------------------
-# 0.1. packages and functions -------------------------------------------------------------------------------------------------
+# 0.SETUP ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 0.1. packages and functions -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 
-# 0.2. working directory ------------------------------------------------------------------------------------------------------
+# 0.2. working directory ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 here::here()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 
 
-# 0.3 import data --------------------------------------------------------------------------------------------------------------
+# 0.3 import data ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # livign trees
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ";", dec = ",")
 LT_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
@@ -62,8 +71,8 @@ colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type
 
 
 
-# 0.4. data prep -----------------------------------------------------------------------------------------
-# 0.4.1. bark type data prep -----------------------------------------------------------------------------------------
+# 0.4. data prep ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 0.4.1. bark type data prep ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
                                  bot_species = gsub(".* ", "", species))
 bark_div <- 
@@ -109,7 +118,7 @@ bark_div <-
     
     
 
-# 0.4.2. fruit type data prep ---------------------------------------------------------------------------
+# 0.4.2. fruit type data prep -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species), 
                                   bot_species = gsub(".* ", "", species)) %>% 
   mutate(species = ifelse(species == "Ulmus spp", "Ulmus spp.", species))
@@ -154,11 +163,11 @@ fruit_div <-
     
     
      
-# 1. calculations -----------------------------------------------------------------------------------------------------------------------
+# 1. calculations -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# 1.1. living trees -------------------------------------------------------------------------------------------------------------------
+# 1.1. living trees ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# 1.1.1. LT quadratic mean diameter at breast height (DBH) ---------------------------------------------------------------------------------
+# 1.1.1. LT quadratic mean diameter at breast height (DBH) -----------------------------------------------------------------------------------------------------------------------------------------
 # The quadratic mean (also called the root mean square*) is a type of average. 
 # It measures the absolute magnitude of a set of numbers, and is calculated by:
 # RMS = sqrt(sum(x)^2/n)
@@ -190,7 +199,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 
 
-# 1.1.2. LT standard deviation of DBH ------------------------------------------------------------------
+# 1.1.2. LT standard deviation of DBH ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
   left_join(., 
             LT_summary %>% 
@@ -206,7 +215,7 @@ FSI_df <- FSI_df %>%
             by = "plot_ID")
 
 
-# 1.1.3. LT standard deviation of stand height ------------------------------------------------------------------
+# 1.1.3. LT standard deviation of stand height ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
   left_join(., 
             LT_summary %>% 
@@ -222,7 +231,7 @@ FSI_df <- FSI_df %>%
 
 
 
-# 1.1.4. tree species richness ------------------------------------------------------------------
+# 1.1.4. tree species richness ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
   left_join(., 
             LT_summary %>% 
@@ -238,13 +247,13 @@ FSI_df <- FSI_df %>%
 
 
 
-# 1.1.5. bark-diversity index ------------------------------------------------------------------
+# 1.1.5. bark-diversity index ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Diversity of bark types (smooth, fissured, peeling, scaly, cracked, etc.) in forest stands implies a variety of habitats
 # for many species to be found there (insects, fungi, yeasts, spiders, epiphytes). 
 # Tree diameter and bark-development phases are considered
 
 
-# 1.1.5.1. assign bark type to each tree --------------------------------------------------------------
+# 1.1.5.1. assign bark type to each tree ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 trees_sub <- trees_data %>% filter(compartiment == "ag")
 bark_TY_list <- vector("list", length = length(trees_sub$tree_ID))
 for (i in 1:length(unique(trees_sub$tree_ID))) {
@@ -290,7 +299,7 @@ bark_type_df <- as.data.frame(rbindlist(bark_TY_list)) %>%
 
 
 
-# 1.1.5.2. calculate bark type FSI and add it to the total FSI dat -------------------------------------------------------------------
+# 1.1.5.2. calculate bark type FSI and add it to the total FSI dat ---------------------------------------------------------------------------------------------------------------------------
 # dataset with calcualted number of bark types per plot ID 
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   
@@ -321,7 +330,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     mutate(LT_n_bark_TY = ifelse(is.na(LT_n_bark_TY), 0, LT_n_bark_TY)) %>%
       # calculate FSI
     mutate(LT_FSI_bark_TY = FSI(LT_n_bark_TY)), 
-    by = "plot_ID")
+    by = c("plot_ID"))
   
 }else{
 FSI_df <- FSI_df %>% left_join(., cbind(
@@ -345,7 +354,7 @@ FSI_df <- FSI_df %>% left_join(., cbind(
 
 
 
-# 1.1.6. volume of trees with DBH ≥ 40 cm ------------------------------------------------------------------
+# 1.1.6. volume of trees with DBH ≥ 40 cm ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # create a subset of the data that only contains one row per tree (only ag compartiment) and only trees with DBH > 40cm
 trees_above_DBH_40 <- trees_data %>% filter(compartiment == "ag" & DBH_cm > 40) %>% distinct()
 V_above_DBH_40_list <- vector("list", length = nrow(trees_above_DBH_40))
@@ -385,7 +394,8 @@ for (i in 1:nrow(trees_above_DBH_40)) {
 LT_V_m3_DBH40 <- as.data.frame(rbindlist(V_above_DBH_40_list))
 
 
-# dataset with calcualted number of bark types per plot ID 
+# join volume data into tree dataset and calcualte FSI 
+# make sure plots without V40 and plots without trees in general are set to 0 and account for the minimum possible score 
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   FSI_df <- FSI_df %>% 
     # join the number of tree bark types per plot dataset and the respective FSI in 
@@ -394,10 +404,14 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
                 # dataset with volume of trees over 40cm DBH per plot summed up in m3
-                LT_V_m3_DBH40 %>% 
+                trees_data %>% 
+                  filter(compartiment == "ag") %>% 
+                  left_join(., LT_V_m3_DBH40 %>% 
+                              mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
+                              distinct(), 
+                            by = c("plot_ID", "tree_ID", "inv")) %>% 
                   group_by(plot_ID, inv) %>% 
-                  mutate(plot_ID= as.integer(plot_ID)) %>% 
-                  summarise(LT_Vm340_plot = sum(as.numeric(V_m3_tree))), 
+                  summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))), 
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
@@ -420,6 +434,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 FSI_df<- 
   FSI_df %>% 
   left_join(., 
+            cbind(
   # dataset with volume of trees over 40cm DBH per plot summed up in m3
   trees_data %>% 
     filter(compartiment == "ag") %>% 
@@ -430,16 +445,22 @@ FSI_df<-
   group_by(plot_ID, inv) %>% 
   summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))),
   # FSI of dataset with volume of trees over 40 cm DBH in m3 per plot  
- by = c("plot_ID", "inv")) %>% 
-  rowwise() %>% 
-  # in case tehre are plots wich 
-  mutate(LT_FSI_V40 = FSI(as.numeric(LT_Vm340_plot)))
-
+  "LT_FSI_V40" = c(FSI((trees_data %>% 
+                      filter(compartiment == "ag") %>% 
+                      left_join(., LT_V_m3_DBH40 %>% 
+                                  mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
+                                  distinct(), 
+                                by = c("plot_ID", "tree_ID", "inv")) %>% 
+                      group_by(plot_ID, inv) %>% 
+                      summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))))$LT_Vm340_plot))
+  ),
+ by = c("plot_ID", "inv"))
+  
 }
 
 
 
-# 1.1.7. diversity of flowering and fructification trees ------------------------------------------------------------------
+# 1.1.7. diversity of flowering and fructification trees --------------------------------------------------------------------------------------------------------------------------
 # i guess this reffers to how many different fructificating and flowering trees are at a plot? or per ha? 
 # here we have to open a new column in x_bart divifing the trees in flowering & fructifying or not 
 
@@ -471,73 +492,253 @@ for (i in 1:length(trees_sub$tree_ID)) {
 LT_fruit_type_df <- as.data.frame(rbindlist(fruit_TY_list)) %>% 
   mutate(across(c("plot_ID", "tree_ID"), as.integer))
 
-FSI_df <- FSI_df %>% left_join(., cbind(
-  # dataset with calcualted number of bark types per plot ID 
-  trees_data %>% 
-    left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
-    select(plot_ID, inv, fruit_TY) %>% 
-    distinct() %>% 
-    group_by(plot_ID, inv) %>% 
-    summarise(LT_n_fruit_TY = as.numeric(n())), 
-  # calculate FSI of bark diversity     
-  "LT_FSI_bark_TY" = c(FSI(as.numeric((trees_data %>% 
-                                         left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
-                                         select(plot_ID, inv, fruit_TY) %>% 
-                                         distinct() %>% 
-                                         group_by(plot_ID, inv) %>% 
-                                         summarise(LT_n_fruit_TY = as.numeric(n())))$LT_n_fruit_TY)))
-  ), # select number of barktypes per plot from summary 
-  by = c("plot_ID", "inv")) %>% # close left join into FSI dataset
-  distinct()
+
+# join fruit info into tree dataset and calcualte FSI
+
+# if there are plotw with status 2 for all CCS (meaning plots wehere there is a BZE/ NFI plot but there are no inventorable trees in any sampling circuit)
+# we have to join in those plots with the value 0 for the respective variable in question (in this case fruit types) so that the minimum score possible (the minimum structural
+# diversity a plot can achive in the LT layer) is 0 
+if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
+  FSI_df <- FSI_df %>% 
+    # join the number of tree bark types per plot dataset and the respective FSI in 
+    left_join(., 
+              # bind tree dataset summarized by plot 
+              # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
+              plyr::rbind.fill(
+                trees_data %>% 
+                  left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>% 
+                  select(plot_ID, inv, fruit_TY) %>% 
+                  distinct() %>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(LT_n_fruit_TY = as.numeric(n())),
+                # select only those plots with empty sampling circuits that have all 3 circuits empty
+                # by counting the circuits per plot and filtering for those with n_CCS ==3
+                trees_stat_2 %>% 
+                  mutate(inv = inv_name(inv_year)) %>% 
+                  select(plot_ID, inv, CCS_r_m) %>% 
+                  distinct()%>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(n_CCS = n()) %>% 
+                  filter(n_CCS == 3) %>% 
+                  select(plot_ID, inv)
+              ) %>% 
+                # correct LT_n_bark_TY if there are non because the plot doesn´t have trees in any of the CCS
+                mutate(LT_n_fruit_TY = ifelse(is.na(LT_n_fruit_TY), 0, LT_n_fruit_TY)) %>%
+                # calculate FSI
+                mutate(LT_FSI_fruit_TY = FSI(LT_n_fruit_TY)), 
+              by = c("plot_ID", "inv"))
+  }else{
+    FSI_df <- FSI_df %>% left_join(., cbind(
+      # dataset with calcualted number of bark types per plot ID 
+      trees_data %>% 
+        left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
+        select(plot_ID, inv, fruit_TY) %>% 
+        distinct() %>% 
+        group_by(plot_ID, inv) %>% 
+        summarise(LT_n_fruit_TY = as.numeric(n())), 
+      # calculate FSI of bark diversity     
+      "LT_FSI_fruit_TY" = c(FSI(as.numeric((trees_data %>% 
+                                             left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
+                                             select(plot_ID, inv, fruit_TY) %>% 
+                                             distinct() %>% 
+                                             group_by(plot_ID, inv) %>% 
+                                             summarise(LT_n_fruit_TY = as.numeric(n())))$LT_n_fruit_TY)))
+      ), # select number of barktypes per plot from summary 
+      by = c("plot_ID", "inv")) %>% # close left join into FSI dataset
+      distinct()
+}
 
 
 
 
 
-
-
-
-
-
-
-
-
-# 1.2. DEADWOOD -----------------------------------------------------------
-
-
-# 1.2.1. number of decay classes ------------------------------------------------------------------
+# 1.2. DEADWOOD ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 1.2.1. number of decay classes ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
   left_join(., DW_summary %>% 
   filter(plot_ID != "all" & decay == "all" & dw_type == "all" & dw_sp == "all") %>% 
   select(plot_ID, n_dec) %>% 
+    # this is in case there are plots like 50145 whitout deadwood 
+    mutate(n_dec = ifelse(is.na(n_dec), 0, n_dec)) %>% 
   distinct() %>% 
   mutate(DW_FSI_n_dec = as.numeric(FSI(n_dec))) %>% 
   rename("DW_n_dec" = "n_dec"), 
   by = "plot_ID")
 
-# 1.2.2. average mean diameter of downed deadwood -------------------------------------------------------------------
-FSI_df <- FSI_df %>% 
-  left_join(., DW_data %>% 
-  filter(ST_LY_type == "L") %>% 
-  group_by(plot_ID) %>%
-  summarise(DW_LY_mean_D_cm = mean(d_cm)) %>% 
-  distinct() %>% 
-  mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
-  by = "plot_ID")
+# 1.2.2. average mean diameter of downed deadwood ---------------------------------------------------------------------------------------------------------------------------
+if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
+  FSI_df <- FSI_df %>% 
+    left_join(., plyr::rbind.fill(
+      # filter for those plots that have only one S/L datatype and the type is "L", 
+      # because these plots have a d_cm in group S of 0cm
+      DW_data %>%
+        select(plot_ID, ST_LY_type, inv) %>% distinct() %>% 
+        semi_join(., 
+                  DW_data %>%
+                    select(plot_ID,ST_LY_type, inv) %>% 
+                    distinct() %>% 
+                    group_by(plot_ID, inv) %>% 
+                    summarise(n_S_L_TY = n()) %>% 
+                    filter(n_S_L_TY < 2) %>% 
+                    select(plot_ID), 
+                  by = "plot_ID") %>% 
+        filter(ST_LY_type == "S") %>% 
+        select(plot_ID, inv),
+  # DW_dataset with mean diemater of downed deadwood
+  DW_data %>% 
+    filter(ST_LY_type == "L" & compartiment == "ag") %>% 
+    group_by(plot_ID, inv) %>%
+    summarise(DW_LY_mean_D_cm = mean(na.omit(d_cm))) %>% 
+    distinct(), 
+  # DW dataset with plot that were inventored but had no deadwood inside
+  DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+  )%>% 
+    mutate(DW_LY_mean_D_cm = ifelse(is.na(DW_LY_mean_D_cm), 0, DW_LY_mean_D_cm)) %>% 
+    mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
+  by = c("plot_ID", "inv")
+  )
   
+}else{
+  FSI_df <- FSI_df %>% 
+    left_join(., DW_data %>% 
+                filter(ST_LY_type == "L"  & compartiment == "ag") %>% 
+                group_by(plot_ID) %>%
+                summarise(DW_LY_mean_D_cm = mean(na.omit(d_cm))) %>% 
+                distinct() %>% 
+                mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
+              by = "plot_ID")
+}
 
-# 1.2.3. mean DBH of standing deadwood -------------------------------------------------------------------
+
+
+# 1.2.3. mean DBH of standing deadwood ---------------------------------------------------------------------------------------------------------------------------
+if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
+  FSI_df <- FSI_df %>% 
+    left_join(., plyr::rbind.fill(
+      # filter for those plots that have only one S/L datatype and the type is "L", 
+      # because these plots have a d_cm in group S of 0cm
+      DW_data %>%
+        select(plot_ID, ST_LY_type, inv) %>% distinct() %>% 
+        semi_join(., 
+                  DW_data %>%
+                    select(plot_ID,ST_LY_type, inv) %>% 
+                    distinct() %>% 
+                    group_by(plot_ID, inv) %>% 
+                    summarise(n_S_L_TY = n()) %>% 
+                    filter(n_S_L_TY < 2) %>% 
+                    select(plot_ID), 
+                  by = "plot_ID") %>% 
+                  filter(ST_LY_type == "L") %>% 
+                  select(plot_ID, inv),
+      # DW_dataset with mean diemater of standing deadwood
+      DW_data %>% 
+        filter(ST_LY_type == "S" & compartiment == "ag") %>% 
+        group_by(plot_ID, inv) %>%
+        summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
+        distinct(), 
+      # DW dataset with plot that were inventored but had no deadwood inside
+      DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+    )%>% 
+      mutate(DW_ST_mean_D_cm = ifelse(is.na(DW_ST_mean_D_cm), 0, DW_ST_mean_D_cm)) %>% 
+      mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
+    by = c("plot_ID", "inv")
+    ) 
+  
+}else{
+
 FSI_df <- FSI_df %>% 
   left_join(., DW_data %>% 
-  filter(ST_LY_type == "S") %>% 
+  filter(ST_LY_type == "S"  & compartiment == "ag") %>% 
   group_by(plot_ID) %>%
-  summarise(DW_ST_mean_D_cm = mean(d_cm)) %>% 
+  summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
   distinct() %>% 
   mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
   by = "plot_ID")
 
+}
 
 
+
+
+# 1.3 FSI final score per plot ----------------------------------------------------------------------------------------------------
+# Storch, F., Dormann, C.F. & Bauhus, J. 
+# Quantifying forest structural diversity based on large-scale inventory data: 
+# a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
+# https://doi.org/10.1186/s40663-018-0151-1: 
+  # The sum of scores of the core variables divided by the
+  # number of variables included in this index yields a value
+  # between 0 and 1, where 0 indicates ‘lowest level of structural
+  # diversity’ and 1 ‘highest level of structural diversity’.
+FSI_df<- FSI_df %>% 
+  left_join(
+    as.data.frame(cbind(
+      FSI_df[ , c("plot_ID", "inv")],
+      # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
+      FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>%
+            # calculate the sum of all FSI scores of the respective variables per plot 
+      mutate(FSI_sum = select(., LT_FSI_DBH_RMS:DW_FSI_ST_mean_D_cm) %>% rowSums(na.rm = TRUE),
+             #calcualte relative FSI by dividing FSI sum by total number od variables includedin the FSI calculation
+             FSI_total = FSI_sum/length(FSI_df[,grepl("FSI" ,names(FSI_df))]) ) %>% 
+      select(plot_ID, inv, FSI_sum, FSI_total),
+    by = c("plot_ID", "inv"))
+
+
+
+
+
+
+# 2. visualization ----------------------------------------------------------------------------------------------------------------
+for (i in 1:length(unique(FSI_df$plot_ID))) {
+  # i = 1
+  my.plot.id <- FSI_df[i, "plot_ID"]
+  
+ print( as.data.frame(cbind(
+    FSI_df[ , c("plot_ID", "inv")],
+    # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
+    FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>% 
+    select(-FSI_sum) %>%
+    pivot_longer(LT_FSI_DBH_RMS:FSI_total, names_to = "variable", values_to = "FSI_score") %>% 
+    filter(plot_ID == my.plot.id) %>% 
+  ggplot(., )+  
+    geom_bar(aes(x = as.factor(variable), y = as.numeric(FSI_score), fill = variable), stat = "identity")+
+    ggtitle(paste("FSI scores per variable and total, plot:", my.plot.id)))
+  
+  
+  
+}
+
+# total FSI per plot
+as.data.frame(cbind(
+  FSI_df[ , c("plot_ID", "inv")],
+  # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
+  FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>% 
+  select(-FSI_sum) %>%
+  pivot_longer(LT_FSI_DBH_RMS:FSI_total, names_to = "variable", values_to = "FSI_score") %>% 
+  filter(variable == "FSI_total") %>% 
+  ggplot(., aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = as.integer(plot_ID)))+  
+  geom_bar(stat = "identity")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# seperate FSI variabels and total FSI score sum per plot
+ ggplot()+ 
+   geom_bar(data = as.data.frame(cbind(
+     FSI_df[ , c("plot_ID", "inv")],
+     # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
+     FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>% 
+       select(-FSI_sum) %>%
+       pivot_longer(LT_FSI_DBH_RMS:DW_FSI_ST_mean_D_cm, names_to = "variable", values_to = "FSI_score"),
+     aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = variable), 
+     stat = "identity", color = "black")+
+    # geom_bar(data = as.data.frame(cbind(
+    #  FSI_df[ , c("plot_ID", "inv")],
+    #  # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
+    #  FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>% 
+    #    select(-FSI_sum) %>%
+    #    pivot_longer(LT_FSI_DBH_RMS:FSI_total, names_to = "variable", values_to = "FSI_score") %>% 
+    #    filter(variable == "FSI_total"), 
+    #         aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = variable), 
+    #         stat = "identity", position = "dodge")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 
 

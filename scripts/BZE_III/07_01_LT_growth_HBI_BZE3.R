@@ -30,7 +30,7 @@ HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_P_
 
 
 # 1. calculations ---------------------------------------------------------
-# 1.1. single tree growth -------------------------------------------------
+# 1.1. average single tree growth -------------------------------------------------
 # this inventory status means that the tree should have been assessed in the previous 
 # invenotry but wasn´t
 # thus we have to calculate how much the tree of that species at that plot would have grown 
@@ -130,13 +130,13 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
 # 1.4. changes in stocks per ha --------------------------------------------
 stock_changes_P <- 
 BZE3_summary %>% 
-  filter(plot_ID != "all" & SP_code == "all") %>% 
+  filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
   select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
               .cols= c(B_t_ha, C_t_ha, N_t_ha)) %>% 
   left_join(., HBI_summary %>% 
-              filter(plot_ID != "all" & SP_code == "all") %>% 
+              filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
               rename_with(.fn = function(.x){paste0(.x,"_HBI")}, .cols= c(B_t_ha, C_t_ha, N_t_ha)), 
@@ -147,6 +147,11 @@ BZE3_summary %>%
 pre_vars <- grep("_HBI", colnames(stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(stock_changes_P), value=TRUE)
 stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- stock_changes_P[, post_vars] - stock_changes_P[, pre_vars]
+
+
+
+
+
 
 
 # 2. data export ----------------------------------------------------------
