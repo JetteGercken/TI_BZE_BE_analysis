@@ -122,7 +122,7 @@ tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot
                                                                  TRUE ~ hbi_status))
 
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
+trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
 # HBI trees
 colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", 
                           "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
