@@ -509,8 +509,8 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
         # so if there was actually a partner tree found in the post dataset and the 
         # current tree inventory status is not 1 (so the pre inventory wasn´t already a repetition, which won´t be the case for HBI but maybe for subsequent inventories)
         # we havae to set the new_tree_inventory_status in the previous dataset to 0
-        mutate(tree_inventory_status = ifelse(!is.na(closest.tree.post.df$tree_inventory_status & 
-                                                          inv.status.nearest.neighbour.pre !=1 ), 0, 
+        mutate(tree_inventory_status = ifelse(!is.na(closest.tree.post.df$tree_inventory_status) & 
+                                                          inv.status.nearest.neighbour.pre !=1 , 0, 
                                                  inv.status.nearest.neighbour),
                # we have to change the tree ID to the one of the potential partner tree 
                # originating from my.tree that´s still labled status == 0 in the current inventory dataset
@@ -662,7 +662,8 @@ HBI_trees_update_02 <- HBI_trees %>% filter(tree_inventory_status %in% c(0, 1, -
 HBI_trees_removed <- HBI_trees %>% filter(!(tree_inventory_status %in% c(0, 1, -9, -1)))
 
 BZE3_trees_update_02 <- BZE3_trees %>% filter(tree_inventory_status %in% c(0, 1))
-BZE3_trees_removed <- BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1)))
+BZE3_trees_removed <- plyr::rbind.fill(BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1))), 
+                                       tree_inventory_status_6.df %>%  filter(tree_type_status_6 %in% c("my_tree_post") & old_tree_inventory_status == 6))
 
 
 write.csv2(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"))
