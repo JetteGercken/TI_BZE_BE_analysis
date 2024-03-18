@@ -157,7 +157,8 @@ fruit_div <-
        # create column "species" 
        unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))
   ) %>% 
-  arrange(species)
+  arrange(species) %>% 
+  distinct()
 
 
     
@@ -222,7 +223,7 @@ FSI_df <- FSI_df %>%
               filter(compartiment == "ag" & plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, sd_H_m) %>% 
               distinct() %>% 
-              # this sets the sd_DBH of plots that don´t have trees to 0 
+              # this sets the sd_H of plots that don´t have trees to 0 
               mutate(sd_H_m = ifelse(is.na(sd_H_m), 0, sd_H_m)) %>% 
               mutate(LT_FSI_H_SD =  as.numeric(FSI(sd_H_m)), 
                      plot_ID = as.integer(plot_ID)) %>% 
@@ -238,7 +239,7 @@ FSI_df <- FSI_df %>%
               filter(compartiment == "ag" & plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, n_SP) %>% 
               distinct() %>% 
-              # this sets the sd_DBH of plots that don´t have trees to 0 
+              # this sets the n_SP of plots that don´t have trees to 0 
               mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP)) %>% 
               mutate(LT_FSI_n_SP = as.numeric(FSI(n_SP)), 
                      plot_ID = as.integer(plot_ID)) %>% 
