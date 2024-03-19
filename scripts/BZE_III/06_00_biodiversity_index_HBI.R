@@ -30,7 +30,7 @@
 
 # NOTE: 
 # I have to make sure that the empty plos are included in the index as well
-# meaning for example DW plot 50145 which has no deadwood items and by that an average diameter of 0 has to be included in the caclualtions
+# meaning for example DW plot 50145 which has no deadwood items and by that an average diameter of 0 has to be included in the FSI caclualtions
 # therefore it would be better to work only with the summaries, or, if summaries are created afterwards, join at least the plots in that have no
 # values 
 
@@ -166,7 +166,7 @@ fruit_div <-
      
 # 1. calculations -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# 1.1. living trees ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 1.1. LIVING TREES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 1.1.1. LT quadratic mean diameter at breast height (DBH) -----------------------------------------------------------------------------------------------------------------------------------------
 # The quadratic mean (also called the root mean square*) is a type of average. 
@@ -660,8 +660,11 @@ FSI_df <- FSI_df %>%
 
 
 
+# 1.3. REGENERATION -------------------------------------------------------
 
-# 1.3 FSI final score per plot ----------------------------------------------------------------------------------------------------
+
+
+# 1.4. FSI final score per plot ----------------------------------------------------------------------------------------------------
 # Storch, F., Dormann, C.F. & Bauhus, J. 
 # Quantifying forest structural diversity based on large-scale inventory data: 
 # a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 

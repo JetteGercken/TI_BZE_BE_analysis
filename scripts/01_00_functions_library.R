@@ -1702,6 +1702,23 @@ fruit_type <- function(age, chr.code.ger, output){
 
 
 
+# 1.19. connection to SQL server ------------------------------------------
+my_server <- "134.110.101.50,21434"
+my_db <- "bwi"
+my_username <- "fstorch"
+
+
+dbconnection <- odbcDriverConnect(
+  paste0("DRIVER={SQL Server};
+     server=",my_server,";
+     database=",my_db,";
+     uid=",my_username,";
+     pwd=",rstudioapi::askForPassword(
+       prompt = "Please enter your password"
+     )
+  )
+)
+
 
 
 

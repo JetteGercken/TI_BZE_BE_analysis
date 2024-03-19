@@ -77,8 +77,16 @@ con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port,
 # 
 # # https://stackoverflow.com/questions/15520361/permission-denied-for-relation-in-postgresql
 # res <- dbSendQuery(con, "SELECT * FROM bze2_bestock.b2beab;")
-#  # dbFetch(res)
+  # dbFetch(res)
 #  # dbClearResult(res)
+# SELECT * FROM bze2_hbi.v_b2beab_auf
+waldrae <- dbGetQuery(con, paste0("SELECT * FROM"," ", "bze2_hbi",".", "v_b2be_gewwaldraender"))
+waldrae %>% filter(bfhnr >= 50000 & bfhnr <60000) %>% arrange(bfhnr)
+view(beab_auf %>% select(bfhnr) %>% distinct())
+
+
+
+
 
 # names of the tables we want to import to our raw data folder: 
 code_table_names <- c("neu_x_ld", "neu_k_tangenz", "x_bart_neu", )

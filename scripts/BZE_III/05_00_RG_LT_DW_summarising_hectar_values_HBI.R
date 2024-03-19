@@ -33,7 +33,7 @@ RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_R
 DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
 DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ";", dec = ",")
 
-
+trees_data %>% filter(plot_ID == 50064 &  CCS_r_m == 17.84) %>% select(plot_ID, CCS_r_m, stand_plot_A_ha,  stand) %>% distinct()
 
 
 # CALCULATIONS ------------------------------------------------------------
