@@ -20,6 +20,8 @@
 #  install.packages("purrr")
 #  install.packages("devtools")
 #  install.packages("plyr")
+# install.packages("RODBC")
+# install.packages("rstudioapi")
 #  ## laTex
 #  install.packages("stargazer")  #for compatability with Latex
 #  install.packages("tikzDevice") #for compatability with Latex#
@@ -71,6 +73,8 @@ require(broom)
 require(purrr)
 require(remotes)
 require(devtools)
+library(RODBC)
+library(rstudioapi)
 #require(plyr)
 # laTex
 require(stargazer)  #for compatability with Latex
@@ -105,6 +109,10 @@ require(sf)
 require(rgdal)
 require(terra)
 require(sfheaders)
+
+
+
+
 
 # ----- 0.3. working directory -------------------------------------------------
 here::here()
@@ -1703,24 +1711,18 @@ fruit_type <- function(age, chr.code.ger, output){
 
 
 # 1.19. connection to SQL server ------------------------------------------
-my_server <- "134.110.101.50,21434"
-my_db <- "bwi"
-my_username <- "fstorch"
-
-
-dbconnection <- odbcDriverConnect(
-  paste0("DRIVER={SQL Server};
-     server=",my_server,";
-     database=",my_db,";
-     uid=",my_username,";
-     pwd=",rstudioapi::askForPassword(
-       prompt = "Please enter your password"
-     )
-  )
-)
-
-
-
+sqlconnection <- function(my_db, my_server, my_port, my_username, my_passwort){
+  dbconnection <- dbConnect(RPostgres::Postgres(), 
+                            dbname = my_db, 
+                            host=my_server, 
+                            port=my_port, 
+                            user=my_username, 
+                            password = my_passwort
+                            )  
+  
+  return(dbconnection)
+  }
+ 
 
 
 # 2. writing datasets 11.12.2023 ----------------------------------------------------------------

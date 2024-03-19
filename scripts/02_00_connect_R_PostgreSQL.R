@@ -45,29 +45,17 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # https://stackoverflow.com/questions/18580066/how-to-allow-remote-access-to-postgresql-database
 # https://www.cyberciti.biz/tips/postgres-allow-remote-access-tcp-connection.html
 # https://www.postgresql.org/docs/9.1/auth-pg-hba-conf.html
-con <- dbConnect(RPostgres::Postgres())
+#con <- dbConnect(RPostgres::Postgres())
 
 
 #  1.2. PostgreSQL credentials --------------------------------------------------
-# import credentials 
-con_df <- read.delim(file = paste0(here("data/input/general"), "/connection_SQL.csv"), sep = ",", dec = ",")
-
-# assign connection credentials
-# name of database
-db <- con_df$db[1]
-# host of database: thuenen server --> VPN proably need to be activated 
-host_db <- con_df$host_db[1]
-# database port or any other port specified by the DBA
-db_port <- con_df$db_port[1]
-# database username
-db_user <- con_df$db_user[1]
-# database password
-db_password <- con_df$db_password[1]
-
+# db = "bze2"
+# server =  "134.110.100.88"
+# port = "5432"
+# username = "hgercken"
 
 #  1.3. estabish connection to database --------------------------------------------------
-con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port, user=db_user, password=db_password)  
-
+con <- sqlconnection(db_name, db_server,db_port, db_user, my_db_password)
 
 # 2. data -----------------------------------------------------------------
 # now we call for the tables in the database that we need
@@ -76,20 +64,14 @@ con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port,
 # dbListTables(con,  "bze2.bze2_bestock" ) 
 # 
 # # https://stackoverflow.com/questions/15520361/permission-denied-for-relation-in-postgresql
-# res <- dbSendQuery(con, "SELECT * FROM bze2_bestock.b2beab;")
-  # dbFetch(res)
-#  # dbClearResult(res)
-# SELECT * FROM bze2_hbi.v_b2beab_auf
-waldrae <- dbGetQuery(con, paste0("SELECT * FROM"," ", "bze2_hbi",".", "v_b2be_gewwaldraender"))
-waldrae %>% filter(bfhnr >= 50000 & bfhnr <60000) %>% arrange(bfhnr)
-view(beab_auf %>% select(bfhnr) %>% distinct())
-
-
-
+# res <- dbSendQuery(con, "SELECT * FROM bze2_hbi.v_b2beab_auf;")
+#   dbFetch(res)
+# dbClearResult(res)
+# dbGetQuery(con1, paste0("SELECT * FROM"," ", "bze2_hbi",".", "v_b2beab_auf"))
 
 
 # names of the tables we want to import to our raw data folder: 
-code_table_names <- c("neu_x_ld", "neu_k_tangenz", "x_bart_neu", )
+code_table_names <- c("neu_x_ld", "neu_k_tangenz", "x_bart_neu")
 data_table_names <- c("b2beab", "tit_1", "be", "beab", "be_waldraender", "bej", "bejb", "bedw", "bedw_liste", "punkt", "HBI_location")
 
 # 2.1. code tables ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -101,9 +83,9 @@ for (i in 1:length(code_table_names)) {
   # set schema name
   my.schema.name <- "code"
   # set database name 
-  con_df$db <- 'bze3'
+  db_name <- 'bze3'
   # set db connection
-  con <- dbConnect(RPostgres::Postgres(), dbname = con_df$db, host=host_db, port=db_port, user=db_user, password=db_password) 
+  con <- sqlconnection(db_name, db_server, db_port, db_user, my_db_password)
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
@@ -133,9 +115,9 @@ for (i in 1:length(data_table_names)) {
   # set schema name
   my.schema.name <- "bze2_bestock" # we have to change this later
   # set database name 
-  con_df$db <- 'bze2'
+  con_df$db_name <- 'bze2'
   # set db connection
-  con <- dbConnect(RPostgres::Postgres(), dbname = con_df$db, host=host_db, port=db_port, user=db_user, password=db_password) 
+  con <- dbConnect(RPostgres::Postgres(), dbname = db_name, host=db_server, port=db_port, user=db_user, password=db_password) 
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe 
@@ -166,9 +148,9 @@ for (i in 1:length(table_names)) {
   # set schema name
   my.schema.name <- "data"
   # set database name 
-  con_df$db <- 'bze3'
+  con_df$db_name <- 'bze3'
   # set db connection
-  con <- dbConnect(RPostgres::Postgres(), dbname = con_df$db, host=host_db, port=db_port, user=db_user, password=db_password) 
+  con <- dbConnect(RPostgres::Postgres(), dbname = db_name, host= db_server, port=db_port, user=db_user, password=db_password) 
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe 
