@@ -121,25 +121,25 @@ tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot
                                                                  str_detect(plot_ID, '^12') ~ 3,
                                                                  TRUE ~ hbi_status))
 
-# HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
-# HBI trees
+# BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
+# BZE3 trees
 colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", 
                           "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
-# HBI forest edges
+# BZE3 forest edges
 forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
 colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
 
 
 
 ## REGENERATION                                                                                                  
-# this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
+# this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 
 RG_loc_info <- read.delim(file = here("data/input/BZE3/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
-# this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
+# this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3, including stand and area info
 RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ",", dec = ",")
 #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
@@ -154,6 +154,7 @@ DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", 
 #  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 # join inventory jear and name into deadwood tree dataset
+
 
 
 
@@ -241,7 +242,9 @@ tree_inv_info <- tree_inv_info %>%
   arrange(plot_ID)
 
 # 2.2.2. create dataset with LT CCS to remove from trees data df ------------------------------------------------------------------------------------------------------------------------------------------------------------
-LT_CCS_to_exclude <- tree_inv_info %>% filter(CCS_LT_inv_status == 3)
+# remove CCS that were not inventorable from the trees df and filter NFI (BWI) plots as well
+LT_CCS_to_exclude <- tree_inv_info %>% filter(CCS_LT_inv_status == 3 | hbi_status == 3)
+
 
 
 #  2.2.3. correct CCS_inv_status == 2 if necesarry -------------------------------------------------------------------------------------------------------------------------
@@ -317,6 +320,7 @@ trees_update_0 <- trees_data %>%
   semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status == 1),
             by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
 
+
 #  2.2.6. clearing forest edges dataset and prepare for export (waldraender.csv) ---------------------------------------------------------------------------------------
 forest_edges_update_1 <- forest_edges %>% 
   # here we can sort for plots with and without trees, since that doesn´t matter for the CCS and their edges
@@ -324,6 +328,11 @@ forest_edges_update_1 <- forest_edges %>%
             by = c("plot_ID", "inv_year", "inv"))
 
 
+
+# 2.2.7. create dataset with NFI plots/ BWI plots -------------------------
+trees_BWI <- trees_data %>% 
+  semi_join(LT_CCS_to_exclude %>% filter(hbi_status == 3),
+            by = c("plot_ID", "CCS_r_m", "inv_year", "inv"))
 
 
 # 2.3. RG dataset ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -365,6 +374,7 @@ RG_loc_info <-  RG_loc_info%>%
          "CCS_max_dist_cm", "inv_year", "inv") %>% 
   distinct()%>% 
   arrange(plot_ID, CCS_nr) %>% 
+  # change the maximum distance to the default setting of 500cm if its NA or -9
   mutate(CCS_max_dist_cm = ifelse(is.na(CCS_max_dist_cm) | CCS_max_dist_cm == -9, 500, CCS_max_dist_cm))
 
 
@@ -502,25 +512,30 @@ DW_update_1 <- DW_data %>%
 write.csv2(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_inv_update_1", sep = "_"), ".csv"))
 write.csv2(DW_update_1, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"))
 write.csv2(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_stat_2", sep = "_"), ".csv"))
+write.csv2(DW_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_plots_removed", sep = "_"), ".csv"))
+
 # living trees
 write.csv2(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"))
 write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_stat_2", sep = "_"), ".csv"))
 write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(trees_update_0$inv)[1], "LT_update_0", sep = "_"), ".csv"))
 write.csv2(forest_edges_update_1, paste0(out.path.BZE3, paste(unique(forest_edges_update_1$inv)[1], "forest_edges_update_1", sep = "_"), ".csv"))
+write.csv2(LT_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_plots_removed", sep = "_"), ".csv"))
 
 # regeneration
 write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))
 write.csv2(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"))
 write.csv2(RG_update_1, paste0(out.path.BZE3, paste(unique(RG_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"))
+write.csv2(RG_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_plots_removed", sep = "_"), ".csv"))
 
 # all trees
 # this we just export so the inventory name and year are in the dataset and we don´t have to 
 # extract the date in the next data processing steps
 write.csv2(inv_info, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1], "inv_info", sep = "_"), ".csv"))
+write.csv2(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1], "plots_to_exclude", sep = "_"), ".csv"))
 
 
-
-
+# NFI trees/ BWI trees
+write.csv2(trees_BWI, paste0(out.path.BZE3, paste(unique(trees_BWI$inv)[1], "trees_BWI", sep = "_"), ".csv"))
 
 
 

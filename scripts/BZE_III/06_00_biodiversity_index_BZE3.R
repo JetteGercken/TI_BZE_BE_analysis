@@ -62,110 +62,16 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_D
 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",")
 
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
-
-fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")  
-
-
-
-
-# 0.4. data prep ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# 0.4.1. bark type data prep ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
-                                 bot_species = gsub(".* ", "", species))
-bark_div <- 
-  plyr::rbind.fill(bark_div, 
-                   (bark_div %>% 
-                      # semi join (filter) for those trees that have multiple species listed and summarize their bark type and create a common group for them 
-                      # withthe bot_species spp. 
-                      semi_join(
-                        bark_div %>%
-                          # filter for those trees that are not already summarised to spp. groups or that are not conifer/ broadleaf overall group
-                          filter(bot_species != "spp." & !(bot_genus %in% c("conifer","broadleaf"))) %>% 
-                          # sort those species out that allready have a spp. summary but also separate species (e.g. Pinus nigra, Pinus spp.)
-                          anti_join(., bark_div %>%
-                                      filter(bot_species == "spp." | bot_genus %in% c("conifer","broadleaf")) %>%
-                                      select(bot_genus), 
-                                    by = "bot_genus") %>% 
-                          # select only bot_genus and bark type 
-                          select(bot_genus, bark_type) %>% 
-                          group_by(bot_genus) %>% 
-                          # count rows per species
-                          summarise(n_bark = n()) %>% 
-                          # filter for bot_geni that have more then one representative in the Storch table 
-                          filter(n_bark > 1),
-                        # finish the semi join 
-                        by = "bot_genus") %>% 
-                      # take the selected species and bark types and narrow them down 
-                      select(bot_genus, bark_type) %>% distinct() %>%
-                      # create "bot_species" column indicating summary with spp. 
-                      mutate(bot_species = "spp.") %>% 
-                      # create column "species" 
-                      unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))) %>% 
-  distinct() %>% arrange(species) %>%
-  mutate(., across(c("DBH_type_1", "DBH_type_2", "DBH_type_3"), ~ replace(., is.na(.), "omitted"))) %>% 
-  # define upper border for type 1
-  mutate(u_border_cm_TY1 = ifelse(DBH_type_1 %in% c("omitted", "?"), DBH_type_1, gsub('^.|..$', '', DBH_type_1))) %>% 
-  # define lower border for type 2
-  mutate(l_border_cm_TY2 = ifelse(DBH_type_2 %in% c("omitted", "?") | startsWith(DBH_type_2, ">"), DBH_type_2, gsub('.......$', '', DBH_type_2))) %>% 
-  # if the lower of type 2 is equal to the upper boarder of type 1 repleace type 2 l border with type 1 l border
-  mutate(l_border_cm_TY2 = ifelse(startsWith(l_border_cm_TY2, ">"), u_border_cm_TY1, l_border_cm_TY2)) %>% 
-  mutate(u_border_cm_TY2 = ifelse(DBH_type_2 %in% c("omitted", "?") | startsWith(DBH_type_2, ">"), DBH_type_2, gsub('^....|..$', '', DBH_type_2))) %>% 
-  mutate(u_border_cm_TY2 = ifelse(startsWith(u_border_cm_TY2, ">"), "omitted", u_border_cm_TY2)) %>% 
-  mutate(l_border_cm_TY3 = ifelse(DBH_type_3 %in% c("omitted", "?"), DBH_type_3, gsub('^.|..$', '', DBH_type_3))) 
-
-
-
-# 0.4.2. fruit type data prep -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species), 
-                                  bot_species = gsub(".* ", "", species)) %>% 
-  mutate(species = ifelse(species == "Ulmus spp", "Ulmus spp.", species))
-
-fruit_div <- 
-  plyr::rbind.fill(
-    fruit_div, 
-    ## this semi join identifies those geni that do not have a spp. sumamry but have multiple species in the fruits dataset(        fruit_div %>% 
-    (fruit_div %>% 
-       semi_join(
-         fruit_div %>% distinct() %>% 
-           # filter for those trees that are not already summarised to spp. groups and that are not conifer/ broadleaf overall group
-           filter(bot_species != "spp." & !(bot_genus %in% c("conifer","broadleaf"))) %>% 
-           # sort those species out that allready have a spp. summary but also separate species (e.g. Pinus nigra, Pinus spp.)
-           anti_join(., fruit_div %>%
-                       filter(bot_species == "spp." | bot_genus %in% c("conifer","broadleaf")) %>%
-                       select(bot_genus), by = "bot_genus") %>% 
-           # select only bot_genus and bark type
-           select(bot_genus, fruit_type) %>% 
-           group_by(bot_genus) %>% 
-           # count rows per genus --> are there mutliple species of one genus? 
-           summarise(n_fruits = n()) %>% 
-           # filter for bot_geni that have more then one representative in the Storch table 
-           filter(n_fruits > 1), 
-         by = "bot_genus") %>% ## close semi join 
-       # take the selected species and fruits and pollination types and narrow them down 
-       select(bot_genus, fruct_age, pollination_type, fruit_type) %>% 
-       distinct() %>% # narrow them down --> there are different pollitation ages for the Acer types 
-       # thus we´ll avearge them, while the pollination and fruit type, which are identical, remain the same 
-       group_by(bot_genus) %>% 
-       reframe(fruct_age = mean(fruct_age), 
-               pollination_type = pollination_type, 
-               fruit_type = fruit_type) %>% distinct() %>% # the distinct is just to errase the doubles the reframe introduces
-       # create "bot_species" column indicating summary with spp. 
-       mutate(bot_species = "spp.") %>% 
-       # create column "species" 
-       unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))
-  ) %>% 
-  arrange(species)
-
+# bark and fruit types
+bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_modified.csv"), sep = ";", dec = ",")
+fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.csv"), sep = ";", dec = ",")
 
 
 
 
 # 1. calculations -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# 1.1. living trees ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 1.1. LIVING TREES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 1.1.1. LT quadratic mean diameter at breast height (DBH) -----------------------------------------------------------------------------------------------------------------------------------------
 # The quadratic mean (also called the root mean square*) is a type of average. 
@@ -222,7 +128,7 @@ FSI_df <- FSI_df %>%
               filter(compartiment == "ag" & plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, sd_H_m) %>% 
               distinct() %>% 
-              # this sets the sd_DBH of plots that don´t have trees to 0 
+              # this sets the sd_H of plots that don´t have trees to 0 
               mutate(sd_H_m = ifelse(is.na(sd_H_m), 0, sd_H_m)) %>% 
               mutate(LT_FSI_H_SD =  as.numeric(FSI(sd_H_m)), 
                      plot_ID = as.integer(plot_ID)) %>% 
@@ -238,7 +144,7 @@ FSI_df <- FSI_df %>%
               filter(compartiment == "ag" & plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, n_SP) %>% 
               distinct() %>% 
-              # this sets the sd_DBH of plots that don´t have trees to 0 
+              # this sets the n_SP of plots that don´t have trees to 0 
               mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP)) %>% 
               mutate(LT_FSI_n_SP = as.numeric(FSI(n_SP)), 
                      plot_ID = as.integer(plot_ID)) %>% 
@@ -659,8 +565,23 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
 
 
 
+# 1.3. REGENERATION -------------------------------------------------------
 
-# 1.3 FSI final score per plot ----------------------------------------------------------------------------------------------------
+# 1.3.1. number of species per plot ---------------------------------------
+FSI_df<- FSI_df %>% 
+  left_join(., 
+            RG_summary %>% 
+              filter(plot_ID != "all" & SP_code == "all" & stand == "all" & compartiment == "ag" ) %>% 
+              distinct() %>% 
+              select(plot_ID, n_SP) %>% 
+              mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP), 
+                     RG_FSI_n_SP = as.numeric(FSI(n_SP)), 
+                     plot_ID = as.integer(plot_ID)) %>% 
+              rename("RG_n_SP" = "n_SP"), 
+            by = "plot_ID")
+
+
+# 1.4. FSI final score per plot ----------------------------------------------------------------------------------------------------
 # Storch, F., Dormann, C.F. & Bauhus, J. 
 # Quantifying forest structural diversity based on large-scale inventory data: 
 # a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
@@ -686,8 +607,13 @@ FSI_df<- FSI_df %>%
 
 
 
+# 2. export data -----------------------------------------------------------------------------------------------------------------------------------------------------
+write.csv2(FSI_df, paste0(out.path.BZE3, paste0("FSI_", unique(FSI_df$inv)[1], ".csv")))
 
-# 2. visualization ----------------------------------------------------------------------------------------------------------------
+
+
+
+# 3. visualization ----------------------------------------------------------------------------------------------------------------
 for (i in 1:length(unique(FSI_df$plot_ID))) {
   # i = 1
   my.plot.id <- FSI_df[i, "plot_ID"]
@@ -739,5 +665,6 @@ ggplot()+
   #         aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = variable), 
   #         stat = "identity", position = "dodge")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
 
 

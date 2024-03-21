@@ -21,9 +21,6 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
-# this table displaying the species codes and names used for the MoMoK forest inventory was extracted from the latest working paper published in the MoMok folder:  
-# \\fswo01-ew\INSTITUT\a7forum\LEVEL I\BZE\Moormonitoring\Arbeitsanleitungen\MoMoK
-# I´l use it to assign the latin names to the assessed speices to then use them in TapeR and BDAT 
 SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",") %>% 
   select(- c(anmerkung, beginn, ende)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
@@ -32,172 +29,11 @@ SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = "
 SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
-# bark diversity for storch FSI index
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-
 
 # ----- 1.2.2. species list BZE --------------------------------------------------------------
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
                         "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
                         "BZE_al")
-
-colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
-bark_div <- bark_div %>%  mutate(bot_genus = gsub(" .*", "", species), 
-                                 bot_species = gsub(".* ", "", species))
-
-colnames(fruit_div) <- c("species", "fruct_age", "pollination_type", "fruit_type")  
-fruit_div <- fruit_div %>% mutate(bot_genus = gsub(" .*", "", species), 
-                                  bot_species = gsub(".* ", "", species)) %>% 
-  mutate(species = ifelse(species == "Ulmus spp", "Ulmus spp.", species))
-  
-
-
-
-
-# 1.2.3. create missing species groups for bark types-------------------------------------------------------------------------
-# first check for those that we can join by their full botanical name 
-bark_TY_species_groups_1 <- SP_names %>% 
-  mutate(bot_genus = ifelse(bot_genus == "abies", "Abies", bot_genus)) %>% 
-  left_join(., bark_div %>% select(species, bot_genus, bot_species, bark_type), 
-            by = c("bot_name" = "species", "bot_genus", "bot_species")) 
-# seect those bark species that are meant to be apllied to a whole botanic genus --> ending with spp. 
-bark_TY_species_groups_2 <- 
-  bark_TY_species_groups_1 %>% filter(is.na(bark_type)) %>% 
-  left_join(., bark_div %>%
-              filter(bot_species == "spp.") %>% 
-              select(bot_genus, bark_type),
-            by = "bot_genus") 
-
-# now we select those species that do not account for a whole bot_genus and that dont have a bot_genus and species combination
-bark_TY_species_groups_3 <- bark_TY_species_groups_2 %>% 
-  filter(is.na(bark_type.y)) %>%
-  left_join(., bark_div %>% 
-              anti_join(bark_div %>% filter(bot_species == "spp.") %>% select(bot_genus), 
-                        by = "bot_genus") %>% 
-              arrange(species) %>% 
-              select(bot_genus, bark_type) %>% 
-              distinct(), 
-            by = "bot_genus")
-
-## bark diversity 
-bark_div <- 
-  plyr::rbind.fill(bark_div, 
-                   (bark_div %>% 
-                      # semi join (filter) for those trees that have multiple species listed and summarize their bark type and create a common group for them 
-                      # withthe bot_species spp. 
-                      semi_join(
-                        bark_div %>%
-                          # filter for those trees that are not already summarised to spp. groups or that are not conifer/ broadleaf overall group
-                          filter(bot_species != "spp." & !(bot_genus %in% c("conifer","broadleaf"))) %>% 
-                          # sort those species out that allready have a spp. summary but also separate species (e.g. Pinus nigra, Pinus spp.)
-                          anti_join(., bark_div %>%
-                                      filter(bot_species == "spp." | bot_genus %in% c("conifer","broadleaf")) %>%
-                                      select(bot_genus), 
-                                    by = "bot_genus") %>% 
-                          # select only bot_genus and bark type 
-                          select(bot_genus, bark_type) %>% 
-                          group_by(bot_genus) %>% 
-                          # count rows per species
-                          summarise(n_bark = n()) %>% 
-                          # filter for bot_geni that have more then one representative in the Storch table 
-                          filter(n_bark > 1),
-                        # finish the semi join 
-                        by = "bot_genus") %>% 
-                      # take the selected species and bark types and narrow them down 
-                      select(bot_genus, bark_type) %>% distinct() %>%
-                      # create "bot_species" column indicating summary with spp. 
-                      mutate(bot_species = "spp.") %>% 
-                      # create column "species" 
-                      unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))) %>% 
-  distinct() %>% arrange(species)
-
-
-
-# fruitdiversity
-# first check for those species that we can join by their full botanical name 
-fruit_species_groups_1 <- SP_names %>%
-  mutate(bot_genus = ifelse(bot_genus == "abies", "Abies", bot_genus), 
-         bot_name = ifelse(bot_name == "abies", "Abies", bot_name)) %>% 
-  left_join(., fruit_div %>% select(species, fruit_type) %>% distinct(), 
-            by = c("bot_name" = "species")) 
-# select those fruit type species that are meant to be apllied to a whole botanic genus --> ending with spp. 
-fruit_species_groups_2 <- 
-  fruit_species_groups_1 %>% filter(is.na(fruit_type)) %>% 
-  left_join(., fruit_div %>%
-              filter(bot_species == "spp.") %>% 
-              select(bot_genus, fruit_type),
-            by = "bot_genus") 
-# now we select those species that do not account for a whole bot_genus and that dont have a bot_genus and species combination
-fruit_species_groups_3 <- fruit_species_groups_2 %>% 
-  filter(is.na(fruit_type.y)) %>%
-  left_join(., fruit_div %>% 
-              anti_join(fruit_div %>% filter(bot_species == "spp.") %>% select(bot_genus), 
-                        by = "bot_genus") %>% 
-              arrange(species) %>% 
-              select(bot_genus, fruit_type) %>% 
-              distinct(), 
-            by = "bot_genus")
-
-
-# the remaining, unassiged species remaining after sorting the fruit type/ bark type data into x_bart 
-# are identical thus we well proceede the same way as for bark type 
-identical(fruit_species_groups_3 %>% filter(is.na(fruit_type)) %>% 
-    select(bot_genus) %>% distinct() %>% arrange(bot_genus), 
-    bark_TY_species_groups_3 %>% filter(is.na(bark_type)) %>% 
-    select(bot_genus) %>% distinct() %>% arrange(bot_genus))
-
-
-
-
-fruit_div <- 
-  plyr::rbind.fill(
-    fruit_div, 
-## this semi join identifies those geni that do not have a spp. sumamry but have multiple species in the fruits dataset(        fruit_div %>% 
-  (fruit_div %>% 
-     semi_join(
-    fruit_div %>% distinct() %>% 
-      # filter for those trees that are not already summarised to spp. groups and that are not conifer/ broadleaf overall group
-      filter(bot_species != "spp." & !(bot_genus %in% c("conifer","broadleaf"))) %>% 
-      # sort those species out that allready have a spp. summary but also separate species (e.g. Pinus nigra, Pinus spp.)
-      anti_join(., fruit_div %>%
-                  filter(bot_species == "spp." | bot_genus %in% c("conifer","broadleaf")) %>%
-                  select(bot_genus), by = "bot_genus") %>% 
-      # select only bot_genus and bark type
-      select(bot_genus, fruit_type) %>% 
-      group_by(bot_genus) %>% 
-      # count rows per genus --> are there mutliple species of one genus? 
-      summarise(n_fruits = n()) %>% 
-      # filter for bot_geni that have more then one representative in the Storch table 
-      filter(n_fruits > 1), 
-    by = "bot_genus") %>% ## close semi join 
-  # take the selected species and fruits and pollination types and narrow them down 
-  select(bot_genus, fruct_age, pollination_type, fruit_type) %>% 
-  distinct() %>% # narrow them down --> there are different pollitation ages for the Acer types 
-  # thus we´ll avearge them, while the pollination and fruit type, which are identical, remain the same 
-  group_by(bot_genus) %>% 
-  reframe(fruct_age = mean(fruct_age), 
-            pollination_type = pollination_type, 
-            fruit_type = fruit_type) %>% distinct() %>% # the distinct is just to errase the doubles the reframe introduces
-  # create "bot_species" column indicating summary with spp. 
-  mutate(bot_species = "spp.") %>% 
-  # create column "species" 
-  unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))
-) %>% 
-  arrange(species)
-
-
-
-# check for differences in the fruit types species groups and bark types species groups
-# there are non, if we compare fruits type species groups with bark types species groups
-fruit_div %>% 
-  anti_join(bark_div, 
-            by = "species")
-# the bark type species groups, however, have one more species or rather species summary for populus called Populus spp. 
-bark_div %>% 
-  anti_join(fruit_div, 
-            by = "species")
-
 
 # ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
@@ -504,6 +340,9 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                                                                 "Pseudotsuga", "Abies",
                                                                                 "Larix")) ~ 'fi',
                                            TRUE ~ 'other')) %>% 
+  # the assignment of the following groups is based on the outcomes of the 03_00_bark_fruit_types_FSI script, 
+  # decision about the grouping proceddure was made during phone call wiht Felix Storch and Nikolai Knapp as well as Jour Fix meeting with Judith Bielefeldt
+  # on 19.03.2024
   mutate(bark_type_SP_group = bot_name) %>% 
                                          # all species of the botanical genus abies are treated as abies alba since it´s the only avaibale bark type
   mutate(bark_type_SP_group = case_when( bot_genus == "Abies" ~ "Abies alba",
