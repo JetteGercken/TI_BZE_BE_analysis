@@ -1,37 +1,37 @@
 "";"species";"bark_type";"DBH_type_1";"DBH_type_2";"DBH_type_3";"bot_genus";"bot_species";"u_border_cm_TY1";"l_border_cm_TY2";"u_border_cm_TY2";"l_border_cm_TY3"
-"1";"Abies alba";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Abies";"alba";" 20 ";"20 ";" 40 ";" 40 "
-"2";"Acer campestre";"scaly";"< 20 cm";">20 cm";"omitted";"Acer";"campestre";" 20 ";" 20 ";"omitted";"omitted"
-"3";"Acer platanoides";"scaly";"< 15 cm";"15 - 35 cm";"> 35 cm";"Acer";"platanoides";" 15 ";"15 ";" 35 ";" 35 "
-"4";"Acer pseudoplatanus";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Acer";"pseudoplatanus";" 20 ";"20 ";" 40 ";" 40 "
-"5";"Acer spp.";"scaly";NA;NA;NA;"Acer";"spp.";"18.3333333333333";"18.3333333333333";"37.5";"37.5"
-"6";"Alnus spp.";"furrowed";"< 15 cm";"15 - 30 cm";"> 30 cm";"Alnus";"spp.";" 15 ";"15 ";" 30 ";" 30 "
-"7";"Betula spp.";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Betula";"spp.";" 15 ";"15 ";" 25 ";" 25 "
-"8";"Carpinus betulus";"smooth";"< 30 cm";">30 cm";"omitted";"Carpinus";"betulus";" 30 ";" 30 ";"omitted";"omitted"
-"9";"Castanea sativa";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Castanea";"sativa";" 20 ";"20 ";" 35 ";" 35 "
-"10";"Fagus sylvatica";"smooth";"omitted";"omitted";"omitted";"Fagus";"sylvatica";"omitted";"omitted";"omitted";"omitted"
-"11";"Fraxinus excelsior";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Fraxinus";"excelsior";" 20 ";"20 ";" 35 ";" 35 "
-"12";"Larix decidua";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Larix";"decidua";" 10 ";"10 ";" 30 ";" 30 "
-"13";"Larix kaempferi";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Larix";"kaempferi";" 10 ";"10 ";" 30 ";" 30 "
-"14";"Larix spp.";"furrowed";NA;NA;NA;"Larix";"spp.";"10";"10";"30";"30"
-"15";"Malus sylvestris";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Malus";"sylvestris";" 20 ";"20 ";" 40 ";" 40 "
-"16";"Picea abies";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Picea";"abies";" 20 ";"20 ";" 40 ";" 40 "
-"17";"Pinus nigra";"scaly";"< 15 cm";"15 - 30 cm";"> 30 cm";"Pinus";"nigra";" 15 ";"15 ";" 30 ";" 30 "
-"18";"Pinus spp.";"scaly";"< 15 cm";"15 - 30 cm";"> 30 cm";"Pinus";"spp.";" 15 ";"15 ";" 30 ";" 30 "
-"19";"Populus balsamifera";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Populus";"balsamifera";" 15 ";"15 ";" 25 ";" 25 "
-"20";"Populus spp.";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Populus";"spp.";" 15 ";"15 ";" 25 ";" 25 "
-"21";"Prunus avium";"smooth";"omitted";"omitted";"omitted";"Prunus";"avium";"omitted";"omitted";"omitted";"omitted"
-"22";"Pseudotsuga menziesii";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Pseudotsuga";"menziesii";" 20 ";"20 ";" 35 ";" 35 "
-"23";"Pyrus pyraster";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Pyrus";"pyraster";" 20 ";"20 ";" 40 ";" 40 "
-"24";"Quercus rubra";"furrowed";"< 20 cm";"20 - 40 cm";"> 40 cm";"Quercus";"rubra";" 20 ";"20 ";" 40 ";" 40 "
-"25";"Quercus spp.";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Quercus";"spp.";" 10 ";"10 ";" 30 ";" 30 "
-"26";"Robinia pseudoacacia";"furrowed";"< 10 cm";"10 - 25 cm";"> 25 cm";"Robinia";"pseudoacacia";" 10 ";"10 ";" 25 ";" 25 "
-"27";"Salix spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Salix";"spp.";" 20 ";"20 ";" 35 ";" 35 "
-"28";"Sorbus aria";"smooth/scaly";"< 20 cm";">20 cm";"omitted";"Sorbus";"aria";" 20 ";" 20 ";"omitted";"omitted"
-"29";"Sorbus domestica";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Sorbus";"domestica";" 20 ";"20 ";" 40 ";" 40 "
-"30";"Sorbus spp.";"smooth";"omitted";"omitted";"omitted";"Sorbus";"spp.";"omitted";"omitted";"omitted";"omitted"
-"31";"Sorbus torminalis";"scaly";"< 15 cm";">15 cm";"omitted";"Sorbus";"torminalis";" 15 ";" 15 ";"omitted";"omitted"
-"32";"Taxus baccata";"scaly";"< 20 cm";">20 cm";"omitted";"Taxus";"baccata";" 20 ";" 20 ";"omitted";"omitted"
-"33";"Tilia spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Tilia";"spp.";" 20 ";"20 ";" 35 ";" 35 "
-"34";"Ulmus spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Ulmus";"spp.";" 20 ";"20 ";" 35 ";" 35 "
-"35";"broadleaf species";"?";"?";"?";"?";"broadleaf";"species";"?";"?";"?";"?"
-"36";"conifer species";"?";"?";"?";"?";"conifer";"species";"?";"?";"?";"?"
+"1";"Abies alba";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Abies";"alba";20;20;40;40
+"2";"Acer campestre";"scaly";"< 20 cm";">20 cm";"omitted";"Acer";"campestre";20;20;NA;NA
+"3";"Acer platanoides";"scaly";"< 15 cm";"15 - 35 cm";"> 35 cm";"Acer";"platanoides";15;15;35;35
+"4";"Acer pseudoplatanus";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Acer";"pseudoplatanus";20;20;40;40
+"5";"Acer spp.";"scaly";NA;NA;NA;"Acer";"spp.";18,3333333333333;18,3333333333333;37,5;37,5
+"6";"Alnus spp.";"furrowed";"< 15 cm";"15 - 30 cm";"> 30 cm";"Alnus";"spp.";15;15;30;30
+"7";"Betula spp.";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Betula";"spp.";15;15;25;25
+"8";"Carpinus betulus";"smooth";"< 30 cm";">30 cm";"omitted";"Carpinus";"betulus";30;30;NA;NA
+"9";"Castanea sativa";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Castanea";"sativa";20;20;35;35
+"10";"Fagus sylvatica";"smooth";"omitted";"omitted";"omitted";"Fagus";"sylvatica";NA;NA;NA;NA
+"11";"Fraxinus excelsior";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Fraxinus";"excelsior";20;20;35;35
+"12";"Larix decidua";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Larix";"decidua";10;10;30;30
+"13";"Larix kaempferi";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Larix";"kaempferi";10;10;30;30
+"14";"Larix spp.";"furrowed";NA;NA;NA;"Larix";"spp.";10;10;30;30
+"15";"Malus sylvestris";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Malus";"sylvestris";20;20;40;40
+"16";"Picea abies";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Picea";"abies";20;20;40;40
+"17";"Pinus nigra";"scaly";"< 15 cm";"15 - 30 cm";"> 30 cm";"Pinus";"nigra";15;15;30;30
+"18";"Pinus spp.";"scaly";"< 15 cm";"15 - 30 cm";"> 30 cm";"Pinus";"spp.";15;15;30;30
+"19";"Populus balsamifera";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Populus";"balsamifera";15;15;25;25
+"20";"Populus spp.";"furrowed";"< 15 cm";"15 - 25 cm";"> 25 cm";"Populus";"spp.";15;15;25;25
+"21";"Prunus avium";"smooth";"omitted";"omitted";"omitted";"Prunus";"avium";NA;NA;NA;NA
+"22";"Pseudotsuga menziesii";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Pseudotsuga";"menziesii";20;20;35;35
+"23";"Pyrus pyraster";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Pyrus";"pyraster";20;20;40;40
+"24";"Quercus rubra";"furrowed";"< 20 cm";"20 - 40 cm";"> 40 cm";"Quercus";"rubra";20;20;40;40
+"25";"Quercus spp.";"furrowed";"< 10 cm";"10 - 30 cm";"> 30 cm";"Quercus";"spp.";10;10;30;30
+"26";"Robinia pseudoacacia";"furrowed";"< 10 cm";"10 - 25 cm";"> 25 cm";"Robinia";"pseudoacacia";10;10;25;25
+"27";"Salix spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Salix";"spp.";20;20;35;35
+"28";"Sorbus aria";"smooth/scaly";"< 20 cm";">20 cm";"omitted";"Sorbus";"aria";20;20;NA;NA
+"29";"Sorbus domestica";"scaly";"< 20 cm";"20 - 40 cm";"> 40 cm";"Sorbus";"domestica";20;20;40;40
+"30";"Sorbus spp.";"smooth";"omitted";"omitted";"omitted";"Sorbus";"spp.";NA;NA;NA;NA
+"31";"Sorbus torminalis";"scaly";"< 15 cm";">15 cm";"omitted";"Sorbus";"torminalis";15;15;NA;NA
+"32";"Taxus baccata";"scaly";"< 20 cm";">20 cm";"omitted";"Taxus";"baccata";20;20;NA;NA
+"33";"Tilia spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Tilia";"spp.";20;20;35;35
+"34";"Ulmus spp.";"furrowed";"< 20 cm";"20 - 35 cm";"> 35 cm";"Ulmus";"spp.";20;20;35;35
+"35";"broadleaf species";"?";"?";"?";"?";"broadleaf";"species";NA;NA;NA;NA
+"36";"conifer species";"?";"?";"?";"?";"conifer";"species";NA;NA;NA;NA

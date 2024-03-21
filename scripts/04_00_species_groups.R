@@ -370,13 +370,13 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                                   bot_genus == "Taxus" ~ "Taxus baccata", 
                                                   bot_genus == "Tilia" ~ "Tilia spp.",
                                                   bot_genus == "Ulmus" ~ "Ulmus spp.",
-                                                  bot_genus == "alii acus" ~ "conifer",
-                                                  bot_genus == "alii frons" ~ "broadleaf",
-                                                  bot_genus == "alii frons noble" ~ "broadleaf",
+                                                  bot_genus == "alii acus" ~ "conifer species",
+                                                  bot_genus == "alii frons" ~ "broadleaf species",
+                                                  bot_genus == "alii frons noble" ~ "broadleaf species",
                                                   # if the bot_genus is not in the list but its a conferous tree, treat it like confier
-                                                  !(bot_genus %in% c(unique(bark_div$bot_genus))) &  LH_NH == "NB" ~ "conifer", 
+                                                  !(bot_genus %in% c(unique(bark_div$bot_genus))) &  LH_NH == "NB" ~ "conifer species", 
                                                   # if the bot_genus is not in the list but its a broadleaf tree, treat it like broadleaf
-                                                  !(bot_genus %in% c(unique(bark_div$bot_genus))) &  LH_NH == "LB" ~ "broadleaf", 
+                                                  !(bot_genus %in% c(unique(bark_div$bot_genus))) &  LH_NH == "LB" ~ "broadleaf species", 
                                                   TRUE ~ bark_type_SP_group)) %>% 
   mutate(fruit_type_SP_group = bot_name) %>%
   mutate(fruit_type_SP_group = case_when(bot_genus == "Abies" ~ "Abies alba",
@@ -402,13 +402,13 @@ SP_names_com_ID_tapeS <- left_join(rbind(
                                          bot_genus == "Taxus" ~ "Taxus baccata", 
                                          bot_genus == "Tilia" ~ "Tilia spp.",
                                          bot_genus == "Ulmus" ~ "Ulmus spp.",
-                                         bot_genus == "alii acus" ~ "conifer",
-                                         bot_genus == "alii frons" ~ "broadleaf",
-                                         bot_genus == "alii frons noble" ~ "broadleaf",
+                                         bot_genus == "alii acus" ~ "conifer species",
+                                         bot_genus == "alii frons" ~ "broadleaf species",
+                                         bot_genus == "alii frons noble" ~ "broadleaf species",
                                          # if the bot_genus is not in the list but its a conferous tree, treat it like Picea abies
-                                         !(bot_genus %in% c(unique(fruit_div$bot_genus))) &  LH_NH == "NB" ~ "conifer", 
+                                         !(bot_genus %in% c(unique(fruit_div$bot_genus))) &  LH_NH == "NB" ~ "conifer species", 
                                          # if the bot_genus is not in the list but its a broadleaf tree, treat it like Fagus silvatica
-                                         !(bot_genus %in% c(unique(fruit_div$bot_genus))) &  LH_NH == "LB" ~ "broadleaf", 
+                                         !(bot_genus %in% c(unique(fruit_div$bot_genus))) &  LH_NH == "LB" ~ "broadleaf species", 
                                          TRUE ~ bark_type_SP_group))
 
 

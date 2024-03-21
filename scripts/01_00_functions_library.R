@@ -1658,32 +1658,61 @@ FSI <- function(x){
 
 
 bark_type <- function(my.dbh.cm, chr.code.ger, output){
-  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
+  bot.name <- SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger ==  chr.code.ger]
+  #my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]]);
+  my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name ==  bot.name]);
+  my.bark.type <- unique(bark_div$bark_type[bark_div$species ==  my.bark.spp]);
+  
   u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp]);
   l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp]);
   u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp]);
   l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp]);
   
   
-  my.bark.ty <- 
-    case_when(# if there is an upper border for type 1 and the diameter is within it
-      !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
-      # if there is an upper and lower border for type 2 and the diamter is within it
-      !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
-        between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is only a lower border for type 2 and the diameter is bejond it 
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
-        my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
-        between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
-      # if there are no diameter specific bark types --> for most of the spp. species groups 
-      is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
-      TRUE ~ NA) ;
-  
+  my.bark.sub.type <- 
+     ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, "TY1", 
+            # if there is an upper and lower border for type 2 and the diamter is within it
+            ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2,  "TY2", 
+                   # i# if there is only a lower border for type 2 and the diameter is bejond it 
+                   ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, "TY2",
+                          # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+                          ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3, "TY2", 
+                                 # if there is a lower border for type 3 and the diameter is above it 
+                                 ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3,"TY3",
+                                        # if there are no diameter specific bark types --> for most of the spp. species groups 
+                                        ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.type, 
+                                               "no Type"
+                                        ))))));
+  # my.bark.sub.type <- 
+  #   ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, "TY1", 
+  #          # if there is an upper and lower border for type 2 and the diamter is within it
+  #          ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2,  "TY2", 
+  #                 # i# if there is only a lower border for type 2 and the diameter is bejond it 
+  #                 ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, "TY2",
+  #                        # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+  #                        ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3, "TY2", 
+  #                               # if there is a lower border for type 3 and the diameter is above it 
+  #                               ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3,"TY3",
+  #                                      # if there are no diameter specific bark types --> for most of the spp. species groups 
+  #                                      ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.spp, 
+  #                                             "no Type"
+  #                                      ))))));
+     # ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, paste0(my.bark.spp, " ", "TY1"), 
+     #        # if there is an upper and lower border for type 2 and the diamter is within it
+     #        ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2, paste0(my.bark.spp," ", "TY2"), 
+     #               # i# if there is only a lower border for type 2 and the diameter is bejond it 
+     #               ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, paste0(my.bark.spp," ", "TY2"),
+     #                      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+     #                      ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3, paste0(my.bark.spp, " ", "TY2"), 
+     #                             # if there is a lower border for type 3 and the diameter is above it 
+     #                             ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3, paste0(my.bark.spp," ", "TY3"),
+     #                                    # if there are no diameter specific bark types --> for most of the spp. species groups 
+     #                                    ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.spp, NA
+     #                                    ))))));
+     # 
   switch(output, 
-         "bark_ty" = my.bark.ty, 
+         "bark_ty" = my.bark.type,
+         "bark_sub_ty" = my.bark.sub.type, 
          "bark_type_species" = my.bark.spp)
 }
 

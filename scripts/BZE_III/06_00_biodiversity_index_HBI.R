@@ -78,12 +78,6 @@ fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.cs
 # It measures the absolute magnitude of a set of numbers, and is calculated by:
 # RMS = sqrt(sum(x)^2/n)
 
-LT_DBH_RMS <- trees_data %>% 
-  group_by(plot_ID) %>% 
-  reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
-  distinct()
-  
-
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   FSI_df <- plyr::rbind.fill(trees_data %>% 
                                group_by(plot_ID) %>% 
@@ -166,37 +160,52 @@ FSI_df <- FSI_df %>%
 
 
 # 1.1.5.1. assign bark type to each tree ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-trees_sub <- trees_data %>% filter(compartiment == "ag")
+trees_sub <- trees_data %>% filter(compartiment == "ag")  
+
+### this loop is proabably unecessary
 bark_TY_list <- vector("list", length = length(trees_sub$tree_ID))
-for (i in 1:length(unique(trees_sub$tree_ID))) {
-  # i = 2
+for (i in 1:nrow(trees_sub)) {
+  # i = 1
   my.tree.id <- trees_sub[i, "tree_ID"]
   my.plot.id <- trees_sub[i, "plot_ID"]
   my.inv <- trees_sub[i, "inv"]
   my.dbh.cm <-  trees_sub[i, "DBH_cm"]
-  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_sub[i, "Chr_code_ger"]]]
-  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp])
-  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp])
-  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp])
-  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp])
+  my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_sub[i, "Chr_code_ger"]]])
+  u_border_cm_TY1 <- (bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp])
+  l_border_cm_TY2 <- (bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp])
+  u_border_cm_TY2 <- (bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp])
+  l_border_cm_TY3 <- (bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp])
   
   
   my.bark.ty <- 
-  case_when(# if there is an upper border for type 1 and the diameter is within it
-            !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
-            # if there is an upper and lower border for type 2 and the diamter is within it
-            !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
-              between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-           # if there is only a lower border for type 2 and the diameter is bejond it 
-           !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
-             my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-           # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-           !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
-             between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-           !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
-            # if there are no diameter specific bark types --> for most of the spp. species groups 
-           is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
-           TRUE ~ NA) 
+  # case_when(# if there is an upper border for type 1 and the diameter is within it
+  #           !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
+  #           # if there is an upper and lower border for type 2 and the diamter is within it
+  #           !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
+  #             between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+  #          # if there is only a lower border for type 2 and the diameter is bejond it 
+  #          !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
+  #            my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+  #          # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+  #          !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
+  #            between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+  #          !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
+  #           # if there are no diameter specific bark types --> for most of the spp. species groups 
+  #          is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
+  #          TRUE ~ NA) 
+     ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1,  paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"), 
+          # if there is an upper and lower border for type 2 and the diamter is within it
+          ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2, paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"), 
+                 # i# if there is only a lower border for type 2 and the diameter is bejond it 
+                 ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
+                        # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
+                        ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3,paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"), 
+                               # if there is a lower border for type 3 and the diameter is above it 
+                               ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3,  paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
+                                      # if there are no diameter specific bark types --> for most of the spp. species groups 
+                                      ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), bark_div$bark_type[bark_div$species == my.bark.spp], NA
+                                      ))))));
+   
   
   bark_TY_list[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
@@ -221,12 +230,24 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               # bind tree dataset summarized by plot 
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
-    trees_data %>% 
-    left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
-    select(plot_ID, inv, bark_TY) %>% 
-    distinct() %>% 
-    group_by(plot_ID, inv) %>% 
-    summarise(LT_n_bark_TY = as.numeric(n())),
+                trees_data %>% filter(compartiment == "ag") %>% 
+                  rowwise() %>% 
+                  mutate(bark_TY_spec = bark_type(DBH_cm, Chr_code_ger, output = "bark_type_species"), 
+                         bark_sub_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_sub_ty"), 
+                         bark_gen_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty")) %>% 
+                  unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
+                  select(plot_ID, inv, bark_TY) %>% 
+                  distinct() %>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(LT_n_bark_TY = as.numeric(n())),
+    ## old calcualtion way with loop when function wasn´t working yet            
+    # trees_data %>% 
+    # left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>% # multiple all is necesarry to link all compartiments with the type per tree
+    #   # it is however amortised by the distinct 
+    # select(plot_ID, inv, bark_TY) %>% 
+    # distinct() %>% 
+    # group_by(plot_ID, inv) %>% 
+    # summarise(LT_n_bark_TY = as.numeric(n())),
     # select only those plots with empty sampling circuits that have all 3 circuits empty
     # by counting the circuits per plot and filtering for those with n_CCS ==3
     trees_stat_2 %>% 
@@ -247,19 +268,27 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 }else{
 FSI_df <- FSI_df %>% left_join(., cbind(
   # dataset with calcualted number of bark types per plot ID 
-  trees_data %>% 
-    left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
+  trees_data %>% filter(compartiment == "ag") %>% 
+    rowwise() %>% 
+    mutate(bark_TY_spec = bark_type(DBH_cm, Chr_code_ger, output = "bark_type_species"), 
+           bark_sub_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_sub_ty"), 
+           bark_gen_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty")) %>% 
+    unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
     select(plot_ID, inv, bark_TY) %>% 
     distinct() %>% 
     group_by(plot_ID, inv) %>% 
     summarise(LT_n_bark_TY = as.numeric(n())), 
   # calculate FSI of bark diversity     
-  "LT_FSI_bark_TY" = c(FSI(as.numeric((trees_data %>%  # this part creates a dataset wich counts the bark types per plot
-                                         left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
-                                         select(plot_ID, inv, bark_TY) %>%
+  "LT_FSI_bark_TY" = c(FSI(as.numeric(((trees_data %>% filter(compartiment == "ag") %>% 
+                                         rowwise() %>% 
+                                         mutate(bark_TY_spec = bark_type(DBH_cm, Chr_code_ger, output = "bark_type_species"), 
+                                                bark_sub_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_sub_ty"), 
+                                                bark_gen_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty")) %>% 
+                                         unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
+                                         select(plot_ID, inv, bark_TY) %>% 
                                          distinct() %>% 
                                          group_by(plot_ID, inv) %>% 
-                                         summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY)))), # select number of barktypes per plot from summary 
+                                         summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
   by = c("plot_ID")) %>% 
   distinct()
 }

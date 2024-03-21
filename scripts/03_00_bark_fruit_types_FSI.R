@@ -114,7 +114,7 @@ bark_div <-
                       # create "bot_species" column indicating summary with spp. 
                       mutate(bot_species = "spp.") %>%
                       # replace "omitted" with NA: https://dplyr.tidyverse.org/reference/na_if.html
-                      mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(.,"omitted"))) %>% 
+                    #  mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(.,"omitted"))) %>% 
                       # calcaulte mean per bot_genus, bark_type
                       group_by(bot_genus, bot_species, bark_type) %>% 
                       summarise(u_border_cm_TY1 = mean(na.omit(as.numeric(u_border_cm_TY1))), 
@@ -123,8 +123,10 @@ bark_div <-
                                 l_border_cm_TY3 = mean(na.omit(as.numeric(l_border_cm_TY3)))) %>% 
                       # create column "species" 
                       unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))) %>% 
-  distinct() %>% arrange(species)
-
+  distinct() %>% arrange(species) %>% 
+  mutate(across(u_border_cm_TY1:l_border_cm_TY3, as.numeric)) %>% 
+  mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(., 0)))
+  
 
 
 # fruitdiversity
@@ -196,7 +198,8 @@ fruit_div <-
        # create column "species" 
        unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))
   ) %>% 
-  arrange(species)
+  arrange(species) %>% 
+  mutate(fruct_age = as.numeric(fruct_age))
 
 
 
