@@ -22,6 +22,7 @@
 #  install.packages("plyr")
 # install.packages("RODBC")
 # install.packages("rstudioapi")
+# install.packages("gsubfn")
 #  ## laTex
 #  install.packages("stargazer")  #for compatability with Latex
 #  install.packages("tikzDevice") #for compatability with Latex#
@@ -75,6 +76,7 @@ require(remotes)
 require(devtools)
 library(RODBC)
 library(rstudioapi)
+library(gsubfn)
 #require(plyr)
 # laTex
 require(stargazer)  #for compatability with Latex
@@ -1656,19 +1658,25 @@ FSI <- function(x){
 
 # 1.18.3. bark type function ----------------------------------------------
 
-
 bark_type <- function(my.dbh.cm, chr.code.ger, output){
+  # my.dbh.cm = trees_data$DBH_cm[1]
+  # chr.code.ger = trees_data$Chr_code_ger[1]
+  
+  # select the botanical name of the speices according to the german abbreviation of the species name
   bot.name <- SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger ==  chr.code.ger]
-  #my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]]);
+  # select bark type speices gorup belonging to the botanical name of the species
   my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name ==  bot.name]);
+  #my.bark.spp <- unique(SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]]);
+  # select the barl type of the bark type species group
   my.bark.type <- unique(bark_div$bark_type[bark_div$species ==  my.bark.spp]);
   
+  # identify the upper and lower borders for the bark subtypes
   u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp]);
   l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp]);
   u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp]);
   l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp]);
   
-  
+  # determine subtype of the barktype according to DBH
   my.bark.sub.type <- 
      ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, "TY1", 
             # if there is an upper and lower border for type 2 and the diamter is within it
@@ -1681,36 +1689,16 @@ bark_type <- function(my.dbh.cm, chr.code.ger, output){
                                  ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3,"TY3",
                                         # if there are no diameter specific bark types --> for most of the spp. species groups 
                                         ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.type, 
-                                               "no Type"
+                                               "no subtype"
                                         ))))));
-  # my.bark.sub.type <- 
-  #   ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, "TY1", 
-  #          # if there is an upper and lower border for type 2 and the diamter is within it
-  #          ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2,  "TY2", 
-  #                 # i# if there is only a lower border for type 2 and the diameter is bejond it 
-  #                 ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, "TY2",
-  #                        # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-  #                        ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3, "TY2", 
-  #                               # if there is a lower border for type 3 and the diameter is above it 
-  #                               ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3,"TY3",
-  #                                      # if there are no diameter specific bark types --> for most of the spp. species groups 
-  #                                      ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.spp, 
-  #                                             "no Type"
-  #                                      ))))));
-     # ifelse(!is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1, paste0(my.bark.spp, " ", "TY1"), 
-     #        # if there is an upper and lower border for type 2 and the diamter is within it
-     #        ifelse(!is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < u_border_cm_TY2, paste0(my.bark.spp," ", "TY2"), 
-     #               # i# if there is only a lower border for type 2 and the diameter is bejond it 
-     #               ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2, paste0(my.bark.spp," ", "TY2"),
-     #                      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-     #                      ifelse(!is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY2 & my.dbh.cm < l_border_cm_TY3, paste0(my.bark.spp, " ", "TY2"), 
-     #                             # if there is a lower border for type 3 and the diameter is above it 
-     #                             ifelse(!is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3, paste0(my.bark.spp," ", "TY3"),
-     #                                    # if there are no diameter specific bark types --> for most of the spp. species groups 
-     #                                    ifelse(is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3), my.bark.spp, NA
-     #                                    ))))));
-     # 
-  switch(output, 
+ 
+   # combine bark type and subtype, if they are not the same: 
+  # because "paste0" comand creates list we hafd to use thise one:https://stackoverflow.com/questions/10341114/alternative-function-to-paste
+  my.bark.type.subtype <- ifelse(my.bark.sub.type == my.bark.type | my.bark.sub.type == "no subtype", as.character(my.bark.type), as.character(fn$paste("$my.bark.type_$my.bark.sub.type")))
+  
+
+  switch(output,
+         "bark_ty_subty" = my.bark.type.subtype,
          "bark_ty" = my.bark.type,
          "bark_sub_ty" = my.bark.sub.type, 
          "bark_type_species" = my.bark.spp)
@@ -1719,10 +1707,10 @@ bark_type <- function(my.dbh.cm, chr.code.ger, output){
 
 # 1.18.4. FSI LT fruit and pollination type -------------------------------
 fruit_type <- function(age, chr.code.ger, output){
-  #age = trees_data$age[1]
-  #chr.code.ger = trees_data$Chr_code_ger[1]
+  # age = trees_data$age[1]
+  # chr.code.ger = "Es" # trees_data$Chr_code_ger[1]
   # select the correct fruit type species group, based on the fruit typ species group that is assinged to the german_character speices name in the x_bart dataset
-  my.fruit.spp <- SP_names_com_ID_tapeS$fruit_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]];
+  my.fruit.spp <- unique(SP_names_com_ID_tapeS$fruit_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == chr.code.ger]]);
   # select the fructivication age of he respective species group
   my.fruct.age <- fruit_div$fruct_age[fruit_div$species == my.fruit.spp];
   # if the age of the tree is above the fructivication age selet the fruit type belonging to that respective species

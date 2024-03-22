@@ -78,14 +78,11 @@ fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.cs
 # It measures the absolute magnitude of a set of numbers, and is calculated by:
 # RMS = sqrt(sum(x)^2/n)
 
-LT_DBH_RMS <- trees_data %>% 
-  group_by(plot_ID) %>% 
-  reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
-  distinct()
-
-
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
-  FSI_df <- plyr::rbind.fill(LT_DBH_RMS, 
+  FSI_df <- plyr::rbind.fill(trees_data %>% 
+                               group_by(plot_ID) %>% 
+                               reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
+                               distinct() , 
                              # select only those plots with empty sampling circuits that have all 3 circuits empty
                              # by counting the circuits per plot and filtering for those with n_CCS ==3
                              trees_stat_2 %>% 
@@ -99,7 +96,10 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     mutate(LT_RMS_DBH = ifelse(is.na(LT_RMS_DBH), 0, LT_RMS_DBH)) %>%  
     mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
 }else{
-  FSI_df <- LT_DBH_RMS %>% 
+  FSI_df <- trees_data %>% 
+    group_by(plot_ID) %>% 
+    reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
+    distinct()%>% 
     mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
 }
 
@@ -158,65 +158,18 @@ FSI_df <- FSI_df %>%
 # for many species to be found there (insects, fungi, yeasts, spiders, epiphytes). 
 # Tree diameter and bark-development phases are considered
 
-
-# 1.1.5.1. assign bark type to each tree ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-trees_sub <- trees_data %>% filter(compartiment == "ag")
-bark_TY_list <- vector("list", length = length(trees_sub$tree_ID))
-for (i in 1:length(unique(trees_sub$tree_ID))) {
-  # i = 2
-  my.tree.id <- trees_sub[i, "tree_ID"]
-  my.plot.id <- trees_sub[i, "plot_ID"]
-  my.inv <- trees_sub[i, "inv"]
-  my.dbh.cm <-  trees_sub[i, "DBH_cm"]
-  my.bark.spp <- SP_names_com_ID_tapeS$bark_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == trees_sub[i, "Chr_code_ger"]]]
-  u_border_cm_TY1 <- as.numeric(bark_div$u_border_cm_TY1[bark_div$species == my.bark.spp])
-  l_border_cm_TY2 <- as.numeric(bark_div$l_border_cm_TY2[bark_div$species == my.bark.spp])
-  u_border_cm_TY2 <- as.numeric(bark_div$u_border_cm_TY2[bark_div$species == my.bark.spp])
-  l_border_cm_TY3 <- as.numeric(bark_div$l_border_cm_TY3[bark_div$species == my.bark.spp])
-  
-  
-  my.bark.ty <- 
-    case_when(# if there is an upper border for type 1 and the diameter is within it
-      !is.na(u_border_cm_TY1) & my.dbh.cm < u_border_cm_TY1 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_1"),
-      # if there is an upper and lower border for type 2 and the diamter is within it
-      !is.na(u_border_cm_TY1) & !is.na(l_border_cm_TY2) & !is.na(u_border_cm_TY2) & 
-        between(my.dbh.cm, l_border_cm_TY2, u_border_cm_TY2) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is only a lower border for type 2 and the diameter is bejond it 
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3) &
-        my.dbh.cm >= l_border_cm_TY2 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      # if there is a lower border for type 2 and for type 3 but no upper for type 2 and the diameter is between type 2 and 3
-      !is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & !is.na(l_border_cm_TY3) &
-        between(my.dbh.cm, l_border_cm_TY2, l_border_cm_TY3) ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_2"),
-      !is.na(l_border_cm_TY3) & my.dbh.cm >= l_border_cm_TY3 ~ paste0(bark_div$bark_type[bark_div$species == my.bark.spp],"_TY_3"),
-      # if there are no diameter specific bark types --> for most of the spp. species groups 
-      is.na(u_border_cm_TY1) & is.na(l_border_cm_TY2) & is.na(u_border_cm_TY2) & is.na(l_border_cm_TY3)~ bark_div$bark_type[bark_div$species == my.bark.spp],
-      TRUE ~ NA) 
-  
-  bark_TY_list[[i]] <- as.data.frame(cbind(
-    "plot_ID" = c(my.plot.id), 
-    "tree_ID" = c(my.tree.id),
-    "inv" = c(my.inv),
-    "bark_SP" = c(my.bark.spp),
-    "bark_TY" = c(my.bark.ty))
-  )
-}
-bark_type_df <- as.data.frame(rbindlist(bark_TY_list)) %>% 
-  mutate(across(c("plot_ID", "tree_ID"), as.integer))
-
-
-
-# 1.1.5.2. calculate bark type FSI and add it to the total FSI dat ---------------------------------------------------------------------------------------------------------------------------
-# dataset with calcualted number of bark types per plot ID 
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
-  
   FSI_df <- FSI_df %>% 
     # join the number of tree bark types per plot dataset and the respective FSI in 
     left_join(., 
               # bind tree dataset summarized by plot 
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
-                trees_data %>% 
-                  left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
+                trees_data %>% filter(compartiment == "ag") %>% 
+                  rowwise() %>% 
+                  # assign bark type to each tree 
+                  mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+                  # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
                   select(plot_ID, inv, bark_TY) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
@@ -241,19 +194,25 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 }else{
   FSI_df <- FSI_df %>% left_join(., cbind(
     # dataset with calcualted number of bark types per plot ID 
-    trees_data %>% 
-      left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
+    trees_data %>% filter(compartiment == "ag") %>% 
+      rowwise() %>% 
+      # assign bark type to each tree 
+      mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+      # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
       select(plot_ID, inv, bark_TY) %>% 
       distinct() %>% 
       group_by(plot_ID, inv) %>% 
       summarise(LT_n_bark_TY = as.numeric(n())), 
     # calculate FSI of bark diversity     
-    "LT_FSI_bark_TY" = c(FSI(as.numeric((trees_data %>%  # this part creates a dataset wich counts the bark types per plot
-                                           left_join(., bark_type_df, by = c("plot_ID", "tree_ID", "inv")) %>% 
-                                           select(plot_ID, inv, bark_TY) %>%
-                                           distinct() %>% 
-                                           group_by(plot_ID, inv) %>% 
-                                           summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY)))), # select number of barktypes per plot from summary 
+    "LT_FSI_bark_TY" = c(FSI(as.numeric((( trees_data %>% filter(compartiment == "ag") %>% 
+                                             rowwise() %>% 
+                                             # assign bark type to each tree 
+                                             mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+                                             # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
+                                             select(plot_ID, inv, bark_TY) %>% 
+                                             distinct() %>% 
+                                             group_by(plot_ID, inv) %>% 
+                                             summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
     by = c("plot_ID")) %>% 
     distinct()
 }
@@ -366,44 +325,12 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 
 
+
 # 1.1.7. diversity of flowering and fructification trees --------------------------------------------------------------------------------------------------------------------------
-# i guess this reffers to how many different fructificating and flowering trees are at a plot? or per ha? 
-# here we have to open a new column in x_bart divifing the trees in flowering & fructifying or not 
-
-trees_sub <- trees_data %>% filter(compartiment == "ag")
-fruit_TY_list <- vector("list", length = length(trees_sub$tree_ID))
-for (i in 1:length(trees_sub$tree_ID)) {
-  # i = 1377
-  
-  my.plot.id <- trees_sub[i, "plot_ID"]
-  my.tree.id <- trees_sub[i, "tree_ID"]
-  my.inv <- trees_sub[i, "inv"]
-  my.tree.age <- trees_sub[i, "age"]
-  my.tree.spp <- trees_sub[i, "Chr_code_ger"]
-  
-  
-  my.fruit.TY <- fruit_type(my.tree.age, my.tree.spp, output = "fruit")
-  my.poll.TY <-  fruit_type(my.tree.age, my.tree.spp, output = "pollen")
-  
-  # export fruit and pollen type per tree per plot per inventory
-  fruit_TY_list[[i]] <- as.data.frame(cbind(
-    "plot_ID" = c(my.plot.id), 
-    "tree_ID" = c(my.tree.id), 
-    "fruit_type_SP_group" = c(SP_names_com_ID_tapeS$fruit_type_SP_group[SP_names_com_ID_tapeS$bot_name == SP_names_com_ID_tapeS$bot_name[SP_names_com_ID_tapeS$Chr_code_ger == my.tree.spp]]),
-    "inv" = c(my.inv), 
-    "fruit_TY" = c(my.fruit.TY), 
-    "poll_TY" = c(my.poll.TY)
-  ))
-}
-LT_fruit_type_df <- as.data.frame(rbindlist(fruit_TY_list)) %>% 
-  mutate(across(c("plot_ID", "tree_ID"), as.integer))
-
-
-# join fruit info into tree dataset and calcualte FSI
-
 # if there are plotw with status 2 for all CCS (meaning plots wehere there is a BZE/ NFI plot but there are no inventorable trees in any sampling circuit)
 # we have to join in those plots with the value 0 for the respective variable in question (in this case fruit types) so that the minimum score possible (the minimum structural
 # diversity a plot can achive in the LT layer) is 0 
+
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   FSI_df <- FSI_df %>% 
     # join the number of tree bark types per plot dataset and the respective FSI in 
@@ -411,8 +338,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               # bind tree dataset summarized by plot 
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
-                trees_data %>% 
-                  left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>% 
+                trees_data %>% filter(compartiment == "ag") %>% 
+                  rowwise() %>% 
+                  mutate(fruit_TY = fruit_type(age, Chr_code_ger, output = "fruit")) %>% 
                   select(plot_ID, inv, fruit_TY) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
@@ -436,8 +364,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 }else{
   FSI_df <- FSI_df %>% left_join(., cbind(
     # dataset with calcualted number of bark types per plot ID 
-    trees_data %>% 
-      left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
+    trees_data %>% filter(compartiment == "ag") %>% 
+      rowwise() %>% 
+      mutate(fruit_TY = fruit_type(age, Chr_code_ger, output = "fruit")) %>% 
       select(plot_ID, inv, fruit_TY) %>% 
       distinct() %>% 
       group_by(plot_ID, inv) %>% 
@@ -566,7 +495,6 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
 
 
 # 1.3. REGENERATION -------------------------------------------------------
-
 # 1.3.1. number of species per plot ---------------------------------------
 FSI_df<- FSI_df %>% 
   left_join(., 
@@ -579,6 +507,8 @@ FSI_df<- FSI_df %>%
                      plot_ID = as.integer(plot_ID)) %>% 
               rename("RG_n_SP" = "n_SP"), 
             by = "plot_ID")
+
+
 
 
 # 1.4. FSI final score per plot ----------------------------------------------------------------------------------------------------
@@ -665,6 +595,4 @@ ggplot()+
   #         aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = variable), 
   #         stat = "identity", position = "dodge")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-
 

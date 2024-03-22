@@ -616,6 +616,9 @@ rem.circle.multipoly.df.nogeo <- as.data.frame(rbindlist(remaining.circle.multip
 rem.circle.one.edge.df.nogeo <- rbind(rem.circle.poly.df.nogeo, rem.circle.multipoly.df.nogeo)
 
 
+# 3.2.1.3.2.outer forest edge: loop for intersections for plots with once adge and edge type %in% c(1, 2) --------
+
+
 
 
 

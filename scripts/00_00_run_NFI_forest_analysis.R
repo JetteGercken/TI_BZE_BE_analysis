@@ -50,8 +50,10 @@
 source(paste0(here(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
 source(paste0(here(), "/scripts/02_00_connect_R_PostgreSQL.R"))
+# data wrangling & sorting for bark and fruit types for forest structural indeyx calcualtion
+ source(paste0(here(), "/scripts/03_00_bark_fruit_types_FSI.R"))
 # sort species into species groups required for data sorting & analysis
-source(paste0(here(), "/scripts/03_00_species_groups.R"))
+source(paste0(here(), "/scripts/04_00_species_groups.R"))
 
 
 

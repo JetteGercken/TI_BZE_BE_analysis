@@ -125,7 +125,8 @@ bark_div <-
                       unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))) %>% 
   distinct() %>% arrange(species) %>% 
   mutate(across(u_border_cm_TY1:l_border_cm_TY3, as.numeric)) %>% 
-  mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(., 0)))
+  mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(., 0))) %>% 
+  mutate(bark_type = ifelse(bark_type == "?", "unkown", bark_type))
   
 
 
@@ -198,8 +199,9 @@ fruit_div <-
        # create column "species" 
        unite("species", c(bot_genus, bot_species), sep = " ", remove = FALSE))
   ) %>% 
-  arrange(species) %>% 
-  mutate(fruct_age = as.numeric(fruct_age))
+  mutate(fruct_age = ifelse(species %in% c("broadleaf species", "conifer species"), NA , as.numeric(fruct_age))) %>% 
+  # change pollynation and fruit type to unknown: https://stackoverflow.com/questions/63048292/r-mutate-multiple-columns-with-ifelse
+  mutate(across(pollination_type:fruit_type, ~ifelse(.x == 0, "unknown", .x)) ) %>% arrange(species) %>% distinct()
 
 
 
