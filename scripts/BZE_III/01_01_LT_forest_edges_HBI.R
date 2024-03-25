@@ -21,7 +21,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-geo_loc <- read.delim(file = here("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv"), sep = ";", dec = ",")
+geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ";", dec = ",")
 
@@ -696,9 +696,11 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   my.poly <- sf::st_as_sf(edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id & inv_year == my.inv.year))
   
   # print the cirlce and edge polygone
-   print(plot(circle.17, main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)), 
-         plot(my.poly, col = 0, add = T), 
-         plot(tree.sf$geometry, add = T))
+   print(
+     c(plot(st_geometry(circle.17), main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)) ,
+         plot(st_geometry(my.poly), col = 0, add = TRUE),
+         plot(st_geometry(tree.sf), add = TRUE))
+   )
   
   
   #### 17m circle
@@ -1036,12 +1038,10 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
   
-  plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2))
-  plot(remaining.circle.12.1.and.2.poly$geometry, add = T)
-  plot(remaining.circle.5.1.and.2.poly$geometry, add = T)
-  
-  
-  
+ print( c(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)),
+  plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
+  plot(remaining.circle.5.1.and.2.poly$geometry, add = T))
+  )
   
   #### calculate the area
   ## 17m cricle
@@ -1177,6 +1177,388 @@ rem.circle.multipoly.two.edges.df.nogeo <- as.data.frame(rem.circle.multipoly.tw
 rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(rem.circle.multipoly.two.edges.list.final.nogeo) != 0){
   rbind(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
 }else{rem.circle.poly.two.edges.df.nogeo}
+
+
+
+
+
+
+
+
+
+
+# 3.2.1.3.2. outer edge: loop for intersection of plots with 2 edges, edge type 1, 2 ---------------------------------------------------------------
+# dataprep for loop
+# createa dataframe with plots that have only one forest edges
+forest_edges.man.sub.2.outer.edges.nogeo <-
+  # check for plots with two edges that have an edge labelled type 1 or 2 
+  forest_edges.man %>%
+  # select only plots with a known edge form and for edge 2 
+  # --> select only those that actually intersect the 17m circle
+  filter(e_form == 1 | 
+           e_form == 2 & inter_status_AT_17 == "two I" | 
+           e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
+  # filter plots that have two edges among those that have edges at all
+  semi_join(forest_edges.man %>% filter(e_form == 1 | 
+                                          e_form == 2 & inter_status_AT_17 == "two I" | 
+                                          e_form == 2 & inter_status_BT_17 == "two I") %>% 
+              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
+  # select those plots among the plots htat have two edges of which at least one intersects the circle which 
+  # have at least one edge_type of 1 or 2
+  semi_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID), by = "plot_ID") # %>% # 14 plots iwth 2 edges --> 28 rows
+# remove plots that do now have a corresponding center coordiante in the HBI loc document
+# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
+
+
+
+  
+# prepare output lists
+# list to save areas in
+outer.edges.list.two.edges.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+# list to save the first intersection polygone per plot in
+outer.inter.poly.1.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+# list to save the second intersection polygone per plot in
+outer.inter.poly.2.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+# list to save the remaining circle polygones per plot in
+outer.rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+# list to save the remaining circle MULTIpolygones per plot in
+outer.rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+# list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
+intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+
+for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
+  #i = 1
+  # i = which(grepl(50075, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+  
+  # select plot ID of the respective circle 
+  my.plot.id <- unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)[i]
+  my.inv.year <- unique(forest_edges.man.sub.2.outer.edges.nogeo[i, c("plot_ID", "inv_year")])[, "inv_year"]
+  
+  ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
+  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
+  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  ## select crs
+  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  
+  
+  #### build circle
+  # circle data
+  c.x0 = 0    # + my.center.easting 
+  c.y0 = 0    # + my.center.northing
+  c.r3 = 17.84
+  c.r2 = 12.62
+  c.r1 = 5.64
+  # build polygon (circlular buffer) around center point
+  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
+  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  ## assing crs to cirlce corodiantes
+  # sf::st_crs(circle.pt) <- my.utm.epsg
+  circle.17 <- sf::st_buffer(circle.pt, c.r3)
+  circle.12 <- sf::st_buffer(circle.pt, c.r2)
+  circle.5 <- sf::st_buffer(circle.pt, c.r1)
+  
+  
+  # tree data to identify edge without trees
+  outer.trees.df <- trees_data[trees_data$plot_ID == my.plot.id, ]
+  my.tree.id <- outer.trees.df["tree_ID"]
+  # calcualte polar coordinates of trees
+  tree.coord.df <- outer.trees.df %>% 
+    mutate(dist_tree = dist_cm/100, 
+           x_tree = dist_tree*sin(azi_gon), 
+           y_tree = dist_tree*cos(azi_gon), 
+           lon = x_tree, #+ my.center.easting, 
+           lat =  y_tree ) %>% # + my.center.northing)
+    select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
+  # create sf point object from dataframe
+  #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
+  tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
+  ## assing CRS to points
+  #sf::st_crs(tree.sf) <- my.utm.epsg
+  
+  
+  #### select the  polygones the circle is intersected by
+  # select the polygones with the same plot ID as the cirlce
+  my.plot.polys.df <- edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id & inv_year == my.inv.year) %>% arrange(e_ID)
+  #  this part is about whicht polgone to priotiise if there are two overlapping edges: 
+  # usually we would select the polygone with edge_ID == 1 to be the priotiised one. now however, we will select the polygone with 
+  # no trees to be the prioritized 
+  
+  # select the polygone with no trees and make it poly.1
+  # if the first polygone intersects with trees, but the second polygone doesn´t have intersections with trees, poly one is changes to poly 2 
+  # if that is not the case everything remains as it was
+  # create the polygones of the edge geometries
+  # if edge 2 doesn´t have trees edge ID 2 becomed poly.1 and edge ID 1 becomes poly.2
+  }if(nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[2,]), tree.sf)) == 0 && 
+           nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[1,]), tree.sf)) != 0){
+    my.poly.1 <- sf::st_as_sf(my.plot.polys.df[2,])
+    my.poly.2 <- sf::st_as_sf(my.plot.polys.df[1,])
+  }else {
+    # if edge 1 doesn´t have trees edge 1 becomed poly.1 and edge 2 becomes poly.2
+    # if both edges have trees or both edges do not have trees the poly with edge ID 1 becomes poly.1 and the edge with ID 2 becomes poly.2 
+    my.poly.1 <- sf::st_as_sf(my.plot.polys.df[1,])
+    my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
+    
+  }
+  
+  
+  # select edge ID of edge polygones
+  my.e.id.1 <- my.plot.polys.df$e_ID[1]
+  my.e.id.2 <- my.plot.polys.df$e_ID[2]
+  # select edge form of the respective edge polygones
+  my.e.form.1 <- my.plot.polys.df$e_form[1]
+  my.e.form.2 <- my.plot.polys.df$e_form[2]
+  
+  # print edges and circle
+  print(c(plot(circle.17$geometry),
+          plot(my.poly.1$geometry, add = T),
+          plot(my.poly.2$geometry,  add = T), 
+          plot(st_geometry(tree.sf), add = TRUE)))
+ 
+  
+ 
+  
+  
+  #### intersections between polygones and circles   
+  ### 17m circle 
+  my.circle = circle.17
+  ## create poolygon of intersection for first polygon with circle
+  inter.poly.17.1  <- st_intersection(my.circle, my.poly.1)
+  inter.status.poly.17.1 <- ifelse(nrow(inter.poly.17.1) == 0, "no intersections",
+                                   ifelse(my.e.form.1 == 1 & inter.poly.17.1$geometry == my.circle$geometry,  "no intersections",
+                                          ifelse(my.e.form.1 == 2 & inter.poly.17.1$geometry == my.circle$geometry, "fully covering circle", 
+                                                 "partly intersecting")))
+  # if the first ednge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections and the circle is passed on to the next edge to calcualte the intersection
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.17.1 <- if(isTRUE(inter.poly.17.1) && inter.poly.17.1$geometry == my.circle$geometry){inter.poly.17.1 <- data.frame()}else{inter.poly.17.1}
+  
+  ## create poolygon of remaining circle after first edge polygone is intersected
+  # create poly with remaining area: https://gis.stackexchange.com/questions/353633/r-spatial-erase-one-polygon-from-another-correct-use-of-st-difference
+  remaining.circle.17.1 <- if(nrow(inter.poly.17.1)==0){my.circle}else{sf::st_difference(my.circle, inter.poly.17.1)}
+  #print(plot(remaining.circle.17.1$geometry, main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
+  
+  ## create polygone of intersecting area of second polygone with remaining circle
+  inter.poly.17.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.17.1))
+  inter.status.poly.17.2 <- ifelse(nrow(inter.poly.17.2) == 0, "no intersections",
+                                   ifelse(my.e.form.2== 1 & inter.poly.17.2$geometry == remaining.circle.17.1$geometry,  "no intersections",
+                                          ifelse(my.e.form.2 == 2 & inter.poly.17.2$geometry == remaining.circle.17.1$geometry, "fully covering circle", 
+                                                 "partly intersecting")))
+  # if the second edge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.17.2 <- if(isTRUE(inter.poly.17.2) && inter.poly.17.2$geometry == remaining.circle.17.1$geometry){inter.poly.17.2 <- data.frame()}else{inter.poly.17.2}
+  
+  ## create polygone of the  remaining cricle after both intersects are decucted
+  # so the area of the frst remining circle minus the area of the second remaining circle 
+  remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
+  #print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
+  
+  ### 12m circle 
+  my.circle = circle.12
+  ## create poolygon of intersection for first polygon with circle
+  inter.poly.12.1  <- st_intersection(my.circle, my.poly.1)
+  inter.status.poly.12.1 <- ifelse(nrow(inter.poly.12.1) == 0, "no intersections",
+                                   ifelse(my.e.form.1 == 1 & inter.poly.12.1$geometry == my.circle$geometry,  "no intersections",
+                                          ifelse(my.e.form.1 == 2 & inter.poly.12.1$geometry == my.circle$geometry, "fully covering circle", 
+                                                 "partly intersecting")))
+  # if the first ednge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections and the circle is passed on to the next edge to calcualte the intersection
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.12.1 <- if(isTRUE(inter.poly.12.1) && inter.poly.12.1$geometry == my.circle$geometry){inter.poly.12.1 <- data.frame()}else{inter.poly.12.1}
+  
+  ## create poolygon of remaining circle after first edge polygone is intersected
+  # create poly with remaining area: https://gis.stackexchange.com/questions/353633/r-spatial-erase-one-polygon-from-another-correct-use-of-st-difference
+  remaining.circle.12.1 <- if(nrow(inter.poly.12.1)==0){my.circle}else{sf::st_difference(my.circle, inter.poly.12.1)}
+  # print(plot(remaining.circle.12.1$geometry, main = paste0(my.plot.id, "-",my.e.form.1,  "-", c.r2))) 
+  
+  ## create polygone of intersecting area of second polygone with remaining circle
+  inter.poly.12.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.12.1))
+  inter.status.poly.12.2 <- ifelse(nrow(inter.poly.12.2) == 0, "no intersections",
+                                   ifelse(my.e.form.2== 1 & inter.poly.12.2$geometry == remaining.circle.12.1$geometry,  "no intersections",
+                                          ifelse(my.e.form.2 == 2 & inter.poly.12.2$geometry == remaining.circle.12.1$geometry, "fully covering circle", 
+                                                 "partly intersecting")))
+  # if the second edge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.12.2 <- if(isTRUE(inter.poly.12.2) && inter.poly.12.2$geometry == remaining.circle.12.1$geometry){inter.poly.12.2 <- data.frame()}else{inter.poly.12.2}
+  
+  ## create polygone of the  remaining cricle after both intersects are decucted
+  # so the area of the frst remining circle minus the area of the second remaining circle 
+  remaining.circle.12.1.and.2.poly <- if(nrow(inter.poly.12.2)==0){remaining.circle.12.1}else{sf::st_difference(remaining.circle.12.1, inter.poly.12.2)}
+  #print(plot(remaining.circle.12.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r2)))
+  
+  ### 5m circle 
+  my.circle = circle.5
+  ## create poolygon of intersection for first polygon with circle
+  inter.poly.5.1  <- st_intersection(my.circle, my.poly.1)
+  inter.status.poly.5.1 <- ifelse(nrow(inter.poly.5.1) == 0, "no intersections",
+                                  ifelse(my.e.form.1 == 1 & inter.poly.5.1$geometry == my.circle$geometry,  "no intersections",
+                                         ifelse(my.e.form.1 == 2 & inter.poly.5.1$geometry == my.circle$geometry, "fully covering circle", 
+                                                "partly intersecting")))
+  # if the first ednge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections and the circle is passed on to the next edge to calcualte the intersection
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.5.1 <- if(isTRUE(inter.poly.5.1) && inter.poly.5.1$geometry == my.circle$geometry){inter.poly.5.1 <- data.frame()}else{inter.poly.5.1}
+  
+  ## create poolygon of remaining circle after first edge polygone is intersected
+  # create poly with remaining area: https://gis.stackexchange.com/questions/353633/r-spatial-erase-one-polygon-from-another-correct-use-of-st-difference
+  remaining.circle.5.1 <- if(nrow(inter.poly.5.1)==0){my.circle}else{sf::st_difference(my.circle, inter.poly.5.1)}
+  # print(plot(remaining.circle.5.1$geometry, main = paste0(my.plot.id, "-",my.e.form.1,  "-", c.r1))) 
+  
+  ## create polygone of intersecting area of second polygone with remaining circle
+  inter.poly.5.2 <- st_intersection(my.poly.2, st_geometry(remaining.circle.5.1))
+  inter.status.poly.5.2 <- ifelse(nrow(inter.poly.5.2) == 0, "no intersections",
+                                  ifelse(my.e.form.2== 1 & inter.poly.5.2$geometry == remaining.circle.5.1$geometry,  "no intersections",
+                                         ifelse(my.e.form.2 == 2 & inter.poly.5.2$geometry == remaining.circle.5.1$geometry, "fully covering circle", 
+                                                "partly intersecting")))
+  # if the second edge covers all of the circle remaining its going to be set to 0 so we know there are no direct intersections
+  # https://www.statology.org/r-argument-is-of-length-zero/
+  inter.poly.5.2 <- if(isTRUE(inter.poly.5.2) && inter.poly.5.2$geometry == remaining.circle.5.1$geometry){inter.poly.5.2 <- data.frame()}else{inter.poly.5.2}
+  
+  ## create polygone of the  remaining cricle after both intersects are decucted
+  # so the area of the frst remining circle minus the area of the second remaining circle 
+  remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
+  
+  plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2))
+  plot(remaining.circle.12.1.and.2.poly$geometry, add = T)
+  plot(remaining.circle.5.1.and.2.poly$geometry, add = T)
+  
+  
+  
+  
+  #### calculate the area
+  ## 17m cricle
+  # area of the intersection 1
+  inter.17.1.area <- ifelse(nrow(inter.poly.17.1) == 0, 0, sf::st_area(inter.poly.17.1))
+  # area of the intersection polygone 2
+  inter.17.2.area <- ifelse(nrow(inter.poly.17.2) == 0, 0, sf::st_area(inter.poly.17.2))
+  #  area of the remaining circle, after both intersections are deducted
+  remaining.circle.area.17 <- sf::st_area(remaining.circle.17.1.and.2.poly)
+  # save area in dataframe
+  inter.area.df.17 <- as.data.frame(
+    cbind("plot_ID" = c(my.plot.id, my.plot.id, my.plot.id), "e_ID" = c(my.e.id.1, my.e.id.2, 0),
+          "inv_year" = c(my.inv.year, my.inv.year, my.inv.year),
+          #"e_form" = c(my.poly.1$e_form, my.poly.2$e_form, 0),"shape" = c("edge", "edge", "circle"),
+          "CCS_r_m" = c(c.r3, c.r3, c.r3), 
+          "inter_stat" = c(inter.status.poly.17.1, inter.status.poly.17.2, 0),
+          "area_m2" = c(inter.17.1.area, inter.17.2.area, remaining.circle.area.17)
+    ))
+  
+  ## 12m cricle
+  # area of the intersection 1
+  inter.12.1.area <- ifelse(nrow(inter.poly.12.1) == 0, 0, sf::st_area(inter.poly.12.1))
+  # area of the intersection polygone 2
+  inter.12.2.area <- ifelse(nrow(inter.poly.12.2) == 0, 0, sf::st_area(inter.poly.12.2))
+  #  area of the remaining circle, after both intersections are deducted
+  remaining.circle.area.12 <- sf::st_area(remaining.circle.12.1.and.2.poly)
+  # save area in dataframe
+  inter.area.df.12 <- as.data.frame(
+    cbind("plot_ID" = c(my.plot.id, my.plot.id, my.plot.id), "e_ID" = c(my.e.id.1, my.e.id.2, 0),
+          #"e_form" = c(my.poly.1$e_form, my.poly.2$e_form, 0),"shape" = c("edge", "edge", "circle"),
+          "inv_year" = c(my.inv.year, my.inv.year, my.inv.year),
+          "CCS_r_m" = c(c.r2, c.r2, c.r2), 
+          "inter_stat" = c(inter.status.poly.12.1, inter.status.poly.12.2, 0),
+          "area_m2" = c(inter.12.1.area, inter.12.2.area, remaining.circle.area.12)
+    ))
+  
+  ## 5m cricle
+  # area of the intersection 1
+  inter.5.1.area <- ifelse(nrow(inter.poly.5.1) == 0, 0, sf::st_area(inter.poly.5.1))
+  # area of the intersection polygone 2
+  inter.5.2.area <- ifelse(nrow(inter.poly.5.2) == 0, 0, sf::st_area(inter.poly.5.2))
+  #  area of the remaining circle, after both intersections are deducted
+  remaining.circle.area.5 <- sf::st_area(remaining.circle.5.1.and.2.poly)
+  # save area in dataframe
+  inter.area.df.5 <- as.data.frame(
+    cbind("plot_ID" = c(my.plot.id, my.plot.id, my.plot.id), 
+          "e_ID" = c(my.e.id.1, my.e.id.2, 0),
+          #"e_form" = c(my.poly.1$e_form, my.poly.2$e_form, 0),"shape" = c("edge", "edge", "circle"),
+          "inv_year" = c(my.inv.year, my.inv.year, my.inv.year),
+          "CCS_r_m" = c(c.r1, c.r1, c.r1), 
+          "inter_stat" = c(inter.status.poly.5.1, inter.status.poly.5.2, 0),
+          "area_m2" = c(inter.5.1.area, inter.5.2.area, remaining.circle.area.5)
+    ))
+  
+  
+  # bind area datafames of all 3 circles together
+  inter.area.df <- rbind(inter.area.df.17, inter.area.df.12,inter.area.df.5 )
+  
+  # assing stand to the edges depedning on area
+  stand.df <- inter.area.df%>% 
+    filter(CCS_r_m  == 17.84) %>% 
+    mutate(area_m2 = as.numeric(area_m2)) %>% 
+    group_by(plot_ID, inv_year) %>% 
+    arrange(area_m2) %>% 
+    # lowest area receives stand ID C, then B, then A
+    mutate(stand = case_when(
+      row_number()== 1 ~ "C",
+      row_number()== 2 ~ "B",
+      row_number()== 3 ~ "A",
+      TRUE ~ NA)) %>% 
+    # make stand.df joinable by only leaving plot_ID, e_ID, no matter the diameter of the CCS
+    select(- c(CCS_r_m, inter_stat, area_m2))
+  
+  # join in stand info based on area of the edge segment
+  inter.area.df <- inter.area.df %>% left_join(., stand.df, 
+                                               by = c("plot_ID", "e_ID", "inv_year"))
+  
+  # save datacframe per plot in list
+  edges.list.two.edges.nogeo[[i]] <- inter.area.df
+  
+  
+  # create list with those plot ID where the two edges intersect within the radius of 17.84m
+  intersection.between.edges.17 <- sf::st_intersection(
+    sf::st_intersection(my.poly.1, circle.17), # intersection poly 1 and cirlce 17
+    sf::st_intersection(my.poly.2, circle.17)) # intersection poly 2 and cirlce 17
+  intersection.warning.edges <- ifelse(nrow(intersection.between.edges.17) == 0, NA, intersection.between.edges.17$plot_ID)
+  intersection.warning.edges.list.nogeo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
+  
+  ## save intersection polygones in list
+  # poly.1
+  inter.poly.1.list.nogeo[[i]] <- if(nrow(inter.poly.17.1)!= 0){c(inter.poly.17.1)}else{c(my.poly.1)}
+  # poly.2
+  inter.poly.2.list.nogeo[[i]] <- if(nrow(inter.poly.17.2)!= 0){c(inter.poly.17.2)}else{c( my.poly.2)}
+  
+  ## save the reimaingf circle polygones in a list
+  remaining.circle.17.1.and.2.poly$plot_ID <- my.plot.id
+  remaining.circle.17.1.and.2.poly$e_ID <- 0
+  remaining.circle.17.1.and.2.poly$inv_year <- my.inv.year
+  remaining.circle.17.1.and.2.poly$e_form <- 0
+  remaining.circle.17.1.and.2.poly$geometry <- remaining.circle.17.1.and.2.poly$geometry
+  # create list wit polygones of the remaining cirlce when it´s only one polygone
+  rem.circle.poly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  # create list wit polygones of the remaining cirlce when it´s a multipoligone
+  rem.circle.multipoly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  
+}
+# save areas into dataframe
+edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo))
+
+# save plot IDs with overlappig edges within the 17.84m circle into dataframe
+intersection.two.edges.warning.final.nogeo <- rbindlist(intersection.warning.edges.list.nogeo, fill=TRUE)
+intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame(intersection.two.edges.warning.final.nogeo))
+if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
+                                                           Please check dataset intersection.two.edges.warning.df.nogeo")}
+
+# save intersection polygones into dataframe 
+# list of polygones 1 of forest edges 
+inter.poly.1.list.final.nogeo <- rbindlist(inter.poly.1.list.nogeo, fill=TRUE)
+inter.poly.1.two.edges.df.nogeo <- as.data.frame(inter.poly.1.list.final.nogeo)
+# list of polygones 2 of forest edges 
+inter.poly.2.list.final.nogeo <- rbindlist(inter.poly.2.list.nogeo, fill=TRUE)
+inter.poly.2.two.edges.df.nogeo <- as.data.frame(inter.poly.2.list.final.nogeo)[,c(1,2,3,4, 5)]
+# bind the both edges per plot together
+inter.poly.two.edges.df.nogeo <- rbind(inter.poly.1.two.edges.df.nogeo, inter.poly.2.two.edges.df.nogeo) %>% arrange(plot_ID, e_ID)
+
+# list of polygones of remainign circles 
+rem.circle.poly.two.edges.list.final.nogeo <- rbindlist(rem.circle.poly.2.edges.list.nogeo, fill = TRUE)
+rem.circle.poly.two.edges.df.nogeo <- as.data.frame(rem.circle.poly.two.edges.list.final.nogeo)[,c(1,2,3,4, 5)]  %>% distinct()
+# list of multipolygones of remaining circles
+rem.circle.multipoly.two.edges.list.final.nogeo <- rbindlist(rem.circle.multipoly.2.edges.list.nogeo)
+rem.circle.multipoly.two.edges.df.nogeo <- as.data.frame(rem.circle.multipoly.two.edges.list.final.nogeo)[,c(1,2,3,4,9)] %>% distinct()
+# binding the both circle lists back together 
+rem.circle.two.edges.df.nogeo <- if(nrow(rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(rem.circle.multipoly.two.edges.list.final.nogeo) != 0){
+  rbind(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
+}else{rem.circle.poly.two.edges.df.nogeo}
+
+
+
+
 
 
 
