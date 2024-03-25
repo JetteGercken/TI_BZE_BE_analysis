@@ -1227,7 +1227,7 @@ outer.rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(
 intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
 
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
-  #i = 1
+  #i = 4
   # i = which(grepl(50075, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -1278,23 +1278,29 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   
   #### select the  polygones the circle is intersected by
   # select the polygones with the same plot ID as the cirlce
-  my.plot.polys.df <- edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id & inv_year == my.inv.year) %>% arrange(e_ID)
+  my.plot.polys.df <- edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id & inv_year == my.inv.year) %>% arrange(e_ID) %>% 
+    left_join(., forest_edges.man %>% select(plot_ID, e_ID, e_type), by = c("plot_ID", "e_ID"))
   #  this part is about whicht polgone to priotiise if there are two overlapping edges: 
   # usually we would select the polygone with edge_ID == 1 to be the priotiised one. now however, we will select the polygone with 
   # no trees to be the prioritized 
   
+  ## create the polygones of the edge geometries
+  # determine intersection status between poly and trees
   # select the polygone with no trees and make it poly.1
-  # if the first polygone intersects with trees, but the second polygone doesn´t have intersections with trees, poly one is changes to poly 2 
-  # if that is not the case everything remains as it was
-  # create the polygones of the edge geometries
-  # if edge 2 doesn´t have trees edge ID 2 becomed poly.1 and edge ID 1 becomes poly.2
-  }if(nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[2,]), tree.sf)) == 0 && 
-           nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[1,]), tree.sf)) != 0){
+  # if the first polygone intersects with trees, but the second polygone doesn´t have intersections with trees while the edge type is 1 or 2,
+  # poly.1 is changes to poly.2 
+  # if that is not the case everything remains as it is in the "normal" / "not outer  edges" way
+  # if edge 2 doesn´t have trees and the edge type 1 or two  edge ID 2 becomed poly.1 and edge ID 1 becomes poly.2
+  # poly.1 means that this is the polygone to be prioritized while 
+  # --> this means the only way to prioritize the polygonn with the ID 2 is when it is an e
+  if(isTRUE(nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[2,]), tree.sf)) == 0 && my.plot.polys.df$e_type[2] %in% c(1,2) &&
+           nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[1,]), tree.sf)) != 0) && !(my.plot.polys.df$e_type[2] %in% c(1,2))){
     my.poly.1 <- sf::st_as_sf(my.plot.polys.df[2,])
     my.poly.2 <- sf::st_as_sf(my.plot.polys.df[1,])
   }else {
-    # if edge 1 doesn´t have trees edge 1 becomed poly.1 and edge 2 becomes poly.2
-    # if both edges have trees or both edges do not have trees the poly with edge ID 1 becomes poly.1 and the edge with ID 2 becomes poly.2 
+    # if edge ID 2 does have type 1 or 2 but intersects with trees, the poly with the ID 1 remains poly.1 if 
+    # if edge ID 1 doesn´t have trees but has the edge type 1 or 2 edge 1 becomed poly.1 and edge 2 becomes poly.2
+    # if both edges have trees or both edges do not have trees no matter their edge type, the poly with edge ID 1 becomes poly.1 and the edge with ID 2 becomes poly.2 
     my.poly.1 <- sf::st_as_sf(my.plot.polys.df[1,])
     my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
     
@@ -1302,16 +1308,17 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   
   
   # select edge ID of edge polygones
-  my.e.id.1 <- my.plot.polys.df$e_ID[1]
-  my.e.id.2 <- my.plot.polys.df$e_ID[2]
+  my.e.id.1 <- my.poly.1$e_ID
+  my.e.id.2 <- my.poly.2$e_ID
   # select edge form of the respective edge polygones
-  my.e.form.1 <- my.plot.polys.df$e_form[1]
-  my.e.form.2 <- my.plot.polys.df$e_form[2]
+  my.e.form.1 <- my.poly.1$e_form
+  my.e.form.2 <- my.poly.2$e_form
+  
   
   # print edges and circle
   print(c(plot(circle.17$geometry),
-          plot(my.poly.1$geometry, add = T),
-          plot(my.poly.2$geometry,  add = T), 
+          plot(my.poly.1$geometry, col = "red", add = T),
+          plot(my.poly.2$geometry, col = "blue",  add = T), 
           plot(st_geometry(tree.sf), add = TRUE)))
  
   
