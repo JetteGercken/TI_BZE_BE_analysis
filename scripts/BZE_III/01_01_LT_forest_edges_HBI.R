@@ -473,19 +473,20 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
   
   
   #### 17m circle
+   my.circle = circle.17
   # calculate intersection for 17m circle 
-  inter.poly.17  <- sf::st_intersection(circle.17, my.poly)
+  inter.poly.17  <- sf::st_intersection(my.circle, my.poly)
   
   inter.status.poly.17 <- ifelse(nrow(inter.poly.17) == 0, "no intersections",
-                                 ifelse(my.e.form == 1 & inter.poly.17$geometry == circle.17$geometry,  "no intersections",
-                                        ifelse(my.e.form == 2 & inter.poly.17$geometry == circle.17$geometry, "fully covering circle", 
+                                 ifelse(my.e.form == 1 & inter.poly.17$geometry == my.circle$geometry,  "no intersections",
+                                        ifelse(my.e.form == 2 & inter.poly.17$geometry == my.circle$geometry, "fully covering circle", 
                                                "partly intersecting")))
   # this is just to remove all the additional attributes from the intersection polygone
-  #inter.poly  <- sf::st_intersection(circle.17, st_geometry(my.poly))
+  #inter.poly  <- sf::st_intersection(my.circle, st_geometry(my.poly))
   # if the ednge covers all of the circle remaining, the inter.polygone its going to be set to 0 so we know there are no direct intersections
-  inter.poly.17 <- if(isTRUE(inter.poly.17) && inter.poly.17$geometry == circle.17$geometry){inter.poly.17 <- data.frame()}else{inter.poly.17}
+  inter.poly.17 <- if(isTRUE(inter.poly.17) && inter.poly.17$geometry == my.circle$geometry){inter.poly.17 <- data.frame()}else{inter.poly.17}
   # if the edge-circle intersection is equal to 0 (so there is no intersection) return the whole cirlce as remaining circle area, else calculate the remaining circle by decuctng the intersection are from the circle area
-  remaining.circle.poly.17  <- if(isTRUE(nrow(inter.poly.17)==0)){circle.17}else{sf::st_difference(circle.17, inter.poly.17)}
+  remaining.circle.poly.17  <- if(isTRUE(nrow(inter.poly.17)==0)){my.circle}else{sf::st_difference(my.circle, inter.poly.17)}
   # plot(remaining.circle.poly.17)
  
    # calculate area
@@ -502,18 +503,19 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
                                           "CCS_r_m" = c(c.r3, c.r3), "inter_stat" = c(inter.status.poly.17, 0),
                                           "area_m2" = c(inter.area.17, remaining.circle.area.17)))
   ##### 12m circle
-  # calculate intersection for 17m circle 
-  inter.poly.12  <- sf::st_intersection(circle.12, my.poly)
+  my.circle = circle.12
+  # calculate intersection for 12m circle 
+  inter.poly.12  <- sf::st_intersection(my.circle, my.poly)
   inter.status.poly.12 <- ifelse(nrow(inter.poly.12) == 0, "no intersections",
-                                 ifelse(my.e.form == 1 & inter.poly.12$geometry == circle.12$geometry,  "no intersections",
-                                        ifelse(my.e.form == 2 & inter.poly.12$geometry == circle.12$geometry, "fully covering circle", 
+                                 ifelse(my.e.form == 1 & inter.poly.12$geometry == my.circle$geometry,  "no intersections",
+                                        ifelse(my.e.form == 2 & inter.poly.12$geometry == my.circle$geometry, "fully covering circle", 
                                                "partly intersecting")))
   # this is just to remove all the additional attributes from the intersection polygone
   #inter.poly  <- sf::st_intersection(circle.17, st_geometry(my.poly))
   # if the ednge covers all of the circle remaining, the inter.polygone its going to be set to 0 so we know there are no direct intersections
-  inter.poly.12 <- if(isTRUE(inter.poly.12) && inter.poly.12$geometry == circle.12$geometry){inter.poly.12 <- data.frame()}else{inter.poly.12}
+  inter.poly.12 <- if(isTRUE(inter.poly.12) && inter.poly.12$geometry == my.circle$geometry){inter.poly.12 <- data.frame()}else{inter.poly.12}
   # if the edge-circle intersection is equal to 0 (so there is no intersection) return the whole cirlce as remaining circle area, else calculate the remaining circle by decuctng the intersection are from the circle area
-  remaining.circle.poly.12  <- if(isTRUE(nrow(inter.poly.12)==0)){circle.12}else{sf::st_difference(circle.12, inter.poly.12)}
+  remaining.circle.poly.12  <- if(isTRUE(nrow(inter.poly.12)==0)){my.circle}else{sf::st_difference(my.circle, inter.poly.12)}
   # plot(remaining.circle.poly.12$geometry)
   
   # calculate area
@@ -530,18 +532,19 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
                                           "area_m2" = c(inter.area.12, remaining.circle.area.12)))
   
   ##### 5m circle
+  my.circle = circle.5
   # calculate intersection for 17m circle 
-  inter.poly.5  <- sf::st_intersection(circle.5, my.poly)
+  inter.poly.5  <- sf::st_intersection(my.circle, my.poly)
   inter.status.poly.5 <- ifelse(nrow(inter.poly.5) == 0, "no intersections",
-                                ifelse(my.e.form == 1 & inter.poly.5$geometry == circle.5$geometry,  "no intersections",
-                                       ifelse(my.e.form == 2 & inter.poly.5$geometry == circle.5$geometry, "fully covering circle", 
+                                ifelse(my.e.form == 1 & inter.poly.5$geometry == my.circle$geometry,  "no intersections",
+                                       ifelse(my.e.form == 2 & inter.poly.5$geometry == my.circle$geometry, "fully covering circle", 
                                               "partly intersecting")))
   # this is just to remove all the additional attributes from the intersection polygone
   #inter.poly  <- sf::st_intersection(circle.17, st_geometry(my.poly))
   # if the ednge covers all of the circle remaining, the inter.polygone its going to be set to 0 so we know there are no direct intersections
-  inter.poly.5 <- if(isTRUE(inter.poly.5) && inter.poly.5$geometry == circle.5$geometry){inter.poly.5 <-data.frame()}else{inter.poly.5}
+  inter.poly.5 <- if(isTRUE(inter.poly.5) && inter.poly.5$geometry == my.circle$geometry){inter.poly.5 <-data.frame()}else{inter.poly.5}
   # if the edge-circle intersection is equal to 0 (so there is no intersection) return the whole cirlce as remaining circle area, else calculate the remaining circle by decuctng the intersection are from the circle area
-  remaining.circle.poly.5  <- if(isTRUE(nrow(inter.poly.5)==0)){circle.5}else{sf::st_difference(circle.5, inter.poly.5)}
+  remaining.circle.poly.5  <- if(isTRUE(nrow(inter.poly.5)==0)){my.circle}else{sf::st_difference(my.circle, inter.poly.5)}
   # calculate area
   # intersection
   inter.area.5 <- ifelse(nrow(inter.poly.5) == 0, 0, sf::st_area(inter.poly.5))
@@ -1228,7 +1231,7 @@ outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(un
 
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
   #i = 2
-  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+  # i = which(grepl(50057, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
   my.plot.id <- unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)[i]
@@ -1308,7 +1311,6 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     
   }
   
-  
   # select edge ID of edge polygones
   my.e.id.1 <- my.poly.1$e_ID
   my.e.id.2 <- my.poly.2$e_ID
@@ -1316,16 +1318,12 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   my.e.form.1 <- my.poly.1$e_form
   my.e.form.2 <- my.poly.2$e_form
   
-  
-  # print edges and circle
-  print(c(plot(circle.17$geometry),
-          plot(my.poly.1$geometry, col = "red", add = T),
-          plot(my.poly.2$geometry, col = "blue",  add = T), 
-          plot(st_geometry(tree.sf), add = TRUE)))
+  # # print edges and circle
+  # print(c(plot(circle.17$geometry),
+  #         plot(my.poly.1$geometry, col = "red", add = T),
+  #         plot(my.poly.2$geometry, col = "blue",  add = T), 
+  #         plot(st_geometry(tree.sf), add = TRUE)))
  
-  
- 
-  
   
   #### intersections between polygones and circles   
   ### 17m circle 
@@ -1423,14 +1421,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
   
-  plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2))
-  plot(remaining.circle.12.1.and.2.poly$geometry, add = T)
-  plot(remaining.circle.5.1.and.2.poly$geometry, add = T)
-  plot(st_geometry(tree.sf), add = TRUE)
-  
-  
-  
-  
+
   #### calculate the area
   ## 17m cricle
   # area of the intersection 1
@@ -1493,59 +1484,85 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # is there a polygone that does not incluce the middle of the plot, has the t<pe 1 or 2 (if its an edge) and doesn´t have trees 
   # then the poylgone is labelled with "no forest" and the remaining polygones are allocated into stands by area
     # first "if": both edges are edge type 1 or 2 and do not have trees and do not have the middle of the plot
-  if(isTRUE((nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
-             inter.poly.17.1$e_type %in% c(1,2) && 
-             nrow(st_intersection(inter.poly.17.1, circle.pt))==0) &&
-            nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
-            inter.poly.17.2$e_type %in% c(1,2) && 
-            nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
-    my.poly.1$stand <- "no forest"
-    my.poly.2$stand <- "no forest"
-    # second "if": edge.1 has type 1 or 2, doesn´t have tres and doesnt have the middle of the plot so it´s labelled no forest
-  }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
-     inter.poly.17.1$e_type %in% c(1,2) && 
-     nrow(st_intersection(inter.poly.17.1, circle.pt))==0 && 
-     # and the conditions are not true for the second polygone
-     isFALSE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
-             inter.poly.17.2$e_type %in% c(1,2) && 
-             nrow(st_intersection(inter.poly.17.2, circle.pt))==0) == TRUE)){
-    # give poly.1 the stand "no forest"
-    my.poly.1$stand <- "no forest"
-    # third "if": edge.2 has type 1 or 2, doe´t ahve trees and does´nt have the middle of the plot so it´s labelled "no forest"
-  } else if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
-            inter.poly.17.2$e_type %in% c(1,2) && 
-            nrow(st_intersection(inter.poly.17.2, circle.pt))==0 &&
-            # and the condition is not true for poly.1
-            isFALSE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
-                    inter.poly.17.1$e_type %in% c(1,2) && 
-                    nrow(st_intersection(inter.poly.17.1, circle.pt))==0) == TRUE)){
-    # give th label "no forest"
-    my.poly.2$stand <- "no forest"
-    # fourth and fith "if": the edge is type 1 or 2 , it doesn´t hold the middle of the plot but it has trees --> warning
-    }else if (isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 && 
-                     inter.poly.17.1$e_type %in% c(1,2) && 
-                     nrow(st_intersection(inter.poly.17.1, circle.pt))==0)){
-      my.poly.1$stand <- "warning"
-    }else if (isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 && 
-                     inter.poly.17.2$e_type %in% c(1,2) && 
-                     nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
-      my.poly.2$stand <- "warning"
-    }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 && 
-                    inter.poly.17.1$e_type %in% c(1,2) && 
-                    nrow(st_intersection(inter.poly.17.1, circle.pt))==0 &&
-             nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 && 
-             inter.poly.17.2$e_type %in% c(1,2) && 
-             nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
-      my.poly.1$stand <- "warning"   
-      my.poly.2$stand <- "warning"
-      # sixth "if": the remeining cirlce doesn´t have the middle of the plot (soits actually and edge) and doesnt have trees --> "no forest"
-    }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, circle.pt))==0 && 
-                    nrow(st_intersection(remaining.circle.17.1.and.2.poly, tree.sf))==0)){
-      remaining.circle.17.1.and.2.poly$stand <- "no forest"
-    }else{
-      
-    }
+ if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.tree.stat <- "trees but outer edge"}else{inter.17.1.tree.stat <- NA}
+ if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.tree.stat <- "trees but outer edge"}else{inter.17.2.tree.stat <- NA}
+  if(isTRUE(nrow(st_intersection(inter.poly.17.1, circle.pt))!=0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.center.stat <- "center but outer edge"}else{inter.17.1.center.stat <- NA}
+  if(isTRUE(nrow(st_intersection(inter.poly.17.2, circle.pt))!=0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.center.stat <- "center but outer edge"}else{inter.17.2.center.stat <- NA}
+  if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 & nrow(st_intersection(inter.poly.17.1, circle.pt))==0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.forest.stat <- "no forest"}else{inter.17.1.forest.stat <- NA}
+  if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 & nrow(st_intersection(inter.poly.17.2, circle.pt))==0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.forest.stat <- "no forest"}else{inter.17.2.forest.stat <- NA}
+  my.poly.1$stand <- case_when(inter.17.1.tree.stat ==  "trees but outer edge" | inter.17.1.center.stat == "center but outer edge" ~ "warning",
+                               inter.17.1.tree.stat ==  "trees but outer edge" & inter.17.1.center.stat == "center but outer edge" ~ "warning",
+                               inter.17.1.forest.stat == "no forest"~ "no forest", 
+                               TRUE ~ NA)
   
+  my.poly.2$stand <- case_when(inter.17.2.tree.stat ==  "trees but outer edge" | inter.17.2.center.stat == "center but outer edge" ~ "warning",
+                               inter.17.2.tree.stat ==  "trees but outer edge" | inter.17.2.center.stat == "center but outer edge" ~ "warning",
+                               inter.17.2.forest.stat == "no forest"~ "no forest", 
+                               TRUE ~ NA)
+  
+  
+  # if(isTRUE((nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
+  #            inter.poly.17.1$e_type %in% c(1,2) && 
+  #            nrow(st_intersection(inter.poly.17.1, circle.pt))==0) &&
+  #           nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
+  #           inter.poly.17.2$e_type %in% c(1,2) && 
+  #           nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
+  #   my.poly.1$stand <- "no forest"
+  #   my.poly.2$stand <- "no forest"
+  #   # second "if": edge.1 has type 1 or 2, doesn´t have tres and doesnt have the middle of the plot so it´s labelled no forest
+  # }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
+  #    inter.poly.17.1$e_type %in% c(1,2) && 
+  #    nrow(st_intersection(inter.poly.17.1, circle.pt))==0 #&& 
+  #    # and the conditions are not true for the second polygone
+  #    # isFALSE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
+  #    #         inter.poly.17.2$e_type %in% c(1,2) && 
+  #    #         nrow(st_intersection(inter.poly.17.2, circle.pt))==0) == TRUE)
+  #    )){
+  #   # give poly.1 the stand "no forest"
+  #   my.poly.1$stand <- "no forest"
+  #   # third "if": edge.2 has type 1 or 2, doe´t ahve trees and does´nt have the middle of the plot so it´s labelled "no forest"
+  # } else if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 && 
+  #           inter.poly.17.2$e_type %in% c(1,2) && 
+  #           nrow(st_intersection(inter.poly.17.2, circle.pt))==0 #&&
+  #           # and the condition is not true for poly.1
+  #           # isFALSE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 && 
+  #           #         inter.poly.17.1$e_type %in% c(1,2) && 
+  #           #         nrow(st_intersection(inter.poly.17.1, circle.pt))==0) == TRUE)
+  #           )){
+  #   # give th label "no forest"
+  #   my.poly.2$stand <- "no forest"
+  #   # fourth and fith "if": the edge is type 1 or 2 , it doesn´t hold the middle of the plot but it has trees --> warning
+  #   }else if (isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 && 
+  #                    inter.poly.17.1$e_type %in% c(1,2) && 
+  #                    nrow(st_intersection(inter.poly.17.1, circle.pt))==0)){
+  #     my.poly.1$stand <- "warning"
+  #   }else if (isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 && 
+  #                    inter.poly.17.2$e_type %in% c(1,2) && 
+  #                    nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
+  #     my.poly.2$stand <- "warning"
+  #     # if the edge is type 1 or 2 and still holds the middle point (no matter if it has trees or not) its also a warning
+  #   }else if (isTRUE(inter.poly.17.1$e_type %in% c(1,2) && 
+  #                    nrow(st_intersection(inter.poly.17.1, circle.pt))!=0)){
+  #     my.poly.1$stand <- "warning"
+  #   }else if (isTRUE(inter.poly.17.2$e_type %in% c(1,2) && 
+  #                    nrow(st_intersection(inter.poly.17.2, circle.pt))!=0)){
+  #     my.poly.2$stand <- "warning"
+  #     }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 && 
+  #                   inter.poly.17.1$e_type %in% c(1,2) && 
+  #                   nrow(st_intersection(inter.poly.17.1, circle.pt))==0 &&
+  #            nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 && 
+  #            inter.poly.17.2$e_type %in% c(1,2) && 
+  #            nrow(st_intersection(inter.poly.17.2, circle.pt))==0)){
+  #     my.poly.1$stand <- "warning"   
+  #     my.poly.2$stand <- "warning"
+  #     # sixth "if": the remeining cirlce doesn´t have the middle of the plot (soits actually and edge) and doesnt have trees --> "no forest"
+  #   }else if(isTRUE(nrow(st_intersection(inter.poly.17.1, circle.pt))==0 && 
+  #                   nrow(st_intersection(remaining.circle.17.1.and.2.poly, tree.sf))==0)){
+  #     remaining.circle.17.1.and.2.poly$stand <- "no forest"
+  #   }else{
+  #     
+  #   }
+  # 
   
   stand.df <- as.data.frame(cbind(
     "plot_ID" = my.plot.id,
@@ -1555,6 +1572,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
                ifelse(length(remaining.circle.17.1.and.2.poly$stand) == 0, NA, remaining.circle.17.1.and.2.poly$stand) ))) %>% 
     mutate(plot_ID = as.numeric(plot_ID), 
            e_ID = as.numeric(e_ID))
+  
   
   
  stand.df <- 
@@ -1589,6 +1607,19 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # join in stand info based on area of the edge segment
   inter.area.df <- inter.area.df %>% left_join(., stand.df, 
                                                by = c("plot_ID", "e_ID", "inv_year"))
+  
+  print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)), 
+            plot(remaining.circle.17.1.and.2.poly$geometry, col = "grey", add = T),
+            plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
+            plot(remaining.circle.5.1.and.2.poly$geometry, add = T),
+            plot(inter.poly.17.1$geometry, col = "green", add =TRUE),
+            plot(inter.poly.17.2$geometry, col = "blue", add =TRUE),
+            plot(circle.pt$geometry, col = "red",  add = TRUE),
+            legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.1$e_ID]),":",  my.poly.1$e_type), 
+                                       paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.2$e_ID]),":",  my.poly.2$e_type), 
+                                       paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+                                       col=c("green", "blue", "grey"), lty=1:2, cex=0.8),
+            plot(st_geometry(tree.sf), add = TRUE)))
   
   # save datacframe per plot in list
   outer.edges.list.two.edges.nogeo[[i]] <- inter.area.df

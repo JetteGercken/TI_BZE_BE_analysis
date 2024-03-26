@@ -582,8 +582,11 @@ as.data.frame(cbind(
      # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
      FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>% 
        select(-FSI_sum) %>%
-       pivot_longer(LT_FSI_DBH_RMS:DW_FSI_ST_mean_D_cm, names_to = "variable", values_to = "FSI_score"),
-     aes(x = as.factor(plot_ID), y = as.numeric(FSI_score), fill = variable), 
+       pivot_longer(LT_FSI_DBH_RMS:RG_FSI_n_SP, names_to = "variable", values_to = "FSI_score") %>% 
+       left_join(., LT_summary %>% select(plot_ID, stand_type) %>% mutate(plot_ID = as.integer(plot_ID)) %>% distinct(), by = "plot_ID") %>% 
+       unite("plot_stand_TY", c("plot_ID", "stand_type"), sep = " ", remove = FALSE) %>% 
+       filter(stand_type %in% c(1, 2,3,4,5,8)),
+     aes(x = reorder(as.factor(plot_stand_TY), -as.numeric(FSI_score)), y = as.numeric(FSI_score), fill = variable), 
      stat = "identity", color = "black")+
     # geom_bar(data = as.data.frame(cbind(
     #  FSI_df[ , c("plot_ID", "inv")],
@@ -599,7 +602,7 @@ as.data.frame(cbind(
 
 
 
-
+LT_summary$stand_type
 
 # NOTES -------------------------------------------------------------------
 
