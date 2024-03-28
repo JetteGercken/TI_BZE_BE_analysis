@@ -199,7 +199,12 @@ tibble_with_lists_to_csv <- function(tibble_object, file_path_name) {
   write.csv2(new_frame, file=file_path_name)
 }
 
-
+# this function will enable to run a greorefferenced version of a script or not
+georef_on_off <- function(path.script.nogeo, path.script.geo, georefference){
+  switch(georefference, 
+         "georefferenced" = source(path.script.geo), 
+         "not_georefferenced" = source(path.script.nogeo))
+}
 
 # ----- 1.1. area circle --------------------------------------------------
 # area of a circle

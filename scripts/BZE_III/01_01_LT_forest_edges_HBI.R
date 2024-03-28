@@ -28,10 +28,7 @@ forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
-geo_loc <- geo_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW",
-                              "K2_HW", "K3_RW", "K3_HW", "RW_MED",
-                              "HW_MED",  "LAT_MED",  "LON_MED", 
-                              "LAT_MEAN", "LON_MEAN"))
+geo_loc <- geo_loc[1:12] 
 colnames(geo_loc) <- c("plot_ID", "ToEckId", "K2_RW",
                        "K2_HW", "K3_RW", "K3_HW", "RW_MED",
                        "HW_MED",  "LAT_MED",  "LON_MED", 
@@ -832,7 +829,7 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     select(plot_ID, e_ID, inv_year, CCS_r_m ,inter_stat, area_m2,stand)
 
   
-  print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)), 
+  print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
             plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
             plot(remaining.circle.poly.12$geometry, add = T),
             plot(remaining.circle.poly.5$geometry, add = T),
@@ -1653,7 +1650,7 @@ outer.rem.circle.two.edges.df.nogeo <- if(nrow(outer.rem.circle.poly.two.edges.d
 # 3.2.1.4. binding all egde and remaining circle areas and polys tog --------
 
 # bind all edges area dataframes together
-edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% arrange(plot_ID)
+all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% arrange(plot_ID)
 inter.poly.one.edge.df.nogeo <- rbind(inter.poly.one.edge.df.nogeo, outer.inter.poly.one.edge.df.nogeo %>% select(colnames(inter.poly.one.edge.df.nogeo)))%>% arrange(plot_ID)
 rem.circle.one.edge.df.nogeo <- rbind(rem.circle.one.edge.df.nogeo, outer.rem.circle.one.edge.df.nogeo %>% select(colnames(rem.circle.one.edge.df.nogeo)))%>% arrange(plot_ID)
 
@@ -1695,7 +1692,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # sort area dataframe by size of cirlce fragments if it is not a : 
   # bigger polygone/ polygone with greater area is assigned to category A, smaller area polygone is assigned to B
   
-  area.plot.df <- edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84)
+  area.plot.df <- all.edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84)
   # assign stand category to the polygones depending on which one is bigger/ smaller
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter$stand <- area.plot.df$stand[area.plot.df$e_ID == 1 | area.plot.df$e_ID == 2]
@@ -1755,7 +1752,7 @@ tree.status.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.status.list.nogeo)
 # save tree sf into dataframe
 tree.points.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.points.list.nogeo))
 
-tree.status.one.edge.df.nogeo %>% filter(plot_ID == 50124)
+
 
 
 # 3.2.2.2. plots with 2 edges: sorting trees into edge and remaining circle polygones ---------
@@ -1800,7 +1797,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   
   # assign stand category to the polygones depending on which one is bigger/ smaller: 
   # bigger polygone/ polygone with greater area is assigned to category A, smaller area polygone is assigned to B
-  area.plot.df <- edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84) 
+  area.plot.df <- all.edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84) 
   # assign stand category to the polygones depending on which one is bigger/ smaller
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter.1$stand <- area.plot.df$stand[area.plot.df$e_ID == 1]
@@ -1832,10 +1829,10 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   ## assing CRS to points
   #sf::st_crs(tree.sf) <- my.utm.epsg
   
-  # print(plot(my.rem.circle$geometry, col = "red"), 
+  # print(c(plot(my.rem.circle$geometry, col = "red"), 
   #       plot(my.inter.2$geometry, add = T),
   #       plot(my.inter.1$geometry, add = T), 
-  #       plot(tree.sf$geometry, add = T)
+  #       plot(tree.sf$geometry, add = T))
   #       )
   
   inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
@@ -1860,12 +1857,12 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   
 }
 # save tree corodiantes and status into dataframe
-tree.status.list.two.edges.final.nogeo <- rbindlist(tree.status.two.edges.list.nogeo)
-tree.status.two.edges.df.nogeo <- as.data.frame(tree.status.list.two.edges.final.nogeo)
+tree.status.two.edges.df.nogeo <- as.data.frame(rbindlist(tree.status.two.edges.list.nogeo))
 # save tree sf into dataframe
-tree.points.list.two.edges.final.nogeo <- rbindlist(tree.points.two.edges.list.nogeo)
-tree.points.two.edges.df.nogeo <- as.data.frame(tree.points.list.two.edges.final.nogeo)
-# bind the tree point datafarmes of one and two edges plots together
+tree.points.two.edges.df.nogeo <- as.data.frame( rbindlist(tree.points.two.edges.list.nogeo))
+
+
+# 3.2.2.3. binding datasets together --------------------------------------
 # bind the tree point datafarmes of one and two edges plots together
 two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
 # this step i separated in case both of the rbinded dfs are empty and the mutate wouldn´t grip
@@ -1875,65 +1872,16 @@ two.and.one.edge.trees.points.df.nogeo <- two.and.one.edge.trees.points.df.nogeo
 
 
 
-# 3.2.2.3 plots with no edge edge: sorting trees into circle ---------
-trees.no.edge.nogeo <- anti_join(trees_data, two.and.one.edge.trees.points.df.nogeo %>% 
+# 3.2.2.4 plots with no edge edge: sorting trees into circle ---------
+trees.no.edge.nogeo <- anti_join(trees_data, forest_edges.man %>% 
+                                   # filter only for trees that are located in plots with a forest edge
+                                   semi_join(forest_edges.man %>% 
+                                               filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+                                               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
                                    select(plot_ID) %>% 
                                    distinct(), by = "plot_ID")#%>% 
 # remove plots that do now have a corresponding center coordiante in the HBI loc document
 # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-
-
-# there may be no egdges or edges with no trees in this case only the last loop will run: 
-# so what we need are 3 versions of the final dataset: 
-# 1. there are no edges --> if forest_edges.man is epmty, we don´t filter the trees at all
-# 2. there are only plots with 1 edge --> the forest_edges.man.sub.one.edge.df is not empty so that this loop ran
-# 3. there are only plots with 2 edges --> the forest_edges.man.sub.two.edges.df is not empty so that this loop ran
-# this should work because the forest_edges.man.sub are filtered by forest_edges_man and don´t depend on each other
-# https://www.learnbyexample.org/r-if-else-elseif-statement/
-
-# 
-# ## there are no edges 
-# if(nrow(forest_edges) == 0){
-#   trees.no.edge.nogeo <- trees_data#%>% 
-#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
-#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-#   
-#   ## there are no trees in plots with two edges
-# } else if (nrow(tree.status.one.edge.df.nogeo) == 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
-#   trees.no.edge.nogeo <- trees_data %>% 
-#     anti_join(., tree.status.two.edges.df.nogeo %>% 
-#                 select(plot_ID) %>% 
-#                 distinct(), by = "plot_ID")#%>% 
-#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
-#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-#   
-#   ## there are no trees in plots with one edge
-# }else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) == 0){
-#   trees.no.edge.nogeo <- trees_data %>% 
-#     anti_join(., tree.status.one.edge.df.nogeo %>% 
-#                 select(plot_ID) %>% 
-#                 distinct(), by = "plot_ID")#%>% 
-#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
-#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-#   
-#   ## there are plots with two and one edges and trees inside it 
-# }else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
-#   trees.no.edge.nogeo <- trees_data %>% 
-#     anti_join(., tree.status.one.edge.df.nogeo %>% 
-#                 select(plot_ID) %>% 
-#                 distinct(), by = "plot_ID") %>% 
-#     anti_join(., tree.status.two.edges.df.nogeo %>% 
-#                 select(plot_ID) %>% 
-#                 distinct(), by = "plot_ID")#%>% 
-#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
-#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-#   
-#   ## this is if there are edges but they don´t have trees
-# }else{
-#   trees.no.edge.nogeo <- trees_data#%>% 
-#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
-#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
-# }
 
 
 tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
@@ -2566,6 +2514,57 @@ ggplot() +
 
 
 # Notes:  -----------------------------------------------------------------
+# there may be no egdges or edges with no trees in this case only the last loop will run: 
+# so what we need are 3 versions of the final dataset: 
+# 1. there are no edges --> if forest_edges.man is epmty, we don´t filter the trees at all
+# 2. there are only plots with 1 edge --> the forest_edges.man.sub.one.edge.df is not empty so that this loop ran
+# 3. there are only plots with 2 edges --> the forest_edges.man.sub.two.edges.df is not empty so that this loop ran
+# this should work because the forest_edges.man.sub are filtered by forest_edges_man and don´t depend on each other
+# https://www.learnbyexample.org/r-if-else-elseif-statement/
+
+# 
+# ## there are no edges 
+# if(nrow(forest_edges) == 0){
+#   trees.no.edge.nogeo <- trees_data#%>% 
+#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+#   
+#   ## there are no trees in plots with two edges
+# } else if (nrow(tree.status.one.edge.df.nogeo) == 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
+#   trees.no.edge.nogeo <- trees_data %>% 
+#     anti_join(., tree.status.two.edges.df.nogeo %>% 
+#                 select(plot_ID) %>% 
+#                 distinct(), by = "plot_ID")#%>% 
+#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+#   
+#   ## there are no trees in plots with one edge
+# }else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) == 0){
+#   trees.no.edge.nogeo <- trees_data %>% 
+#     anti_join(., tree.status.one.edge.df.nogeo %>% 
+#                 select(plot_ID) %>% 
+#                 distinct(), by = "plot_ID")#%>% 
+#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+#   
+#   ## there are plots with two and one edges and trees inside it 
+# }else if(nrow(tree.status.one.edge.df.nogeo) != 0 && nrow(tree.status.two.edges.df.nogeo) != 0){
+#   trees.no.edge.nogeo <- trees_data %>% 
+#     anti_join(., tree.status.one.edge.df.nogeo %>% 
+#                 select(plot_ID) %>% 
+#                 distinct(), by = "plot_ID") %>% 
+#     anti_join(., tree.status.two.edges.df.nogeo %>% 
+#                 select(plot_ID) %>% 
+#                 distinct(), by = "plot_ID")#%>% 
+#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+#   
+#   ## this is if there are edges but they don´t have trees
+# }else{
+#   trees.no.edge.nogeo <- trees_data#%>% 
+#   # remove plots that do now have a corresponding center coordiante in the BZE3 loc document
+#   # semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+# }
 
  
 # ## export coordiante of all edge_triangle poligons to dataframes
