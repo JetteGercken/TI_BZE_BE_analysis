@@ -22,11 +22,12 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # 0.3. data import --------------------------------------------------------
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ";", dec = ",")
 BZE3_ha_stocks_P <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_P.csv")), sep = ";", dec = ",")
-BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
+BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ";", dec = ",")
 HBI_ha_stocks_P <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_P.csv")), sep = ";", dec = ",")
-HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
+HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+
 
 
 # 1. calculations ---------------------------------------------------------
@@ -111,7 +112,7 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
               rename(BA_percent_BZE3 = BA_percent) %>% 
               distinct(), 
             by = c("plot_ID", "SP_code")) %>% 
-  left_join(., HBI_summary%>% 
+  left_join(., HBI_summary %>% 
               # filter for plot and species wise summary
               filter(plot_ID != "all" & SP_code != "all" & stand == "all") %>%
               # select the BA percent
