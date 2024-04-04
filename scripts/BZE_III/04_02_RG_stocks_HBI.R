@@ -211,6 +211,51 @@ write.csv2(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], 
  
 # 3. Biomass comparisson  ---------------------------------------
 # 3.1. Biomass comp RG trees height > 1.3m -------------------------------
+# 3.1.3. comparisson belowgroung biomass for RG trees height > 1.3m -------------------------------
+stop("comparisson of RG biomass methods starts here") 
+bio.bg.kg.RG.above.1.3 <- vector("list", length = nrow(RG_above_1.3))
+for (i in 1:nrow(RG_above_1.3)) {
+  # i = 1
+  
+  # basic tree info
+  # select one tree ID and plot ID for each individual tree per plot and sampling circuit
+  my.plot.id <- RG_above_1.3[,"plot_ID"][i]
+  my.ccs.id <- RG_above_1.3[,"CCS_nr"][i]
+  my.tree.id <- RG_above_1.3[,"tree_ID"][i]
+  my.tree.sp <- RG_above_1.3[,"SP_code"][i]
+  
+  # select variales for belowground functions
+  spp = SP_names_com_ID_tapeS$Bio_SP_group[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
+  dbh.cm = as.numeric(unique(RG_above_1.3$D_cm[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id & RG_above_1.3$CCS_nr==my.ccs.id]))
+  
+  
+  # calculate biomass per compartiment
+  B_kg_tree <- as.data.frame(GHGI_bB(spp, dbh.cm))[,1]
+  
+  bio.info.df <- as.data.frame(cbind(
+    "plot_ID" = c(as.integer(my.plot.id)), 
+    "CCS_nr" = c(my.ccs.id),
+    "tree_ID" = c(as.integer(my.tree.id)), 
+    "inv" = unique(RG_above_1.3$inv[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id]), 
+    "inv_year" = c(as.integer(unique(RG_above_1.3$inv_year[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id]))),
+    "compartiment" = c("bg"),
+    "B_kg_tree" = c(as.numeric(B_kg_tree))
+  ) ) 
+  
+  bio.bg.kg.RG.above.1.3[[i]] <- bio.info.df
+  
+}
+bio.bg.kg.RG.above.1.3.df <- as.data.frame(rbindlist(bio.bg.kg.RG.above.1.3))
+bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)], as.numeric)
+
+# calcualte differences
+diff_bg <- abs(bio.bg.kg.RG.above.1.3.df$B_kg_tree - bio.ag.bg.kg.RG.above.1.3.df$B_kg_tree[bio.ag.bg.kg.RG.above.1.3.df$compartiment == "bg"])
+summary(diff_bg)
+summary(bio.bg.kg.RG.above.1.3.df$B_kg_tree)
+summary(bio.ag.bg.kg.RG.above.1.3.df$B_kg_tree[bio.ag.bg.kg.RG.above.1.3.df$compartiment == "bg"])
+
+
+
 # 3.1.1. Biomass calculation RG trees height > 1.3m -------------------------------
 # RG_above_1.3 <- RG_above_1.3 %>% filter(D_class_cm %in% c(2)) 
 comparisson.bio.bg.kg.RG.above.1.3 <- vector("list", length = nrow(RG_above_1.3))
@@ -310,49 +355,6 @@ comparisson_bio_kg_RG_above_1.3_df <- comparisson_bio_kg_RG_above_1.3_df%>%
   summarise(mean_diff_poorter_GHG = mean(diff_poorter_GHG), 
             mean_diff_poorter_tapeS = mean(diff_poorter_tapes), 
             mean_diff_GHG_tapes = mean(diff_GHG_tapes))
-
-
-# 3.1.3. comparisson belowgroung biomass for RG trees height > 1.3m -------------------------------
-bio.bg.kg.RG.above.1.3 <- vector("list", length = nrow(RG_above_1.3))
-for (i in 1:nrow(RG_above_1.3)) {
-  # i = 1
-  
-  # basic tree info
-  # select one tree ID and plot ID for each individual tree per plot and sampling circuit
-  my.plot.id <- RG_above_1.3[,"plot_ID"][i]
-  my.ccs.id <- RG_above_1.3[,"CCS_nr"][i]
-  my.tree.id <- RG_above_1.3[,"tree_ID"][i]
-  my.tree.sp <- RG_above_1.3[,"SP_code"][i]
-  
-  # select variales for belowground functions
-  spp = SP_names_com_ID_tapeS$Bio_SP_group[tolower(SP_names_com_ID_tapeS$Chr_code_ger) == my.tree.sp]
-  dbh.cm = as.numeric(unique(RG_above_1.3$D_cm[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id & RG_above_1.3$CCS_nr==my.ccs.id]))
-  
-  
-  # calculate biomass per compartiment
-  B_kg_tree <- as.data.frame(GHGI_bB(spp, dbh.cm))[,1]
-  
-  bio.info.df <- as.data.frame(cbind(
-    "plot_ID" = c(as.integer(my.plot.id)), 
-    "CCS_nr" = c(my.ccs.id),
-    "tree_ID" = c(as.integer(my.tree.id)), 
-    "inv" = unique(RG_above_1.3$inv[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id]), 
-    "inv_year" = c(as.integer(unique(RG_above_1.3$inv_year[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id]))),
-    "compartiment" = c("bg"),
-    "B_kg_tree" = c(as.numeric(B_kg_tree))
-  ) ) 
-  
-  bio.bg.kg.RG.above.1.3[[i]] <- bio.info.df
-  
-}
-bio.bg.kg.RG.above.1.3.df <- as.data.frame(rbindlist(bio.bg.kg.RG.above.1.3))
-bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)], as.numeric)
-
-# calcualte differences
-diff_bg <- abs(bio.bg.kg.RG.above.1.3.df$B_kg_tree - bio.ag.bg.kg.RG.above.1.3.df$B_kg_tree[bio.ag.bg.kg.RG.above.1.3.df$compartiment == "bg"])
-summary(diff_bg)
-summary(bio.bg.kg.RG.above.1.3.df$B_kg_tree)
-summary(bio.ag.bg.kg.RG.above.1.3.df$B_kg_tree[bio.ag.bg.kg.RG.above.1.3.df$compartiment == "bg"])
 
 
 

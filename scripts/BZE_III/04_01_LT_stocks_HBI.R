@@ -205,7 +205,7 @@ write.csv2(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv
 
 
 
-
+stop("notes of 04_01_LT_stocks start here, no need to run")
 # NOTES:  -----------------------------------------------------------------
 
 

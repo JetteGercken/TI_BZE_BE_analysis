@@ -359,12 +359,16 @@ LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
 
 # 1.7. binding LT data together -------------------------------------------------------------------------------------------------------
+
 # 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
-LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>%  
+LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>% 
+  left_join(., LT_stand_TY_P %>% 
+              mutate_at(c('plot_ID', 'inv_year'), as.integer),
+            by = c("plot_ID", "inv_year", "stand_component"))  %>% 
   select(-(n_ha))
   
 
-# 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
+# 1.7.2. LT Species data -------------------------------------------------------------------------------------------------------------
 LT_SP_P <- LT_SP_BCNBA_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year', 'n_stands'), as.integer),
@@ -372,15 +376,15 @@ LT_SP_P <- LT_SP_BCNBA_ha  %>%
   left_join(., LT_avg_SP_P, 
             by = c("plot_ID", "inv_year", "stand_component", "SP_code", "stand")) 
 
-
-# 1.7.2. LT stand data ----------------------------------------------------
+LT_SP_ST_P_BCNBAn_ha
+# 1.7.3. LT stand data ----------------------------------------------------
 LT_ST_P <- LT_ST_BCNBAn_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year'), as.integer),
             by = c("plot_ID", "inv_year", "stand_component"))
 
 
-# 1.7.3. LT plot data ----------------------------------------------------------------------------------------------------------------
+# 1.7.4. LT plot data ----------------------------------------------------------------------------------------------------------------
 LT_P <- LT_BCNBAn_ha %>% 
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'inv_year'), as.integer),
@@ -392,7 +396,7 @@ LT_P <- LT_BCNBAn_ha %>%
 
 
 
-# 1.7.4. summrizing LT data by stand type ---------------------------------
+# 1.7.5. summrizing LT data by stand type ---------------------------------
 LT_TY <- LT_P %>% 
   group_by(stand_type, compartiment, stand_component, inv_year) %>% 
   summarise(B_t_ha = mean(B_t_ha),
@@ -412,8 +416,9 @@ LT_TY <- LT_P %>%
          dom_SP = "all", 
          SP_code = "all")  
   
-# 1.7.5. rbinding LT data together ----------------------------------------
-LT_summary <- plyr::rbind.fill(LT_SP_P,
+# 1.7.6. rbinding LT data together ----------------------------------------
+LT_summary <- plyr::rbind.fill(LT_SP_ST_P, 
+                               LT_SP_P,
                                LT_ST_P,
                                LT_P, 
                                LT_TY) %>% 
@@ -710,18 +715,40 @@ LT_RG_DW_P <- rbind(
         # take all "ag" compartiments of DW and assign them to the compartiment "total" as well, so we can create a row of total stocks for all stand components
         DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total"),
       # total plot data over all stand components
-      rbind(LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-            RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-            DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
-            DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")
-            ) %>% 
-    arrange(plot_ID)%>% 
-    group_by(plot_ID, inv_year, compartiment) %>% 
-    summarise(B_t_ha = sum(B_t_ha),
-              C_t_ha = sum(C_t_ha),
-              N_t_ha = sum(N_t_ha)) %>% 
-    mutate(stand_component = "all")) %>% 
+      ) %>% 
   arrange(plot_ID) 
+
+LT_RG_DW_P <- 
+plyr::rbind.fill(
+  #deadwood summary all group combination possible  
+  LT_summary %>% select(-c(dom_SP, stand_type, n_stands))
+  #regeneration summary all group combination possible  
+  ,RG_summary
+  #deadwood summary all group combination possible  
+  ,DW_summary,
+  # dataset with all stand compnents, stand and species combined
+(rbind(LT_P %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+      RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+      DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
+      DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv_year, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")
+) %>% 
+  arrange(plot_ID)%>% 
+  group_by(plot_ID, inv_year, compartiment) %>% 
+  summarise(B_t_ha = sum(B_t_ha),
+            C_t_ha = sum(C_t_ha),
+            N_t_ha = sum(N_t_ha)) %>% 
+  mutate(stand_component = "all", 
+         stand = "all", 
+         SP_code = "all"))
+) %>%  
+  left_join(., LT_stand_TY_P %>% 
+              mutate_at(c('inv_year'), as.integer),
+            by = c("plot_ID", "inv_year")) %>% 
+  arrange(plot_ID)
+
+
+
+
 
 
 
@@ -729,9 +756,10 @@ LT_RG_DW_P <- rbind(
 write.csv2(LT_summary, paste0(out.path.BZE3, paste(inv_name(LT_summary$inv_year[1]), "LT_stocks_ha_all_groups", sep = "_"), ".csv"))
 write.csv2(RG_summary, paste0(out.path.BZE3, paste(inv_name(RG_summary$inv_year[1]), "RG_stocks_ha_all_groups", sep = "_"), ".csv"))
 write.csv2(DW_summary, paste0(out.path.BZE3, paste(inv_name(DW_summary$inv_year[1]), "DW_stocks_ha_all_groups", sep = "_"), ".csv"))
+write.csv2(LT_RG_DW_P, paste0(out.path.BZE3, paste(inv_name(LT_RG_DW_P$inv_year[1]), "LT_RG_DW_stocks_ha_all_groups", sep = "_"), ".csv"))
 
 
-
+stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values starts")
 
 # 5. visuals --------------------------------------------------------------
 
