@@ -117,11 +117,13 @@ tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",
   select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
             knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
             end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
-colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status", "hbi_status")
+colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", 
+                             "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status") # change_back_later , "hbi_status")
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                     TRUE ~ hbi_status))
+                                                                 TRUE ~ 1))
+                                                                 # change_back_later TRUE ~ hbi_status))
 
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 trees_data <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
@@ -131,8 +133,25 @@ colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI forest edges
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
-colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+# forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",")
+# colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",") %>% 
+  # select only forest edge relevant column
+  select(bund_nr,randtyp_1 , randtyp_2, randform_1 , randform_2, anfang_dist_1, anfang_dist_2, anfang_azi_1, anfang_azi_2, end_dist_1, end_dist_2, 
+         end_azi_1, end_azi_2,  knick_dist_1, knick_dist_2, knick_azi_1, knick_azi_2) %>% 
+  # pivoting edge 1 and two into same column and establisch edge ID: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+  to_long(keys = c("e_ID", "e_form_name", "A_dist_name", "A_azi_name", "B_dist_name", "B_azi_name", "T_dist_name", "T_azi_name"), 
+          values = c("e_type", "e_form", "A_dist", "A_azi", "B_dist", "B_azi", "T_dist", "T_azi"),  
+          names(.)[2:3], names(.)[4:5], names(.)[6:7], names(.)[8:9], names(.)[10:11], names(.)[12:13], names(.)[14:15], names(.)[16:17]) %>% 
+  # remove unecessary name columns: https://stackoverflow.com/questions/15666226/how-to-drop-columns-by-name-pattern-in-r
+  select(-contains("name")) %>% 
+  # introduce edge ID by selecting only last letter from "randform_1", "randform_2":https://stackoverflow.com/questions/7963898/extracting-the-last-n-characters-from-a-string-in-r
+  mutate(e_ID = str_sub(e_ID, start= -1)) %>% 
+  distinct() %>%
+ # select only plots that have an edge
+  filter(!is.na(e_form)) %>% 
+  rename("plot_ID" = "bund_nr")
+
 
 
 
@@ -536,7 +555,7 @@ write.csv2(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1]
 
 
 # NFI trees/ BWI trees
-write.csv2(trees_BWI, paste0(out.path.BZE3, paste(unique(trees_BWI$inv)[1], "trees_BWI", sep = "_"), ".csv"))
+write.csv2(trees_BWI, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "trees_BWI", sep = "_"), ".csv"))
 
 
 

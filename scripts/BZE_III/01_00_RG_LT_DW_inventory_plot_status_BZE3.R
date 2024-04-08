@@ -102,12 +102,14 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
+inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"##change_back /BZE3/
+                                   ), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
+  select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 inv_info$date <- as.Date(inv_info$date)
-inv_info$inv_year <- as.numeric(format(inv_info$date, "%Y"))
-
+inv_info$inv_year <- 2023 ##change_back_later as.numeric(format(inv_info$date, "%Y"))
+inv_info$inv <- inv_name(inv_info$inv_year)
 
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
@@ -115,11 +117,11 @@ tree_inv_info <-  read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", d
   select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
             knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
             end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
-colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status", "hbi_status")
+colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status") ##change_back_later, "hbi_status")
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ hbi_status))
+                                                                 TRUE ~ 1)) ##change_back_later TRUE ~ hbi_status))
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
@@ -128,9 +130,27 @@ colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_
                           "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
+
+
 # BZE3 forest edges
-forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
-colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+# forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
+# colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+forest_edges <- read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",") %>% 
+  # select only forest edge relevant column
+  select(bund_nr,randtyp_1 , randtyp_2, randform_1 , randform_2, anfang_dist_1, anfang_dist_2, anfang_azi_1, anfang_azi_2, end_dist_1, end_dist_2, 
+         end_azi_1, end_azi_2,  knick_dist_1, knick_dist_2, knick_azi_1, knick_azi_2) %>% 
+  # pivoting edge 1 and two into same column and establisch edge ID: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+  to_long(keys = c("e_ID", "e_form_name", "A_dist_name", "A_azi_name", "B_dist_name", "B_azi_name", "T_dist_name", "T_azi_name"), 
+          values = c("e_type", "e_form", "A_dist", "A_azi", "B_dist", "B_azi", "T_dist", "T_azi"),  
+          names(.)[2:3], names(.)[4:5], names(.)[6:7], names(.)[8:9], names(.)[10:11], names(.)[12:13], names(.)[14:15], names(.)[16:17]) %>% 
+  # remove unecessary name columns: https://stackoverflow.com/questions/15666226/how-to-drop-columns-by-name-pattern-in-r
+  select(-contains("name")) %>% 
+  # introduce edge ID by selecting only last letter from "randform_1", "randform_2":https://stackoverflow.com/questions/7963898/extracting-the-last-n-characters-from-a-string-in-r
+  mutate(e_ID = str_sub(e_ID, start= -1)) %>% 
+  distinct() %>%
+  # select only plots that have an edge
+  filter(!is.na(e_form)) %>% 
+  rename("plot_ID" = "bund_nr")
 
 
 
@@ -148,14 +168,13 @@ colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_cla
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)  
+DW_inv_info <- read.delim(file = here("data/input/BZE3/tot_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
+  select(bund_nr, aufnahmestatus, distanz, azimut )
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
-DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", dec = ",")
-#  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
+DW_data <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ",") %>% 
+  select( bund_nr, lfd_nr, typ,      baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
+#  bund_nr lfd_nr typ      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
-# join inventory jear and name into deadwood tree dataset
-
-
 
 
 # 1. data prep  --------------------------------------
@@ -197,7 +216,10 @@ SP_NAs <- trees_data %>%
 if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees dataset that do not match
                                 the species names and codes listed in x_bart")}else{"all fine"}
 
+# remove trees without species code or plot ID from the dataset
+trees_data <- trees_data %>% filter(!(is.na(SP_code)) | !(is.na(plot_ID)))
 
+trees_removed <- trees_data %>% filter(!(is.na(SP_code)) | is.na(plot_ID))
 
 # 1.2.2. forest edges dataset ---------------------------------------------
 forest_edges <- forest_edges %>% 
@@ -347,14 +369,16 @@ RG_loc_info <- RG_loc_info %>%
 # 2.3.2. create dataset with CCS that are not  ------------------------------------------------------------
 RG_CCS_to_exclude <- RG_loc_info %>% 
   # remove plots where one of the four sampling circuits was not inventorable
-  filter("CCS_RG_inv_status" == 3)
+  filter("CCS_RG_inv_status" == 3) 
+
 
 
 #  2.3.3. correcting status 2 circles that actually have trees ------------------------------------------------------------------
 RG_loc_info <-  RG_loc_info%>%
   # join  Plant data into RG_lock info 
-  left_join(., RG_data , by = c("plot_ID", "CCS_nr", "inv_year", "inv"), 
-            multiple = "all") %>% 
+  ###change_back_later : here is an issue with the species codes .... they are somehow -2 but they have IDs
+   left_join(., RG_data , by = c("plot_ID", "CCS_nr", "inv_year", "inv"), 
+             multiple = "all") %>% 
   # exclude CCS with status 3
   anti_join(., RG_CCS_to_exclude, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
   # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
