@@ -47,7 +47,7 @@
 
 #### common/ general operations -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # functions & packages
-source(paste0(here(), "/scripts/01_00_functions_library.R"))
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
 source(paste0(here(), "/scripts/02_00_connect_R_PostgreSQL.R"))
 # data wrangling & sorting for bark and fruit types for forest structural indeyx calcualtion
