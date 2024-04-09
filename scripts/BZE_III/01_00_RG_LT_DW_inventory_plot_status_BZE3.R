@@ -102,14 +102,14 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"##change_back /BZE3/
-                                   ), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
+inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 inv_info$date <- as.Date(inv_info$date)
-inv_info$inv_year <- 2023 ##change_back_later as.numeric(format(inv_info$date, "%Y"))
+inv_info$inv_year <- as.numeric(format(inv_info$date, "%Y"))
 inv_info$inv <- inv_name(inv_info$inv_year)
+
 
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
@@ -121,7 +121,7 @@ colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_typ
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ 1)) ##change_back_later TRUE ~ hbi_status))
+                                                                 TRUE ~ hbi_status))
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
@@ -135,22 +135,6 @@ trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_s
 # BZE3 forest edges
 # forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
 # colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
-forest_edges <- read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",") %>% 
-  # select only forest edge relevant column
-  select(bund_nr,randtyp_1 , randtyp_2, randform_1 , randform_2, anfang_dist_1, anfang_dist_2, anfang_azi_1, anfang_azi_2, end_dist_1, end_dist_2, 
-         end_azi_1, end_azi_2,  knick_dist_1, knick_dist_2, knick_azi_1, knick_azi_2) %>% 
-  # pivoting edge 1 and two into same column and establisch edge ID: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
-  to_long(keys = c("e_ID", "e_form_name", "A_dist_name", "A_azi_name", "B_dist_name", "B_azi_name", "T_dist_name", "T_azi_name"), 
-          values = c("e_type", "e_form", "A_dist", "A_azi", "B_dist", "B_azi", "T_dist", "T_azi"),  
-          names(.)[2:3], names(.)[4:5], names(.)[6:7], names(.)[8:9], names(.)[10:11], names(.)[12:13], names(.)[14:15], names(.)[16:17]) %>% 
-  # remove unecessary name columns: https://stackoverflow.com/questions/15666226/how-to-drop-columns-by-name-pattern-in-r
-  select(-contains("name")) %>% 
-  # introduce edge ID by selecting only last letter from "randform_1", "randform_2":https://stackoverflow.com/questions/7963898/extracting-the-last-n-characters-from-a-string-in-r
-  mutate(e_ID = str_sub(e_ID, start= -1)) %>% 
-  distinct() %>%
-  # select only plots that have an edge
-  filter(!is.na(e_form)) %>% 
-  rename("plot_ID" = "bund_nr")
 
 
 
@@ -163,7 +147,6 @@ colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CC
 RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ",", dec = ",")
 #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
-
 
 
 ##DEADWOOD
@@ -187,9 +170,11 @@ plots_to_exclude <- inv_info %>%
 
 # 1.2. LIVING TREES ----------------------------------------------------------------------------------------------------------------------------------------
 # 1.2.1. prepare tree data:species & inventory names -------------------------------------------------------------------------------------------------------------------------------------
+# add old data to 
+# there may be trees that are labelled as "lost" (removed or died of but for further processing we) by their tree inventory status and by that do not have 
+# we still need their data from the previous inventory to calcualte their sampling circuit and assing ther species groups etc. 
+
 trees_data <- trees_data %>% 
-  # exclude trees outside the widest CCS
-  filter(dist_cm <= 1784) %>% 
   # join in inventory info 
   left_join(., inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID")  %>% 
   # join in the species names from x_bart to ensure the Dahm DBH correction function
@@ -207,6 +192,7 @@ trees_data <- trees_data %>%
   arrange(plot_ID, tree_ID)
 
 
+
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
 SP_NAs <- trees_data %>% 
   anti_join(SP_names_com_ID_tapeS %>% 
@@ -217,9 +203,17 @@ if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees datas
                                 the species names and codes listed in x_bart")}else{"all fine"}
 
 # remove trees without species code or plot ID from the dataset
-trees_data <- trees_data %>% filter(!(is.na(SP_code)) | !(is.na(plot_ID)))
+trees_data <- trees_data %>% 
+  # exclude those trees that don´t have a species code 
+  filter(!(is.na(SP_code)) | !(is.na(plot_ID)))%>% 
+  # exclude trees outside the widest CCS
+  filter(dist_cm <= 1784) 
 
-trees_removed <- trees_data %>% filter(!(is.na(SP_code)) | is.na(plot_ID))
+trees_removed <- trees_data %>% 
+  # trees that don´t have a species code 
+  filter((is.na(SP_code)) | is.na(plot_ID)) %>% 
+  #  outside the widest CCS
+  filter(dist_cm > 1784) 
 
 # 1.2.2. forest edges dataset ---------------------------------------------
 forest_edges <- forest_edges %>% 
@@ -235,6 +229,7 @@ RG_data <- RG_data %>%
   left_join(., inv_info %>% select(plot_ID, inv_year, inv), by = "plot_ID") %>% 
   arrange(plot_ID, CCS_nr, tree_ID)
 
+# if the CCR no is not a an integer but a character, we have to change that 
 
 # 1.4. DEADWOOD -----------------------------------------------------------
 DW_data <- DW_data %>% 
@@ -377,7 +372,9 @@ RG_CCS_to_exclude <- RG_loc_info %>%
 RG_loc_info <-  RG_loc_info%>%
   # join  Plant data into RG_lock info 
   ###change_back_later : here is an issue with the species codes .... they are somehow -2 but they have IDs
-   left_join(., RG_data , by = c("plot_ID", "CCS_nr", "inv_year", "inv"), 
+  ##change_back_later : there are plot_IDs with NA but still have trees 
+   left_join(., RG_data %>% 
+               mutate(across(c("plot_ID", "CCS_nr", "inv_year"), as.numeric)), by = c("plot_ID", "CCS_nr", "inv_year", "inv"), 
              multiple = "all") %>% 
   # exclude CCS with status 3
   anti_join(., RG_CCS_to_exclude, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
@@ -388,7 +385,7 @@ RG_loc_info <-  RG_loc_info%>%
   # we test this by looking for circuits with the label "2" that have tree_IDs that are not na (because the tree columns joined into empty 
   # CCS should actually be "empty/ NA")
   mutate(CCS_RG_inv_status_new = case_when(
-    CCS_RG_inv_status == 2 & !is.na(tree_ID) ~ 1, 
+    CCS_RG_inv_status == 2 & !is.na(tree_ID) | SP_code == -2 ~ 1, 
     TRUE ~ CCS_RG_inv_status)) %>% 
   # change name of old inventory status to "..._old"
   rename("CCS_RG_inv_status_old" = "CCS_RG_inv_status") %>% 
@@ -562,4 +559,26 @@ write.csv2(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1]
 write.csv2(trees_BWI, paste0(out.path.BZE3, paste(unique(trees_BWI$inv)[1], "trees_BWI", sep = "_"), ".csv"))
 
 
+
+# NOTES -------------------------------------------------------------------
+
+# N.1. in case that data arrives in BZE3 format not BZE erfassungs --------
+
+
+# forest_edges <- read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",") %>% 
+#   # select only forest edge relevant column
+#   select(bund_nr,randtyp_1 , randtyp_2, randform_1 , randform_2, anfang_dist_1, anfang_dist_2, anfang_azi_1, anfang_azi_2, end_dist_1, end_dist_2, 
+#          end_azi_1, end_azi_2,  knick_dist_1, knick_dist_2, knick_azi_1, knick_azi_2) %>% 
+#   # pivoting edge 1 and two into same column and establisch edge ID: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
+#   to_long(keys = c("e_ID", "e_form_name", "A_dist_name", "A_azi_name", "B_dist_name", "B_azi_name", "T_dist_name", "T_azi_name"), 
+#           values = c("e_type", "e_form", "A_dist", "A_azi", "B_dist", "B_azi", "T_dist", "T_azi"),  
+#           names(.)[2:3], names(.)[4:5], names(.)[6:7], names(.)[8:9], names(.)[10:11], names(.)[12:13], names(.)[14:15], names(.)[16:17]) %>% 
+#   # remove unecessary name columns: https://stackoverflow.com/questions/15666226/how-to-drop-columns-by-name-pattern-in-r
+#   select(-contains("name")) %>% 
+#   # introduce edge ID by selecting only last letter from "randform_1", "randform_2":https://stackoverflow.com/questions/7963898/extracting-the-last-n-characters-from-a-string-in-r
+#   mutate(e_ID = str_sub(e_ID, start= -1)) %>% 
+#   distinct() %>%
+#   # select only plots that have an edge
+#   filter(!is.na(e_form)) %>% 
+#   rename("plot_ID" = "bund_nr")
 

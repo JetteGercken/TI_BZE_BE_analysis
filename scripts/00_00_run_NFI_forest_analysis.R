@@ -60,7 +60,7 @@ source(paste0(here(), "/scripts/04_00_species_groups.R"))
 
 ##### inventory status of the plot and sampling circles -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI sorting by inventory status of the plot
-try(eval(source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_HBI.R"))), silent = FALSE)
+source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_HBI.R"))
 ## BZE3 sorting by inventory status of the plot
 source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE3.R"))
 
