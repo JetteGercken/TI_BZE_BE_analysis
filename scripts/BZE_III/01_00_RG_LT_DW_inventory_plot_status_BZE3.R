@@ -102,12 +102,12 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
+inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 inv_info$date <- as.Date(inv_info$date)
-inv_info$inv_year <- as.numeric(format(inv_info$date, "%Y"))
+inv_info$inv_year <- 2023 #as.numeric(format(inv_info$date, "%Y")) ##changebacklater
 inv_info$inv <- inv_name(inv_info$inv_year)
 
 
@@ -121,20 +121,23 @@ colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_typ
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ hbi_status))
+                                                                 TRUE ~ 1)) ##changebacklater # hbi_status))
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
 # BZE3 trees
-colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", 
-                          "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
+colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
-
-
+# HBI/ BZE2 BEAB dataset
+trees_HBI <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ",")
+# BZE3 trees
+colnames(trees_HBI) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
+trees_HBI <- trees_HBI %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
+                                           age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # BZE3 forest edges
-# forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
-# colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
+ forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
+ colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
 
 
 
@@ -168,12 +171,25 @@ plots_to_exclude <- inv_info %>%
   filter(plot_inv_status >= 21) %>% 
   select(plot_ID)
 
+
 # 1.2. LIVING TREES ----------------------------------------------------------------------------------------------------------------------------------------
-# 1.2.1. prepare tree data:species & inventory names -------------------------------------------------------------------------------------------------------------------------------------
-# add old data to 
+# 1.2.1. prepare tree data: add old data to removed trees for stock calculations later ----------------------------------------------------------------
 # there may be trees that are labelled as "lost" (removed or died of but for further processing we) by their tree inventory status and by that do not have 
 # we still need their data from the previous inventory to calcualte their sampling circuit and assing ther species groups etc. 
+#  dist_cm azi_gon age age_meth SP_code Kraft C_layer H_dm C_h_dm D_mm 
+trees_data %>%
+  filter(!(tree_inventory_status %in% c(0,1)))%>% 
+  filter_at(vars(multi_stem:DBH_h_cm),any_vars(is.na(.))) %>% 
+  mutate(across(multi_stem:DBH_h_cm), coalesce(., trees_HBI[c("multi_stem":"DBH_h_cm")]))
 
+trees_HBI %>% 
+  semi_join(., 
+            trees_data %>%
+              filter(!(tree_inventory_status %in% c(0,1)))%>% 
+              filter_at(vars(multi_stem:DBH_h_cm),any_vars(is.na(.))), 
+            by = c("plot_ID", "tree_ID"))
+
+# 1.2.2. prepare tree data:species & inventory names -------------------------------------------------------------------------------------------------------------------------------------
 trees_data <- trees_data %>% 
   # join in inventory info 
   left_join(., inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID")  %>% 
