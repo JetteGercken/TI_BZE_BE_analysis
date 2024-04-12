@@ -1,142 +1,229 @@
 "";"plot_ID";"team";"date";"stand_spec";"stand_type";"structure";"hbi_status";"inv_year";"inv";"CCS_r_m";"CCS_LT_inv_status"
-"1";130010;"KF";2012-05-26;1;7;1;1;2012;"HBI";5,64;1
-"2";130010;"KF";2012-05-26;1;7;1;1;2012;"HBI";12,62;1
-"3";130010;"KF";2012-05-26;1;7;1;1;2012;"HBI";17,84;1
-"4";130013;"KF";2012-03-12;1;4;1;1;2012;"HBI";5,64;1
-"5";130013;"KF";2012-03-12;1;4;1;1;2012;"HBI";12,62;1
-"6";130013;"KF";2012-03-12;1;4;1;1;2012;"HBI";17,84;1
-"7";130014;"KF";2012-07-04;1;2;2;1;2012;"HBI";5,64;1
-"8";130014;"KF";2012-07-04;1;2;2;1;2012;"HBI";12,62;1
-"9";130014;"KF";2012-07-04;1;2;2;1;2012;"HBI";17,84;1
-"10";130017;"KF";2012-06-14;1;7;1;1;2012;"HBI";5,64;1
-"11";130017;"KF";2012-06-14;1;7;1;1;2012;"HBI";12,62;1
-"12";130017;"KF";2012-06-14;1;7;1;1;2012;"HBI";17,84;1
-"13";130022;"KF";2012-06-05;1;2;1;1;2012;"HBI";5,64;1
-"14";130022;"KF";2012-06-05;1;2;1;1;2012;"HBI";12,62;1
-"15";130022;"KF";2012-06-05;1;2;1;1;2012;"HBI";17,84;1
-"16";130023;"KF";2012-06-05;1;2;1;1;2012;"HBI";5,64;1
-"17";130023;"KF";2012-06-05;1;2;1;1;2012;"HBI";12,62;1
-"18";130023;"KF";2012-06-05;1;2;1;1;2012;"HBI";17,84;1
-"19";130026;"KF";2012-05-24;1;2;2;1;2012;"HBI";5,64;1
-"20";130026;"KF";2012-05-24;1;2;2;1;2012;"HBI";12,62;1
-"21";130026;"KF";2012-05-24;1;2;2;1;2012;"HBI";17,84;1
-"22";130027;"KF";2012-05-24;1;2;2;1;2012;"HBI";5,64;1
-"23";130027;"KF";2012-05-24;1;2;2;1;2012;"HBI";12,62;1
-"24";130027;"KF";2012-05-24;1;2;2;1;2012;"HBI";17,84;1
-"25";130028;"KF";2012-07-08;1;2;2;1;2012;"HBI";5,64;1
-"26";130028;"KF";2012-07-08;1;2;2;1;2012;"HBI";12,62;1
-"27";130028;"KF";2012-07-08;1;2;2;1;2012;"HBI";17,84;1
-"28";130029;"KF";2012-06-04;1;2;1;1;2012;"HBI";5,64;1
-"29";130029;"KF";2012-06-04;1;2;1;1;2012;"HBI";12,62;1
-"30";130029;"KF";2012-06-04;1;2;1;1;2012;"HBI";17,84;2
-"31";130032;"KF";2012-05-22;1;7;2;1;2012;"HBI";5,64;1
-"32";130032;"KF";2012-05-22;1;7;2;1;2012;"HBI";12,62;1
-"33";130032;"KF";2012-05-22;1;7;2;1;2012;"HBI";17,84;1
-"34";130033;"KF";2012-06-04;1;2;1;1;2012;"HBI";5,64;1
-"35";130033;"KF";2012-06-04;1;2;1;1;2012;"HBI";12,62;1
-"36";130033;"KF";2012-06-04;1;2;1;1;2012;"HBI";17,84;1
-"37";130036;"KF";2012-06-29;1;2;2;1;2012;"HBI";5,64;1
-"38";130036;"KF";2012-06-29;1;2;2;1;2012;"HBI";12,62;1
-"39";130036;"KF";2012-06-29;1;2;2;1;2012;"HBI";17,84;1
-"40";130037;"KF";2012-06-29;1;2;4;1;2012;"HBI";5,64;1
-"41";130037;"KF";2012-06-29;1;2;4;1;2012;"HBI";12,62;1
-"42";130037;"KF";2012-06-29;1;2;4;1;2012;"HBI";17,84;1
-"43";130039;"KF";2012-07-09;1;2;2;1;2012;"HBI";5,64;1
-"44";130039;"KF";2012-07-09;1;2;2;1;2012;"HBI";12,62;1
-"45";130039;"KF";2012-07-09;1;2;2;1;2012;"HBI";17,84;1
-"46";130042;"KF";2012-05-22;1;2;2;1;2012;"HBI";5,64;1
-"47";130042;"KF";2012-05-22;1;2;2;1;2012;"HBI";12,62;1
-"48";130042;"KF";2012-05-22;1;2;2;1;2012;"HBI";17,84;1
-"49";130044;"KF";2012-06-28;1;2;1;1;2012;"HBI";5,64;1
-"50";130044;"KF";2012-06-28;1;2;1;1;2012;"HBI";12,62;1
-"51";130044;"KF";2012-06-28;1;2;1;1;2012;"HBI";17,84;1
-"52";130046;"KF";2012-06-24;1;2;1;1;2012;"HBI";5,64;1
-"53";130046;"KF";2012-06-24;1;2;1;1;2012;"HBI";12,62;1
-"54";130046;"KF";2012-06-24;1;2;1;1;2012;"HBI";17,84;1
-"55";130047;"KF";2012-06-30;1;2;2;1;2012;"HBI";5,64;1
-"56";130047;"KF";2012-06-30;1;2;2;1;2012;"HBI";12,62;1
-"57";130047;"KF";2012-06-30;1;2;2;1;2012;"HBI";17,84;1
-"58";130048;"KF";2012-07-03;1;2;4;1;2012;"HBI";5,64;1
-"59";130048;"KF";2012-07-03;1;2;4;1;2012;"HBI";12,62;1
-"60";130048;"KF";2012-07-03;1;2;4;1;2012;"HBI";17,84;1
-"61";130050;"kf";2012-06-27;1;4;1;1;2012;"HBI";5,64;1
-"62";130050;"kf";2012-06-27;1;4;1;1;2012;"HBI";12,62;1
-"63";130050;"kf";2012-06-27;1;4;1;1;2012;"HBI";17,84;1
-"64";130051;"KF";2012-06-24;1;2;1;1;2012;"HBI";5,64;1
-"65";130051;"KF";2012-06-24;1;2;1;1;2012;"HBI";12,62;1
-"66";130051;"KF";2012-06-24;1;2;1;1;2012;"HBI";17,84;1
-"67";130052;"KF";2012-07-06;1;2;1;1;2012;"HBI";5,64;1
-"68";130052;"KF";2012-07-06;1;2;1;1;2012;"HBI";12,62;1
-"69";130052;"KF";2012-07-06;1;2;1;1;2012;"HBI";17,84;1
-"70";130056;"KF";2012-06-19;1;4;1;1;2012;"HBI";5,64;1
-"71";130056;"KF";2012-06-19;1;4;1;1;2012;"HBI";12,62;1
-"72";130056;"KF";2012-06-19;1;4;1;1;2012;"HBI";17,84;1
-"73";130057;"KF";2012-06-19;1;4;1;1;2012;"HBI";5,64;1
-"74";130057;"KF";2012-06-19;1;4;1;1;2012;"HBI";12,62;1
-"75";130057;"KF";2012-06-19;1;4;1;1;2012;"HBI";17,84;1
-"76";130059;"KF";2012-07-01;1;2;5;1;2012;"HBI";5,64;1
-"77";130059;"KF";2012-07-01;1;2;5;1;2012;"HBI";12,62;1
-"78";130059;"KF";2012-07-01;1;2;5;1;2012;"HBI";17,84;1
-"79";130060;"KF";2012-07-02;1;2;1;1;2012;"HBI";5,64;1
-"80";130060;"KF";2012-07-02;1;2;1;1;2012;"HBI";12,62;1
-"81";130060;"KF";2012-07-02;1;2;1;1;2012;"HBI";17,84;1
-"82";130061;"KF";2012-07-02;1;2;1;1;2012;"HBI";5,64;1
-"83";130061;"KF";2012-07-02;1;2;1;1;2012;"HBI";12,62;1
-"84";130061;"KF";2012-07-02;1;2;1;1;2012;"HBI";17,84;1
-"85";130064;"KF";2012-07-01;1;2;1;1;2012;"HBI";5,64;1
-"86";130064;"KF";2012-07-01;1;2;1;1;2012;"HBI";12,62;1
-"87";130064;"KF";2012-07-01;1;2;1;1;2012;"HBI";17,84;1
-"88";130068;"KF";2012-07-12;1;2;1;1;2012;"HBI";5,64;1
-"89";130068;"KF";2012-07-12;1;2;1;1;2012;"HBI";12,62;1
-"90";130068;"KF";2012-07-12;1;2;1;1;2012;"HBI";17,84;1
-"91";130069;"KF";2012-06-07;1;8;1;1;2012;"HBI";5,64;1
-"92";130069;"KF";2012-06-07;1;8;1;1;2012;"HBI";12,62;1
-"93";130069;"KF";2012-06-07;1;8;1;1;2012;"HBI";17,84;1
-"94";130070;"KF";2012-06-08;1;8;1;1;2012;"HBI";5,64;1
-"95";130070;"KF";2012-06-08;1;8;1;1;2012;"HBI";12,62;1
-"96";130070;"KF";2012-06-08;1;8;1;1;2012;"HBI";17,84;1
-"97";130071;"KF";2012-05-25;1;2;2;1;2012;"HBI";5,64;1
-"98";130071;"KF";2012-05-25;1;2;2;1;2012;"HBI";12,62;1
-"99";130071;"KF";2012-05-25;1;2;2;1;2012;"HBI";17,84;1
-"100";130072;"KF";2012-06-13;1;8;6;1;2012;"HBI";5,64;1
-"101";130072;"KF";2012-06-13;1;8;6;1;2012;"HBI";12,62;1
-"102";130072;"KF";2012-06-13;1;8;6;1;2012;"HBI";17,84;1
-"103";130073;"KF";2012-05-23;1;5;1;1;2012;"HBI";5,64;2
-"104";130073;"KF";2012-05-23;1;5;1;1;2012;"HBI";12,62;2
-"105";130073;"KF";2012-05-23;1;5;1;1;2012;"HBI";17,84;2
-"106";130074;"KF";2012-06-13;1;5;1;1;2012;"HBI";5,64;1
-"107";130074;"KF";2012-06-13;1;5;1;1;2012;"HBI";12,62;1
-"108";130074;"KF";2012-06-13;1;5;1;1;2012;"HBI";17,84;2
-"109";130075;"KF";2012-05-24;1;8;1;1;2012;"HBI";5,64;1
-"110";130075;"KF";2012-05-24;1;8;1;1;2012;"HBI";12,62;1
-"111";130075;"KF";2012-05-24;1;8;1;1;2012;"HBI";17,84;2
-"112";130076;"KF";2012-06-30;1;2;2;1;2012;"HBI";5,64;1
-"113";130076;"KF";2012-06-30;1;2;2;1;2012;"HBI";12,62;1
-"114";130076;"KF";2012-06-30;1;2;2;1;2012;"HBI";17,84;1
-"115";130077;"KF";2012-07-01;1;2;1;1;2012;"HBI";5,64;1
-"116";130077;"KF";2012-07-01;1;2;1;1;2012;"HBI";12,62;1
-"117";130077;"KF";2012-07-01;1;2;1;1;2012;"HBI";17,84;1
-"118";130078;"KF";2012-07-05;1;1;1;1;2012;"HBI";5,64;1
-"119";130078;"KF";2012-07-05;1;1;1;1;2012;"HBI";12,62;1
-"120";130078;"KF";2012-07-05;1;1;1;1;2012;"HBI";17,84;1
-"121";130079;"KF";2012-06-03;1;2;1;1;2012;"HBI";5,64;1
-"122";130079;"KF";2012-06-03;1;2;1;1;2012;"HBI";12,62;1
-"123";130079;"KF";2012-06-03;1;2;1;1;2012;"HBI";17,84;1
-"124";130080;"KF";2012-06-25;1;2;2;1;2012;"HBI";5,64;1
-"125";130080;"KF";2012-06-25;1;2;2;1;2012;"HBI";12,62;1
-"126";130080;"KF";2012-06-25;1;2;2;1;2012;"HBI";17,84;1
-"127";130081;"KF";2012-07-10;1;2;6;1;2012;"HBI";5,64;1
-"128";130081;"KF";2012-07-10;1;2;6;1;2012;"HBI";12,62;1
-"129";130081;"KF";2012-07-10;1;2;6;1;2012;"HBI";17,84;1
-"130";130082;"KF";2012-07-13;1;3;1;1;2012;"HBI";5,64;1
-"131";130082;"KF";2012-07-13;1;3;1;1;2012;"HBI";12,62;1
-"132";130082;"KF";2012-07-13;1;3;1;1;2012;"HBI";17,84;1
-"133";130083;"KF";2012-07-05;1;2;1;1;2012;"HBI";5,64;1
-"134";130083;"KF";2012-07-05;1;2;1;1;2012;"HBI";12,62;1
-"135";130083;"KF";2012-07-05;1;2;1;1;2012;"HBI";17,84;1
-"136";130084;"KF";2012-06-27;1;3;2;1;2012;"HBI";5,64;1
-"137";130084;"KF";2012-06-27;1;3;2;1;2012;"HBI";12,62;1
-"138";130084;"KF";2012-06-27;1;3;2;1;2012;"HBI";17,84;1
-"139";130088;"KF";2012-06-14;1;2;1;1;2012;"HBI";5,64;1
-"140";130088;"KF";2012-06-14;1;2;1;1;2012;"HBI";12,62;1
-"141";130088;"KF";2012-06-14;1;2;1;1;2012;"HBI";17,84;1
+"1";140001;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;7;2;-9;2012;"HBI";5,64;1
+"2";140001;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;7;2;-9;2012;"HBI";12,62;1
+"3";140001;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;7;2;-9;2012;"HBI";17,84;1
+"4";140002;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;8;2;-9;2012;"HBI";5,64;1
+"5";140002;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;8;2;-9;2012;"HBI";12,62;1
+"6";140002;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;8;2;-9;2012;"HBI";17,84;1
+"7";140003;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;6;1;-9;2012;"HBI";5,64;1
+"8";140003;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;6;1;-9;2012;"HBI";12,62;1
+"9";140003;"Matthias Stade,  Alexander Griesbach";2012-05-15;1;6;1;-9;2012;"HBI";17,84;1
+"10";140004;"Matthias Stade,  Alexander Griesbach";2011-09-23;1;6;1;-9;2011;"HBI";5,64;1
+"11";140004;"Matthias Stade,  Alexander Griesbach";2011-09-23;1;6;1;-9;2011;"HBI";12,62;1
+"12";140004;"Matthias Stade,  Alexander Griesbach";2011-09-23;1;6;1;-9;2011;"HBI";17,84;1
+"13";140005;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;7;1;-9;2012;"HBI";5,64;1
+"14";140005;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;7;1;-9;2012;"HBI";12,62;1
+"15";140005;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;7;1;-9;2012;"HBI";17,84;1
+"16";140006;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;1;1;-9;2012;"HBI";5,64;1
+"17";140006;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;1;1;-9;2012;"HBI";12,62;1
+"18";140006;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;1;1;-9;2012;"HBI";17,84;1
+"19";140007;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;6;1;-9;2012;"HBI";5,64;1
+"20";140007;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;6;1;-9;2012;"HBI";12,62;1
+"21";140007;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;6;1;-9;2012;"HBI";17,84;1
+"22";140008;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;1;-9;2012;"HBI";5,64;1
+"23";140008;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;1;-9;2012;"HBI";12,62;1
+"24";140008;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;1;-9;2012;"HBI";17,84;1
+"25";140009;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;2;1;-9;2012;"HBI";5,64;1
+"26";140009;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;2;1;-9;2012;"HBI";12,62;1
+"27";140009;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;2;1;-9;2012;"HBI";17,84;1
+"28";140010;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;8;1;-9;2012;"HBI";5,64;1
+"29";140010;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;8;1;-9;2012;"HBI";12,62;1
+"30";140010;"Matthias Stade,  Alexander Griesbach";2012-05-11;1;8;1;-9;2012;"HBI";17,84;2
+"31";140012;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";5,64;1
+"32";140012;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";12,62;1
+"33";140012;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";17,84;1
+"34";140013;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";5,64;1
+"35";140013;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";12,62;1
+"36";140013;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";17,84;2
+"37";140014;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";5,64;1
+"38";140014;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";12,62;1
+"39";140014;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";17,84;2
+"40";140015;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";5,64;1
+"41";140015;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";12,62;1
+"42";140015;"Matthias Stade,  Alexander Griesbach";2012-05-10;1;2;1;-9;2012;"HBI";17,84;1
+"43";140016;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;6;2;-9;2011;"HBI";5,64;1
+"44";140016;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;6;2;-9;2011;"HBI";12,62;1
+"45";140016;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;6;2;-9;2011;"HBI";17,84;1
+"46";140017;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;6;1;-9;2012;"HBI";5,64;1
+"47";140017;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;6;1;-9;2012;"HBI";12,62;1
+"48";140017;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;6;1;-9;2012;"HBI";17,84;1
+"49";140018;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;2;1;-9;2012;"HBI";5,64;1
+"50";140018;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;2;1;-9;2012;"HBI";12,62;1
+"51";140018;"Matthias Stade,  Alexander Griesbach";2012-04-24;1;2;1;-9;2012;"HBI";17,84;1
+"52";140019;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;5;2;-9;2012;"HBI";5,64;1
+"53";140019;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;5;2;-9;2012;"HBI";12,62;1
+"54";140019;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;5;2;-9;2012;"HBI";17,84;1
+"55";140020;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;2;1;-9;2012;"HBI";5,64;1
+"56";140020;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;2;1;-9;2012;"HBI";12,62;1
+"57";140020;"Matthias Stade,  Alexander Griesbach";2012-04-26;1;2;1;-9;2012;"HBI";17,84;2
+"58";140021;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;2;2;-9;2011;"HBI";5,64;1
+"59";140021;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;2;2;-9;2011;"HBI";12,62;1
+"60";140021;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;2;2;-9;2011;"HBI";17,84;1
+"61";140022;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;8;1;-9;2011;"HBI";5,64;1
+"62";140022;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;8;1;-9;2011;"HBI";12,62;1
+"63";140022;"Matthias Stade,  Alexander Griesbach";2011-09-09;1;8;1;-9;2011;"HBI";17,84;1
+"64";140023;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;8;1;-9;2011;"HBI";5,64;1
+"65";140023;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;8;1;-9;2011;"HBI";12,62;1
+"66";140023;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;8;1;-9;2011;"HBI";17,84;1
+"67";140024;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";5,64;1
+"68";140024;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";12,62;1
+"69";140024;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";17,84;1
+"70";140025;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";5,64;1
+"71";140025;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";12,62;1
+"72";140025;"Matthias Stade,  Alexander Griesbach";2011-11-15;1;2;1;-9;2011;"HBI";17,84;1
+"73";140026;"Matthias Stade,  Alexander Griesbach";2011-08-12;1;8;1;-9;2011;"HBI";5,64;1
+"74";140026;"Matthias Stade,  Alexander Griesbach";2011-08-12;1;8;1;-9;2011;"HBI";12,62;1
+"75";140026;"Matthias Stade,  Alexander Griesbach";2011-08-12;1;8;1;-9;2011;"HBI";17,84;1
+"76";140027;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;1;1;-9;2011;"HBI";5,64;1
+"77";140027;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;1;1;-9;2011;"HBI";12,62;1
+"78";140027;"Matthias Stade,  Alexander Griesbach";2011-09-07;1;1;1;-9;2011;"HBI";17,84;1
+"79";140028;"Matthias Stade,  Alexander Griesbach";2011-08-31;1;3;1;-9;2011;"HBI";5,64;1
+"80";140028;"Matthias Stade,  Alexander Griesbach";2011-08-31;1;3;1;-9;2011;"HBI";12,62;1
+"81";140028;"Matthias Stade,  Alexander Griesbach";2011-08-31;1;3;1;-9;2011;"HBI";17,84;1
+"82";140029;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";5,64;1
+"83";140029;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";12,62;1
+"84";140029;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";17,84;1
+"85";140030;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;2;1;-9;2011;"HBI";5,64;1
+"86";140030;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;2;1;-9;2011;"HBI";12,62;1
+"87";140030;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;2;1;-9;2011;"HBI";17,84;2
+"88";140031;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;1;1;-9;2011;"HBI";5,64;1
+"89";140031;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;1;1;-9;2011;"HBI";12,62;1
+"90";140031;"Matthias Stade,  Alexander Griesbach";2011-08-17;1;1;1;-9;2011;"HBI";17,84;1
+"91";140032;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";5,64;1
+"92";140032;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";12,62;1
+"93";140032;"Matthias Stade,  Alexander Griesbach";2011-09-19;1;6;1;-9;2011;"HBI";17,84;1
+"94";140033;"Matthias Stade,  Alexander Griesbach";2011-08-10;1;1;1;-9;2011;"HBI";5,64;1
+"95";140033;"Matthias Stade,  Alexander Griesbach";2011-08-10;1;1;1;-9;2011;"HBI";12,62;1
+"96";140033;"Matthias Stade,  Alexander Griesbach";2011-08-10;1;1;1;-9;2011;"HBI";17,84;1
+"97";140034;"Matthias Stade,  Alexander Griesbach";2011-08-11;1;1;1;-9;2011;"HBI";5,64;1
+"98";140034;"Matthias Stade,  Alexander Griesbach";2011-08-11;1;1;1;-9;2011;"HBI";12,62;1
+"99";140034;"Matthias Stade,  Alexander Griesbach";2011-08-11;1;1;1;-9;2011;"HBI";17,84;1
+"100";140035;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";5,64;1
+"101";140035;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";12,62;1
+"102";140035;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";17,84;1
+"103";140036;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";5,64;1
+"104";140036;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";12,62;1
+"105";140036;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";17,84;1
+"106";140037;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";5,64;1
+"107";140037;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";12,62;1
+"108";140037;"Matthias Stade,  Alexander Griesbach";2011-08-18;1;1;1;-9;2011;"HBI";17,84;1
+"109";140038;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";5,64;1
+"110";140038;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";12,62;1
+"111";140038;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";17,84;1
+"112";140039;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";5,64;1
+"113";140039;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";12,62;1
+"114";140039;"Matthias Stade,  Alexander Griesbach";2011-08-30;1;1;1;-9;2011;"HBI";17,84;1
+"115";140040;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";5,64;1
+"116";140040;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";12,62;1
+"117";140040;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";17,84;1
+"118";140041;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";5,64;1
+"119";140041;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";12,62;1
+"120";140041;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";17,84;1
+"121";140042;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";5,64;1
+"122";140042;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";12,62;1
+"123";140042;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";17,84;1
+"124";140043;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;6;1;-9;2011;"HBI";5,64;1
+"125";140043;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;6;1;-9;2011;"HBI";12,62;1
+"126";140043;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;6;1;-9;2011;"HBI";17,84;1
+"127";140044;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";5,64;1
+"128";140044;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";12,62;1
+"129";140044;"Matthias Stade,  Alexander Griesbach";2011-09-05;1;1;1;-9;2011;"HBI";17,84;1
+"130";140045;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";5,64;1
+"131";140045;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";12,62;1
+"132";140045;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";17,84;1
+"133";140046;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";5,64;1
+"134";140046;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";12,62;1
+"135";140046;"Matthias Stade,  Alexander Griesbach";2011-09-06;1;1;1;-9;2011;"HBI";17,84;1
+"136";140047;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;2;-9;2011;"HBI";5,64;1
+"137";140047;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;2;-9;2011;"HBI";12,62;1
+"138";140047;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;2;-9;2011;"HBI";17,84;1
+"139";140048;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";5,64;2
+"140";140048;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";12,62;1
+"141";140048;"Matthias Stade,  Alexander Griesbach";2011-09-22;1;1;1;-9;2011;"HBI";17,84;1
+"142";140049;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";5,64;1
+"143";140049;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";12,62;1
+"144";140049;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";17,84;1
+"145";140050;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";5,64;1
+"146";140050;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";12,62;1
+"147";140050;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";17,84;2
+"148";140051;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";5,64;1
+"149";140051;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";12,62;1
+"150";140051;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";17,84;1
+"151";140052;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";5,64;1
+"152";140052;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";12,62;1
+"153";140052;"Matthias Stade,  Alexander Griesbach";2011-09-21;1;1;1;-9;2011;"HBI";17,84;1
+"154";140053;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";5,64;1
+"155";140053;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";12,62;1
+"156";140053;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";17,84;1
+"157";140054;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";5,64;1
+"158";140054;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";12,62;1
+"159";140054;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";17,84;1
+"160";140055;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";5,64;1
+"161";140055;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";12,62;1
+"162";140055;"Matthias Stade,  Alexander Griesbach";2011-08-16;1;1;1;-9;2011;"HBI";17,84;1
+"163";140056;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";5,64;1
+"164";140056;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";12,62;1
+"165";140056;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";17,84;1
+"166";140057;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";5,64;1
+"167";140057;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";12,62;1
+"168";140057;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";17,84;1
+"169";140058;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";5,64;1
+"170";140058;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";12,62;1
+"171";140058;"Matthias Stade,  Alexander Griesbach";2011-11-14;1;1;1;-9;2011;"HBI";17,84;1
+"172";140059;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;7;4;-9;2012;"HBI";5,64;1
+"173";140059;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;7;4;-9;2012;"HBI";12,62;1
+"174";140059;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;7;4;-9;2012;"HBI";17,84;1
+"175";140060;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;2;-9;2012;"HBI";5,64;1
+"176";140060;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;2;-9;2012;"HBI";12,62;1
+"177";140060;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;2;-9;2012;"HBI";17,84;1
+"178";140061;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;2;1;-9;2012;"HBI";5,64;1
+"179";140061;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;2;1;-9;2012;"HBI";12,62;1
+"180";140061;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;2;1;-9;2012;"HBI";17,84;1
+"181";140062;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";5,64;1
+"182";140062;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";12,62;1
+"183";140062;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";17,84;1
+"184";140063;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";5,64;1
+"185";140063;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";12,62;1
+"186";140063;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";17,84;1
+"187";140064;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";5,64;1
+"188";140064;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";12,62;1
+"189";140064;"Matthias Stade,  Alexander Griesbach";2012-05-16;1;2;1;-9;2012;"HBI";17,84;2
+"190";140065;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;8;1;-9;2012;"HBI";5,64;1
+"191";140065;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;8;1;-9;2012;"HBI";12,62;1
+"192";140065;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;8;1;-9;2012;"HBI";17,84;2
+"193";140066;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;1;1;-9;2012;"HBI";5,64;1
+"194";140066;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;1;1;-9;2012;"HBI";12,62;1
+"195";140066;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;1;1;-9;2012;"HBI";17,84;1
+"196";140067;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;2;1;-9;2012;"HBI";5,64;1
+"197";140067;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;2;1;-9;2012;"HBI";12,62;1
+"198";140067;"Matthias Stade,  Alexander Griesbach";2012-05-07;1;2;1;-9;2012;"HBI";17,84;1
+"199";140068;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;1;1;-9;2012;"HBI";5,64;1
+"200";140068;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;1;1;-9;2012;"HBI";12,62;1
+"201";140068;"Matthias Stade,  Alexander Griesbach";2012-04-23;1;1;1;-9;2012;"HBI";17,84;1
+"202";140089;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";5,64;1
+"203";140089;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";12,62;1
+"204";140089;"Matthias Stade,  Alexander Griesbach";2012-04-25;1;2;1;-9;2012;"HBI";17,84;1
+"205";140102;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;2;-9;2012;"HBI";5,64;1
+"206";140102;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;2;-9;2012;"HBI";12,62;1
+"207";140102;"Matthias Stade,  Alexander Griesbach";2012-05-09;1;2;2;-9;2012;"HBI";17,84;1
+"208";140175;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";5,64;1
+"209";140175;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";12,62;1
+"210";140175;"Matthias Stade,  Alexander Griesbach";2011-08-15;1;1;1;-9;2011;"HBI";17,84;1
+"211";140187;"Matthias Stade,  Alexander Griesbach";2011-08-29;1;1;1;-9;2011;"HBI";5,64;1
+"212";140187;"Matthias Stade,  Alexander Griesbach";2011-08-29;1;1;1;-9;2011;"HBI";12,62;1
+"213";140187;"Matthias Stade,  Alexander Griesbach";2011-08-29;1;1;1;-9;2011;"HBI";17,84;1
+"214";140234;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";5,64;1
+"215";140234;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";12,62;1
+"216";140234;"Matthias Stade,  Alexander Griesbach";2011-09-20;1;1;1;-9;2011;"HBI";17,84;1
+"217";140252;"Matthias Stade,  Alexander Griesbach";2012-05-30;1;1;1;-9;2012;"HBI";5,64;1
+"218";140252;"Matthias Stade,  Alexander Griesbach";2012-05-30;1;1;1;-9;2012;"HBI";12,62;1
+"219";140252;"Matthias Stade,  Alexander Griesbach";2012-05-30;1;1;1;-9;2012;"HBI";17,84;1
+"220";140254;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;3;-9;2012;"HBI";5,64;1
+"221";140254;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;3;-9;2012;"HBI";12,62;1
+"222";140254;"Matthias Stade,  Alexander Griesbach";2012-04-27;1;8;3;-9;2012;"HBI";17,84;1
+"223";140315;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";5,64;1
+"224";140315;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";12,62;1
+"225";140315;"Matthias Stade,  Alexander Griesbach";2012-05-29;1;6;1;-9;2012;"HBI";17,84;1
+"226";140316;"Matthias Stade,  Alexander Griesbach";2012-05-31;1;5;1;-9;2012;"HBI";5,64;1
+"227";140316;"Matthias Stade,  Alexander Griesbach";2012-05-31;1;5;1;-9;2012;"HBI";12,62;1
+"228";140316;"Matthias Stade,  Alexander Griesbach";2012-05-31;1;5;1;-9;2012;"HBI";17,84;1

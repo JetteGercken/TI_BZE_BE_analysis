@@ -102,7 +102,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE3/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
+inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
@@ -114,17 +114,20 @@ inv_info$inv <- inv_name(inv_info$inv_year)
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
 tree_inv_info <-  read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% # be
-  select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
-            knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
-            end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
-colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status") ##change_back_later, "hbi_status")
-tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
-                                                                 str_detect(plot_ID, '^11') ~ 3,
-                                                                 str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ 1)) ##changebacklater # hbi_status))
+  select(bund_nr, team,  datum,  beart, besttyp, struktur,  pk1_aufnahme,   pk2_aufnahme, pk3_aufnahme, hbi_status)
+colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status", "hbi_status")
+
+# create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
+tree_inv_info$date <- as.Date(tree_inv_info$date)
+tree_inv_info$inv_year <- as.numeric(format(tree_inv_info$date, "%Y"))
+# this line can be removed later
+tree_inv_info <- tree_inv_info %>% mutate(inv = inv_name(inv_year))
+
+
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",")
+trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ",") %>% 
+  select(bund_nr, lfd_nr, baumkennzahl,zwiesel,bart, alter,alter_methode, d_mess, bhd_hoehe,  hoehe, kransatz, azi, hori, kraft,  schi       )
 # BZE3 trees
 colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
@@ -136,7 +139,7 @@ colnames(trees_HBI) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_s
 trees_HBI <- trees_HBI %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # BZE3 forest edges
- forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ";", dec = ",")
+ forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ",")
  colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
 
 
@@ -147,18 +150,17 @@ RG_loc_info <- read.delim(file = here("data/input/BZE3/bej.csv"), sep = ",", dec
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3, including stand and area info
-RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ";", dec = ",")
+RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ",", dec = ",")
 #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
 
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE3/tot_1.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
-  select(bund_nr, aufnahmestatus, distanz, azimut )
+DW_inv_info <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) 
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
 # deadwood single item data
-DW_data <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ",") %>% 
+DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", dec = ",") %>% 
   select( bund_nr, lfd_nr, typ,      baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
 #  bund_nr lfd_nr typ      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
@@ -170,7 +172,7 @@ colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm"
 # create a list with the BZE plots that should be excluded -----------------
 # select plots that have a "Punktstatus (x_plotstatus_bze)" 
 plots_to_exclude <- inv_info %>% 
-  filter(plot_inv_status >= 21) %>% 
+  filter(plot_inv_status >= 21 | plot_inv_status <0) %>% 
   select(plot_ID)
 
 

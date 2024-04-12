@@ -115,21 +115,18 @@ inv_info <- inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
 tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% # be
-  select(-c(geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,
-            knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,
-            end_azi_2,knick_dist_2,knick_azi_2, anmerkung, schlussgrad_schi1, schlussgrad_schi2, mischung)) 
+  select(bund_nr, team,  datum,  beart, besttyp, struktur,  pk1_aufnahme,   pk2_aufnahme, pk3_aufnahme, hbi_status)
 colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", 
-                             "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status") # change_back_later , "hbi_status")
+                             "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status" , "hbi_status")
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ 1))
-                                                                 # change_back_later TRUE ~ hbi_status))
+                                                                 TRUE ~ hbi_status))
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 tree_inv_info$date <- as.Date(tree_inv_info$date)
 tree_inv_info$inv_year <- as.numeric(format(tree_inv_info$date, "%Y"))
 # this line can be removed later
-tree_inv_info <- tree_inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
+tree_inv_info <- tree_inv_info %>% mutate(inv = inv_name(inv_year))
 
 
 
@@ -149,7 +146,8 @@ colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_
 
 ## REGENERATION                                                                                                  
 # this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the HBI (BZE2) 
-RG_loc_info <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+RG_loc_info <- read.delim(file = here("data/input/BZE2_HBI/bej.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE) %>% 
+  select(bund_nr, pk_nr, pk_richtung, pk_dist, pk_aufnahme ,pk_maxdist)
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
@@ -174,7 +172,7 @@ colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm"
 # create a list with the BZE plots that should be excluded -----------------
 # select plots that have a "Punktstatus (x_plotstatus_bze)" 
 plots_to_exclude <- inv_info %>% 
-  filter(plot_inv_status >= 21) %>% 
+  filter(plot_inv_status >= 21 | plot_inv_status <0) %>% 
   select(plot_ID)
 
 

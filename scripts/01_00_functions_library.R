@@ -1168,10 +1168,11 @@ h_nls_SP_P <- function(plot_spec, d) {
 # 1.10. select the correct inventory name -------------------------------------------------------------------
 # https://www.geeksforgeeks.org/check-if-a-numeric-value-falls-between-a-range-in-r-programming-between-function/
 inv_name <- function(inv.year){
-  inv <- ifelse(between(inv.year, 2011, 2013), "HBI", 
-                ifelse(between(inv.year, 2023, 2025), "BZE3",
+  inv <- ifelse(inv.year < 2004, "HBI", 
+                ifelse(between(inv.year, 2004, 2013), "HBI", 
+                ifelse(between(inv.year, 2021, 2025), "BZE3",
                        ifelse(between(inv.year, 2033, 2035) , "BZE4", "BZE5"
-         )));
+         ))));
   return(inv)
 }
 
