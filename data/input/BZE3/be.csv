@@ -1,48 +1,302 @@
-bund_nr,team,datum,geraet,randtyp_1,randform_1,anfang_dist_1,anfang_azi_1,end_dist_1,end_azi_1,knick_dist_1,knick_azi_1,randtyp_2,randform_2,anfang_dist_2,anfang_azi_2,end_dist_2,end_azi_2,knick_dist_2,knick_azi_2,beart,besttyp,struktur,schlussgrad_schi1,schlussgrad_schi2,mischung,pk1_aufnahme,pk2_aufnahme,pk3_aufnahme,anmerkung
-130010,Bettac / Priebe,44894,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,7,1,2,NA,3,1,1,1,NA
-130013,Thiede / Martin,44901,Vertex VL 400,2,1,1881,9,1988,310,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,4,1,2,NA,2,1,1,1,NA
-130014,Thiede / Martin,44900,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,3,3,2,1,1,1,NA
-130017,Bettac / Priebe,44952,Vertex III,3,1,2009,90,1643,150,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,7,3,5,5,2,1,1,1,NA
-130022,Bettac / Priebe,44896,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130023,Bettac / Priebe,44950,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,3,NA,2,1,1,1,NA
-130026,Thiede / Martin,44964,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,4,1,2,3,1,1,1,NA
-130027,Thiede / Martin,45000,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,5,3,3,1,1,1,1,NA
-130028,Nowotny / Thiede / Martin,44888,Vertex VL 400,1,1,2752,210,2862,294,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,1,2,3,5,1,1,1,1,NA
-130029,Bettac / Priebe,44949,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130032,Bettac / Priebe,44895,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,7,2,2,6,2,1,1,1,NA
-130033,Bettac / Priebe,44950,Vertex III,1,1,3170,57,3040,88,NA,NA,3,1,2710,208,2100,253,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130036,Thiede / Martin,44953,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,5,3,4,1,1,1,1,NA
-130037,Thiede / Martin,44951,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,2,2,1,1,1,1,NA
-130039,Thiede / Martin,45028,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,2,3,1,1,1,1,NA
-130042,Bettac / Priebe,44951,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,4,3,4,1,1,1,1,NA
-130044,Thiede / Martin,45034,Vertex VL 400,3,1,2981,355,2851,20,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,3,NA,1,1,1,1,NA
-130046,Heuer / Ziegler,44910,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,4,2,6,2,1,1,1,NA
-130047,Heuer / Ziegler,44907,Vertex III,1,1,3513,5,3313,358,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,1,2,1,1,1,1,NA
-130048,Thiede / Martin,44944,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,3,1,2,1,1,1,NA
-130050,Heuer / Ziegler,44901,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,4,4,2,6,1,1,1,1,NA
-130051,Heuer / Ziegler,44907,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,4,2,6,1,1,1,1,NA
-130052,Thiede / Martin,45029,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,3,NA,1,1,1,1,NA
-130056,Heuer / Ziegler,44908,Vertex III,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,4,4,2,6,1,1,1,1,NA
-130057,Heuer / Ziegler,44909,Vertex III,4,2,2876,258,3081,292,2185,313,0,NA,NA,NA,NA,NA,NA,NA,1,4,1,2,NA,2,1,1,1,NA
-130059,Thiede / Martin,44963,Vertex VL 400,3,1,1593,178,1743,335,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,4,2,1,1,1,1,1,NA
-130060,Thiede / Martin,45014,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130061,Thiede / Martin,44946,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,4,NA,1,1,1,1,NA
-130068,Thiede / Martin,45007,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130069,Thiede / Martin,44680,Vertex VL 400,3,1,2497,27,2218,73,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,8,1,2,NA,1,1,1,1,NA
-130070,Thiede / Martin,44670,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,8,2,3,5,3,1,1,1,NA
-130071,Jahns / Martin,44770,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,2,1,1,1,NA
-130072,Thiede / Martin,44636,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,8,6,5,6,6,1,1,1,NA
-130073,Dromm / Thiede / Martin,44663,Vertex VL 400,4,1,2910,250,2518,320,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,5,1,NA,NA,1,1,1,1,NA
-130074,Thiede / Martin,44628,Vertex VL 400,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,5,1,2,NA,2,1,1,2,NA
-130075,Thiede / Martin,44747,Vertex VL 400,1,1,2280,186,2230,217,NA,NA,2,1,2550,13,2630,390,NA,NA,1,8,1,3,6,1,1,1,1,NA
-130076,Jahns / Martin,44764,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,2,6,2,1,1,1,NA
-130077,Thiede / Martin,44840,Vertex VL 400,2,1,2776,0,2901,65,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,2,1,2,NA,1,1,1,1,NA
-130078,Thiede / Martin,44872,Vertex VL 400,1,1,2805,0,2405,42,NA,NA,3,1,2812,94,2518,251,NA,NA,1,1,1,6,NA,7,1,1,1,NA
-130079,Thiede / Martin,44735,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,2,2,3,6,2,1,1,1,NA
-130080,Thiede / Martin,44693,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,1,3,1,1,1,1,NA
-130081,Thiede / Martin,44692,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,5,4,3,1,1,1,1,NA
-130082,Nowotny / Thiede / Martin,44678,Vertex VL 400,4,1,3000,97,3000,132,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,3,1,1,NA,1,1,1,1,NA
-130083,Jahns / Martin,44847,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,1,3,NA,1,1,1,1,NA
-130084,Jahns / Martin,44753,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,3,2,1,3,2,1,1,1,NA
-130088,Jahns / Martin,44769,Vertex VL 400,0,NA,NA,NA,NA,NA,NA,NA,0,NA,NA,NA,NA,NA,NA,NA,1,2,2,1,6,2,1,1,1,NA
-130064,Thiede / Martin,NA,Vertex VL 400,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,NA,NA,3,NA,NA,NA,NA,NA,NA
+bund_nr,ld_bze,bwi_tnr,bwi_eck,team,datum,srid_ist,istre,istho,hbi_status,beart,besttyp,struktur,schlussgrad_schi1,schlussgrad_schi2,mischung,pk1_aufnahme,pk2_aufnahme,pk3_aufnahme,geraet,beschreibungbestockung,anmerkung
+140001,3,,,,1970-01-01,31468,4691525,5636037,-9,1,7,2,-9,-9,3,-9,-9,-9,-9,,
+140002,6,,,,1970-01-01,31468,4699985,5652051,-9,1,8,2,-9,-9,3,-9,-9,-9,-9,,
+140003,8,,,,1970-01-01,31468,4692250,5660047,-9,1,6,1,-9,-9,3,-9,-9,-9,-9,,
+140004,14,,,,1970-01-01,31468,4676486,5668515,-9,1,6,1,-9,-9,2,-9,-9,-9,-9,,
+140005,27,,,,1970-01-01,31468,4660893,5685048,-9,1,7,1,-9,-9,2,-9,-9,-9,-9,,
+140006,29,,,,1970-01-01,31468,4685254,5692342,-9,1,1,1,-9,-9,1,-9,-9,-9,-9,,
+140007,33,,,,1970-01-01,31468,4692874,5684003,-9,1,6,1,-9,-9,3,-9,-9,-9,-9,,
+140008,44,,,,1970-01-01,31468,4701319,5691758,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140009,47,,,,1970-01-01,31468,4685898,5716208,-9,1,2,1,-9,-9,2,-9,-9,-9,-9,begonnene Harzung bei stÃ¤rkeren Kiefern am Stammfuss alt,
+140010,50,,,,1970-01-01,31468,4685722,5708291,-9,1,8,1,-9,-9,2,-9,-9,-9,-9,,
+140011,56,,,,1970-01-01,31468,4677707,5708413,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,Vorfeldbereich Tagebau Nochten; besucht am:11.05.2012,
+140012,61,,,,1970-01-01,31468,4669288,5692750,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,gezÃ¤unt,
+140013,68,,,,1970-01-01,31468,4669641,5708583,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140014,71,,,,1970-01-01,31468,4661544,5700943,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140015,79,,,,1970-01-01,31468,4645558,5701389,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140016,86,,,,1970-01-01,31468,4651740,5646333,-9,1,6,2,-9,-9,2,-9,-9,-9,-9,,
+140017,89,,,,1970-01-01,31468,4628748,5677979,-9,1,6,1,-9,-9,3,-9,-9,-9,-9,,
+140018,90,,,,1970-01-01,31468,4636763,5677806,-9,1,2,1,-9,-9,2,-9,-9,-9,-9,,
+140019,91,,,,1970-01-01,31468,4645007,5685500,-9,1,5,2,-9,-9,2,-9,-9,-9,-9,,
+140020,93,,,,1970-01-01,31468,4653291,5693207,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140021,95,,,,1970-01-01,31468,4628297,5662045,-9,1,2,2,-9,-9,2,-9,-9,-9,-9,,
+140022,99,,,,1970-01-01,31468,4636320,5661672,-9,1,8,1,-9,-9,2,-9,-9,-9,-9,,
+140023,101,,,,1970-01-01,31468,4612267,5662443,-9,1,8,1,-9,-9,2,-9,-9,-9,-9,,
+140024,103,,,,1970-01-01,31468,4612492,5670409,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140025,113,,,,1970-01-01,31468,4605239,5694834,-9,1,2,1,-9,-9,2,-9,-9,-9,-9,,
+140026,114,,,,1970-01-01,31468,4627849,5646012,-9,1,8,1,-9,-9,2,-9,-9,-9,-9,,
+140027,118,,,,1970-01-01,31468,4643885,5645513,-9,1,1,1,-9,-9,2,-9,-9,-9,-9,,
+140028,123,,,,1970-01-01,31468,4651578,5637267,-9,1,3,1,-9,-9,1,-9,-9,-9,-9,,
+140029,128,,,,1970-01-01,31468,4660275,5660946,-9,1,6,1,-9,-9,3,-9,-9,-9,-9,,
+140030,132,,,,1970-01-01,31468,4659773,5645008,-9,1,2,1,-9,-9,3,-9,-9,-9,-9,,
+140031,134,,,,1970-01-01,31468,4667837,5644886,-9,1,1,1,-9,-9,2,-9,-9,-9,-9,,
+140032,139,,,,1970-01-01,31468,4644062,5653478,-9,1,6,1,-9,-9,3,-9,-9,-9,-9,,
+140033,144,,,,1970-01-01,31468,4603800,5646700,-9,1,1,1,-9,-9,2,-9,-9,-9,-9,,
+140034,147,,,,1970-01-01,31468,4611592,5638445,-9,1,1,1,-9,-9,1,-9,-9,-9,-9,Unterflurmarke lag in Bodengrube; an Stirnseite der Grube wieder gesetzt.,
+140035,151,,,,1970-01-01,31468,4619156,5622237,-9,1,1,1,-9,-9,3,-9,-9,-9,-9,,
+140036,152,,,,1970-01-01,31468,4619381,5630254,-9,1,1,1,-9,-9,1,-9,-9,-9,-9,,
+140037,160,,,PiKü,2022-10-13,31468,4611088,5622511,1,1,1,1,6,6,1,1,1,1,Vertex IV,"- Hauptbestand: schw-mittl Bmh
++ 100% alte Schälschäden
++ vereinzelt Kronenbrüche (Schnee+Wind)
++ in Süd ein Trupp RBU - schw Bmh
+
+- Unterstand: Naturverjüngung - lückig bis räumdig
++ in NW-NO größerer Verjüngungskegel
++ Verjüngung zu 40% verbissen ",Markierungsrohr zu Pflock 294cm + 79gon
+140038,174,,,PiKü,2022-10-13,31468,4586700,5607200,1,1,1,4,6,6,1,1,1,1,Vertex IV,"Unterflurmarke nicht vorhanden. Mittelpunkt nur durch StÃ¤bchen markiert
+Entfernung vom Zentralbaum (WZE-Nr. 174) 8,55m; Azimut 239 gon
++ WZE-Baum Nr. 36 Entfernung 10,35m; Azimut 98 gon
+Inventur BZE 2 2011: Baumplotnummer 22 entspricht WZE-Baum32
+
+- Hauptbestand: mittl-st Bmh, mäßig wüchsig
++ 90% des Plots mit Schälschäden
++ 10% mit Kronenbrüchen
+
+Unterstand: RBU-Pflanzung (streifen- bis horstweise) - Jungbestand
++ Naturverjüngung aus GFI+VB - Jungwuchs 
+
+Baumnr.: mit Kronenbrüchen:  22, 29, 4 (durchgewachsen)",Markierungsrohr zu Pflock 371cm + 324gon
+140039,176,,,PiKü,2022-10-13,31468,4578850,5607400,2,1,1,4,5,6,1,1,1,1,Vertex,"- Hauptbestand: mittl-st Bmh
+- GFI in Nordost geräumt (Käferloch)
+- WZE-Satelliten in Nord und Ost ausgefallen (Borkenkäfer)
+- RBU-Voranbau - Jungwuchs - flächig
++ zusätzliche Naturverjüngung: GBI + Vogelbeere + GFI
+- Grenze 1: NHB - Holzpolter
+- Grenze 2: Bestandesgrenze ","keine Angaben von ""Markierungsrohr zu Pflock"",
+da der Pflock aufgrund des Holzeinschlags neben der Grube lag
+- HBI-Mittelpunkt lokalisiert aber nicht für Derbholzaufnahme verwendbar, da er in der frisch ausgeschachteten Grube liegt 
+- Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe 
+ "
+140040,184,,,PiKü,2022-09-13,31468,4570300,5591700,1,1,1,5,6,2,1,1,1,1,Vertex IV,"- frisch durchforstet
+- Hauptbestand: mittl-starkes Baumholz
+- Unterbau aus WTA+RBU, Jungwuchs, gezäunt
+- Naturverjüngung aus Vogelbeere+GFI+BAH, durchschnittlich 1m hoch",Markierungsrohr zu Pflock 345cm + 263gon
+140041,186,,,PiKü,2022-10-19,31468,4578500,5599550,1,1,1,4,6,1,1,1,1,1,Vertex IV,"- Hauptbestand: mittl-st Bmh
++ mäßig wüchsig
++ minimal RBU eingemischt
++ Kronen allseitig gut entwickelt
++ vereinzelt Kronenbrüche (Schnee, Wind)
+
+- Unterstand: GFI+VB+RBU (truppweise) + (BAH)
++ Jungbestand
++ nahezu 100% geschält (alt und frisch)
+
+Kronenbruch bei Baumnr.: 17,",Markierungsrohr zu Pflock 486cm + 332gon
+140042,191,,,PiKü,2022-10-14,31468,4562800,5608000,2,1,1,4,6,1,1,1,1,1,Vertex IV,"- Unterstand aus GFI - Jungbestand
+- in Nordwest, etwa 80m von Mittelpunkt entfernt: Wildwiese
+- Baum-Nr.: 46+51 - Kronenbrüche
+","Markierungsrohr zu Pflock 140cm + 282gon
+- Grube in 2022 neu angelegt, HBI-Punkt auch nach langem Suchen nicht auffindbar
+-Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe "
+140043,194,,,PiKü,2022-10-14,31468,4554800,5608250,1,1,6,4,2,5,3,1,1,1,Vertex,"- keine Bodebgrube mehr  vorhanden. 
+- Messung bei Pinnoccio 2 (Zentralbaum Nr. 194 bzw. WZE Nr. 19 - Rbu  Entfernung 324cm Azimut 135gon)
+- Hauptbestand: mittl-st Bmh
+- Unterstand: in SW eine Gruppe GFI - Jungbestand
++ ansonsten überwiegend Jungwuchs
+- Baumnr. ,it Kronenbruch: 7, 10 --> Höhen dennoch gemessen",Markierungsrohr zu Pflock 235cm + 220gon
+140044,198,,,PiKü,2022-10-13,31468,4562200,5592000,1,1,1,1,6,-1,1,1,1,1,Vertex IV,"- Hauptbestand: mittl Bmh; mit einigen wenigen in starkem Bmh
+- zahlreiche Schälschäden
+- Baum Nr.: 37 nur 285mm stark und somit außerhalb PK2
+- Baum Nr.: 25+29+31, 41, 42 mit Kronenbrüchen",Markierungsrohr zu Pflock 362cm + 172gon
+140045,200,,,PiKü,2022-09-13,31468,4554200,5592300,1,1,1,5,3,2,1,1,1,1,Vertex IV,"- einzelner markanter Überhälter - RBU - BHD: 1400mm !!
+- ganz vereinzelte Einmischung von ELA, mittl Bmh 
+- in Nordost: RBU - Stangenholz
+- Baumnr.: 1 aufgrund seiner Entferung außerhalb von PK3",Markierungsrohr zu Pflock 432cm + 121gon
+140046,205,,,PiKü,2022-10-14,31468,4546500,5600550,1,0,7,3,5,5,3,2,2,2,Vertex,"- Hauptbestand: Sukzession aus GBI+VB+GFI; Jungwuchs
+- GFI-Altholz geräumt nach Buchdrucker",Markierungsrohr zu Pflock 250cm + 331gon
+140047,209,,,,2022-09-13,31468,4546200,5592500,2,1,1,4,6,2,1,1,1,1,Vertex IV,"- Hauptbestand: mittl Bmh
+- frische Durchforstung
+- oftmals Stamm- und Rückeschäden
+- zahlreiche Kronenbrüche
+- vereinzelt RBU+Vogelbeere im Unterstand
+- Kronenbruch bei Baumnr.: 46, 47, 50, 51, 56, 57-60, 64, 76, 77, 88, 90","Markierungsrohr zu Pflock 346cm + 317gon
+-HBI-Punkt nicht auffindbar
+-Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe "
+140048,212,,,PiKü,2022-11-03,31468,4538250,5592800,2,1,1,5,1,6,2,1,1,1,Vertex IV,"- Hauptbestand aus > 70% GFI, dann Pflanzung von ELA, WTA, RBU;
+ zusätzlich Naturverjüngung aus VB, AS, GBI, Weide
++ WTA geastet
+- Hauptbestand wüchsig
++ Jungbestand - Stangenholz
++ Alter 5-15 Jahre
+
+Oberstand (Überhalt): GFI schw-st Bmh","Markierungsrohr zu Pflock 211cm + 257gon
+- HBI-Punkt nicht auffindbar, da 2022 Grube und Pflock neu gesetzt wurde
+- Aufnahme mit Bundesinventurleitung
+- Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe pro Baumart"
+140049,218,,,PiKü,2022-09-11,31468,4530000,5585000,1,1,1,1,3,-1,1,1,1,1,Vertex IV,"- Hauptbestand: schw-mittl Bmh
+- Kronenbruch bei Baumnr.: 24,",Markierungsrohr zu Pflock 308cm + 286gon
+140050,228,,,PiKü,2022-09-12,31468,4529800,5577000,2,1,1,1,6,6,2,1,1,1,Vertex IV,"- Hauptbestand: schw-mittl Bmh
+- in Hauptbestand einzelstammweise GBI eingemischt
+- vereinzelt Fichten-NV
+- Kronenbruch bei Baumnr.: 74, 78,","Markierungsrohr zu Pflock 228cm + 176gon
+-HBI-Punkt nicht auffindbar
+-Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe "
+140051,231,,,PiKü,2022-09-12,31468,4521400,5561300,1,1,1,4,6,6,1,1,1,1,Vertex IV,"- Hauptbestand: mittl Baumholz
+- vereinzelt Buchdruckerbefall
+- in Südost des Bestandes: Lochhieb (vermutlich Borkenkäfer)
+- in Nordost bis Nordwest: Höhe der 2. Schicht nimmt zu; 
++ Voranbau aus RBU+DGL
+- Baum Nr.: 9 +20 mit Kronenbruch
+- Baum Nr: 21, abgestorben nach Borkenkäferbefall - BHD + Höhe
+dennoch gemessen
+",Markierungsrohr zu Pflock 389cm + 54gon
+140052,233,,,PiKü,2022-09-12,31468,4521800,5577200,1,1,1,1,6,-1,1,1,1,1,Vertex IV,"- Hauptbestand mittl Baumholz, einzelstammweise Strobe
+- 10% Fichten-Naturverjüngung (Schlussgrad: lückig)
+","Markierungsrohr zu Pflock 316cm + 257gon
+"
+140053,242,,,PiKü,2022-08-04,31468,4514350,5593450,1,1,6,6,6,5,2,1,1,1,Vertex,"- Hauptbestand: mittl-st Bmh
+- wüchsig
+- Zwischen- und Unterstand: Stangenholz aus GBI+SEI
+- Unterstand: Jungwuchs
+- BEJ: WEST im Zaun","Markierungsrohr zu Pflock 274cm + 200gon
+- Höhen komplett, 1x ausgefallene Fichte durch 1x in gleicher
+Durchmesserklasse ersetzt
++ ausgefallene SBI: alternativlos "
+140054,243,,,PiKü,2022-04-12,31468,4588000,5655150,1,1,1,1,1,-1,1,1,1,1,Vertex,"- Hauptbestand: Stgh-schw Bmh
+- mäßig wüchsig
+- deformierte Kronen, aufgrund des Engstands
+- Kronenbruch bei Baumnr.: 32 (vormals Höhe gemessen)","Markierungsrohr zu Pflock 522cm + 340gon
+- Start der Außenaufnahmen mit Frank Jacob "
+140055,248,,,PiKü,2022-11-16,31468,4587700,5639200,2,1,1,2,6,6,2,1,1,1,Vertex IV,"- Fläche größtenteils geräumt
+- Hauptbestand mit zahlreichen Kronenbrüchen sowie Fäll- und Rückeschäden
++ LH einzelstammweise eingemischt
+- Hauptbestand aus mittl-st Bmh
+- Unterstand aus VB (+AS+GBI) Sukzession, Jungwuchs
+- in NO bis SO bildet der Jungwuchs den Hauptbestand
+
+- Kronenbrüche bei Baumnr.: 38, 44, 45
+- Zopftrocknis bei Baumnr.: 40
+","keine Angaben von ""Markierungsrohr zu Pflock"",
+da kein Pflock vorhanden war"
+140056,250,,,PiKü,2022-10-15,31468,4555200,5624200,1,1,1,1,2,-9,7,1,1,1,Vertex IV,"- Hauptbestand: schw-mittl Bmh
+- Nadel-Laubmisch an Waldrand mit GKI+GBI+BAH+EI
+- Käfer-Aufriss in Nordost
+- Waldrand (Wiese) in SW-NW
+- Verjüngung vereinzelt aus VB, BAH, SAH, EI 
++ durchschnittliche Höhe 50cm
+- West-Satellit von BEJ auf Wiese gelegen
+- Baumnr.: mit Kronenbruch: 65,",Markierungsrohr zu Pflock 334cm + 132gon
+140057,252,,,PiKü,2022-11-04,31468,4555500,5632200,1,1,1,1,1,-9,2,1,1,1,Vertex IV,"- Hauptbestand: mittl-st Bmh
+- einzelstammweise SEI eingemischt: Stangenholz-schw Bmh
+- in Süd schließt sich Laubholz an
+","keine Angaben von ""Markierungsrohr zu Pflock"",
+da kein Pflock vorhanden war"
+140058,255,,,PiKü,2022-11-04,31468,4547500,5632500,1,0,10,-1,5,-1,2,1,1,1,Vertex,"- Blöße mit spärlicher Vogelbeere + (GFI) -Sukzession in Lücke
++ Jungwuchs, unter 1m Höhe
+- Fichtenbestand an den Rändern: schw-mittl Bmh
+- Kronenschluss der Sukzession maximal 0,1
+- beide GFI in Formular BE/BEA stehen in angrenzendem Bestand in
+Bestandesschluss, daher ""Hauptbestand"" und Kraft'sche Klasse
+""herrschend""",Markierungsrohr zu Pflock 328cm + 288gon
+140059,263,,,PiKü,2022-11-22,31468,4556700,5672100,1,1,7,6,5,6,4,1,1,1,Vertex,"- Hauptbestand: Birken-Mischwald - Stangenholz-schw Bmh
++ mäßig wüchsig
+
+- Zwischenstand: HBU+GFI (+BAH+VB) 
++ Jungbestand - Stangenholz
+
+- Unterstand: VB+GFI (+HBU) 
++ Jungwuchs
+
+- in Nord: massiver Einzug von VB (+HBU)  mit GKI-Überhalt
+
+- Kronenbruch alt: Nr.4",Markierungsrohr zu Pflock 65Meter + 255gon
+140060,269,,,PiKü,2022-11-22,31468,4540900,5680700,2,1,8,2,2,6,2,1,1,1,Vertex IV,"- Hauptbestand: Linden-Mischwald - Jungbestand-Stgh
+
+- Unterstand: Laubholz-Mischwald - Jungwuchs
+
+- GBI bricht zusammen
+
+- Kronenbruch bei Baumnr.: 59,",Markierungsrohr zu Pflock 219cm + 282gon
+140061,272,,,PiKü,2022-11-22,31468,4549200,5688450,1,1,6,6,6,6,2,1,1,1,Vertex IV,"- Hauptbestand: GKI-Mischwald mit EI+GBI - schw-mittl Bmh
++ GKI absterbend
+
+- Zwischenstand: GBI - Stgh
+
+- Unterstand: VB+GBI+STK (+ viel Faulbaum) - Jungw - lückig
+
+Zopftrocknis bei Baumnr.: 6,
+
+","Markierungsrohr zu Pflock 1556cm! + 297gon
+
+bei BEJ - PK1 - Baum 4 müsste eigentlich Esskastanie sein aber
+nicht in Liste, daher Bergulme eingetragen. Da EKA und BUL beides
+Ringporer sind. "
+140062,280,,,PiKü,2022-11-23,31468,4557900,5712100,1,1,2,4,3,6,1,1,1,1,Vertex IV,"- Hauptbestand: Stgh-schw Bmh
+
+- Unterstand: GBI-Mischwald mit SEI - Jungwuchs
+
+- Käferlöcher in Süd",Markierungsrohr zu Pflock 378cm + 139gon
+140063,283,,,PiKü,2022-11-23,31468,4550100,5720300,1,1,2,6,3,6,1,1,1,1,Vertex IV,"- Hauptbestand: mittl-st Bmh
+
+- Zwischenstand: RBU+GBI - Stgh-schw Bmh - einzelstammweise
+
+- Unterstand: GKI-Misch mit RBU+SEI - lückig - Jungwuchs
+
+Kronenbruch bei Baumnr.: 24",Markierungsrohr zu Pflock 338cm + 376gon
+140064,284,,,PiKü,2022-11-23,31468,4542100,5720500,1,1,2,4,2,6,1,1,1,2,Vertex IV,"- Hauptbestand: Stgh
+
+- Unterstand: RBU streifenweise gepflanzt, dazu Anflug SEI+VB+GBI
++ Jungwuchs",Markierungsrohr zu Pflock 302cm + 30gon
+140065,290,,,PiKü,2022-11-23,31468,4573600,5703600,-1,1,4,4,2,6,1,2,1,1,Vertex IV,"- Hauptbestand: RBU - st Bmh
+
+- Unterstand: RBU - Jungwuchs - lückig bis gedrängt
+
+- Bestandesgrenze in Ost: Bestand aus RER+GBI+RBU (ÜH) mit
+  vorrangig STK im Zwischenstand und RBU im Unterstand
+
+Kronenbruch bei Baumnr.: 56, 57",Markierungsrohr zu Pflock 139cm + 321gon
+140066,302,,,PiKü,1980-05-13,31468,4565000,5687950,-9,1,6,-9,-9,-9,3,-9,-9,-9,-9,,
+140067,303,,,,2022-11-22,31468,4573000,5687650,2,1,6,4,5,6,2,1,1,2,Vertex IV,"- Hauptbestand: ELA+GBI+GKI - schw Bmh
++ GKI größtenteils von Borkenkäfer befallen und geräumt
+
+- Unterstand: GBI+VB+AS - Jungwuchs
+
+Kronenbruch bei Baumnr.: 71","Markierungsrohr zu Pflock 146cm + 300gon
+-HBI-Punkt nicht auffindbar, da Grube 2022 neu angelegt
+-Neuaufnahme; ->>Messung von 5 Höhen pro Durchmesserstufe "
+140068,305,,,PiKü,2022-11-24,31468,4572400,5663600,2,1,10,6,6,6,2,1,1,1,Vertex IV,"- Hauptbestand: GES+EI + (GFI) - mittl-st Bmh
+
+- Zwischenstand: BAH+HBU - Stangenholz
+
+- Unterstand: BAH+GBI+HBU - Jungwuchs
+
+- im Westen: geräumte Kalamitätsfläche (Buchdrucker+Sturm)
+
+- Mischungsform in allen 3 Schichten: einzelstammweise
+  ","keine Angaben von ""Markierungsrohr zu Pflock"", da kein Pflock
+vorhanden war"
+140089,30,,,,1970-01-01,31468,4677211,5692424,-9,1,2,1,-9,-9,1,-9,-9,-9,-9,,
+140102,45,,,,1970-01-01,31468,4693247,5692028,-9,1,2,2,-9,-9,4,-9,-9,-9,-9,,
+140175,157,,,,1970-01-01,31468,4627348,5630027,-9,1,1,1,-9,-9,2,-9,-9,-9,-9,,
+140187,170,,,PiKü,2022-10-13,31468,4587000,5615200,1,1,4,5,6,6,4,2,1,1,Vertex IV,"- Hauptbestand: RBU - Jungbestand-Stangenholz
++ Naturverjüngung aus VB+GFI - Jungwuchs
++ 30% verbissen
+
+- Überhalt: RBU + GBI - mittl-st Bmh
+
+- GFI  komplett abgestorben - partiell geräumt
++ nördlich des Weges geräumt
++ südlich des Weges sich selbst überlassen
+",Markierungsrohr zu Pflock 280cm + 100gon
+140234,237,,,,1970-01-01,31468,4522100,5585250,-9,1,1,1,-9,-9,3,-9,-9,-9,-9,,
+140252,262,,,PiKü,2022-10-14,31468,4530850,5609050,1,1,1,2,6,5,1,1,1,1,Vertex,"- Hauptbestand: mittl-st Bmh
+- Unterstand : einzeln-truppweise Mischung
++ 90% GFI + 5% GBI (+VB+AS+RBU im weiteren Umkreis) ",Markierungsrohr zu Pflock 184cm + 205gon
+140254,265,,,PiKü,2022-11-23,31468,4548450,5664350,1,1,8,4,1,6,2,1,1,2,Vertex IV,"- Hauptbestand: Laubmischwald - Stangenholz-schw Bmh
+
+- Zwischenstand: STK-Mischwlad - Jungbestand
+
+- Unterstand: STK-Mischwald - Jungwuchs
+
+Verjüngungssatellit - SÜD außerhalb des Waldes gelegen",Markierungsrohr zu Pflock 347cm + 388gon
+140315,315,,,PiKü,2022-11-03,31468,4522310,5593240,1,1,6,6,6,6,3,1,1,1,Vertex,"- Hauptbestand: mittl-st Bmh
+- wüchsig
+- einzelstammweise GBI eingemischt",Markierungsrohr zu Pflock 214cm + 167gon
+140316,316,,,PiKü,2022-11-04,31468,4556200,5656215,1,1,5,4,2,6,2,1,1,1,Vertex iV,"- Hauptbestand: schw-mittl Bmh
+- einzelstammweise HBU+WLI eingemischt
+
+- Unterstand:  HBU+GES+WLI - Jungwuchs - wüchsig
+
+- Kronenbruch bei Baumnr. 31, 
+- Zopftrocknis bei Baumnr.: 14,",Markierungsrohr zu Pflock 2000cm! + 185gon
+140317,-9,,,,1970-01-01,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,,
