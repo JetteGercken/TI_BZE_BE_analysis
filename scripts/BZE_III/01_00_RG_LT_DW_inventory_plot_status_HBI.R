@@ -109,7 +109,7 @@ colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 inv_info$date <- as.Date(inv_info$date)
 inv_info$inv_year <- as.numeric(format(inv_info$date, "%Y"))
 # this line can be removed later
-inv_info <- inv_info %>% mutate(inv_year = ifelse(inv_year < 2012, 2012,inv_year),  inv = inv_name(inv_year))
+inv_info <- inv_info %>% mutate(inv = inv_name(inv_year))
 
 
 ## LIVING TREES
@@ -121,7 +121,8 @@ colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_typ
 tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
                                                                  str_detect(plot_ID, '^11') ~ 3,
                                                                  str_detect(plot_ID, '^12') ~ 3,
-                                                                 TRUE ~ hbi_status))
+                                                                 hbi_status == -9 ~ 1,
+                                                                 TRUE ~ hbi_status)) 
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 tree_inv_info$date <- as.Date(tree_inv_info$date)
 tree_inv_info$inv_year <- as.numeric(format(tree_inv_info$date, "%Y"))
@@ -306,7 +307,7 @@ tree_inv_info <- tree_inv_info %>%
 
 # 2.2.2. create dataset with LT CCS to remove from trees data df ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # remove CCS that were not inventorable from the trees df and filter NFI (BWI) plots as well
-LT_CCS_to_exclude <- tree_inv_info %>% filter(!(CCS_LT_inv_status %in% c(1, 2)) | hbi_status == 3)
+LT_CCS_to_exclude <- tree_inv_info %>% filter(!(CCS_LT_inv_status %in% c(1, 2)) | !(hbi_status %in% c(1,2)) )
 
 
 
@@ -371,11 +372,12 @@ trees_removed <-
   )
 
 
+
 #  2.2.6. clearing forest edges dataset and prepare for export (waldraender.csv) ---------------------------------------------------------------------------------------
 forest_edges_update_1 <- forest_edges %>% 
-  # here we can sort for plots with and without trees, since that doesn´t matter for the CCS and their edges
-  semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status %in% c(1,2)),
-            by = c("plot_ID", "inv_year", "inv"))
+  # here we remove those plots from the edges dataset that are not analysed for the HBI/ BZE3
+  # we cannot sort for LT_CCS_inv_status in trees_inv_info because there may be plots that have RG (which can be alllocated to stands) but no LT yet
+  anti_join(., plots_to_exclude,  by = c("plot_ID"))
 
 
 
@@ -401,7 +403,9 @@ RG_loc_info <- RG_loc_info %>%
   anti_join(., RG_CCS_to_exclude, by = c("plot_ID", "CCS_nr", "inv_year", "inv")) %>% 
   arrange(plot_ID, CCS_nr) %>% 
   # change the maximum distance to the default setting of 500cm if its NA or -9
-  mutate(CCS_max_dist_cm = ifelse(is.na(CCS_max_dist_cm) | CCS_max_dist_cm == -9, 500, CCS_max_dist_cm))
+  mutate(CCS_max_dist_cm = ifelse(is.na(CCS_max_dist_cm) | 
+                                    CCS_max_dist_cm == -9 |
+                                    CCS_RG_inv_status == 2, 500, CCS_max_dist_cm))
 
 
 
@@ -442,6 +446,10 @@ RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 
 #  2.3.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
 # after this step there are only RG plants remaining which are locate in inventorable and processable CCS
+RG_removed <- RG_data %>% # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status != 1), by = c("plot_ID", "CCS_nr"))
+
+
 RG_update_1 <- RG_data %>% 
   # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
   semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
@@ -510,6 +518,11 @@ DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
 
 # 2.4.5. prepare DW_data for export ---------------------------------------
+DW_removed <-  DW_data %>% 
+  # remove trees in CCS with status 3 
+  semi_join(., DW_inv_info %>% filter(CCS_DW_inv_status != 1),
+            by = c("plot_ID", "inv", "inv_year"))
+
 DW_update_1 <- DW_data %>% 
   # remove trees in CCS with status 3 
   semi_join(., DW_inv_info %>% filter(CCS_DW_inv_status == 1),

@@ -328,7 +328,7 @@ RG_two_edges <- RG_loc %>%
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.two.edges.list <- vector("list", length = nrow(unique(RG_two_edges[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
-  # i = 9
+  # i = 2
   # i = which(grepl(50132, unique( RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # assign crs
@@ -445,16 +445,16 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
     "plot_ID" = c(rep(my.plot.id, times = length(unlist(my.stand.rg)))), 
     "CCS_nr" = c(rep(my.ccs.id, times = length(unlist(my.stand.rg)))), 
     "stand" =  c(unlist(my.stand.rg)), 
-    "area_m2"= c(unlist(my.rg.A.m2)) 
+    "area_m2"= c(unlist((my.rg.A.m2))) 
   ))
   
   ## assign the whole CCS area to the stand that covers 2/3rds of the RG CCS area
   # determine 2/3 of the RG CCS area 
-  rg.ccs.A.0.6 <- sf::st_area(my.rg.ccs.poly)*(2/3)
+  rg.ccs.A.0.6 <- sf::st_area(my.rg.ccs.poly)*(2/3) 
   
   # select the row that includes the stand that covers 2/3 of the RG CCS area, 
   # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
-  rg.0.6.data <- (rg.edge.data[as.numeric(rg.edge.data$area_m2) >= rg.ccs.A.0.6, ] %>% arrange(., desc(area_m2)))[1,]
+  rg.0.6.data <- (rg.edge.data[as.numeric(rg.edge.data$area_m2) >= rg.ccs.A.0.6, ] %>% arrange(., desc(area_m2))) %>% slice(1) 
   # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
   # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
   # since we cannot sort them into stands by location as we don´t know their location
@@ -475,6 +475,12 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   #print(my.plot.id)
   
   print(ggplot() +
+          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
+                                                                    "lat" = c.y0)),
+                                                coords = c("lon", "lat"))), aes(),fill = NA)+
+          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
+                                                            "lat" = y_CCS_center)),
+                                        coords = c("lon", "lat"))), aes(),fill = NA)+
           geom_sf(data = rem.circle.17.2, aes(colour = stand),fill = NA)+
           geom_sf(data = edge.poly.1, aes(colour = stand), fill = NA)+
           geom_sf(data = edge.poly.2, aes(colour = stand), fill = NA)+
@@ -535,7 +541,7 @@ write.csv2(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2
 
 
 
-
+stop("that´s were the notes of RG_forest_edges HBI start")
 # notes -------------------------------------------------------------------
 
 
