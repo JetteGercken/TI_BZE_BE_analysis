@@ -3,7 +3,7 @@
 # forest edges processign for regeneration 
 
 # ----- 0. SETUP ---------------------------------------------------------------
-
+dev.off()
 # ----- 0.1. packages and functions --------------------------------------------
 source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
@@ -23,7 +23,7 @@ RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv"
 RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ";", dec = ",")
 
 # this dataset contains the BZE3 forest edges info
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ";", dec = ",") 
+forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ",", dec = ",") 
 colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                             "A_dist", "A_azi",  "B_dist", "B_azi", 
                             "T_dist", "T_azi") # t = turning point 
@@ -143,8 +143,8 @@ RG_one_edge <- RG_loc %>%
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge.list <- vector("list", length = nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
-  # i = 213
-  # i = which(grepl(50132, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  # i = 1#5
+  # i = which(grepl(140187, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   
   # regerneation sampling cirlce data
@@ -201,30 +201,31 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   circle.17$CCS_r_m <- c.r3
   
   # create polygone of edge triangle
-  edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
-                                     , x = "X"
-                                     , y = "Y"
+  edge.poly <- sfheaders::sf_polygon(obj = all_edge_triangles_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
+                                     , x = "lon"
+                                     , y = "lat"
                                      , keep = TRUE)
   
   
   # create polygon of remaining circle
-  circle.edge.inter <- sf::st_intersection(circle.17, edge.poly)
+  circle.edge.inter <- sf::st_intersection(edge.poly, st_geometry(circle.17)) # we should set the circle to st_geometry here so we can assure that the inter polygone maintains its stand 
   # if there is no intersection between the edge and the cirlce, 
-  if(isTRUE(nrow(circle.edge.inter) == 0)){
+  if(isTRUE(nrow(circle.edge.inter) == 0) == TRUE){
     # the whole circle polygon is set as the remaining circle 
     rem.circle.17 <- circle.17}else{
       # else the remaining area/ polyon after the inersection is deducted is passed on as remaining circle
       rem.circle.17 <- sf::st_difference(circle.17, st_geometry(circle.edge.inter))
     }
   
+
   
-  ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
+ ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
   # since we´d have to find a way to first export and then mport and convert multipolygones 
   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
-  # rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
-  #                                 , x = "X"
-  #                                 , y = "Y"
-  #                                 , keep = TRUE)
+    # rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
+    #                                 , x = "X"
+    #                                 , y = "Y"
+    #                                 , keep = TRUE)
   
   ## check for intersections
   # with edge-intersection-polygon
@@ -252,15 +253,20 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   
   # select the row that includes the stand that covers 2/3 of the RG CCS area, 
   # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
-  rg.0.6.data <- rg.edge.data[rg.edge.data$area_m2 >= rg.ccs.A.0.6, ]
+  rg.0.6.data <- rg.edge.data[as.numeric(rg.edge.data$area_m2) >= rg.ccs.A.0.6, ]
   # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
   # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
   # since we cannot sort them into stands by location as we don´t know their location
   
   if(isTRUE(nrow(rg.0.6.data)== 0)){
+    # if there is no part of the RG CCS that has min 2/3 of its area covered by 1 stand, 
+    # then only select the first row of the rg dataset, assin the stand to NA and the area to the whole RG CCS area
+    rg.edge.data <- rg.edge.data[1,]
     rg.edge.data[1,]$stand <- NA
-    rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+    rg.edge.data[1,]$area_m2  <- sf::st_area(my.rg.ccs.poly)
   }else{
+    # if there is a part of the RG CCS that haas min 2/3 of its area covered by 1 stand, 
+    # then select this part and arssing the area to the whole RG CCS area
     rg.edge.data <- rg.0.6.data
     rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
   }
@@ -270,18 +276,20 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   RG.CCS.one.edge.list[[i]] <- rg.edge.data
   
   
-  print(ggplot() +
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
-                                                            "lat" = c.y0)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
-                                                            "lat" = y_CCS_center)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
-          geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
-          geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
-          ggtitle(my.plot.id, my.ccs.id)
-  )
+   print(ggplot() +
+           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
+                                                             "lat" = c.y0)),
+                                         coords = c("lon", "lat"))), aes(),fill = NA)+
+           geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
+                                                             "lat" = y_CCS_center)),
+                                         coords = c("lon", "lat"))), aes(),fill = NA)+
+           geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
+           geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
+           geom_sf(data = my.rg.ccs.poly, aes(colour = rg.edge.data$stand), fill = NA)+
+           ggtitle(my.plot.id, my.ccs.id)+ 
+           xlim(-60,60)+
+           ylim(-60,60)
+   )
 }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into  RG dataset later      
 RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
@@ -292,7 +300,7 @@ RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
 # 2.2. plots with 2 edges: sorting sampling circles into stands ---------------------------------
 # subsetting data
 RG_two_edges <- RG_loc %>% 
-  #filter for plots that we actually have coordiantes and areas for 
+  #filter for plots that we actually have coordiantes and areas for all edges 
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
                        e_ID == 2 &
@@ -320,7 +328,7 @@ RG_two_edges <- RG_loc %>%
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.two.edges.list <- vector("list", length = nrow(unique(RG_two_edges[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
-  # i = 34
+  # i = 9
   # i = which(grepl(50132, unique( RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # assign crs
@@ -387,6 +395,7 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
                                        , x = "X"
                                        , y = "Y"
                                        , keep = TRUE)
+ 
   
   # create polygone of edge 2 triangle
   edge.poly.2 <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id.2) 
@@ -395,7 +404,7 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
                                        , keep = TRUE)
   
   ## create polygon of remaining circle after circle-edge.1 intersection
-  circle.edge.1.inter <- sf::st_intersection(circle.17, edge.poly.1)
+  circle.edge.1.inter <- sf::st_intersection(edge.poly.1, st_geometry(circle.17))
   # if there is no intersection between the edge and the cirlce, 
   if(isTRUE(nrow(circle.edge.1.inter) == 0)){
     # the whole circle polygon is set as the remaining circle 
@@ -404,8 +413,10 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
       rem.circle.17.1 <- sf::st_difference(circle.17, st_geometry(circle.edge.1.inter))
     }
   
+ 
+  
   ## create polygon of remaining circle after circle-edge.2 intersection
-  circle.edge.2.inter <- sf::st_intersection(rem.circle.17.1, edge.poly.2)
+  circle.edge.2.inter <- sf::st_intersection(edge.poly.2, st_geometry(rem.circle.17.1))
   # if there is no intersection between the edge and the cirlce, 
   if(isTRUE(nrow(circle.edge.2.inter) == 0)){
     # the previous remaining circle polygon is set as the remaining circle 
@@ -414,7 +425,7 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
       rem.circle.17.2 <- sf::st_difference(rem.circle.17.1, st_geometry(circle.edge.2.inter))
     }
   
-  
+ 
   ## check for intersections
   # with edge-intersection-polygon
   intersection.with.edge.1 <- sf::st_intersection(my.rg.ccs.poly, edge.poly.1)
@@ -443,14 +454,15 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
   # select the row that includes the stand that covers 2/3 of the RG CCS area, 
   # by filtering the area fot bigger/ equal 2/3 of the total RG CCS area 
-  rg.0.6.data <- (rg.edge.data[rg.edge.data$area_m2 >= rg.ccs.A.0.6, ] %>% arrange(., desc(area_m2)))[1,]
+  rg.0.6.data <- (rg.edge.data[as.numeric(rg.edge.data$area_m2) >= rg.ccs.A.0.6, ] %>% arrange(., desc(area_m2)))[1,]
   # as we cannot localise the plants in the cirlce, we cannot adjust the refference area (Bezugsfläche) according to the are covered by the respective stand
   # thus the whole are of the RG CCS is allocated to the stand that covers most of it´s area, as all plants included in the respective RG CCS are also allocated to this stand
   # since we cannot sort them into stands by location as we don´t know their location
   
   if(isTRUE(nrow(rg.0.6.data)== 0)){
+    rg.edge.data <- rg.edge.data[1,]
     rg.edge.data[1,]$stand <- NA
-    rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
+    rg.edge.data[1,]$area_m2  <- sf::st_area(my.rg.ccs.poly)
   }else{
     rg.edge.data <- rg.0.6.data
     rg.edge.data$area_m2  <- sf::st_area(my.rg.ccs.poly)
@@ -466,7 +478,7 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
           geom_sf(data = rem.circle.17.2, aes(colour = stand),fill = NA)+
           geom_sf(data = edge.poly.1, aes(colour = stand), fill = NA)+
           geom_sf(data = edge.poly.2, aes(colour = stand), fill = NA)+
-          geom_sf(data = my.rg.ccs.poly, colour = "black", fill = NA)+
+          geom_sf(data = my.rg.ccs.poly,aes(colour = rg.edge.data$stand), fill = NA)+
           ggtitle(my.plot.id, my.ccs.id)
   )
   
