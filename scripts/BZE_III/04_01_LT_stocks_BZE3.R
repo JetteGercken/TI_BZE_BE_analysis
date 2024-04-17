@@ -20,7 +20,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_3.csv")), sep = ";", dec = ",") 
 
 # 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))
+trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))%>% filter(DBH_h_cm/100 <= H_m)
 
 # 1. calculations ---------------------------------------------------------
 
@@ -78,7 +78,7 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 }
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
-
+bio_ag_kg_df %>% filter(is.na(B_kg_tree) | B_kg_tree <0)
 
 # 1.1.2. biomass belowground compartiments ----------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))

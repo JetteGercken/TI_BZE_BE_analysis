@@ -21,6 +21,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # have been filtered for the plot inventory status in "01_00_RG_LT_DW_inventory_plot_status_HBI"
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_1.csv")), sep = ";", dec = ",")
 
+BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3,"BZE3_LT_update_1.csv")), sep = ";", dec = ",")
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 # complete pre inventory dataset
@@ -31,32 +32,38 @@ HBI_trees <- HBI_trees %>%
          tree_inventory_status = old_tree_inventory_status) 
 
 
-# create fake/ practice BZE3/ post dataset from HBI/ pre data
-BZE3_trees <- HBI_trees %>%
-  filter(plot_ID == 50001) %>% 
-  mutate(inv_year = 2023, 
-         inv = inv_name(inv_year), 
-         D_mm = D_mm+10,
-         H_dm = ifelse(H_dm %in% c(-9, -1), H_dm, (as.numeric(H_dm)+10)), 
-         dist_cm= dist_cm+20, 
-         old_tree_inventory_status = case_when(row_number() == 1 ~ -9,
-                                           row_number() == 2 ~ -1,
-                                           row_number() == 3 ~ 0,
-                                           row_number() == 4 ~ 1,
-                                           row_number() == 5 ~ 2,
-                                           row_number() == 6 ~ 3,
-                                           row_number() == 7 ~ 4,
-                                           row_number() == 8 ~ 5,
-                                           row_number() == 9 ~ 6,
-                                           row_number() == 10 ~ 7,
-                                           TRUE ~ 1), 
-         tree_inventory_status = old_tree_inventory_status) 
-  # mutate two new trees to simulate a case of tree_inventory_status == 6
-BZE3_trees <- rbind(
-  BZE3_trees,
-  BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 27, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+300, old_tree_inventory_status = 0, tree_inventory_status = 0),
-  BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 28, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+100, old_tree_inventory_status = 0, tree_inventory_status = 0)
-)
+BZE3_trees <- BZE3_trees %>% 
+  rename(old_tree_inventory_status = tree_inventory_status) %>% 
+  # these two columns are meant to prepare for the comming data sorting
+  mutate(old_tree_ID = tree_ID, 
+         tree_inventory_status = old_tree_inventory_status)
+
+# # create fake/ practice BZE3/ post dataset from HBI/ pre data
+# BZE3_trees <- HBI_trees %>%
+#   filter(plot_ID == 50001) %>% 
+#   mutate(inv_year = 2023, 
+#          inv = inv_name(inv_year), 
+#          D_mm = D_mm+10,
+#          H_dm = ifelse(H_dm %in% c(-9, -1), H_dm, (as.numeric(H_dm)+10)), 
+#          dist_cm= dist_cm+20, 
+#          old_tree_inventory_status = case_when(row_number() == 1 ~ -9,
+#                                            row_number() == 2 ~ -1,
+#                                            row_number() == 3 ~ 0,
+#                                            row_number() == 4 ~ 1,
+#                                            row_number() == 5 ~ 2,
+#                                            row_number() == 6 ~ 3,
+#                                            row_number() == 7 ~ 4,
+#                                            row_number() == 8 ~ 5,
+#                                            row_number() == 9 ~ 6,
+#                                            row_number() == 10 ~ 7,
+#                                            TRUE ~ 1), 
+#          tree_inventory_status = old_tree_inventory_status) 
+#   # mutate two new trees to simulate a case of tree_inventory_status == 6
+# BZE3_trees <- rbind(
+#   BZE3_trees,
+#   BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 27, SP_code = "gki", azi_gon = azi_gon -1, D_mm = D_mm+300, old_tree_inventory_status = 0, tree_inventory_status = 0),
+#   BZE3_trees %>% filter(old_tree_inventory_status == 6) %>% mutate(tree_ID = 28, SP_code = "gki" , azi_gon = azi_gon +1, D_mm = D_mm+100, old_tree_inventory_status = 0, tree_inventory_status = 0)
+# )
 
 # creating dataset with information about the concentric sampling circles
 data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
@@ -590,17 +597,17 @@ growth.df <- left_join(HBI_trees %>%
                         select(plot_ID, tree_ID, HBI_inv_year, SP_code, HBI_DBH_cm), 
                       # select trees that are repeatedly inventory, or unknown status
                       BZE3_trees %>% 
-                        filter(tree_inventory_status %in% c(1, -9)) %>% 
+                        filter(tree_inventory_status %in% c(1)) %>% 
                         rename(BZE3_DBH_cm = DBH_cm) %>% 
                         rename(BZE3_inv_year = inv_year) %>% 
-                        select(plot_ID, tree_ID, BZE3_inv_year, SP_code, BZE3_DBH_cm), 
+                        select(plot_ID, tree_ID, BZE3_inv_year, SP_code, BZE3_DBH_cm) %>% arrange(plot_ID, tree_ID), 
                       by = c("plot_ID", "tree_ID", "SP_code")) %>% 
   mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
          age_period = BZE3_inv_year- HBI_inv_year, 
          annual_growth_cm = DBH_growth_cm/age_period) %>% 
   group_by(plot_ID, SP_code) %>% 
-  summarize(average_age_period_years = mean(age_period), 
-            avg_annual_DBH_growth_cm = mean(annual_growth_cm))
+  summarize(average_age_period_years = mean(na.omit(age_period)), 
+            avg_annual_DBH_growth_cm = mean(na.omit(annual_growth_cm)))
 
 
                       
@@ -662,8 +669,9 @@ HBI_trees_update_02 <- HBI_trees %>% filter(tree_inventory_status %in% c(0, 1, -
 HBI_trees_removed <- HBI_trees %>% filter(!(tree_inventory_status %in% c(0, 1, -9, -1)))
 
 BZE3_trees_update_02 <- BZE3_trees %>% filter(tree_inventory_status %in% c(0, 1))
-BZE3_trees_removed <- plyr::rbind.fill(BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1))), 
-                                       tree_inventory_status_6.df %>%  filter(tree_type_status_6 %in% c("my_tree_post") & old_tree_inventory_status == 6))
+BZE3_trees_removed <- if(exists('tree_type_status_6')) {plyr::rbind.fill(BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1))), 
+                                                                         tree_inventory_status_6.df %>%  filter(tree_type_status_6 %in% c("my_tree_post") & old_tree_inventory_status == 6))
+  }else{BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1)))}
 
 
 write.csv2(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"))
@@ -673,4 +681,4 @@ write.csv2(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_upd
 
 
 
-write.csv2(BZE3_trees, paste0(out.path.BZE3, paste(unique(BZE3_trees$inv)[1], "LT", "update","0", "demo", sep = "_"), ".csv"))
+# write.csv2(BZE3_trees, paste0(out.path.BZE3, paste(unique(BZE3_trees$inv)[1], "LT", "update","0", "demo", sep = "_"), ".csv"))

@@ -1154,6 +1154,7 @@ h_nls_SP <- function(spec, d){
   b2 <- dplyr::pull(coeff_H_SP, b2, SP_code);
   return(b0[spec] * (1 - exp( -b1[spec] * d))^b2[spec])
 }
+
 # ---- 1.9.3.2. species-wise self-fitted nls models ------------------------------------------------------
 # self mase nls models for heights per species per plot
 h_nls_SP_P <- function(plot_spec, d) {
@@ -1163,6 +1164,16 @@ h_nls_SP_P <- function(plot_spec, d) {
   b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
   return(b0[plot_spec] * (1 - exp( -b1[plot_spec] * d))^b2[plot_spec])
 }
+
+
+# 1.9.4. height dreisatz when models fail ---------------------------------------------------------------------------------------
+h_proportional <- function(dg.cm, hg.m, dbh.cm){
+  h.m = (dg.cm/hg.m)*dbh.cm
+  return(h.m)
+}
+
+
+
 
 
 # 1.10. select the correct inventory name -------------------------------------------------------------------

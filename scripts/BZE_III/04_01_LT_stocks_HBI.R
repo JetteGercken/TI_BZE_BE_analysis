@@ -20,7 +20,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_3.csv")), sep = ";", dec = ",") 
 
 # 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))
+trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) %>% filter(DBH_h_cm/100 <= H_m)
 
 # 1. calculations ---------------------------------------------------------
 
@@ -29,7 +29,7 @@ trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
-  # i = 60
+  # i = 2977
   # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
@@ -78,8 +78,12 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 }
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
+SP_names_com_ID_tapeS %>% filter(tpS_ID ==  21)
 
-
+trees_data %>% semi_join(., 
+                         bio_ag_kg_df %>%
+                           mutate(across(c("plot_ID","tree_ID"), as.numeric)) %>% 
+                           filter(B_kg_tree <0), by = c("plot_ID", "tree_ID"))
 # 1.1.2. biomass belowground compartiments ----------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {

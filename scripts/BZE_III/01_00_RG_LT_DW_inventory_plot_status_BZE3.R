@@ -573,7 +573,6 @@ write.csv2(trees_BWI, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], 
 
 
 
-
 stop("Notes of inventory status sorting start here")
 
 # NOTES -------------------------------------------------------------------
