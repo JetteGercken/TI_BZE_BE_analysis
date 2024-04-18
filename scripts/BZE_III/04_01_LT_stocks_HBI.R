@@ -20,7 +20,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_3.csv")), sep = ";", dec = ",") 
 
 # 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) %>% filter(DBH_h_cm/100 <= H_m)
+trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) 
+
 
 # 1. calculations ---------------------------------------------------------
 
@@ -78,12 +79,7 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 }
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
-SP_names_com_ID_tapeS %>% filter(tpS_ID ==  21)
 
-trees_data %>% semi_join(., 
-                         bio_ag_kg_df %>%
-                           mutate(across(c("plot_ID","tree_ID"), as.numeric)) %>% 
-                           filter(B_kg_tree <0), by = c("plot_ID", "tree_ID"))
 # 1.1.2. biomass belowground compartiments ----------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
@@ -196,10 +192,23 @@ trees_data <- trees_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-trees_update_4 <- trees_data 
+trees_removed_4 <- trees_data %>% filter(B_kg_tree <0 ) %>% semi_join(., trees_data %>% 
+                                                                        filter(B_kg_tree <0 ) %>% 
+                                                                        select(plot_ID, tree_ID, inv) %>% 
+                                                                        distinct(), 
+                                                                      by = c("plot_ID", "tree_ID", "inv"))
+trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
+                                             filter(B_kg_tree <0 ) %>% 
+                                             select(plot_ID, tree_ID, inv) %>% 
+                                             distinct(), 
+                                           by = c("plot_ID", "tree_ID", "inv"))
+
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
 write.csv2(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_update_4", sep = "_"), ".csv"))
+write.csv2(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"))
+
+
 
 
 

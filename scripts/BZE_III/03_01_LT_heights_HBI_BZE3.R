@@ -48,7 +48,6 @@ BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
 
 
 # 1. joining in external info  -------------------------------------------------
-
 trees_total <-  rbind(HBI_trees, BZE3_trees %>% 
             select(c(colnames(HBI_trees)))) %>%
 # calcualte diameter and change units -----------------------------------
@@ -159,7 +158,7 @@ coeff_H_SP <- left_join(trees_total %>%
   mutate(plot_ID = as.factor('all')) %>% 
   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, SSres, SStot, pseu_R2, diff_h)
 
- summary(coeff_H_SP)
+ 
 
  # 2.1.3 combined coefficients of height models ---------------------
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
@@ -237,6 +236,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
+ 
 
 # 2.3.2. height calculation BZE -------------------------------------------------
 BZE3_trees_update_3 <-  trees_total %>% 
@@ -273,22 +273,36 @@ BZE3_trees_update_3 <-  trees_total %>%
                          TRUE ~ H_m))) %>% 
     # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
   # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
-  mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm)))  %>% 
+  mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm), H_m))  %>% 
     # select columns that should enter the next step of data processing
     select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
            SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
            DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
+ 
+
+# 1.1.2.6. remove problematik trees ---------------------------------------
+ HBI_trees_removed_3 <- HBI_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >50)
+ BZE3_trees_removed_3 <- BZE3_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >50) 
+ 
 
 # ---- 1.1.2.6. exporting dataset --------------------------
-# height nls coefficients
+
+ 
+ # height nls coefficients
 write.csv2(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_update_3$inv)[1], unique(BZE3_trees_update_3$inv)[1], sep = "_"), ".csv"))
                                
 # HBI dataset including estimated heights
 write.csv2(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "LT_update_3", sep = "_"), ".csv"))
+write.csv2(HBI_trees_removed_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "LT_removed_3", sep = "_"), ".csv"))
+
 # BZE3 dataset including estimated heights
 write.csv2(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_update_3", sep = "_"), ".csv"))
+write.csv2(BZE3_trees_removed_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_removed_3", sep = "_"), ".csv"))
 
+
+
+#write.csv(HBI_trees_update_3 %>% filter( H_m > 50),  paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "weird_sloboda_heights", sep = "_"), ".csv"))
 
 
