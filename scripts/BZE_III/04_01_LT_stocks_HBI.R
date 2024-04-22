@@ -80,6 +80,8 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
 
+
+
 # 1.1.2. biomass belowground compartiments ----------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {

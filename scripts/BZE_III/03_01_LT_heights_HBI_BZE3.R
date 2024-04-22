@@ -168,28 +168,75 @@ coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coe
 # 5.64 7cm <= 10cm
 #12.62 >10cm <= 30
 # 17.84 >= 30
+ 
+ # 1.6.1. create "pseudo stands" -------------------------------------------
+ LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
+ LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
+ for (i in 1:length(unique(trees_data$plot_ID))) {
+   # i = 1
+   my.plot.id <- unique(trees_data$plot_ID)[i]
+   # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
+   my.tree.df <- trees_data[trees_data$plot_ID == my.plot.id & trees_data$compartiment == "ag", ] 
+   my.n.ha.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = n()/plot_A_ha) %>% distinct()
+   my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
+   
+   my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
+   
+   # repeat every tree per circle by the number this tree would be repeated by to reach it´s ha number
+   # so every tree id repeated as often as it would be represented on a hectar)
+   # https://stackoverflow.com/questions/11121385/repeat-rows-of-a-data-frame
+   my.tree.rep.df <- rbind(
+     # 5m circle
+     my.tree.df[my.tree.df$CCS_r_m == 5.64, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 5.64, ])), 
+                                                  each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 5.64]), ],
+     # 12m circle
+     my.tree.df[my.tree.df$CCS_r_m == 12.62, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 12.62, ])), 
+                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 12.62] ), ],
+     # 17m circle
+     my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
+                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
+   
+   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
+     group_by(plot_ID, inv_year, SP_code) %>% 
+     summarise(stand = "all", 
+               mean_DBH_cm = mean(DBH_cm), 
+               sd_DBH_cm = sd(DBH_cm),
+               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+               mean_BA_m2 = mean(BA_m2),
+               mean_H_m = mean(H_m), 
+               sd_H_m = sd(H_m), 
+               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
+     mutate(stand_component = "LT")
+   
+   LT_avg_P_list[[i]] <- my.tree.rep.df %>% 
+     group_by(plot_ID, inv_year) %>% 
+     summarise(SP_code = "all",
+               stand = "all",
+               mean_DBH_cm = mean(DBH_cm), 
+               sd_DBH_cm = sd(DBH_cm),
+               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+               mean_BA_m2 = mean(BA_m2),
+               mean_H_m = mean(H_m), 
+               sd_H_m = sd(H_m), 
+               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
+     mutate(stand_component = "LT")
+   
+ }
+ LT_avg_SP_P <- as.data.frame(rbindlist(LT_avg_SP_P_list))
+ LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
+ 
+ 
+ Hg_Dg_trees_total.df <- 
+ trees_total %>% 
+   group_by(inv, plot_ID, stand, C_layer, SP_code) %>% 
+   summarise(mean_DBH_mm = mean(DBH_cm)*10,
+             D_g = sqrt(mean(BA_m2[!is.na(H_dm)])*4/pi)*100,
+             H_g = sum((H_dm[!is.na(H_dm)]/10)*BA_m2[!is.na(H_dm)])/sum(BA_m2[!is.na(H_dm)])) 
+ 
+ 
+  
 
 #calcualte the height and diameter of a stem reprensenting the mean basal area 
-# this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
-Hg_Dg_trees_total.df <- trees_total %>%                              
-  group_by(inv, plot_ID, stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
-  summarise(no_trees_CC = n(),
-            BA_CC = sum(BA_m2),                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
-            CC_A_ha = mean(plot_A_ha),                   # mean area in ha per sampling circuit
-            BA_CC_m2_ha = BA_CC/CC_A_ha,               # calculating the BA hectare value of each tree species per c layer to account for the different sampling circuits
-            no_trees_CC_ha = no_trees_CC/CC_A_ha,
-            mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
-            mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
-  group_by(inv, plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
-  summarize(no_trees_ha = sum(no_trees_CC_ha),                                # calculate number of trees per plot
-            BA_m2_ha = sum(BA_CC_m2_ha),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
-            mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
-            mean_H_m = mean(mean_H_m_CC),              # calculate mean of height across all sampling circuit to account for represnation of different trees in the sampling circuits
-           mean_BA_m2_tree = BA_m2_ha/no_trees_ha,
-            H_g = sum(mean(na.omit(mean_H_m))*BA_m2_ha)/sum(BA_m2_ha),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
-            mean_DBH_mm = mean(mean_DBH_mm),                           # mean diameter per species per canopy layer per plot
-            D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100) %>%               #  Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm    
-   arrange(plot_ID)
 
 
 # 2.3. height calculation -------------------------------------------------
@@ -209,32 +256,32 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
   left_join(., Hg_Dg_trees_total.df,
             by = c("inv", "plot_ID", "stand", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
-         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.50 | is.na(H_m) & R2.x > R2.y & R2.x > 0.50 ~ "coeff_SP_P", 
-                              is.na(H_m) & is.na(R2.x) & R2.y > 0.50| is.na(H_m) & R2.x < R2.y & R2.y > 0.50 ~ "coeff_sp",
-                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & !is.na(H_g) ~ "ehk_sloboda",
-                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & is.na(H_g) ~ "h_curtis", 
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
                               TRUE ~ "sampled")) %>% 
   # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
-  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.50 | is.na(H_m) & R2.x > R2.y & R2.x > 0.50 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
                          # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
                          # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
                          # 0.75 then use the SP_P models
-                         is.na(H_m) & is.na(R2.x) & R2.y > 0.50 | is.na(H_m) & R2.x < R2.y & R2.y > 0.50 ~ h_nls_SP(SP_code, DBH_cm),
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
-                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
+                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
                          TRUE ~ H_m))) %>% 
    # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
    # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
-   mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(D_g, H_g, DBH_cm), H_m))  %>% 
-  # select columns that should enter the next step of data processing
-    select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-           SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
-            DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
-           CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
+   mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(D_g, H_g, DBH_cm), H_m)) %>% 
+   # select columns that should enter the next step of data processing
+     select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
+            SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
  
 
@@ -253,43 +300,41 @@ BZE3_trees_update_3 <-  trees_total %>%
   left_join(., Hg_Dg_trees_total.df,
             by = c("plot_ID", "inv","stand", "SP_code", "C_layer")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
-         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.50 | is.na(H_m) & R2.x > R2.y & R2.x > 0.50 ~ "coeff_SP_P", 
-                              is.na(H_m) & is.na(R2.x) & R2.y > 0.50| is.na(H_m) & R2.x < R2.y & R2.y > 0.50 ~ "coeff_sp",
-                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & !is.na(H_g) ~ "ehk_sloboda",
-                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & is.na(H_g) ~ "h_curtis", 
+         H_method = case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ "coeff_SP_P", 
+                              is.na(H_m) & is.na(R2.x) & R2.y > 0.70| is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ "ehk_sloboda",
+                              is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ "h_curtis", 
                               TRUE ~ "sampled")) %>% 
   # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
-  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.50 | is.na(H_m) & R2.x > R2.y & R2.x > 0.50 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
+  mutate(H_m = as.numeric(case_when(is.na(H_m) & !is.na(R2.x) & R2.x > 0.70 | is.na(H_m) & R2.x > R2.y & R2.x > 0.70 ~ h_nls_SP_P(SP_P_ID, DBH_cm),
                          # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
                          # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
                          # 0.75 then use the SP_P models
-                         is.na(H_m) & is.na(R2.x) & R2.y > 0.50 | is.na(H_m) & R2.x < R2.y & R2.y > 0.50 ~ h_nls_SP(SP_code, DBH_cm),
+                         is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
-                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.50 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
+                         is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
                          TRUE ~ H_m))) %>% 
     # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
   # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
-  mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm), H_m))  %>% 
-    # select columns that should enter the next step of data processing
-    select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-           SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
-           DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
-           CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
+  mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm), H_m))   %>% 
+     # select columns that should enter the next step of data processing
+     select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
+            SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+            DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
  
 
 # 1.1.2.6. remove problematik trees ---------------------------------------
- HBI_trees_removed_3 <- HBI_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >50)
- BZE3_trees_removed_3 <- BZE3_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >50) 
+ HBI_trees_removed_3 <- HBI_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") 
+ BZE3_trees_removed_3 <- BZE3_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") 
  
 
 # ---- 1.1.2.6. exporting dataset --------------------------
-
- 
  # height nls coefficients
 write.csv2(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_update_3$inv)[1], unique(BZE3_trees_update_3$inv)[1], sep = "_"), ".csv"))
                                
@@ -303,6 +348,33 @@ write.csv2(BZE3_trees_removed_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_u
 
 
 
-#write.csv(HBI_trees_update_3 %>% filter( H_m > 50),  paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "weird_sloboda_heights", sep = "_"), ".csv"))
+#write.csv(HBI_trees_removed_3,  paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "weird_sloboda_heights", sep = "_"), ".csv"))
 
+
+
+stop("this is where notes of  height calculations start")
+
+
+# NOTES -------------------------------------------------------------------
+# old way to calculate H_g, D-G considering concetrtric sampling circuits, which si, according to sebastan Schnell not necesarry
+# this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
+Hg_Dg_trees_total.df <- trees_total %>%                              
+  group_by(inv, plot_ID, stand, C_layer, SP_code, CCS_r_m) %>%    # group by plot and species, canopy layer and sampling circuit to calcualte all paremeters needed 
+  summarise(no_trees_CC = n(),
+            BA_CC = sum(BA_m2),                        # sum up basal  area per sampling circuit to then reffer it to the hektar value of the respective circuit
+            CC_A_ha = mean(plot_A_ha),                   # mean area in ha per sampling circuit
+            BA_CC_m2_ha = BA_CC/CC_A_ha,               # calculating the BA hectare value of each tree species per c layer to account for the different sampling circuits
+            no_trees_CC_ha = no_trees_CC/CC_A_ha,
+            mean_DBH_mm_CC = mean(DBH_cm*10),          # calculate mean DBH per sampling circuit and species and C layer and plot 
+            mean_H_m_CC = mean(na.omit(H_m))) %>%      # calculate mean height per sampling circuit and species and C layer and plot    
+  group_by(inv, plot_ID, stand, C_layer, SP_code )%>%            # group by plot and species,  canopy layer and sampling circuit to calcualte dg, hg 
+  summarize(no_trees_ha = sum(no_trees_CC_ha),                                # calculate number of trees per plot
+            BA_m2_ha = sum(BA_CC_m2_ha),               # calculate sum of BA across all sampling circuit to account for represnation of different trees in the sampling circuits
+            mean_DBH_mm = mean(mean_DBH_mm_CC),        # calculate mean of DBH across all sampling circuit to account for represnation of different trees in the sampling circuits
+            mean_H_m = mean(mean_H_m_CC),              # calculate mean of height across all sampling circuit to account for represnation of different trees in the sampling circuits
+            mean_BA_m2_tree = BA_m2_ha/no_trees_ha,
+            H_g = sum(mean(na.omit(mean_H_m))*BA_m2_ha)/sum(BA_m2_ha),    # Hoehe des Grundflächemittelstammes, calculation according to S. Schnell
+            mean_DBH_mm = mean(mean_DBH_mm),                           # mean diameter per species per canopy layer per plot
+            D_g = ((sqrt((mean_BA_m2_tree/pi)))*2)*100) %>%               #  Durchmesser des Grundflächenmittelstammes; *100 to get from 1m -> 100cm    
+  arrange(plot_ID)
 

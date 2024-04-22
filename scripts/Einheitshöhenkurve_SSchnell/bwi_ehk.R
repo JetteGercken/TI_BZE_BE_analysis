@@ -166,6 +166,89 @@ ggplot(dt_group[!is.na(id_group)], aes(h_pred, h_diff_th)) +
 
 
 
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+library(data.table)
+
+dt_data <- fread(here(paste0(out.path.BZE3, "/BZE3_weird_sloboda_heights.csv")),
+                 sep = ',', dec = '.')
+
+ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g, id_broken) {
+  
+  k0 <- c(fi = 0.183, ta = 0.079, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
+  k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
+  k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
+  
+  h_mean <- (h_g - 1.3)/(exp(k0[tolower(spec)]*(1 - d_mean/d_g))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_g))) + 1.3;
+  
+  h_pred <- (1.3 + (h_mean - 1.3)*exp(k0[tolower(spec)]*(1 - d_mean/d_i))*exp(k1[tolower(spec)]*(1/d_mean - 1/d_i)));
+  
+  # Reduction factor depending on whether crown or stem is broken or not
+  if (length(id_broken) == length(d_i)) {
+    f_red <- rep(1.0, length(d_i));
+    f_red[which(id_broken == 0)] <- 1.0;
+    f_red[which(id_broken == 1)] <- 1 - 2/h_pred[which(id_broken == 1)];
+    f_red[which(id_broken == 2)] <- 1 - k2[tolower(spec[which(id_broken == 2)])];
+  } else if (length(id_broken) == 1) {
+    if (id_broken == 0) f_red <-  1.0
+    else if (id_broken == 1) f_red <- 1 - 2/h_pred
+    else if (id_broken == 2) f_red <- 1 - k2[tolower(spec)]
+  }
+  
+  return(h_pred*f_red)
+}
+
+dt_data[is.na(H_dm), is_sample := FALSE];
+dt_data[!is.na(H_dm), is_sample := TRUE];
+
+dt_data[H_SP_group  == 'ki' ,
+        ':='(d_mean = mean(DBH_cm),
+             d_g = sqrt(mean(BA_m2[is_sample])*4/pi)*100,
+             h_g = sum(H_m[is_sample]*BA_m2[is_sample])/sum(BA_m2[is_sample]))];
+
+dt_data[H_SP_group  == 'ki', h_pred := ehk_sloboda(spec = 'ki',
+                                               d_i = DBH_cm,
+                                               d_mean = d_mean,
+                                               d_g = d_g,
+                                               h_g = h_g,
+                                               id_broken = 0)];
+
+dt_data[, summary(h_pred)]
+setorder(dt_data, DBH_cm, H_dm)
+
+dt_data[, plot(DBH_cm, H_dm/10)]
+dt_data[, lines(DBH_cm, h_pred)]
+
+#view(dt_data %>% arrange(plot_ID, tree_ID))
+
+dt_data %>% distinct() %>% 
+  left_join(., 
+dt_data %>% 
+  filter(H_method == "sampled") %>% 
+  left_join(.,
+            dt_data %>% 
+              filter(H_method == "sampled") %>% 
+              group_by(plot_ID, stand, C_layer, SP_code) %>% 
+              summarise(d_mean_2 = mean(DBH_cm),
+                        ba_m2_mean = mean(BA_m2)), 
+            by = c("plot_ID", "stand", "C_layer", "SP_code")
+) %>% arrange(plot_ID, tree_ID) %>% 
+  mutate(d_g_2 = sqrt(ba_m2_mean*4/pi)*100,
+         h_g_2 = sum(H_m*BA_m2)/sum(BA_m2)) %>% 
+  select(plot_ID, stand, C_layer, SP_code, d_mean_2,  ba_m2_mean,    d_g_2,    h_g_2) %>% 
+  distinct(), 
+by = c("plot_ID", "stand", "C_layer", "SP_code")
+) %>% 
+  mutate(H_m_pred_2 = ehk_sloboda(spec = H_SP_group ,
+                                  d_i = DBH_cm,
+                                  d_mean = d_mean_2,
+                                  d_g = d_g_2,
+                                  h_g = h_g_2,
+                                  id_broken = 0))
+
+
+
+
 # tnr <- 196; enr <- 1;
 # bhd_max <- dt_trees[Tnr == tnr & Enr == enr, max(Bhd)]/10;
 # h_max <- dt_trees[Tnr == tnr & Enr == enr, max(M_Hoe, na.rm = TRUE)]/10;
