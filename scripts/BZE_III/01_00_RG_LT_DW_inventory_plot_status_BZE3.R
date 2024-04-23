@@ -166,8 +166,6 @@ DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", 
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 
 
-
-
 # 1. data prep  --------------------------------------
 # 1.1. ALL - all plots & stand components ------------------------------------------------------------------------------------------------------------------------
 # create a list with the BZE plots that should be excluded -----------------

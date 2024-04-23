@@ -377,7 +377,7 @@ LT_SP_P <- LT_SP_BCNBA_ha  %>%
   left_join(., LT_avg_SP_P, 
             by = c("plot_ID", "inv_year", "stand_component", "SP_code", "stand")) 
 
-LT_SP_ST_P_BCNBAn_ha
+
 # 1.7.3. LT stand data ----------------------------------------------------
 LT_ST_P <- LT_ST_BCNBAn_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
@@ -442,7 +442,7 @@ LT_summary <- plyr::rbind.fill(LT_SP_ST_P,
 # if there are plots that are labelled empty but have to included in the eare calcualtion 
 if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
   RG_plot_A_ha <- rbind(RG_data %>% 
-                          mutate(plot_A_ha = area_m2/10000) %>% 
+                          mutate(plot_A_ha = as.numeric(area_m2)/10000) %>% 
                           select(plot_ID, inv_year, CCS_nr, plot_A_ha) %>% 
                           distinct(), 
                         RG_stat_2 %>% 
@@ -450,7 +450,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
     group_by(plot_ID, inv_year) %>% 
     summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))}else{
       RG_plot_A_ha <- RG_data %>% 
-        mutate(plot_A_ha = area_m2/10000) %>% 
+        mutate(plot_A_ha = as.numeric(area_m2)/10000) %>% 
         select(plot_ID, inv_year, CCS_nr, plot_A_ha) %>% 
         distinct() %>% 
         group_by(plot_ID, inv_year) %>%
