@@ -2126,7 +2126,7 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
 
-
+stop("this is vhere visualization of forest edges HBI starts")
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){

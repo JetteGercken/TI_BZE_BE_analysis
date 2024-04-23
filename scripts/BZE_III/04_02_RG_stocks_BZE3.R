@@ -196,9 +196,12 @@ RG_data <- RG_data %>% mutate(C_kg_tree = B_kg_tree*0.5)
 
 
 # 2. data export ----------------------------------------------------------
-RG_update_4 <- RG_data
-# HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
+RG_update_4 <- RG_data %>% anti_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+RG_removed_4 <- RG_data %>% semi_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+
+# HBI dataset including estimated heights 
 write.csv2(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"))
+write.csv2(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"))
 
 
 

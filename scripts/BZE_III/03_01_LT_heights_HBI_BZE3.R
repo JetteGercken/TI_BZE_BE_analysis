@@ -164,68 +164,6 @@ coeff_H_SP <- left_join(trees_total %>%
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
 
 # 2.2 calculating Hg, Dg etc. per plot, stand, species--------------------------
-# sampling circuits: 
-# 5.64 7cm <= 10cm
-#12.62 >10cm <= 30
-# 17.84 >= 30
- 
- # 1.6.1. create "pseudo stands" -------------------------------------------
- LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
- LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
- for (i in 1:length(unique(trees_data$plot_ID))) {
-   # i = 1
-   my.plot.id <- unique(trees_data$plot_ID)[i]
-   # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
-   my.tree.df <- trees_data[trees_data$plot_ID == my.plot.id & trees_data$compartiment == "ag", ] 
-   my.n.ha.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = n()/plot_A_ha) %>% distinct()
-   my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
-   
-   my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
-   
-   # repeat every tree per circle by the number this tree would be repeated by to reach it´s ha number
-   # so every tree id repeated as often as it would be represented on a hectar)
-   # https://stackoverflow.com/questions/11121385/repeat-rows-of-a-data-frame
-   my.tree.rep.df <- rbind(
-     # 5m circle
-     my.tree.df[my.tree.df$CCS_r_m == 5.64, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 5.64, ])), 
-                                                  each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 5.64]), ],
-     # 12m circle
-     my.tree.df[my.tree.df$CCS_r_m == 12.62, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 12.62, ])), 
-                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 12.62] ), ],
-     # 17m circle
-     my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
-                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
-   
-   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
-     group_by(plot_ID, inv_year, SP_code) %>% 
-     summarise(stand = "all", 
-               mean_DBH_cm = mean(DBH_cm), 
-               sd_DBH_cm = sd(DBH_cm),
-               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
-               mean_BA_m2 = mean(BA_m2),
-               mean_H_m = mean(H_m), 
-               sd_H_m = sd(H_m), 
-               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
-     mutate(stand_component = "LT")
-   
-   LT_avg_P_list[[i]] <- my.tree.rep.df %>% 
-     group_by(plot_ID, inv_year) %>% 
-     summarise(SP_code = "all",
-               stand = "all",
-               mean_DBH_cm = mean(DBH_cm), 
-               sd_DBH_cm = sd(DBH_cm),
-               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
-               mean_BA_m2 = mean(BA_m2),
-               mean_H_m = mean(H_m), 
-               sd_H_m = sd(H_m), 
-               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
-     mutate(stand_component = "LT")
-   
- }
- LT_avg_SP_P <- as.data.frame(rbindlist(LT_avg_SP_P_list))
- LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
- 
- 
  Hg_Dg_trees_total.df <- 
  trees_total %>% 
    group_by(inv, plot_ID, stand, C_layer, SP_code) %>% 

@@ -549,7 +549,7 @@ write.csv2(LT_data_stat_2, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)
 write.csv2(trees_update_0, paste0(out.path.BZE3, paste(unique(trees_update_0$inv)[1], "LT_update_0", sep = "_"), ".csv"))
 write.csv2(forest_edges_update_1, paste0(out.path.BZE3, paste(unique(forest_edges_update_1$inv)[1], "forest_edges_update_1", sep = "_"), ".csv"))
 write.csv2(LT_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_plots_removed", sep = "_"), ".csv"))
-write.csv2(trees_removed, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_trees_removed_0", sep = "_"), ".csv"))
+write.csv2(trees_removed, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_removed_0", sep = "_"), ".csv"))
 
 # regeneration
 write.csv2(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"))

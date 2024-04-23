@@ -74,7 +74,7 @@ DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
 for (i in 1:nrow( DW_data_whole)){
-  # i = 1
+  # i = 616
   
   # select general info about the DW item
   my.plot.id <-  DW_data_whole[,"plot_ID"][i]
@@ -94,14 +94,28 @@ for (i in 1:nrow( DW_data_whole)){
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-
+ 
   # calculate biomass
-  bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
-    pivot_longer(cols = stw:fwb,
-                 names_to = "compartiment", 
-                 values_to = "B_kg_tree") %>% 
-          # apply the biomass reduction factor to the biomass of deadwoodto account for decay state
-    mutate(B_kg_tree = rdB_DW(B_kg_tree, my.decay.type, my.dw.spec))
+  # check if there is an error withthe monotone settings: https://stackoverflow.com/questions/2158780/catching-an-error-and-then-branching-logic 
+  t <- try(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp))
+  # if there is an error, don´t use monotone == TRUE 
+  if("try-error" %in% class(t)){
+    bio.df <- as.data.frame(tprBiomass(obj = obj.dw, component = comp)) %>% 
+      pivot_longer(cols = stw:fwb,
+                   names_to = "compartiment", 
+                   values_to = "B_kg_tree") %>% 
+      # apply the biomass reduction factor to the biomass of deadwood to account for decay state
+      mutate(B_kg_tree = rdB_DW(B_kg_tree, my.decay.type, my.dw.spec))
+  }else{
+    bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
+      pivot_longer(cols = stw:fwb,
+                   names_to = "compartiment", 
+                   values_to = "B_kg_tree") %>% 
+      # apply the biomass reduction factor to the biomass of deadwood to account for decay state
+      mutate(B_kg_tree = rdB_DW(B_kg_tree, my.decay.type, my.dw.spec))
+  }
+  
+  
   
   # create export dataframe
   bio.info.df <- as.data.frame(cbind(
@@ -350,14 +364,17 @@ DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 # 2. data export ----------------------------------------------------------
 # create export dataset
-DW_data_update_4 <- DW_data
+DW_data_update_4 <- DW_data %>% anti_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+DW_removed_4 <- DW_data %>% semi_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+
 
 write.csv2(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"))
+write.csv2(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"))
 
 
-DW_data_update_4 %>% filter(is.na(B_kg_tree))
 
 
+stop("this is where notes of the DW stocks HBI start")
 
 # NOTES ---------------------------------------------------------------------------------------------------
 

@@ -194,11 +194,11 @@ trees_data <- trees_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-trees_removed_4 <- trees_data %>% filter(B_kg_tree <0 ) %>% semi_join(., trees_data %>% 
-                                                                        filter(B_kg_tree <0 ) %>% 
-                                                                        select(plot_ID, tree_ID, inv) %>% 
-                                                                        distinct(), 
-                                                                      by = c("plot_ID", "tree_ID", "inv"))
+trees_removed_4 <- trees_data  %>% semi_join(., trees_data %>% 
+                                               filter(B_kg_tree <0 ) %>% 
+                                               select(plot_ID, tree_ID, inv) %>% 
+                                               distinct(), 
+                                             by = c("plot_ID", "tree_ID", "inv"))
 trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
                                              filter(B_kg_tree <0 ) %>% 
                                              select(plot_ID, tree_ID, inv) %>% 

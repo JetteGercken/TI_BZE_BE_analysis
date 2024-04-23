@@ -2127,6 +2127,9 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
 write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
 
 
+
+
+stop("this is where visualization of forest edges BZE3 starts")
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
