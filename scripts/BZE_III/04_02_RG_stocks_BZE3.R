@@ -203,7 +203,7 @@ RG_removed_4 <- RG_data %>% semi_join(., RG_data %>% filter(B_kg_tree <0) %>% se
 write.csv2(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"))
 write.csv2(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"))
 
-
+stop("notes and biomass comparisson of BZE3 RG stocks starts here")
 
 
 

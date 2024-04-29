@@ -643,7 +643,7 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 18
+  # i = 1
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -675,7 +675,7 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
   
-  
+
   # tree data to identify edge without trees
   outer.trees.df <- trees_data[trees_data$plot_ID == my.plot.id, ]
   my.tree.id <- outer.trees.df["tree_ID"]
@@ -831,16 +831,16 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     select(plot_ID, e_ID, inv_year, CCS_r_m ,inter_stat, area_m2,stand)
   
   
-  print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
-            plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
-            plot(remaining.circle.poly.12$geometry, add = T),
-            plot(remaining.circle.poly.5$geometry, add = T),
-            plot(inter.poly.17$geometry, col = "green", add =TRUE),
-            plot(circle.pt$geometry, col = "red",  add = TRUE),
-            legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type), 
-                                       paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
-                   col=c("green", "grey"), lty=1:2, cex=0.8),
-            plot(st_geometry(tree.sf), add = TRUE)))
+  # print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
+  #           plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
+  #           plot(remaining.circle.poly.12$geometry, add = T),
+  #           plot(remaining.circle.poly.5$geometry, add = T),
+  #           plot(inter.poly.17$geometry, col = "green", add =TRUE),
+  #           plot(circle.pt$geometry, col = "red",  add = TRUE),
+  #           legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type), 
+  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+  #                  col=c("green", "grey"), lty=1:2, cex=0.8),
+  #           plot(st_geometry(tree.sf), add = TRUE)))
   
   
   # list with inter and remaining circle areas areas
@@ -2129,7 +2129,6 @@ write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_u
 
 
 
-stop("this is where visualization of forest edges BZE3 starts")
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
@@ -2174,6 +2173,7 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   
 }
 
+stop("this is where visualization of forest edges BZE3 starts")
 
 
 # ----- 2. visualization  -------------------------------------------------

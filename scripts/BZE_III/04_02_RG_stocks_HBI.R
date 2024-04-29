@@ -211,7 +211,7 @@ write.csv2(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1],
 
 
 
- 
+ stop("biomass comparisson and notes of RG HBI stocks script starts here")
 # 3. Biomass comparisson  ---------------------------------------
 # 3.1. Biomass comp RG trees height > 1.3m -------------------------------
 # 3.1.3. comparisson belowgroung biomass for RG trees height > 1.3m -------------------------------

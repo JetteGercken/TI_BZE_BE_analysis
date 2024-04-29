@@ -3,7 +3,7 @@
 # forest edges processign for regeneration 
 
 # ----- 0. SETUP ---------------------------------------------------------------
-dev.off()
+# dev.off()
 # ----- 0.1. packages and functions --------------------------------------------
 source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
@@ -29,8 +29,7 @@ colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form",
                             "T_dist", "T_azi") # t = turning point 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  inv_name((RG_loc$inv_year)[1]), ".csv")), sep = ";", dec = ",")
-HBI_loc <- HBI_loc %>% dplyr::select(c("ï..ToTraktId", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  
-                                         "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN"))
+HBI_loc <- HBI_loc[,1:12] 
 colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
 
 

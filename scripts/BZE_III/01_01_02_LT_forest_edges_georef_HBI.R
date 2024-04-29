@@ -2102,7 +2102,7 @@ write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_u
 
 
 # 3.4. visulaizing for all plots, edges, trees -------------------------
-dev.off()
+
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   

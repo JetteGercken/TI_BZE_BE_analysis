@@ -65,7 +65,6 @@ source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_HBI
 source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE3.R"))
 
 
-
 ##### forest edges -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI forest edges
 # LT
@@ -74,7 +73,11 @@ source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE
       ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
 # RG
-source(paste0(here(), "/scripts/BZE_III/01_02_RG_forest_edges_HBI.R"))
+ georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_02_01_RG_forest_edges_HBI.R")), 
+               source(paste0(here(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_HBI.R"))
+               ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
+               , georefference = "not_georefferenced")
+ 
 
 ## BZE forest edges
 # LT
@@ -83,7 +86,11 @@ source(paste0(here(), "/scripts/BZE_III/01_02_RG_forest_edges_HBI.R"))
      ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
  # RG
-source(paste0(here(), "/scripts/BZE_III/01_02_RG_forest_edges_BZE3.R"))
+ georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_02_01_RG_forest_edges_BZE3.R")), 
+               source(paste0(here(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_BZE3.R"))
+               ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
+               , georefference = "not_georefferenced")
+ 
 
 
 
