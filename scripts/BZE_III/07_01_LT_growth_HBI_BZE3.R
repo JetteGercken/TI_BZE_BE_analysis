@@ -21,11 +21,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # 0.3. data import --------------------------------------------------------
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ";", dec = ",")
-BZE3_ha_stocks_P <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_P.csv")), sep = ";", dec = ",")
 BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ";", dec = ",")
-HBI_ha_stocks_P <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_P.csv")), sep = ";", dec = ",")
 HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
 
@@ -44,17 +42,19 @@ HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_al
 dbh_growth_tree <- left_join(
   # select trees that are repeatedly inventory, or unknown status
   BZE3_trees %>% 
-    filter(tree_inventory_status %in% c(1, -9) & compartiment == "ag") %>% 
+    filter(tree_inventory_status %in% c(1) & compartiment == "ag") %>% 
     rename(BZE3_DBH_cm = DBH_cm) %>% 
     rename(BZE3_inv_year = inv_year) %>% 
     select(plot_ID, tree_ID, BZE3_inv_year, stand, C_layer, SP_code, BZE3_DBH_cm), 
   HBI_trees %>% 
     # select trees that were newly inventored, repeated inventory, or unknown status
     filter(tree_inventory_status %in% c(0, 1, -9) & compartiment == "ag")%>% 
+    distinct() %>% 
     rename(HBI_DBH_cm = DBH_cm) %>% 
     rename(HBI_inv_year = inv_year) %>% 
     select(plot_ID, tree_ID, HBI_inv_year, stand, C_layer, SP_code, HBI_DBH_cm), 
-  by = c("plot_ID", "tree_ID", "C_layer", "stand", "SP_code")) %>%    
+  by = c("plot_ID", "tree_ID", "C_layer", "stand", "SP_code"), 
+  multiple = "all") %>%    
 # there may be trees that are new in BZE3 and havent been inventorised in HBI
 # so we have to put these trees DBHs to 0 and the invenotry year to the one of the other trees
 # to calculate the increment properly 
@@ -64,6 +64,7 @@ dbh_growth_tree <- left_join(
          age_period = BZE3_inv_year- HBI_inv_year, 
          annual_growth_cm = DBH_growth_cm/age_period)
 
+                     
 
 # 1.2. grouping growth ------------------------------------------------------------------
 growth_summary <- plyr::rbind.fill(
