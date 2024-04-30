@@ -489,7 +489,7 @@ DW_inv_info <-  DW_inv_info%>%
 # here i create a dataset with DW plots that have status 2 
 # which only contains info we can catually give so the plot area , the plot ID and the stocks which are set to 0
 DW_stat_2 <- DW_inv_info[DW_inv_info$CCS_DW_inv_status == 2, ]
-DW.data.stat.2.list <- vector("list", length = nrow(DW_stat_2))
+DW.data.stat.2.list <- vector("list")
 for (i in 1:nrow(DW_stat_2)) {
   # i = 1
   my.plot.id <- DW_stat_2[, "plot_ID"][i]
@@ -507,7 +507,14 @@ for (i in 1:nrow(DW_stat_2)) {
       C_t_ha = c(0, 0, 0), 
       N_t_ha = c(0, 0, 0)))
   }else{
-    DW.status.2.df = data.frame()
+    DW.status.2.df = as.data.frame(cbind(
+      plot_ID = NA,
+      plot_A_ha = NA, 
+      inv_year = NA,
+      compartiment = NA,
+      B_t_ha = NA, 
+      C_t_ha = NA, 
+      N_t_ha = NA))
   }
   
   DW.data.stat.2.list[[i]] <- DW.status.2.df

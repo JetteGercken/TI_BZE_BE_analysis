@@ -543,7 +543,12 @@ write.csv2(FSI_df, paste0(out.path.BZE3, paste0("FSI_", unique(FSI_df$inv)[1], "
 
 
 
+
+
+
 # 3. visualization ----------------------------------------------------------------------------------------------------------------
+stop("visuals and notes of biodiverity bze3 script")
+
 for (i in 1:length(unique(FSI_df$plot_ID))) {
   # i = 1
   my.plot.id <- FSI_df[i, "plot_ID"]
