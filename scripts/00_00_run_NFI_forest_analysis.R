@@ -127,9 +127,9 @@ source(paste0(here(), "/scripts/BZE_III/04_03_DW_stocks_BZE3.R"))
 
 ##### summarising hectar values ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI summarising hectar values
-source(paste0(here(), "/scripts/BZE_III/05_00_RG_LT_DW_summarising_hectar_values_HBI.R"))
- ## BZE3 summarising hectar values
-source(paste0(here(), "/scripts/BZE_III/05_00_RG_LT_DW_summarising_hectar_values_BZE3.R"))
+source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_HBI.R"))
+## BZE3 summarising hectar values
+source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_BZE3.R"))
 
 
 

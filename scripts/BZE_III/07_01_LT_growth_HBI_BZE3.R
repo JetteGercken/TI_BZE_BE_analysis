@@ -20,15 +20,40 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # 0.3. data import --------------------------------------------------------
+# BZE3
+# living trees
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ";", dec = ",")
-BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+BZE3_LT_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# regeneration
+# this dataset contains single plant data of regeneration inventory of BZE3
+BZE3_RG <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
+# this dataset contains regeneration data summarized per hectar BZE3
+BZE3_RG_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# this dataset contains single plant data of deadwood inventory of HBI
+BZE3_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
+# this dataset contains deadwood data summarized per hectar HBI
+BZE3_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
+
+
+# HBI Data
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ";", dec = ",")
-HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+HBI_LT_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# this dataset contains single plant data of regeneration inventory of HBI
+HBI_RG <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
+# this dataset contains regeneration data summarized per hectar HBI
+HBI_RG_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# this dataset contains single plant data of deadwood inventory of HBI
+HBI_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
+# this dataset contains deadwood data summarized per hectar HBI
+HBI_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
 
 
-# 1. calculations ---------------------------------------------------------
+
+
+
+# 1. LIVING TREES CALCULATIONS ---------------------------------------------------------
 # 1.1. average single tree growth -------------------------------------------------
 # this inventory status means that the tree should have been assessed in the previous 
 # invenotry but wasn´t
@@ -67,7 +92,7 @@ dbh_growth_tree <- left_join(
                      
 
 # 1.2. grouping growth ------------------------------------------------------------------
-growth_summary <- plyr::rbind.fill(
+dbh_growth_summary <- plyr::rbind.fill(
   # growth by plot, species, canopy layer and stand
   summarize_data(dbh_growth_tree,
                  c("plot_ID", "stand", "SP_code", "C_layer"), 
@@ -96,15 +121,13 @@ growth_summary <- plyr::rbind.fill(
            plot_ID = "all"))
 
 
-
-
 # 1.3. changes in BA composition -------------------------------------------
 # select all possible tree species per plot
 BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
                     HBI_trees %>% select(plot_ID, SP_code) %>% distinct()) %>% 
   distinct() %>% 
   arrange(plot_ID) %>% 
-  left_join(., BZE3_summary %>% 
+  left_join(., BZE3_LT_summary %>% 
               # filter for plot and species wise summary
               filter(plot_ID != "all" & SP_code != "all" & stand == "all") %>%
               # select the BA percent
@@ -113,7 +136,7 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
               rename(BA_percent_BZE3 = BA_percent) %>% 
               distinct(), 
             by = c("plot_ID", "SP_code")) %>% 
-  left_join(., HBI_summary %>% 
+  left_join(., HBI_LT_summary %>% 
               # filter for plot and species wise summary
               filter(plot_ID != "all" & SP_code != "all" & stand == "all") %>%
               # select the BA percent
@@ -125,19 +148,20 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
   # here we have to set the BA_percent that do not appear in the respective inventory to 0
   mutate(BA_percent_BZE3 = ifelse(is.na(BA_percent_BZE3), 0, BA_percent_BZE3), 
          BA_percent_HBI = ifelse(is.na(BA_percent_HBI), 0, BA_percent_HBI), 
-         BA_percent_difference = BA_percent_BZE3-BA_percent_HBI)
+         BA_percent_diff = BA_percent_BZE3-BA_percent_HBI, 
+         stand = "all") 
   
 
 
 # 1.4. changes in stocks per ha --------------------------------------------
-stock_changes_P <- 
-BZE3_summary %>% 
+trees_stock_changes_P <- 
+BZE3_LT_summary %>% 
   #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
   select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
-  left_join(., HBI_summary %>% 
+  left_join(., HBI_LT_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
@@ -158,14 +182,68 @@ BZE3_summary %>%
 
 # substact columns edning on BZE3 from columns ednign with HBI 
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
-pre_vars <- grep("_HBI", colnames(stock_changes_P), value=TRUE)
-post_vars <- grep("_BZE3", colnames(stock_changes_P), value=TRUE)
-stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- stock_changes_P[, post_vars] - stock_changes_P[, pre_vars]
-stock_changes_P <- stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment)
+pre_vars <- grep("_HBI", colnames(trees_stock_changes_P), value=TRUE)
+post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
+trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
+trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment)
 
-left_join(BZE3_summary[2416,],
-HBI_summary %>% filter( plot_ID == "all" & is.na(stand) & SP_code == "all" & compartiment == "ag" & stand_type == 1) %>% distinct()
-,by = c("plot_ID", "stand_type", "compartiment"))
+
+
+# binding all LT growth datasets together ---------------------------------
+
+changes_trees <- dbh_growth_summary %>% 
+  left_join(., 
+            trees_stock_changes_P %>% 
+              select(plot_ID, stand, stand_type, SP_code, compartiment, contains("diff")) %>% 
+              mutate(across(c("plot_ID"), as.character)), 
+            by = c("plot_ID", "stand", "SP_code"), 
+            multiple = "all") %>%  # multiple = "all" for compartiments, which is not represented in dbh growth
+  left_join(BA_changes_SP_P %>% 
+              select(plot_ID, stand, SP_code, contains("diff")) %>% 
+              mutate(across(c("plot_ID"), as.character)), 
+            by = c("plot_ID", "stand", "SP_code") )
+
+
+
+# 2. REGENERATION CALCULATIONS --------------------------------------------
+# 1.4. changes in stocks per ha --------------------------------------------
+RG_stock_changes_P <- 
+  BZE3_RG_summary %>% 
+  #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+  select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
+  # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+              .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
+  left_join(., HBI_LT_summary %>% 
+              #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+              select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
+              # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
+                          .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)), 
+            by = c("stand_type" ,"plot_ID", "compartiment", "SP_code", "stand")) %>% 
+  # if there are plots/ species or stands that were not established in HBI and thus do not have stocks 
+  # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
+  # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
+  mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
+  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
+  # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
+  mutate(across(contains("n_ha") | contains("n_SP") , ~ifelse(is.na(.x) & 
+                                                                plot_ID != "all"&
+                                                                stand == "all" & 
+                                                                SP_code == "all", 0, .x)) ) %>% 
+  arrange(plot_ID, stand, SP_code, compartiment)
+
+# substact columns edning on BZE3 from columns ednign with HBI 
+# https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
+pre_vars <- grep("_HBI", colnames(trees_stock_changes_P), value=TRUE)
+post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
+trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
+trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment)
+
+
+
+
+
 
 
 
