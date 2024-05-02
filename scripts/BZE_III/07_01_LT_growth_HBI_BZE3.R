@@ -132,27 +132,40 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
 # 1.4. changes in stocks per ha --------------------------------------------
 stock_changes_P <- 
 BZE3_summary %>% 
-  filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
-  select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
+  #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+  select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
-              .cols= c(B_t_ha, C_t_ha, N_t_ha)) %>% 
+              .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
   left_join(., HBI_summary %>% 
-              filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
-              select(plot_ID, compartiment, B_t_ha, C_t_ha, N_t_ha) %>%
+              #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+              select(plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
-              rename_with(.fn = function(.x){paste0(.x,"_HBI")}, .cols= c(B_t_ha, C_t_ha, N_t_ha)), 
-            by = c("plot_ID", "compartiment"))
+              rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
+                          .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)), 
+            by = c("stand_type" ,"plot_ID", "compartiment", "SP_code", "stand")) %>% 
+  # if there are plots/ species or stands that were not established in HBI and thus do not have stocks 
+  # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
+  # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
+  mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
+  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
+  # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
+  mutate(across(contains("n_ha") | contains("n_SP") , ~ifelse(is.na(.x) & 
+                                                      plot_ID != "all"&
+                                                      stand == "all" & 
+                                                      SP_code == "all", 0, .x)) ) %>% 
+  arrange(plot_ID, stand, SP_code, compartiment)
 
 # substact columns edning on BZE3 from columns ednign with HBI 
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(stock_changes_P), value=TRUE)
 stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- stock_changes_P[, post_vars] - stock_changes_P[, pre_vars]
+stock_changes_P <- stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment)
 
-
-
-
+left_join(BZE3_summary[2416,],
+HBI_summary %>% filter( plot_ID == "all" & is.na(stand) & SP_code == "all" & compartiment == "ag" & stand_type == 1) %>% distinct()
+,by = c("plot_ID", "stand_type", "compartiment"))
 
 
 

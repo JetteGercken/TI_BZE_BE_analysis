@@ -20,10 +20,29 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # 0.3. data import --------------------------------------------------------
+# BZE3 Data
+# this dataset contains single plant data of regeneration inventory of BZE3
 BZE3_RG <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_update_4.csv")), sep = ";", dec = ",")
-BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
+# this dataset contains regeneration data summarized per hectar BZE3
+BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 
+# HBI Data
+# this dataset contains single plant data of regeneration inventory of HBI
 HBI_RG <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_update_4.csv")), sep = ";", dec = ",")
-HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
+# this dataset contains regeneration data summarized per hectar HBI
+HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+
+
+
+
 
 # 1. calculations ---------------------------------------------------------
+# we need:
+  # -  stock changes
+  # - changes in number of species
+  # - changes in n per ha
+
+
+
+
+
