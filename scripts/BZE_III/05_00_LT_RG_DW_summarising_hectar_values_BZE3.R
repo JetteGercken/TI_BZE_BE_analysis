@@ -418,11 +418,13 @@ LT_TY <- LT_P %>%
                         n_SP = mean(n_SP)) %>% 
               ungroup() %>%
               select(-c("compartiment")), 
-            by = c("stand_type", "stand_component", "inv")) %>% 
+            by = c("stand_type", "stand_component", "inv")) %>%
+  arrange(as.numeric(stand_type)) %>% 
   mutate(plot_ID = "all", 
          stand = "all",
          dom_SP = "all", 
-         SP_code = "all")  
+         SP_code = "all") %>% 
+  distinct()
 
 # 1.7.6. rbinding LT data together ----------------------------------------
 LT_summary <- plyr::rbind.fill(LT_SP_ST_P, 
@@ -588,9 +590,6 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
 # 3.4. DW big summary including all grouping variables and combinations -------------------------
 
 # 3.4.1. grouped by species, decay type, deadwoodtype, plot, compartiment, inventory ------------------------------------------------------------------
-
-# somehwere here the HBI doesnt work !!!!!!!!
-
 DW_summary <- 
   plyr::rbind.fill(
     DW_BCN_ha_SP_TY_DEC_P,
@@ -676,6 +675,17 @@ DW_summary <-
                    c("B_t_ha", "C_t_ha", "N_t_ha"), 
                    operation = "sum_df") %>%
       distinct() %>% 
+      # average values over all deadwood items per plot
+      left_join(., DW_data %>% 
+                  filter(compartiment == "ag") %>% 
+                  distinct() %>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(mean_d_cm = mean(d_cm),
+                            sd_d_cm = sd(d_cm),
+                            mean_l_m = mean(l_dm/10),
+                            sd_l_m = sd(l_dm/10)), 
+                by = c("plot_ID", "inv"), 
+                multiple = "all") %>%  
       # number of DW items per ha
       left_join(., DW_data %>% 
                   filter(compartiment == "ag") %>% 
@@ -769,6 +779,7 @@ write.csv2(LT_summary, paste0(out.path.BZE3, paste(LT_summary$inv[1], "LT_stocks
 write.csv2(RG_summary, paste0(out.path.BZE3, paste(RG_summary$inv[1], "RG_stocks_ha_all_groups", sep = "_"), ".csv"))
 write.csv2(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks_ha_all_groups", sep = "_"), ".csv"))
 write.csv2(LT_RG_DW_P, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups", sep = "_"), ".csv"))
+
 
 stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values BZE3 starts")
 
