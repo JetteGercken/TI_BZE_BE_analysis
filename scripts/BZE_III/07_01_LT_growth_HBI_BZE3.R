@@ -276,6 +276,7 @@ DW_stock_changes_P <-
   # everything != "all" excecpt decay == "all" 
   # everything ! = "all" except dw_type == "all"
   # Everything != "all" except dw_sp == "all"
+  
   mutate(across(contains("mean") | contains("sd") | , ~ifelse(is.na(.x) & 
                                                            plot_ID != "all"&
                                                            dw_sp == "all" &
