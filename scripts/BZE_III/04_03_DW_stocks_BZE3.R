@@ -53,7 +53,7 @@ DW_data <- DW_data %>%
                                   decay == 4 ~ 3, 
                                   TRUE ~ 4),
          # assigning deadwood types into groups of standing / lying deadwood (S/L)
-         ST_LY_type = case_when(decay %in% c(2, 3) ~ "S", 
+         ST_LY_type = case_when(dw_type %in% c(2, 3) ~ "S", 
                                 TRUE ~ "L"))
 
 # 1. calculations ---------------------------------------------------------------
@@ -370,8 +370,6 @@ DW_removed_4 <- DW_data %>% semi_join(., DW_data %>% filter(B_kg_tree <0 | is.na
 
 write.csv2(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"))
 write.csv2(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"))
-
-
 
 
 stop("this is where notes of the DW stocks BZE3 start")

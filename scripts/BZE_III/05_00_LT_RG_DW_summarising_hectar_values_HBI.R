@@ -591,9 +591,6 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
 # 3.4. DW big summary including all grouping variables and combinations -------------------------
 
 # 3.4.1. grouped by species, decay type, deadwoodtype, plot, compartiment, inventory ------------------------------------------------------------------
- 
-# somehwere here the HBI doesnt work !!!!!!!!
-
 DW_summary <- 
   plyr::rbind.fill(
     DW_BCN_ha_SP_TY_DEC_P,
@@ -679,6 +676,17 @@ DW_summary <-
                c("B_t_ha", "C_t_ha", "N_t_ha"), 
                operation = "sum_df") %>%
   distinct() %>% 
+  # average values over all deadwood items per plot
+  left_join(., DW_data %>% 
+              filter(compartiment == "ag") %>% 
+              distinct() %>% 
+              group_by(plot_ID, inv) %>% 
+              summarise(mean_d_cm = mean(d_cm),
+                        sd_d_cm = sd(d_cm),
+                        mean_l_m = mean(l_dm/10),
+                        sd_l_m = sd(l_dm/10)), 
+            by = c("plot_ID", "inv"), 
+            multiple = "all") %>%  
   # number of DW items per ha
   left_join(., DW_data %>% 
               filter(compartiment == "ag") %>% 

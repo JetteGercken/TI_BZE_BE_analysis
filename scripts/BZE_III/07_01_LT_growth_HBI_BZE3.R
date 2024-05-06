@@ -265,20 +265,22 @@ DW_stock_changes_P <-
   # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
   # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
   mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
-  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
-  # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
-  
-  ### !!!! we have to adjust this filter. also i feel its weird that there are averages bu tno n per ha for some groups
-  # like whole plots have averages but no n/ha and some ceday classes have n and averages? 
-  # --> check summery script again 
-  mutate(across(contains("n_ha") | contains("n_SP") , ~ifelse(is.na(.x) & 
+  # for n_ha and n_dw_TY, n_dec we do the same but as these values were calculated only for the whole plot we 
+  # apply the correction only to rows witch plot_ID != all, but decay, dw_type and species  == "all"
+  mutate(across(contains("n_ha") | contains("n_dec") | contains("n_dw_TY") , ~ifelse(is.na(.x) & 
                                                                 plot_ID != "all"&
-                                                                stand == "all" &  
-                                                                SP_code == "all" |
-                                                                is.na(.x) & 
-                                                                plot_ID != "all"&
-                                                                is.na(stand) &  
-                                                                SP_code == "all" , 0, .x)) ) %>% 
+                                                                dw_sp == "all" &
+                                                                dw_type == "all" & 
+                                                                  decay == "all" , 0, .x)) ) %>% 
+  # this is to replace NA for missing average values. Average values were calcualted for the following groups: 
+  # everything != "all" excecpt decay == "all" 
+  # everything ! = "all" except dw_type == "all"
+  # Everything != "all" except dw_sp == "all"
+  mutate(across(contains("mean") | contains("sd") | , ~ifelse(is.na(.x) & 
+                                                           plot_ID != "all"&
+                                                           dw_sp == "all" &
+                                                           dw_type == "all" & 
+                                                           decay == "all" , 0, .x)) ) %>%
   arrange(plot_ID, stand, SP_code, compartiment)
 
 # substact columns edning on BZE3 from columns ednign with HBI 
