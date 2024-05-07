@@ -35,6 +35,8 @@ BZE3_DW <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_
 # this dataset contains deadwood data summarized per hectar HBI
 BZE3_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 #FSI
+BZE3_FSI <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_FSI.csv")), sep = ";", dec = ",")
+
 
 
 
@@ -54,6 +56,7 @@ HBI_DW <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_up
 # this dataset contains deadwood data summarized per hectar HBI
 HBI_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 # FSI
+HBI_FSI <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_FSI.csv")), sep = ";", dec = ",")
 
 
 
@@ -306,8 +309,52 @@ DW_changes <- DW_stock_changes_P
 
 
 
+# 3. total changes over LT, RG, DW together -------------------------------
 
-# 3. FSI changes ----------------------------------------------------------
+# 3.1. calculating total difference in stock per plot per ha --------------
+# stand_component == "all"
+
+
+
+# 3.2. binding all forest datasets (LT, RG, DW) together ------------------
+
+
+
+
+# 4. FSI changes ----------------------------------------------------------
+FSI_changes_P <- 
+  BZE3_FSI %>% 
+  select(plot_ID, contains("FSI")) %>% 
+  
+  # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+              .cols= LT_FSI_DBH_RMS:FSI_total) %>% 
+  left_join(.,  BZE3_FSI %>% 
+              select(plot_ID, contains("FSI")) %>% 
+              
+              # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_HBI")},
+                          .cols= LT_FSI_DBH_RMS:FSI_total), 
+            by = "plot_ID")%>% 
+  # if there are plots/ species or stands that were not established in HBI and thus do not have stocks 
+  # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
+  # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
+  mutate(across(contains("FSI"), ~ifelse(is.na(.x), 0, .x)) )
+
+# substact columns edning on BZE3 from columns ednign with HBI 
+# https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
+pre_vars <- grep("_HBI", colnames(FSI_changes_P), value=TRUE)
+post_vars <- grep("_BZE3", colnames(FSI_changes_P), value=TRUE)
+FSI_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- FSI_changes_P[, post_vars] - FSI_changes_P[, pre_vars]
+FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>% 
+  mutate(stand_component == "all")
+
+
+
+
+
+
+
 
 
 

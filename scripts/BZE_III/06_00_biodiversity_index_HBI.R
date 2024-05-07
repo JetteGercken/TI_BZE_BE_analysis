@@ -538,7 +538,7 @@ FSI_df<- FSI_df %>%
 
 
 # 2. export data -----------------------------------------------------------------------------------------------------------------------------------------------------
-write.csv2(FSI_df, paste0(out.path.BZE3, paste0("FSI_", unique(FSI_df$inv)[1], ".csv")))
+write.csv2(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI", ".csv")))
 
 
 
