@@ -1629,13 +1629,13 @@ SD_class <- function(sd_pred_diff, diff_b){
 summarize_data <- function(data, group_vars, columns, operation) {
   sd_df <- data %>%
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
-    summarise(across(all_of(columns), sd, na.rm = TRUE))
+    summarise(across(all_of(columns), \(x) sd(x, na.rm = TRUE))) # sd, na.rm = TRUE))
   mean_df <- data %>%
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
-    summarise(across(all_of(columns), mean, na.rm = TRUE))
+    summarise(across(all_of(columns),\(x) mean(x, na.rm = TRUE))) # mean, na.rm = TRUE))
   sum_df <- data %>%
     group_by(across(all_of(group_vars), .names = "{.col}")) %>%
-    summarise(across(all_of(columns), sum, na.rm = TRUE))
+    summarise(across(all_of(columns), \(x) sum(x, na.rm = TRUE)))
   switch(operation, 
          sd_df = sd_df,
          mean_df = mean_df, 
@@ -1713,9 +1713,15 @@ bark_type <- function(my.dbh.cm, chr.code.ger, output){
   # because "paste0" comand creates list we hafd to use thise one:https://stackoverflow.com/questions/10341114/alternative-function-to-paste
   my.bark.type.subtype <- ifelse(my.bark.sub.type == my.bark.type | my.bark.sub.type == "no subtype", as.character(my.bark.type), as.character(fn$paste("$my.bark.type_$my.bark.sub.type")))
   
+  # combine species group and bark subtype (if there is one) 
+  # --> according to a Mail from Felix Storch,  this is the porper way to assign bark type for the FSI calculation since the species matters for the bark type 
+  my.bark.spp.subtype <- ifelse(my.bark.sub.type == my.bark.type | my.bark.sub.type == "no subtype", as.character(my.bark.spp), as.character(fn$paste("$my.bark.spp$my.bark.sub.type")))
+  
+  
 
   switch(output,
          "bark_ty_subty" = my.bark.type.subtype,
+         "bark_spp_subty" = my.bark.spp.subtype,
          "bark_ty" = my.bark.type,
          "bark_sub_ty" = my.bark.sub.type, 
          "bark_type_species" = my.bark.spp)

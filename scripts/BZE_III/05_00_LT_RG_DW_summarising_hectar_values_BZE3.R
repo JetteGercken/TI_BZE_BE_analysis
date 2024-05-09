@@ -764,6 +764,7 @@ LT_RG_DW_P <-
              SP_code = "all"))
   ) %>%  
   left_join(., LT_stand_TY_P %>% 
+              select(-stand_component) %>% 
               mutate_at(c('inv', 'plot_ID'), as.character),
             by = c("plot_ID", "inv")) %>% 
   arrange(plot_ID)

@@ -168,7 +168,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 trees_data %>% filter(compartiment == "ag") %>% 
                   rowwise() %>% 
      # assign bark type to each tree 
-                  mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+                  mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_spp_subty")) %>% 
                   # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
                   select(plot_ID, inv, bark_TY) %>% 
                   distinct() %>% 
