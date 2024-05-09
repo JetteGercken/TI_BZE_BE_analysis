@@ -34,6 +34,8 @@ BZE3_RG_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1
 BZE3_DW <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
 # this dataset contains deadwood data summarized per hectar HBI
 BZE3_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# all LT, RG, DW summmaries together and total plot stock bze3
+BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 #FSI
 BZE3_FSI <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_FSI.csv")), sep = ";", dec = ",")
 
@@ -55,6 +57,8 @@ HBI_RG_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1],
 HBI_DW <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
 # this dataset contains deadwood data summarized per hectar HBI
 HBI_DW_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+# all LT, RG, DW summmaries together and total plot stock HBI
+HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 # FSI
 HBI_FSI <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_FSI.csv")), sep = ";", dec = ",")
 
@@ -97,8 +101,6 @@ dbh_growth_tree <- left_join(
   mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
          age_period = BZE3_inv_year- HBI_inv_year, 
          annual_growth_cm = DBH_growth_cm/age_period)
-
-                     
 
 # 1.2. grouping growth ------------------------------------------------------------------
 dbh_growth_summary <- plyr::rbind.fill(

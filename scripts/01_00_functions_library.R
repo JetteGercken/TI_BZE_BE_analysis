@@ -6,57 +6,56 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-# install.packages("usethis")
- # install.packages('RPostgreSQL')
- # install.packages("RPostgres")
- # install.packages("DBI")
-#  install.packages("here")
-#  install.packages("readr")
-#  install.packages("tidyverse")
-#  install.packages("tibble")
-#  install.packages("dplyr")
-#  install.packages("data.table")
-#  install.packages("broom")
-#  install.packages("purrr")
-#  install.packages("devtools")
-#  install.packages("plyr")
-# install.packages("RODBC")
-# install.packages("rstudioapi")
-# install.packages("gsubfn")
-#  ## laTex
-#  install.packages("stargazer")  #for compatability with Latex
-#  install.packages("tikzDevice") #for compatability with Latex#
-#  # visualisation
-#  install.packages("ggthemes")
-#  install.packages("ggplot2")
-#  install.packages("reshape2") #for multiple y values
-#  install.packages("ggforce") #for zooming in parts of the plot
-#  install.packages("ggrepel")
-#  options(tz="CA")
-#  install.packages("reshape2")
-#  install.packages("gridExtra")
-## analysis
-#  install.packages("corrplot")
-#  install.packages("AICcmodavg")
-## forest related
-#   install.packages("forestmangr")
-#  install.packages("rBDAT")
-#  install.packages("TapeR")
-# install.packages("pkgbuild")
-#  require("devtools")
-#  if (! require("remotes")) 
-#    install.packages("remotes")
-#  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-# install.packages("magrittr")
-# install.packages("sjmisc")
-# if(!require(devtools)) install.packages("devtools")
-# devtools::install_github("kassambara/ggcorrplot")
-## spatial
-# install.packages("sf")
-# install.packages("rgdal")
-# install.packages("terra")
-#install.packages("sfheaders")
-
+#  install.packages("usethis")
+#  install.packages('RPostgreSQL')
+#  install.packages("RPostgres")
+#  install.packages("DBI")
+#   install.packages("here")
+#   install.packages("readr")
+#   install.packages("tidyverse")
+#   install.packages("tibble")
+#   install.packages("dplyr")
+#   install.packages("data.table")
+#   install.packages("broom")
+#   install.packages("purrr")
+#   install.packages("devtools")
+#   install.packages("plyr")
+#  install.packages("RODBC")
+#  install.packages("rstudioapi")
+#  install.packages("gsubfn")
+#   ## laTex
+#   install.packages("stargazer")  #for compatability with Latex
+#   install.packages("tikzDevice") #for compatability with Latex#
+#   # visualisation
+#   install.packages("ggthemes")
+#   install.packages("ggplot2")
+#   install.packages("reshape2") #for multiple y values
+#   install.packages("ggforce") #for zooming in parts of the plot
+#   install.packages("ggrepel")
+#   options(tz="CA")
+#   install.packages("reshape2")
+#   install.packages("gridExtra")
+# # analysis
+#   install.packages("corrplot")
+#   install.packages("AICcmodavg")
+# # forest related
+#    install.packages("forestmangr")
+#   install.packages("rBDAT")
+#   install.packages("TapeR")
+#  install.packages("pkgbuild")
+#   require("devtools")
+#   if (! require("remotes")) 
+#     install.packages("remotes")
+#   remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#  install.packages("magrittr")
+#  install.packages("sjmisc")
+#  if(!require(devtools)) install.packages("devtools")
+#  devtools::install_github("kassambara/ggcorrplot")
+# # spatial
+#  install.packages("sf")
+#  install.packages("rgdal")
+#  install.packages("terra")
+# install.packages("sfheaders")
 
 # ----- 0.2. require   ---------------------------------------------------------
 # datamanagement
@@ -108,7 +107,7 @@ require(sjmisc)
 require(ggforce)                      # Load ggforce package
 # spatial 
 require(sf)
-require(rgdal)
+# require(rgdal)
 require(terra)
 require(sfheaders)
 
