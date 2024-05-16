@@ -26,7 +26,8 @@ BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv
 # all LT, RG, DW summmaries together and total plot stock bze3
 BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 # living trees summary
-BZE3_LT_summary <- BZE3_summary %>% filter(stand_component == "LT")# read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+BZE3_LT_summary <- BZE3_summary %>% filter(stand_component == "LT") %>% # read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
+  select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
 # regeneration
 # this dataset contains single plant data of regeneration inventory of BZE3
 BZE3_RG <-  read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
@@ -51,7 +52,7 @@ HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")
 HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 # living trees summary
 HBI_LT_summary <-  HBI_summary %>% filter(stand_component == "LT") %>%  #read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
-  select(c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
+  select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
 # regeneration
 # this dataset contains single plant data of regeneration inventory of HBI
 HBI_RG <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
@@ -313,20 +314,26 @@ DW_stock_changes_P <-
                                                                 plot_ID != "all"&
                                                                 dw_sp == "all" &
                                                                 dw_type == "all" & 
-                                                                  decay == "all" , 0, .x)) ) %>% 
+                                                                  decay == "all" , 0, .x)) )
+
   # this is to replace NA for missing average values. Average values were calcualted for the following groups: 
   # everything != "all" excecpt decay == "all" 
   # everything ! = "all" except dw_type == "all"
   # Everything != "all" except dw_sp == "all"
-  # https://stackoverflow.com/questions/69560076/r-applying-condition-across-multiple-columns-ignoring-na
-  # !!! this doensnt work
-  mutate(across(contains("mean") | contains("sd") , ~ifelse(is.na(.x) & if_any(c("plot_ID", "dw_sp", "dw_type", "decay", "compartiment", "ST_LY_type" ), ~ . %in% "all"), 
-                                                             0, .x)) ) %>%
-  # mutate(across(contains("mean") | contains("sd") , ~ifelse(is.na(.x) & if_all(c("plot_ID", "dw_sp", "dw_type", "decay", "compartiment", "ST_LY_type" ), ~ x == x.), 
-  # #                                                           0, .x)) ) %>%
-  # mutate(across(contains("mean") | contains("sd") , ~ifelse(is.na(.x) & across(c("plot_ID", "dw_sp", "dw_type", "decay", "compartiment", "ST_LY_type" ), ~`==`(.x, x)), 
-  #                                                           0, .x)) ) %>%
-  arrange(plot_ID, dw_sp, dw_type, ST_LY_type, decay)
+  # https://stackoverflow.com/questions/69560076/r-applying-condition-across-multiple-columns-ignoring-na -->  !!! this doensnt work
+ DW_stock_changes_P <- 
+  DW_stock_changes_P %>% 
+   # https://stackoverflow.com/questions/24015557/count-occurrences-of-value-in-a-set-of-variables-in-r-per-row
+   mutate(all_count = apply(DW_stock_changes_P[, c("plot_ID", 
+                                                   "dw_sp", 
+                                                   "dw_type", 
+                                                   "decay" )], 1, function(x) length(which(x=="all"))) >= 2) %>% 
+   mutate(across(contains("mean") | contains("sd") , ~ifelse(is.na(.x) & (apply(DW_stock_changes_P[, c("plot_ID", 
+                                                                                                       "dw_sp", 
+                                                                                                       "dw_type", 
+                                                                                                       "decay" )], 1, function(x) length(which(x=="all"))) >= 2) == T, 
+                                                              0, .x)) ) %>%
+   arrange(plot_ID, dw_sp, dw_type, ST_LY_type, decay)
 
 
 
