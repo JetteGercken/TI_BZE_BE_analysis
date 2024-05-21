@@ -46,25 +46,25 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # 0.3 import data ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # livign trees
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ";", dec = ",")
-LT_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ";", dec = ",") %>% select(-X)
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".")
+LT_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
 
 # regeneration 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")), sep = ";", dec = ",")
-RG_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ";", dec = ",")
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
+RG_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
 
 # deadwood
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ";", dec = ",")
-DW_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ";", dec = ",")
+DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+DW_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",")
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ".")
 
 # bark and fruit types
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_modified.csv"), sep = ";", dec = ",")
-fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.csv"), sep = ";", dec = ",")
+bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
+fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
 
 
 
@@ -538,7 +538,7 @@ FSI_df<- FSI_df %>%
 
 
 # 2. export data -----------------------------------------------------------------------------------------------------------------------------------------------------
-write.csv2(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI", ".csv")))
+write.csv(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI", ".csv")), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

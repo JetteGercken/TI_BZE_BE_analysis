@@ -1,4 +1,4 @@
-"";"plot_ID";"team";"date";"stand_spec";"stand_type";"structure";"hbi_status";"inv_year";"inv";"CCS_r_m";"CCS_LT_inv_status"
-"1";140011;"Matthias Stade,  Alexander Griesbach";1970-01-01;-9;-9;-9;1;1970;"warning";5,64;3
-"2";140011;"Matthias Stade,  Alexander Griesbach";1970-01-01;-9;-9;-9;1;1970;"warning";12,62;3
-"3";140011;"Matthias Stade,  Alexander Griesbach";1970-01-01;-9;-9;-9;1;1970;"warning";17,84;3
+"plot_ID","team","date","stand_spec","stand_type","structure","hbi_status","inv_year","inv","CCS_r_m","CCS_LT_inv_status"
+140011,"Matthias Stade,  Alexander Griesbach",1970-01-01,-9,-9,-9,1,1970,"warning",5.64,3
+140011,"Matthias Stade,  Alexander Griesbach",1970-01-01,-9,-9,-9,1,1970,"warning",12.62,3
+140011,"Matthias Stade,  Alexander Griesbach",1970-01-01,-9,-9,-9,1,1970,"warning",17.84,3

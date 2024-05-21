@@ -171,7 +171,10 @@ N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" ,
 
 # 0.4.3. import species names dataest x_bart ------------------------------
 # species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ";", dec = ".", 
+                                    encoding = "UTF-8", 
+                                    stringsAsFactors=FALSE
+                                    ) 
 # the join always works like this: 
 # left_join(., SP_names_com_ID_tapeS %>% 
 #             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
@@ -195,7 +198,7 @@ tibble_with_lists_to_csv <- function(tibble_object, file_path_name) {
     if(class(x) == 'list') { y <- paste(unlist(x[1]), sep='', collapse=', ') } else { y <- x  } 
     return(y) }
   new_frame <- data.frame(lapply(tibble_object, set_lists_to_chars), stringsAsFactors = F)
-  write.csv2(new_frame, file=file_path_name)
+  write.csv(new_frame, file=file_path_name, row.names = FALSE)
 }
 
 # this function will enable to run a greorefferenced version of a script or not

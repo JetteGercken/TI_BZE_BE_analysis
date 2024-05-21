@@ -17,11 +17,11 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_3.csv")), sep = ";", dec = ",") 
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_3.csv")), sep = ",", dec = ".") 
 
 
 # 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) 
+trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) %>% distinct()
 
 
 # 1. calculations ---------------------------------------------------------
@@ -206,7 +206,8 @@ trees_update_4 <- trees_data %>% anti_join(., trees_data %>%
 
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
-write.csv2(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_update_4", sep = "_"), ".csv"))
-write.csv2(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"))
+write.csv(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
+stop("this is where stock calculation of BTE3 ends")

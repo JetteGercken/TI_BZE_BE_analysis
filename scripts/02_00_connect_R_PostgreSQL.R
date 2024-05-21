@@ -89,7 +89,7 @@ for (i in 1:length(code_table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
-  write.csv2(df, paste0(here("data/raw/general"), "/", my.table.name, ".csv"))
+  write.csv(df, paste0(here("data/raw/general"), "/", my.table.name, ".csv"), row.names = FALSE)
 }
 # 2.1.2. copy code files from raw data general to input general fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # copy everything imported from database from raw folder to input folder
@@ -121,7 +121,7 @@ for (i in 1:length(data_table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe 
-  write.csv2(df, paste0(here("data/input/BZE2_HBI"), "/", my.table.name, ".csv"))
+  write.csv(df, paste0(here("data/input/BZE2_HBI"), "/", my.table.name, ".csv"), row.names = FALSE)
   
 }
 # 2.2.2. copy data files from raw data bze2 to input bze2 fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ for (i in 1:length(table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe 
-  write.csv2(df, paste0(here("data/input/BZE3"), "/", my.table.name, ".csv"))
+  write.csv(df, paste0(here("data/input/BZE3"), "/", my.table.name, ".csv"), row.names = FALSE)
 
 }
 # 2.3.2. copy data files from raw data bze3 to input bze3 fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

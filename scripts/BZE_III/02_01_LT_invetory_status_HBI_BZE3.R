@@ -19,9 +19,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # after they have been sorted into stands according to the forest edge data in script "01_forest_edges_HBI.R" or "01_forest_edges_BZE3.R" and 
 # have been filtered for the plot inventory status in "01_00_RG_LT_DW_inventory_plot_status_HBI"
-HBI_trees <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_1.csv")), sep = ";", dec = ",")
+HBI_trees <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_1.csv")), sep = ",", dec = ".")
 
-BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3,"BZE3_LT_update_1.csv")), sep = ";", dec = ",")
+BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3,"BZE3_LT_update_1.csv")), sep = ",", dec = ".")
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 # complete pre inventory dataset
@@ -674,10 +674,14 @@ BZE3_trees_removed <- if(exists('tree_type_status_6')) {plyr::rbind.fill(BZE3_tr
   }else{BZE3_trees %>% filter(!(tree_inventory_status %in% c(0, 1)))}
 
 
-write.csv2(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"))
-write.csv2(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "removed", "2", sep = "_"), ".csv"))
-write.csv2(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "update","2", sep = "_"), ".csv"))
-write.csv2(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "removed","2", sep = "_"), ".csv"))
+
+
+
+# export data -------------------------------------------------------------
+write.csv(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "removed", "2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "update","2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "removed","2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

@@ -19,7 +19,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_update_2.csv")), sep = ";", dec = ",")
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_update_2.csv")), sep = ",", dec = ".")
 
 
 # 1. calculations ---------------------------------------------------------
@@ -200,8 +200,8 @@ RG_update_4 <- RG_data %>% anti_join(., RG_data %>% filter(B_kg_tree <0) %>% sel
 RG_removed_4 <- RG_data %>% semi_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
 
 # HBI dataset including estimated heights 
-write.csv2(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"))
-write.csv2(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"))
+write.csv(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 stop("notes and biomass comparisson of BZE3 RG stocks starts here")
 

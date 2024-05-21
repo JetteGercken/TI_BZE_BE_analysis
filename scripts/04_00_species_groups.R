@@ -21,7 +21,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
-SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",") %>% 
+SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",", encoding = "latin1") %>% 
   select(- c(anmerkung, beginn, ende)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
   unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
@@ -415,7 +415,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 
          
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
-write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv")
+write.csv2(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv", row.names = FALSE)#, fileEncoding = "UTF-8")
 
 
 

@@ -19,12 +19,11 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_0.csv")), sep = ";", dec = ",")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_0.csv")), sep = ",", dec = ".")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  "HBI", ".csv")), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
-forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ";", dec = ",")
-
+forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
@@ -643,7 +642,7 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 1
+  # i = 18
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -675,7 +674,7 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
   
-
+  
   # tree data to identify edge without trees
   outer.trees.df <- trees_data[trees_data$plot_ID == my.plot.id, ]
   my.tree.id <- outer.trees.df["tree_ID"]
@@ -831,16 +830,16 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     select(plot_ID, e_ID, inv_year, CCS_r_m ,inter_stat, area_m2,stand)
   
   
-  # print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
-  #           plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
-  #           plot(remaining.circle.poly.12$geometry, add = T),
-  #           plot(remaining.circle.poly.5$geometry, add = T),
-  #           plot(inter.poly.17$geometry, col = "green", add =TRUE),
-  #           plot(circle.pt$geometry, col = "red",  add = TRUE),
-  #           legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type), 
-  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
-  #                  col=c("green", "grey"), lty=1:2, cex=0.8),
-  #           plot(st_geometry(tree.sf), add = TRUE)))
+  print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
+            plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
+            plot(remaining.circle.poly.12$geometry, add = T),
+            plot(remaining.circle.poly.5$geometry, add = T),
+            plot(inter.poly.17$geometry, col = "green", add =TRUE),
+            plot(circle.pt$geometry, col = "red",  add = TRUE),
+            legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type), 
+                                       paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+                   col=c("green", "grey"), lty=1:2, cex=0.8),
+            plot(st_geometry(tree.sf), add = TRUE)))
   
   
   # list with inter and remaining circle areas areas
@@ -965,9 +964,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   my.e.form.2 <- my.plot.polys.df$e_form[2]
   
   # print edges and circle
-   # print(c(plot(circle.17$geometry, col = "grey"),
-   #       plot(my.poly.1$geometry, col = "blue", add = T),
-   #       plot(my.poly.2$geometry, col = "red", add = T)))
+  # print(c(plot(circle.17$geometry, col = "grey"),
+  #       plot(my.poly.1$geometry, col = "blue", add = T),
+  #       plot(my.poly.2$geometry, col = "red", add = T)))
   
   #### intersections between polygones and circles   
   ### 17m circle 
@@ -2055,21 +2054,21 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
-write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"))
-if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))}
+write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
+if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
-write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"))
+write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
+write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"), row.names = FALSE)
 
 # export list of plots where the both edge polygones intersect within the 17.84 radius
-write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
+write.csv(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"), row.names = FALSE)
 
 # exporting edge triangle polygones
-write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+write.csv(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"), row.names = FALSE)
 # exporting edge triangle coordiantes
-write.csv2(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"))
+write.csv(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 
 # exporting edge intersection polygones 
@@ -2101,7 +2100,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
+write.csv(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 
 
@@ -2124,10 +2123,7 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
-
-
-
+write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 

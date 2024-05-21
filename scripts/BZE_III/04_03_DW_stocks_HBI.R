@@ -14,13 +14,13 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
-DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"HBI_DW_update_1.csv")), sep = ";", dec = ",")
+DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"HBI_DW_update_1.csv")), sep = ",", dec = ".")
 
 
 # HBI forest type info per plot  (Bestandestyp)
 # this i deed to later say "if the stocking species are mainly coniferous i need this secies group from tapeS
 # and if th estocking species fall in the category broadleafes the other tapes species code"
-forest_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",", stringsAsFactors=FALSE)
+forest_info <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
 
 # 0.4 dataprep  -----------------------------------------------------------
 
@@ -368,8 +368,8 @@ DW_data_update_4 <- DW_data %>% anti_join(., DW_data %>% filter(B_kg_tree <0 | i
 DW_removed_4 <- DW_data %>% semi_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
 
 
-write.csv2(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"))
-write.csv2(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"))
+write.csv(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

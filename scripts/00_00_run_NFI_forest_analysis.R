@@ -143,11 +143,13 @@ source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_BZE3.R"))
 
 
 ##### growth & changes -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-# LT growth HBI & BZE3 together
-source(paste0(here(), "/scripts/BZE_III/07_01_LT_growth_HBI_BZE3.R"))
+# LT, RG, DW growth HBI & BZE3 together
+source(paste0(here(), "/scripts/BZE_III/07_01_LT_RG_DW_growth_HBI_BZE3.R"))
 
-
+# extraced wood mass
+source(paste0(here(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R"))
+ 
 
 ##### optional: Plausibility -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-source(paste0(here(), "/scripts/BZE_III/07_00_RG_LT_DW_stock_plausi.R"))
+source(paste0(here(), "/scripts/BZE_III/09_00_RG_LT_DW_stock_plausi.R"))
 

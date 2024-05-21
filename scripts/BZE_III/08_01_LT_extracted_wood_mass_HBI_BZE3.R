@@ -13,10 +13,10 @@ getwd()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 # 0.3. data import --------------------------------------------------------
 # tree data
-BZE3_trees_removed <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_removed_2.csv"), sep = ";", dec = ",")
-HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_3.csv"), sep = ";", dec = ",")
+BZE3_trees_removed <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_removed_2.csv"), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_3.csv"), sep = ",", dec = ".")
 # growth
-growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_dbh_growth.csv"), sep = ";", dec = ",")
+growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_dbh_growth.csv"), sep = ",", dec = ".")
 
 
 # 1. calculations --------------------------------------------------------------------------------------
@@ -275,7 +275,7 @@ trees_harvested <- trees_harvested %>% mutate(C_kg_tree = carbon(B_kg_tree))
 # data export ---------------------------------------------------------------------------------------------
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
-write.csv2(trees_harvested, paste0(out.path.BZE3, paste(unique(trees_harvested$inv)[1], unique(BZE3_trees_removed$inv)[1], "LT_stock_removed", sep = "_"), ".csv"))
+write.csv(trees_harvested, paste0(out.path.BZE3, paste(unique(trees_harvested$inv)[1], unique(BZE3_trees_removed$inv)[1], "LT_stock_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

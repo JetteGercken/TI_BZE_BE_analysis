@@ -206,8 +206,8 @@ fruit_div <-
 
 
 # 2. export data --------------------------------------------------------
-write.csv2(fruit_div, paste0("data/input/general/", paste0("fruitdiv_FSI_modified", ".csv")))
-write.csv2(bark_div, paste0("data/input/general/", paste0("barkdiv_FSI_modified", ".csv")))
+write.csv(fruit_div, paste0("data/input/general/", paste0("fruitdiv_FSI_modified", ".csv")), row.names = FALSE)
+write.csv(bark_div, paste0("data/input/general/", paste0("barkdiv_FSI_modified", ".csv")), row.names = FALSE)
 
 
 

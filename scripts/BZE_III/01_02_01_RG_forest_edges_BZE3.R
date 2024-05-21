@@ -17,10 +17,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 (BZE2) 
-RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv")), sep = ";", dec = ",") 
+RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv")), sep = ",", dec = ".") 
 
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3 (BZE2), including stand and area info
-RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ";", dec = ",")
+RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ",", dec = ".")
 
 # this dataset contains the BZE3 forest edges info
 forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ",") 
@@ -34,10 +34,10 @@ colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", 
 
 
 # import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ";", dec = ",")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ";", dec = ",")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ";", dec = ",")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ";", dec = ",")
+all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ",", dec = ".")
+all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ",", dec = ".")
+all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ",", dec = ".")
+all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ",", dec = ".")
 
 
 
@@ -46,6 +46,7 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
                           y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
                           r0 = c(5.64, 12.62, 17.84), # darius in m
                           rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
+
 
 # 0.4 data prep: harmonise strings, assign columnnames etc. ---------------------------------------------------------------------
 # calcualte edge data: cooridnates of edges and intersection stati of the edge lines
@@ -95,7 +96,8 @@ forest_edges <- forest_edges %>%
 # 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
 RG_loc <- RG_loc %>% 
-  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", multiple = "all") %>% 
+  # relationship = "many-to-many" because there are multiple edges per plot in forest edges but also multiple CCS in RG loc
+  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", relationship = "many-to-many") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -107,7 +109,6 @@ RG_loc <- RG_loc %>%
                              TRUE ~ NA), 
          # if the max distance of the last plant in the RG CCS is not measured we assume it´s 5m or 500cm
          CCS_max_dist_cm = ifelse(CCS_max_dist_cm == -9 | is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
-
 
 
 
@@ -142,7 +143,7 @@ RG_one_edge <- RG_loc %>%
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge.list <- vector("list", length = nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
-  # i = 28
+  # i = 1 28
   # i = which(grepl(140187, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   
@@ -221,12 +222,12 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
   # since we´d have to find a way to first export and then mport and convert multipolygones 
   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
-   rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
-                                   , x = "X"
-                                   , y = "Y"
-                                   , keep = TRUE)
-   rem.circle.17 <- sf::st_buffer(rem.circle.17, 0)
-   
+  rem.circle.17 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
+                                         , x = "X"
+                                         , y = "Y"
+                                         , keep = TRUE)
+  rem.circle.17 <- sf::st_buffer(rem.circle.17, 0)
+  
   ## check for intersections
   # with edge-intersection-polygon
   intersection.with.edge <- sf::st_intersection(my.rg.ccs.poly, edge.poly)
@@ -398,12 +399,14 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
                                        , keep = TRUE)
   edge.poly.1 <- sf::st_buffer(edge.poly.1, 0)
   
+  
   # create polygone of edge 2 triangle
   edge.poly.2 <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id.2) 
                                        , x = "X"
                                        , y = "Y"
                                        , keep = TRUE)
   edge.poly.2 <- sf::st_buffer(edge.poly.2, 0)
+  
   # ## create polygon of remaining circle after circle-edge.1 intersection
   # circle.edge.1.inter <- sf::st_intersection(edge.poly.1, st_geometry(circle.17))
   # # if there is no intersection between the edge and the cirlce, 
@@ -430,9 +433,10 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   # since we´d have to find a way to first export and then mport and convert multipolygones 
   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
   rem.circle.17.2 <- sfheaders::sf_polygon(obj = all_rem_circles_coords %>% filter(plot_ID == my.plot.id) 
-                                         , x = "X"
-                                         , y = "Y"
-                                         , keep = TRUE)
+                                           , x = "X"
+                                           , y = "Y"
+                                           , keep = TRUE)
+  # set buffer to avoid problems with polygones import: https://stackoverflow.com/questions/66584191/sfst-intersection-virtually-random-error-action
   rem.circle.17.2 <- sf::st_buffer(rem.circle.17.2, 0)
   
   ## check for intersections
@@ -537,19 +541,16 @@ if(exists('RG_all_edges_stands_areas') && nrow(RG_all_edges_stands_areas) != 0){
 ## join in stand and plot area data in RG_data set   
 RG_data_update_2 <- RG_data %>% 
   left_join(.,RG_loc_update_2 %>% 
-              select(plot_ID, CCS_nr, stand, area_m2),
+              select(plot_ID, CCS_nr, stand, area_m2) %>% 
+              distinct(),
             by = c("plot_ID", "CCS_nr"), 
             multiple = "all") %>% 
   arrange(plot_ID, CCS_nr, tree_ID)
 
 
-
 # 3.2. export  ------------------------------------------------------------
-write.csv2(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
-write.csv2(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
-
-
-
+write.csv(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 stop("that´s were the notes of RG_forest_edges BZE3 start")

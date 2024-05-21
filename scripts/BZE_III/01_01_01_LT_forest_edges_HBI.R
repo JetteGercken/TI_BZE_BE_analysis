@@ -19,11 +19,11 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ";", dec = ",")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ",", dec = ".")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
-forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ";", dec = ",")
+forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
@@ -2055,21 +2055,21 @@ all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.c
 
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
-write.csv2(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"))
-if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"))}
+write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
+if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
-write.csv2(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"))
+write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv2(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"))
+write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"), row.names = FALSE)
 
 # export list of plots where the both edge polygones intersect within the 17.84 radius
-write.csv2(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"))
+write.csv(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"), row.names = FALSE)
 
 # exporting edge triangle polygones
-write.csv2(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"))
+write.csv(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"), row.names = FALSE)
 # exporting edge triangle coordiantes
-write.csv2(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"))
+write.csv(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 
 # exporting edge intersection polygones 
@@ -2101,7 +2101,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"))
+write.csv(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 
 
@@ -2124,7 +2124,7 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv2(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"))
+write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 
@@ -2213,7 +2213,7 @@ mutate(id_func = row_number()) %>%
 
 
 # ecport treees and edges dataset  ----------------------------------------
-write.csv2(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"))
+write.csv(trees_and_edges, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_edges", sep = "_"), ".csv"), row.names = FALSE)
 
 
 # ----- 2.1.   Living trees visualization forest edges -----------------------------------
