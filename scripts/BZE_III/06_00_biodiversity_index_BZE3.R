@@ -63,8 +63,6 @@ DW_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW
 DW_summary <- all_summary %>% filter(stand_component == "DW") %>% select(-c(stand, SP_code, BA_m2_ha, BA_percent, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m))
 DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
 
-# species groups 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ".")
 
 # bark and fruit types
 bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
@@ -401,7 +399,8 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 FSI_df <- FSI_df %>% 
   left_join(., DW_summary %>% 
               filter(plot_ID != "all" & decay == "all" & dw_type == "all" & dw_sp == "all") %>% 
-              select(plot_ID, n_dec) %>% 
+              select(plot_ID, n_dec) %>%
+              mutate(plot_ID= as.integer(plot_ID)) %>% 
               # this is in case there are plots like 50145 whitout deadwood 
               mutate(n_dec = ifelse(is.na(n_dec), 0, n_dec)) %>% 
               distinct() %>% 
@@ -555,9 +554,6 @@ FSI_df<- FSI_df %>%
 
 # 2. export data -----------------------------------------------------------------------------------------------------------------------------------------------------
 write.csv(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI",  ".csv")), row.names = FALSE, fileEncoding = "UTF-8")
-
-
-
 
 
 
