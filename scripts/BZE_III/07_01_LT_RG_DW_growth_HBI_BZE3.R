@@ -104,7 +104,7 @@ dbh_growth_tree <- left_join(
        HBI_inv_year = ifelse(is.na(HBI_inv_year), 2012, HBI_inv_year)) %>% 
   mutate(DBH_growth_cm = BZE3_DBH_cm - HBI_DBH_cm, 
          age_period = BZE3_inv_year- HBI_inv_year, 
-         annual_growth_cm = DBH_growth_cm/age_period)
+         annual_growth_cm = DBH_growth_cm/age_period) 
 
 # 1.2. grouping growth ------------------------------------------------------------------
 dbh_growth_summary <- plyr::rbind.fill(
@@ -141,7 +141,7 @@ summarize_data(dbh_growth_tree,
                operation = "mean_df")%>% 
   mutate(C_layer = "all", 
          stand = "all", 
-         SP_code = "all"))  
+         SP_code = "all"))
 
 
 # 1.3. changes in BA composition -------------------------------------------
@@ -177,6 +177,7 @@ BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
          stand = "all", 
          C_layer = "all") 
   
+
 
 
 # 1.4. changes in stocks per ha --------------------------------------------
@@ -228,7 +229,6 @@ trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_co
 
 
 # binding all LT growth datasets together ---------------------------------
-
 LT_changes <- dbh_growth_summary %>% 
   left_join(., 
             trees_stock_changes_P %>% 
@@ -241,7 +241,7 @@ LT_changes <- dbh_growth_summary %>%
               mutate(across(c("plot_ID"), as.character)), 
             by = c("plot_ID", "stand", "SP_code", "C_layer") ) %>% 
   mutate(stand_component = "LT") %>%
-  select(plot_ID, stand, stand_type, C_layer, SP_code, compartiment, age_period, annual_growth_cm, contains("diff"))%>% 
+  select(stand_component, plot_ID, stand, stand_type, C_layer, SP_code, compartiment, age_period, annual_growth_cm, contains("diff"))%>% 
   arrange(plot_ID)
 
 
@@ -342,7 +342,7 @@ DW_stock_changes_P <-
 pre_vars <- grep("_HBI", colnames(DW_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(DW_stock_changes_P), value=TRUE)
 DW_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- DW_stock_changes_P[, post_vars] - DW_stock_changes_P[, pre_vars]
-DW_stock_changes_P <- DW_stock_changes_P %>% arrange(plot_ID, inv, dw_sp, dw_type, ST_LY_type, decay, compartiment)
+DW_stock_changes_P <- DW_stock_changes_P %>% arrange(plot_ID, dw_sp, dw_type, ST_LY_type, decay, compartiment)
 
 DW_changes <- DW_stock_changes_P %>% select(stand_component, plot_ID, dw_sp, dw_type, ST_LY_type, decay, compartiment, contains("diff"))
 
@@ -427,8 +427,7 @@ FSI_changes_P <-
 pre_vars <- grep("_HBI", colnames(FSI_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(FSI_changes_P), value=TRUE)
 FSI_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- FSI_changes_P[, post_vars] - FSI_changes_P[, pre_vars]
-FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>% 
-  mutate(stand_component == "all")
+FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>% mutate(stand_component = "all")
 
 
 
@@ -443,9 +442,9 @@ FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>%
 write.csv(LT_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(RG_changes, paste0(out.path.BZE3, paste(HBI_RG$inv[1], BZE3_RG$inv[1], "RG_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_changes, paste0(out.path.BZE3, paste(HBI_DW$inv[1], BZE3_DW$inv[1], "DW_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(LT_RG_DW_P_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1],, "LT_RG_DW_changes_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_RG_DW_P_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_RG_DW_changes_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
-write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1],, "FSI_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "FSI_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

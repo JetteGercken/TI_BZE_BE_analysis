@@ -16,7 +16,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 BZE3_trees_removed <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_removed_2.csv"), sep = ",", dec = ".")
 HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_3.csv"), sep = ",", dec = ".")
 # growth
-growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_dbh_growth.csv"), sep = ",", dec = ".")
+growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_RG_DW_changes_all_groups.csv"), sep = ",", dec = ".") %>% 
+  filter(stand_component == "LT") %>% 
+  select(stand_component, plot_ID, stand, stand_type, C_layer, SP_code, age_period ,annual_growth_cm) %>% distinct()
+  
 
 
 # 1. calculations --------------------------------------------------------------------------------------
@@ -25,7 +28,8 @@ growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_dbh_g
 trees_harvested <- HBI_trees %>% 
   semi_join(., BZE3_trees_removed %>% 
               filter(tree_inventory_status == 2), # filter for trees in HBI which have the same plot_ID and tree_ID of those marked 2 in BZE3
-            by = c("plot_ID", "tree_ID"))
+            by = c("plot_ID", "tree_ID")) %>% 
+  distinct()
 
 
 # 1.2. add 4 times diameter growth to the diameter of the trees removed between HBI and BZE3 --------
@@ -37,7 +41,7 @@ trees_harvested <- HBI_trees %>%
 # prepare dataset for DBH at middle of harvesting period 
 dbh_incl_growth.list <- vector("list", length = length(unique(trees_harvested$tree_ID)))
 for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
-  # i = 1
+  # i = 57
   my.inv <- trees_harvested[, "inv"][i]
   my.plot.id <- trees_harvested[, "plot_ID"][i]
   my.tree.id <- trees_harvested[, "tree_ID"][i]
@@ -50,7 +54,7 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
   growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &
                                          growth$stand == my.stand & 
                                          growth$C_layer == my.c.layer & 
-                                         growth$SP_code == "my.sp"]
+                                         growth$SP_code == my.sp]
   
   # if we can´t find growth for the trees species, plot, stand and canopy layer
   # look for annual diameter growth in cm in the plot, stand and species of my.tree
@@ -66,15 +70,15 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
     growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &
                                            growth$stand == "all" & 
                                            growth$C_layer == "all" & 
-                                           growth$SP_code == "my.sp"]}
+                                           growth$SP_code == my.sp]}
   
   # if we can´t find growth for the trees species, plot 
   # look for annual diameter growth in cm in the species group of my.tree
   if(length(growth.cm) == 0){
-    growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &
+    growth.cm <- growth$annual_growth_cm[growth$plot_ID == "all" &
                                            growth$stand == "all" & 
                                            growth$C_layer == "all" & 
-                                           growth$SP_code == "my.sp"] }
+                                           growth$SP_code == my.sp] }
   
   # add annual diameter growth times 4 to DBH of the tree 
   # (for 4 years, Mittlereumtriebszeit = represent the middle of the period between BZE3 and HBI)
@@ -225,12 +229,15 @@ bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
 # 1.1.4. join biomass into tree dataset -----------------------------------
 
-trees_harvested <- trees_harvested %>% left_join(., 
-                                       rbind(bio_ag_kg_df , 
-                                             bio_bg_kg_df, 
-                                             bio_total_kg_df), 
-                                       by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
-                                       multiple = "all") 
+trees_harvested <- trees_harvested %>% distinct() %>% 
+  left_join(., 
+            rbind(bio_ag_kg_df , 
+                  bio_bg_kg_df, 
+                  bio_total_kg_df) %>% 
+              distinct(), 
+            by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
+            multiple = "all") 
+
 
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
@@ -273,11 +280,9 @@ trees_harvested <- trees_harvested %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 # data export ---------------------------------------------------------------------------------------------
-
-# HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
 write.csv(trees_harvested, paste0(out.path.BZE3, paste(unique(trees_harvested$inv)[1], unique(BZE3_trees_removed$inv)[1], "LT_stock_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
-
+stop("this is where 08_01 script for harvested tree stocks ends")
 
 

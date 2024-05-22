@@ -21,19 +21,19 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # livgn trees
 # this dataset contains the data of the tree inventory of the BZE3, including stand and area info,  species groups and B, C, N stocks per tree 
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")),  sep = ",", dec = ".") %>% 
+trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")),  sep = ",", dec = ".")
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")),  sep = ",", dec = ".")%>% 
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")),sep = ",", dec = ".")
+RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 # deadwood
 # this dataset contains the data of the deadwood inventory of the HBI (BZE2), including info about species groups and B, C, N stocks per tree 
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")),  sep = ",", dec = ".")
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")),  sep = ",", dec = ".")%>% 
+DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 
@@ -449,7 +449,6 @@ LT_summary <- plyr::rbind.fill(LT_SP_ST_P,
 # to get the stand , species & plotwise  wise summarised data one has to filter for: 
 # plot_ID != "all" & SP_code != "all" & stand != "all"
 
-
 # 2. REGENERATION ---------------------------------------------------------
 # 2.1. plot area - sum off all sampling circuits ---------------------------
 # if there are plots that are labelled empty but have to included in the eare calcualtion 
@@ -534,8 +533,11 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 }
 
 
-# 2.4.2. RG summary by plot and species, without grouping by stand ---------------------------------------------------------
+## RG big summary final
 RG_summary <- plyr::rbind.fill(
+  # RG summray by plot, species, stand 
+  RG_SP_ST_BCN_ha, 
+  # 2.4.2. RG big summary by plot and species, without grouping by stand ---------------------------------------------------------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "SP_code"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
@@ -735,52 +737,50 @@ DW_summary <-
 
 
 # 4. creating dataset with all stand components ---------------------------
-LT_RG_DW_P <- rbind(
-  # plotwise summar yof tree dataset
-  LT_P %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-  RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-  DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% 
-    # as there is no bg and total compartiment, this filter will only select ag compartiments
-    filter(compartiment %in% c("ag", "bg", "total")),
-  # take all "ag" compartiments of DW and assign them to the compartiment "total" as well, so we can create a row of total stocks for all stand components
-  DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total"),
-  # total plot data over all stand components
-) %>% 
-  arrange(plot_ID) 
+# LT_RG_DW_P <- rbind(
+#   # plotwise summar yof tree dataset
+#   LT_P %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+#   RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+#   DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% 
+#     # as there is no bg and total compartiment, this filter will only select ag compartiments
+#     filter(compartiment %in% c("ag", "bg", "total")),
+#   # take all "ag" compartiments of DW and assign them to the compartiment "total" as well, so we can create a row of total stocks for all stand components
+#   DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total"),
+#   # total plot data over all stand components
+# ) %>% 
+#   arrange(plot_ID) 
 
 LT_RG_DW_P <- 
   plyr::rbind.fill(
-    #deadwood summary all group combination possible  
-    LT_summary %>% select(-c(dom_SP, stand_type, n_stands))
-    #regeneration summary all group combination possible  
-    ,RG_summary
-    #deadwood summary all group combination possible  
-    ,DW_summary,
-    # dataset with all stand compnents, stand and species combined
-    (rbind(LT_P %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-           RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-           DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
-           DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total")
-    ) %>% 
-      arrange(plot_ID)%>% 
-      group_by(plot_ID, inv, compartiment) %>% 
-      summarise(B_t_ha = sum(B_t_ha),
-                C_t_ha = sum(C_t_ha),
-                N_t_ha = sum(N_t_ha)) %>% 
-      mutate(stand_component = "all", 
-             stand = "all", 
-             SP_code = "all"))
-  ) %>%  
-  left_join(., LT_stand_TY_P %>% 
-              select(-stand_component) %>% 
-              mutate_at(c('inv', 'plot_ID'), as.character),
-            by = c("plot_ID", "inv")) %>% 
+    plyr::rbind.fill(
+      #living tree summary all group combination possible , without stocks grouped by stand type tho
+      LT_summary %>% filter(plot_ID != "all") %>% select(-c(dom_SP, stand_type, n_stands))
+      #regeneration summary all group combination possible  
+      ,RG_summary
+      #deadwood summary all group combination possible  
+      ,DW_summary,
+      # dataset with all stand compnents, stand and species combined
+      # select only tree plots with plot_ID, not stand type summaries
+      (rbind(LT_summary %>% filter(plot_ID != "all" & stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
+             RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
+             DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")) 
+      ) %>% 
+        arrange(plot_ID)%>% 
+        group_by(plot_ID, inv, compartiment) %>% 
+        summarise(B_t_ha = sum(B_t_ha),
+                  C_t_ha = sum(C_t_ha),
+                  N_t_ha = sum(N_t_ha)) %>% 
+        mutate(stand_component = "all", 
+               stand = "all", 
+               SP_code = "all"))
+    )%>%  
+      left_join(., LT_stand_TY_P %>% 
+                  select(-stand_component) %>% 
+                  mutate_at(c('inv', 'plot_ID'), as.character),
+                by = c("plot_ID", "inv")),
+    # add standtype wise dataset
+    LT_summary %>% filter(plot_ID == "all")) %>%
   arrange(plot_ID)
-
-
-
-
-
 
 
 # 4. data export ----------------------------------------------------------
