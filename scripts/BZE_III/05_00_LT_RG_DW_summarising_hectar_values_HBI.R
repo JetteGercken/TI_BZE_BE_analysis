@@ -75,7 +75,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                              BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
                                              n_trees_CCS_ha = n()/plot_A_ha) %>% 
                                      distinct(), 
-                                   trees_stat_2) %>% 
+                                   trees_stat_2 %>% 
+                                     # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
+                                     filter(!is.na(plot_ID)) ) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv, compartiment) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
@@ -119,7 +121,9 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                      BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
                                                      n_trees_CCS_ha = n()/plot_A_ha) %>% 
                                              distinct(), 
-                                           trees_stat_2) %>% 
+                                           trees_stat_2 %>% 
+                                             # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
+                                             filter(!is.na(plot_ID))) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
@@ -364,7 +368,7 @@ LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
 # 1.7. binding LT data together -------------------------------------------------------------------------------------------------------
 
-# 1.7.1. LT Species, stand, plot data -------------------------------------------------------------------------------------------------------------
+# 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
 LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>% 
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID'), as.integer),
@@ -456,6 +460,8 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                           select(plot_ID, inv, CCS_nr, plot_A_ha) %>% 
                           distinct(), 
                         RG_stat_2 %>% 
+                          # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
+                          filter(!is.na(plot_ID))  %>% 
                           select(plot_ID, inv, CCS_nr, plot_A_ha)) %>% 
     group_by(plot_ID, inv) %>% 
     summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))}else{
@@ -501,6 +507,8 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
               N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
       distinct() , 
     RG_stat_2 %>% 
+      # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
+      filter(!is.na(plot_ID))  %>% 
       select(plot_ID, CCS_nr, plot_A_ha, inv, compartiment, B_t_ha, C_t_ha, N_t_ha)
   ) %>% 
     arrange(plot_ID) %>% 
@@ -566,7 +574,7 @@ RG_summary <- plyr::rbind.fill(
 # 3. DEADWOOD -------------------------------------------------------------
 # 3.1. DW summary per plot per SP per DW type per Dec state ---------------------------------------------------------
 # create one very fine grouped summary for deadwood which we sum up into different groups later on 
-if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
+if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
   DW_BCN_ha_SP_TY_DEC_P <- plyr::rbind.fill(DW_data %>% 
                                               group_by(plot_ID, inv, dw_sp, dw_type, decay, compartiment) %>% 
                                               # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
@@ -574,7 +582,7 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0){
                                                       C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                                       N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
                                               distinct(), 
-                                            DW_stat_2 %>% select(-c( plot_A_ha))) %>% 
+                                            DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))) %>% 
     mutate(stand_component = "DW")
 }else{
   DW_BCN_ha_SP_TY_DEC_P <- DW_data %>% 

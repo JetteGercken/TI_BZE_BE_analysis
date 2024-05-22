@@ -440,6 +440,12 @@ FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>%
 
 
 # 2. data export ----------------------------------------------------------
-write.csv(LT_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(RG_changes, paste0(out.path.BZE3, paste(HBI_RG$inv[1], BZE3_RG$inv[1], "RG_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(DW_changes, paste0(out.path.BZE3, paste(HBI_DW$inv[1], BZE3_DW$inv[1], "DW_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(RG_changes, paste0(out.path.BZE3, paste(HBI_RG$inv[1], BZE3_RG$inv[1], "RG_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(DW_changes, paste0(out.path.BZE3, paste(HBI_DW$inv[1], BZE3_DW$inv[1], "DW_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_RG_DW_P_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1],, "LT_RG_DW_changes_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
+write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1],, "FSI_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
+
+

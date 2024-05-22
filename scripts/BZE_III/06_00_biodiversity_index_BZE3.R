@@ -45,21 +45,25 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # 0.3 import data ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# all LT, RG, DW summmaries together and total plot stock bze3
+all_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+
 # livign trees
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
-LT_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_update_4.csv")), sep = ",", dec = ".")
+LT_summary <-  all_summary %>% filter(stand_component == "LT") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
+trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
 
 # regeneration 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
-RG_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
+RG_summary <- all_summary %>% filter(stand_component == "RG") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
+RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
 
 # deadwood
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
-DW_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
+DW_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+DW_summary <- all_summary %>% filter(stand_component == "DW") %>% select(-c(stand, SP_code, BA_m2_ha, BA_percent, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m))
+DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
 
+# species groups 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ".")
 
 # bark and fruit types
@@ -86,6 +90,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                              # select only those plots with empty sampling circuits that have all 3 circuits empty
                              # by counting the circuits per plot and filtering for those with n_CCS ==3
                              trees_stat_2 %>% 
+                               filter(!is.na(plot_ID)) %>% 
                                select(plot_ID, CCS_r_m) %>% 
                                distinct()%>% 
                                group_by(plot_ID) %>% 
@@ -165,7 +170,8 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               # bind tree dataset summarized by plot 
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
-                trees_data %>% filter(compartiment == "ag") %>% 
+                trees_data %>% 
+                  filter(compartiment == "ag") %>% 
                   rowwise() %>% 
                   # assign bark type to each tree 
                   mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_spp_subty")) %>% 
@@ -177,6 +183,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
+                  filter(!is.na(plot_ID)) %>% 
                   mutate(inv = inv_name(inv_year)) %>% 
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
@@ -280,6 +287,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
+                  filter(!is.na(plot_ID)) %>% 
                   mutate(inv = inv_name(inv_year)) %>% 
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
@@ -348,6 +356,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
+                  filter(!is.na(plot_ID))%>% 
                   mutate(inv = inv_name(inv_year)) %>% 
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
@@ -426,7 +435,10 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
         summarise(DW_LY_mean_D_cm = mean(na.omit(d_cm))) %>% 
         distinct(), 
       # DW dataset with plot that were inventored but had no deadwood inside
-      DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+      DW_stat_2 %>% 
+        filter(!is.na(plot_ID)) %>% 
+        mutate(inv = inv_name(inv_year)) %>% 
+        select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
     )%>% 
       mutate(DW_LY_mean_D_cm = ifelse(is.na(DW_LY_mean_D_cm), 0, DW_LY_mean_D_cm)) %>% 
       mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
@@ -472,7 +484,11 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
         summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
         distinct(), 
       # DW dataset with plot that were inventored but had no deadwood inside
-      DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+      DW_stat_2 %>% 
+        filter(!is.na(plot_ID))%>% 
+        mutate(inv = inv_name(inv_year)) %>% 
+        select(plot_ID, inv) %>% 
+        distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
     )%>% 
       mutate(DW_ST_mean_D_cm = ifelse(is.na(DW_ST_mean_D_cm), 0, DW_ST_mean_D_cm)) %>% 
       mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 

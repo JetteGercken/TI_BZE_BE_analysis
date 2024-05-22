@@ -45,21 +45,25 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # 0.3 import data ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# all LT, RG, DW summmaries together and total plot stock bze3
+all_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+
 # livign trees
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".")
-LT_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_update_4.csv")), sep = ",", dec = ".")
+LT_summary <-  all_summary %>% filter(stand_component == "LT") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
+trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
 
 # regeneration 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
-RG_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
+RG_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
+RG_summary <- all_summary %>% filter(stand_component == "RG") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
+RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
 
 # deadwood
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
-DW_summary <-  read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
+DW_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+DW_summary <- all_summary %>% filter(stand_component == "DW") %>% select(-c(stand, SP_code, BA_m2_ha, BA_percent, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m))
+DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
 
+# species groups 
 SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ".")
 
 # bark and fruit types
@@ -68,7 +72,7 @@ fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.cs
 
 
 
-     
+
 # 1. calculations -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 1.1. LIVING TREES ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -83,25 +87,26 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                group_by(plot_ID) %>% 
                                reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
                                distinct() , 
-                           # select only those plots with empty sampling circuits that have all 3 circuits empty
-                           # by counting the circuits per plot and filtering for those with n_CCS ==3
-                           trees_stat_2 %>% 
-                             select(plot_ID, CCS_r_m) %>% 
-                             distinct()%>% 
-                             group_by(plot_ID) %>% 
-                             summarise(n_CCS = n()) %>% 
-                             filter(n_CCS == 3) %>% 
-                             select(plot_ID) ) %>% 
-  # if the Rbind caused NAs to appear because there were whole plots without a any tree CCS then we have to set the respective variable to 0
-  mutate(LT_RMS_DBH = ifelse(is.na(LT_RMS_DBH), 0, LT_RMS_DBH)) %>%  
-  mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
+                             # select only those plots with empty sampling circuits that have all 3 circuits empty
+                             # by counting the circuits per plot and filtering for those with n_CCS ==3
+                             trees_stat_2 %>% 
+                               filter(is.na(plot_ID)) %>% 
+                               select(plot_ID, CCS_r_m) %>% 
+                               distinct()%>% 
+                               group_by(plot_ID) %>% 
+                               summarise(n_CCS = n()) %>% 
+                               filter(n_CCS == 3) %>% 
+                               select(plot_ID) ) %>% 
+    # if the Rbind caused NAs to appear because there were whole plots without a any tree CCS then we have to set the respective variable to 0
+    mutate(LT_RMS_DBH = ifelse(is.na(LT_RMS_DBH), 0, LT_RMS_DBH)) %>%  
+    mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
 }else{
   FSI_df <- trees_data %>% 
     group_by(plot_ID) %>% 
     reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
     distinct()%>% 
     mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
-  }
+}
 
 
 
@@ -112,7 +117,7 @@ FSI_df <- FSI_df %>%
               filter(compartiment == "ag" & plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(plot_ID, sd_DBH_cm) %>% 
               distinct() %>% 
-            # this sets the sd_DBH of plots that don´t have trees to 0 
+              # this sets the sd_DBH of plots that don´t have trees to 0 
               mutate(sd_DBH_cm = ifelse(is.na(sd_DBH_cm), 0, sd_DBH_cm)) %>% 
               # calculate FSI
               mutate(LT_FSI_DBH_SD =  as.numeric(FSI(sd_DBH_cm)), 
@@ -165,56 +170,58 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               # bind tree dataset summarized by plot 
               # together with those plots that don´t have trees and thus an FSI and bark TY count of 0
               plyr::rbind.fill(
-                trees_data %>% filter(compartiment == "ag") %>% 
+                trees_data %>%
+                  filter(is.na(plot_ID)) %>% 
+                  filter(compartiment == "ag") %>% 
                   rowwise() %>% 
-     # assign bark type to each tree 
+                  # assign bark type to each tree 
                   mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_spp_subty")) %>% 
                   # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
                   select(plot_ID, inv, bark_TY) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
                   summarise(LT_n_bark_TY = as.numeric(n())),
-    # select only those plots with empty sampling circuits that have all 3 circuits empty
-    # by counting the circuits per plot and filtering for those with n_CCS ==3
-    trees_stat_2 %>% 
-      mutate(inv = inv_name(inv_year)) %>% 
-      select(plot_ID, inv, CCS_r_m) %>% 
-      distinct()%>% 
-      group_by(plot_ID, inv) %>% 
-      summarise(n_CCS = n()) %>% 
-      filter(n_CCS == 3) %>% 
-      select(plot_ID, inv)
-    ) %>% 
-    # correct LT_n_bark_TY if there are non because the plot doesn´t have trees in any of the CCS
-    mutate(LT_n_bark_TY = ifelse(is.na(LT_n_bark_TY), 0, LT_n_bark_TY)) %>%
-      # calculate FSI
-    mutate(LT_FSI_bark_TY = FSI(LT_n_bark_TY)), 
-    by = c("plot_ID"))
+                # select only those plots with empty sampling circuits that have all 3 circuits empty
+                # by counting the circuits per plot and filtering for those with n_CCS ==3
+                trees_stat_2 %>% 
+                  mutate(inv = inv_name(inv_year)) %>% 
+                  select(plot_ID, inv, CCS_r_m) %>% 
+                  distinct()%>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(n_CCS = n()) %>% 
+                  filter(n_CCS == 3) %>% 
+                  select(plot_ID, inv)
+              ) %>% 
+                # correct LT_n_bark_TY if there are non because the plot doesn´t have trees in any of the CCS
+                mutate(LT_n_bark_TY = ifelse(is.na(LT_n_bark_TY), 0, LT_n_bark_TY)) %>%
+                # calculate FSI
+                mutate(LT_FSI_bark_TY = FSI(LT_n_bark_TY)), 
+              by = c("plot_ID"))
   
 }else{
-FSI_df <- FSI_df %>% left_join(., cbind(
-  # dataset with calcualted number of bark types per plot ID 
-  trees_data %>% filter(compartiment == "ag") %>% 
-    rowwise() %>% 
-    # assign bark type to each tree 
-    mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
-    # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
-    select(plot_ID, inv, bark_TY) %>% 
-    distinct() %>% 
-    group_by(plot_ID, inv) %>% 
-    summarise(LT_n_bark_TY = as.numeric(n())), 
-  # calculate FSI of bark diversity     
-  "LT_FSI_bark_TY" = c(FSI(as.numeric((( trees_data %>% filter(compartiment == "ag") %>% 
-                                           rowwise() %>% 
-                                           # assign bark type to each tree 
-                                           mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
-                                           # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
-                                           select(plot_ID, inv, bark_TY) %>% 
-                                           distinct() %>% 
-                                           group_by(plot_ID, inv) %>% 
-                                           summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
-  by = c("plot_ID")) %>% 
-  distinct()
+  FSI_df <- FSI_df %>% left_join(., cbind(
+    # dataset with calcualted number of bark types per plot ID 
+    trees_data %>% filter(compartiment == "ag") %>% 
+      rowwise() %>% 
+      # assign bark type to each tree 
+      mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+      # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
+      select(plot_ID, inv, bark_TY) %>% 
+      distinct() %>% 
+      group_by(plot_ID, inv) %>% 
+      summarise(LT_n_bark_TY = as.numeric(n())), 
+    # calculate FSI of bark diversity     
+    "LT_FSI_bark_TY" = c(FSI(as.numeric((( trees_data %>% filter(compartiment == "ag") %>% 
+                                             rowwise() %>% 
+                                             # assign bark type to each tree 
+                                             mutate(bark_TY = bark_type(DBH_cm, Chr_code_ger, output = "bark_ty_subty")) %>% 
+                                             # unite("bark_TY", c(bark_gen_TY,bark_sub_TY), remove = FALSE) %>%
+                                             select(plot_ID, inv, bark_TY) %>% 
+                                             distinct() %>% 
+                                             group_by(plot_ID, inv) %>% 
+                                             summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
+    by = c("plot_ID")) %>% 
+    distinct()
 }
 
 
@@ -225,7 +232,7 @@ trees_above_DBH_40 <- trees_data %>% filter(compartiment == "ag" & DBH_cm > 40) 
 V_above_DBH_40_list <- vector("list", length = nrow(trees_above_DBH_40))
 for (i in 1:nrow(trees_above_DBH_40)) {
   # i = 1
-
+  
   # basic tree info
   # select one tree ID and plot ID for each individual tree per plot through unique(trees_data[, c("plot_ID", "tree_ID")])
   my.plot.id <- trees_above_DBH_40[i,"plot_ID"]
@@ -280,6 +287,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
+                  filter(is.na(plot_ID)) %>% 
                   mutate(inv = inv_name(inv_year)) %>% 
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
@@ -296,30 +304,30 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   
 }else{
   # calculate FSI of trees with diameter above 40 cm over all plots 
-FSI_df<- 
-  FSI_df %>% 
-  left_join(., 
-            cbind(
-  # dataset with volume of trees over 40cm DBH per plot summed up in m3
-  trees_data %>% 
-    filter(compartiment == "ag") %>% 
-    left_join(., LT_V_m3_DBH40 %>% 
-                mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
-                distinct(), 
-              by = c("plot_ID", "tree_ID", "inv")) %>% 
-  group_by(plot_ID, inv) %>% 
-  summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))),
-  # FSI of dataset with volume of trees over 40 cm DBH in m3 per plot  
-  "LT_FSI_V40" = c(FSI((trees_data %>% 
-                      filter(compartiment == "ag") %>% 
-                      left_join(., LT_V_m3_DBH40 %>% 
-                                  mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
-                                  distinct(), 
-                                by = c("plot_ID", "tree_ID", "inv")) %>% 
-                      group_by(plot_ID, inv) %>% 
-                      summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))))$LT_Vm340_plot))
-  ),
- by = c("plot_ID", "inv"))
+  FSI_df<- 
+    FSI_df %>% 
+    left_join(., 
+              cbind(
+                # dataset with volume of trees over 40cm DBH per plot summed up in m3
+                trees_data %>% 
+                  filter(compartiment == "ag") %>% 
+                  left_join(., LT_V_m3_DBH40 %>% 
+                              mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
+                              distinct(), 
+                            by = c("plot_ID", "tree_ID", "inv")) %>% 
+                  group_by(plot_ID, inv) %>% 
+                  summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))),
+                # FSI of dataset with volume of trees over 40 cm DBH in m3 per plot  
+                "LT_FSI_V40" = c(FSI((trees_data %>% 
+                                        filter(compartiment == "ag") %>% 
+                                        left_join(., LT_V_m3_DBH40 %>% 
+                                                    mutate(across(c("plot_ID", "tree_ID"), as.integer)) %>% 
+                                                    distinct(), 
+                                                  by = c("plot_ID", "tree_ID", "inv")) %>% 
+                                        group_by(plot_ID, inv) %>% 
+                                        summarise(LT_Vm340_plot = sum(as.numeric(na.omit(V_m3_tree)))))$LT_Vm340_plot))
+              ),
+              by = c("plot_ID", "inv"))
   
 }
 
@@ -348,6 +356,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
+                  filter(is.na(plot_ID))%>% 
                   mutate(inv = inv_name(inv_year)) %>% 
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
@@ -361,26 +370,26 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                 # calculate FSI
                 mutate(LT_FSI_fruit_TY = FSI(LT_n_fruit_TY)), 
               by = c("plot_ID", "inv"))
-  }else{
-    FSI_df <- FSI_df %>% left_join(., cbind(
-      # dataset with calcualted number of bark types per plot ID 
-      trees_data %>% filter(compartiment == "ag") %>% 
-        rowwise() %>% 
-        mutate(fruit_TY = fruit_type(age, Chr_code_ger, output = "fruit")) %>% 
-        select(plot_ID, inv, fruit_TY) %>% 
-        distinct() %>% 
-        group_by(plot_ID, inv) %>% 
-        summarise(LT_n_fruit_TY = as.numeric(n())), 
-      # calculate FSI of bark diversity     
-      "LT_FSI_fruit_TY" = c(FSI(as.numeric((trees_data %>% 
-                                             left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
-                                             select(plot_ID, inv, fruit_TY) %>% 
-                                             distinct() %>% 
-                                             group_by(plot_ID, inv) %>% 
-                                             summarise(LT_n_fruit_TY = as.numeric(n())))$LT_n_fruit_TY)))
-      ), # select number of barktypes per plot from summary 
-      by = c("plot_ID", "inv")) %>% # close left join into FSI dataset
-      distinct()
+}else{
+  FSI_df <- FSI_df %>% left_join(., cbind(
+    # dataset with calcualted number of bark types per plot ID 
+    trees_data %>% filter(compartiment == "ag") %>% 
+      rowwise() %>% 
+      mutate(fruit_TY = fruit_type(age, Chr_code_ger, output = "fruit")) %>% 
+      select(plot_ID, inv, fruit_TY) %>% 
+      distinct() %>% 
+      group_by(plot_ID, inv) %>% 
+      summarise(LT_n_fruit_TY = as.numeric(n())), 
+    # calculate FSI of bark diversity     
+    "LT_FSI_fruit_TY" = c(FSI(as.numeric((trees_data %>% 
+                                            left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
+                                            select(plot_ID, inv, fruit_TY) %>% 
+                                            distinct() %>% 
+                                            group_by(plot_ID, inv) %>% 
+                                            summarise(LT_n_fruit_TY = as.numeric(n())))$LT_n_fruit_TY)))
+  ), # select number of barktypes per plot from summary 
+  by = c("plot_ID", "inv")) %>% # close left join into FSI dataset
+    distinct()
 }
 
 
@@ -391,14 +400,14 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 # 1.2.1. number of decay classes ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
   left_join(., DW_summary %>% 
-  filter(plot_ID != "all" & decay == "all" & dw_type == "all" & dw_sp == "all") %>% 
-  select(plot_ID, n_dec) %>% 
-    # this is in case there are plots like 50145 whitout deadwood 
-    mutate(n_dec = ifelse(is.na(n_dec), 0, n_dec)) %>% 
-  distinct() %>% 
-  mutate(DW_FSI_n_dec = as.numeric(FSI(n_dec))) %>% 
-  rename("DW_n_dec" = "n_dec"), 
-  by = "plot_ID")
+              filter(plot_ID != "all" & decay == "all" & dw_type == "all" & dw_sp == "all") %>% 
+              select(plot_ID, n_dec) %>% 
+              # this is in case there are plots like 50145 whitout deadwood 
+              mutate(n_dec = ifelse(is.na(n_dec), 0, n_dec)) %>% 
+              distinct() %>% 
+              mutate(DW_FSI_n_dec = as.numeric(FSI(n_dec))) %>% 
+              rename("DW_n_dec" = "n_dec"), 
+            by = "plot_ID")
 
 # 1.2.2. average mean diameter of downed deadwood ---------------------------------------------------------------------------------------------------------------------------
 if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
@@ -419,19 +428,22 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
                   by = "plot_ID") %>% 
         filter(ST_LY_type == "S") %>% 
         select(plot_ID, inv),
-  # DW_dataset with mean diemater of downed deadwood
-  DW_data %>% 
-    filter(ST_LY_type == "L" & compartiment == "ag") %>% 
-    group_by(plot_ID, inv) %>%
-    summarise(DW_LY_mean_D_cm = mean(na.omit(d_cm))) %>% 
-    distinct(), 
-  # DW dataset with plot that were inventored but had no deadwood inside
-  DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
-  )%>% 
-    mutate(DW_LY_mean_D_cm = ifelse(is.na(DW_LY_mean_D_cm), 0, DW_LY_mean_D_cm)) %>% 
-    mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
-  by = c("plot_ID", "inv")
-  )
+      # DW_dataset with mean diemater of downed deadwood
+      DW_data %>% 
+        filter(ST_LY_type == "L" & compartiment == "ag") %>% 
+        group_by(plot_ID, inv) %>%
+        summarise(DW_LY_mean_D_cm = mean(na.omit(d_cm))) %>% 
+        distinct(), 
+      # DW dataset with plot that were inventored but had no deadwood inside
+      DW_stat_2 %>% 
+        filter(is.na(plot_ID)) %>% 
+        mutate(inv = inv_name(inv_year)) %>% 
+        select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+    )%>% 
+      mutate(DW_LY_mean_D_cm = ifelse(is.na(DW_LY_mean_D_cm), 0, DW_LY_mean_D_cm)) %>% 
+      mutate(DW_FSI_LY_mean_D_cm = as.numeric(FSI(DW_LY_mean_D_cm))), 
+    by = c("plot_ID", "inv")
+    )
   
 }else{
   FSI_df <- FSI_df %>% 
@@ -463,8 +475,8 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
                     filter(n_S_L_TY < 2) %>% 
                     select(plot_ID), 
                   by = "plot_ID") %>% 
-                  filter(ST_LY_type == "L") %>% 
-                  select(plot_ID, inv),
+        filter(ST_LY_type == "L") %>% 
+        select(plot_ID, inv),
       # DW_dataset with mean diemater of standing deadwood
       DW_data %>% 
         filter(ST_LY_type == "S" & compartiment == "ag") %>% 
@@ -472,7 +484,11 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
         summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
         distinct(), 
       # DW dataset with plot that were inventored but had no deadwood inside
-      DW_stat_2 %>% mutate(inv = inv_name(inv_year)) %>% select(plot_ID, inv) %>% distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
+      DW_stat_2 %>% 
+        filter(is.na(plot_ID))%>% 
+        mutate(inv = inv_name(inv_year)) %>% 
+        select(plot_ID, inv) %>% 
+        distinct() # distinct is needed because we have 3 compartiemtns per plot-also for empty ones
     )%>% 
       mutate(DW_ST_mean_D_cm = ifelse(is.na(DW_ST_mean_D_cm), 0, DW_ST_mean_D_cm)) %>% 
       mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
@@ -480,16 +496,16 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
     ) 
   
 }else{
-
-FSI_df <- FSI_df %>% 
-  left_join(., DW_data %>% 
-  filter(ST_LY_type == "S"  & compartiment == "ag") %>% 
-  group_by(plot_ID) %>%
-  summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
-  distinct() %>% 
-  mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
-  by = "plot_ID")
-
+  
+  FSI_df <- FSI_df %>% 
+    left_join(., DW_data %>% 
+                filter(ST_LY_type == "S"  & compartiment == "ag") %>% 
+                group_by(plot_ID) %>%
+                summarise(DW_ST_mean_D_cm = mean(na.omit(d_cm))) %>% 
+                distinct() %>% 
+                mutate(DW_FSI_ST_mean_D_cm = as.numeric(FSI(DW_ST_mean_D_cm))), 
+              by = "plot_ID")
+  
 }
 
 
@@ -499,14 +515,14 @@ FSI_df <- FSI_df %>%
 FSI_df<- FSI_df %>% 
   left_join(., 
             RG_summary %>% 
-  filter(plot_ID != "all" & SP_code == "all" & stand == "all" & compartiment == "ag" ) %>% 
-  distinct() %>% 
-  select(plot_ID, n_SP) %>% 
-  mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP), 
-         RG_FSI_n_SP = as.numeric(FSI(n_SP)), 
-         plot_ID = as.integer(plot_ID)) %>% 
-  rename("RG_n_SP" = "n_SP"), 
-  by = "plot_ID")
+              filter(plot_ID != "all" & SP_code == "all" & stand == "all" & compartiment == "ag" ) %>% 
+              distinct() %>% 
+              select(plot_ID, n_SP) %>% 
+              mutate(n_SP = ifelse(is.na(n_SP), 0, n_SP), 
+                     RG_FSI_n_SP = as.numeric(FSI(n_SP)), 
+                     plot_ID = as.integer(plot_ID)) %>% 
+              rename("RG_n_SP" = "n_SP"), 
+            by = "plot_ID")
 
 
 
@@ -516,17 +532,17 @@ FSI_df<- FSI_df %>%
 # Quantifying forest structural diversity based on large-scale inventory data: 
 # a new approach to support biodiversity monitoring. For. Ecosyst. 5, 34 (2018). 
 # https://doi.org/10.1186/s40663-018-0151-1: 
-  # The sum of scores of the core variables divided by the
-  # number of variables included in this index yields a value
-  # between 0 and 1, where 0 indicates ‘lowest level of structural
-  # diversity’ and 1 ‘highest level of structural diversity’.
+# The sum of scores of the core variables divided by the
+# number of variables included in this index yields a value
+# between 0 and 1, where 0 indicates ‘lowest level of structural
+# diversity’ and 1 ‘highest level of structural diversity’.
 FSI_df<- FSI_df %>% 
   left_join(
     as.data.frame(cbind(
       FSI_df[ , c("plot_ID", "inv")],
       # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
       FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>%
-            # calculate the sum of all FSI scores of the respective variables per plot 
+      # calculate the sum of all FSI scores of the respective variables per plot 
       mutate(FSI_sum = select(., LT_FSI_DBH_RMS:DW_FSI_ST_mean_D_cm) %>% rowSums(na.rm = TRUE),
              #calcualte relative FSI by dividing FSI sum by total number od variables includedin the FSI calculation
              FSI_total = FSI_sum/length(FSI_df[,grepl("FSI" ,names(FSI_df))]) ) %>% 
@@ -538,7 +554,7 @@ FSI_df<- FSI_df %>%
 
 
 # 2. export data -----------------------------------------------------------------------------------------------------------------------------------------------------
-write.csv(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI", ".csv")), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI",  ".csv")), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 
