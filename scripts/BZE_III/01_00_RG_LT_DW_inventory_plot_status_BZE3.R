@@ -158,11 +158,11 @@ colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_cla
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE3/bedw.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+DW_inv_info <- read.delim(file = here("data/input/BZE3/be_totholz_punkt.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
 # deadwood single item data
-DW_data <- read.delim(file = here("data/input/BZE3/bedw_liste.csv"), sep = ",", dec = ".") %>% 
-  select( bund_nr, lfd_nr, typ,      baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
+DW_data <- read.delim(file = here("data/input/BZE3/be_totholz_liste.csv"), sep = ",", dec = ".") %>% 
+  select( bund_nr, lfd_nr, typ, baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
 #  bund_nr lfd_nr typ      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
 

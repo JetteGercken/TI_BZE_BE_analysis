@@ -160,12 +160,13 @@ colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_cla
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE2_HBI/bedw.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)  
+DW_inv_info <- read.delim(file = here("data/input/BZE2_HBI/be_totholz_punkt.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
-DW_data <- read.delim(file = here("data/input/BZE2_HBI/bedw_liste.csv"), sep = ",", dec = ".")
-#  bund_nr lfd_nr t     yp      baumgruppe anzahl  durchmesser laenge zersetzung
+# deadwood single item data
+DW_data <- read.delim(file = here("data/input/BZE2_HBI/be_totholz_liste.csv"), sep = ",", dec = ".") %>% 
+  select( bund_nr, lfd_nr, typ, baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
+#  bund_nr lfd_nr typ      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")
-# join inventory jear and name into deadwood tree dataset
 
 # 1. data prep  --------------------------------------
 # 1.1. ALL - all plots & stand components ------------------------------------------------------------------------------------------------------------------------

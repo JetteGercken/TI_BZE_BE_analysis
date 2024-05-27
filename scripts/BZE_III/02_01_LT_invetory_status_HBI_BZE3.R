@@ -684,5 +684,5 @@ write.csv(BZE3_trees_update_02,paste0(out.path.BZE3, paste(unique(BZE3_trees_upd
 write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_02$inv)[1], "LT", "removed","2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
-
+stop("this is where LT inventory sorting HBI BZE3 ends")
 # write.csv2(BZE3_trees, paste0(out.path.BZE3, paste(unique(BZE3_trees$inv)[1], "LT", "update","0", "demo", sep = "_"), ".csv"))

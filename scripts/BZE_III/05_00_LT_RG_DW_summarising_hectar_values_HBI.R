@@ -335,6 +335,19 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
   
+  
+  LT_avg_SP_ST_P_list[[i]] <- my.tree.rep.df %>% 
+    group_by(plot_ID, inv, SP_code, stand) %>% 
+    summarise(stand = "all", 
+              mean_DBH_cm = mean(DBH_cm), 
+              sd_DBH_cm = sd(DBH_cm),
+              Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+              mean_BA_m2 = mean(BA_m2),
+              mean_H_m = mean(H_m), 
+              sd_H_m = sd(H_m), 
+              Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
+    mutate(stand_component = "LT")
+  
   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv, SP_code) %>% 
     summarise(stand = "all", 

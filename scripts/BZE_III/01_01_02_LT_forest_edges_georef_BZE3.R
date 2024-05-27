@@ -18,8 +18,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called BZE3_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_0_demo.csv")), sep = ";", dec = ",") %>% select(-c(stand, inter_stat, area_m2, stand_plot_A_ha, plot_A_ha, 
-                                                                                                                              geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_trees_update_01.csv")), sep = ";", dec = ",") %>% select(-c(stand, inter_stat, area_m2, stand_plot_A_ha, plot_A_ha))
+geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
 # BZE3 forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ";", dec = ",")
 
