@@ -38,6 +38,8 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_D
 
 
 
+
+
 # CALCULATIONS ------------------------------------------------------------
 
 # 1. LIVING TREES -----------------------------------------------
@@ -130,23 +132,40 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               N_t_ha = sum(N_CCS_t_ha), 
               BA_m2_ha = sum(BA_CCS_m2_ha), 
               n_ha = sum(n_trees_CCS_ha)) %>% 
-    mutate(stand_component = "LT")}else{
-      LT_SP_ST_P_BCNBAn_ha <- trees_data %>% 
-        group_by(plot_ID, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
-        # convert Biomass into tons per hectar and sum it up per sampling circuit 
-        reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
-                C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-                N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-                BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha) %>% 
-        distinct()%>% 
-        # now we summarise all the t/ha values of the cirlces per plot
-        group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
-        summarise(B_t_ha = sum(B_CCS_t_ha), 
-                  C_t_ha = sum(C_CCS_t_ha), 
-                  N_t_ha = sum(N_CCS_t_ha),
-                  BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
-        mutate(stand_component = "LT")
-    }
+    mutate(stand_component = "LT") %>% 
+    #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+    left_join(LT_BCNBAn_ha %>% 
+                select(plot_ID, inv, compartiment, BA_m2_ha) %>% 
+                rename(BA_m2_ha_total = BA_m2_ha),
+              by = c("plot_ID", "inv", "compartiment"), ) %>% 
+    distinct() %>% 
+    mutate(BA_percent = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
+    select(-"BA_m2_ha_total")
+}else{
+  LT_SP_ST_P_BCNBAn_ha <- trees_data %>% 
+    group_by(plot_ID, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
+    # convert Biomass into tons per hectar and sum it up per sampling circuit 
+    reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+            C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+            N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
+            BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha) %>% 
+    distinct()%>% 
+    # now we summarise all the t/ha values of the cirlces per plot
+    group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
+    summarise(B_t_ha = sum(B_CCS_t_ha), 
+              C_t_ha = sum(C_CCS_t_ha), 
+              N_t_ha = sum(N_CCS_t_ha),
+              BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
+    mutate(stand_component = "LT") %>% 
+    #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+    left_join(LT_BCNBAn_ha %>% 
+                select(plot_ID, inv, compartiment, BA_m2_ha) %>% 
+                rename(BA_m2_ha_total = BA_m2_ha),
+              by = c("plot_ID", "inv", "compartiment"), ) %>% 
+    distinct() %>% 
+    mutate(BA_percent = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
+    select(-"BA_m2_ha_total")
+}
 
 # 1.4.3. Plot, stand: stocks per hektar ------------------------------------------------------
 LT_ST_BCNBAn_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha, 
@@ -308,6 +327,7 @@ LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list))
 
 # 1.6. average values ----------------------------------------------------
 # 1.6.1. create "pseudo stands" -------------------------------------------
+LT_avg_SP_ST_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 for (i in 1:length(unique(trees_data$plot_ID))) {
@@ -333,6 +353,18 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     # 17m circle
     my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
+  
+  
+  LT_avg_SP_ST_P_list[[i]] <- my.tree.rep.df %>% 
+    group_by(plot_ID, inv, SP_code, stand) %>% 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
+              sd_DBH_cm = sd(DBH_cm),
+              Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
+              mean_BA_m2 = mean(BA_m2),
+              mean_H_m = mean(H_m), 
+              sd_H_m = sd(H_m), 
+              Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
+    mutate(stand_component = "LT")
   
   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv, SP_code) %>% 
@@ -360,6 +392,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     mutate(stand_component = "LT")
   
 }
+LT_avg_SP_ST_P <- as.data.frame(rbindlist(LT_avg_SP_ST_P_list))
 LT_avg_SP_P <- as.data.frame(rbindlist(LT_avg_SP_P_list))
 LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
@@ -372,6 +405,8 @@ LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>%
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID'), as.integer),
             by = c("plot_ID", "inv", "stand_component"))  %>% 
+  left_join(LT_avg_SP_ST_P,  
+            by = c("plot_ID", "inv", "stand_component", "SP_code", "stand")) %>% 
   select(-(n_ha))
 
 
@@ -783,11 +818,13 @@ LT_RG_DW_P <-
   arrange(plot_ID)
 
 
+
 # 4. data export ----------------------------------------------------------
 write.csv(LT_summary, paste0(out.path.BZE3, paste(LT_summary$inv[1], "LT_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(RG_summary, paste0(out.path.BZE3, paste(RG_summary$inv[1], "RG_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(LT_RG_DW_P, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
 
 
 stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values BZE3 starts")

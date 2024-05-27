@@ -131,7 +131,16 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               N_t_ha = sum(N_CCS_t_ha), 
               BA_m2_ha = sum(BA_CCS_m2_ha), 
               n_ha = sum(n_trees_CCS_ha)) %>% 
-    mutate(stand_component = "LT")}else{
+    mutate(stand_component = "LT") %>% 
+  #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+  left_join(LT_BCNBAn_ha %>% 
+              select(plot_ID, inv, compartiment, BA_m2_ha) %>% 
+              rename(BA_m2_ha_total = BA_m2_ha),
+            by = c("plot_ID", "inv", "compartiment"), ) %>% 
+    distinct() %>% 
+    mutate(BA_percent = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
+    select(-"BA_m2_ha_total")
+  }else{
       LT_SP_ST_P_BCNBAn_ha <- trees_data %>% 
         group_by(plot_ID, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
         # convert Biomass into tons per hectar and sum it up per sampling circuit 
@@ -146,7 +155,15 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   C_t_ha = sum(C_CCS_t_ha), 
                   N_t_ha = sum(N_CCS_t_ha),
                   BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
-        mutate(stand_component = "LT")
+        mutate(stand_component = "LT") %>% 
+        #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+      left_join(LT_BCNBAn_ha %>% 
+                  select(plot_ID, inv, compartiment, BA_m2_ha) %>% 
+                  rename(BA_m2_ha_total = BA_m2_ha),
+                by = c("plot_ID", "inv", "compartiment"), ) %>% 
+        distinct() %>% 
+        mutate(BA_percent = (BA_m2_ha/BA_m2_ha_total)*100) %>% 
+        select(-"BA_m2_ha_total")
     }
 
 # 1.4.3. Plot, stand: stocks per hektar ------------------------------------------------------
@@ -309,6 +326,7 @@ LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list))
 
 # 1.6. average values ----------------------------------------------------
 # 1.6.1. create "pseudo stands" -------------------------------------------
+LT_avg_SP_ST_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 LT_avg_SP_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 LT_avg_P_list <- vector("list", length = length(unique(trees_data$plot_ID))) 
 for (i in 1:length(unique(trees_data$plot_ID))) {
@@ -338,8 +356,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   
   LT_avg_SP_ST_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv, SP_code, stand) %>% 
-    summarise(stand = "all", 
-              mean_DBH_cm = mean(DBH_cm), 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
               sd_DBH_cm = sd(DBH_cm),
               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
               mean_BA_m2 = mean(BA_m2),
@@ -374,6 +391,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     mutate(stand_component = "LT")
   
 }
+LT_avg_SP_ST_P <- as.data.frame(rbindlist(LT_avg_SP_ST_P_list))
 LT_avg_SP_P <- as.data.frame(rbindlist(LT_avg_SP_P_list))
 LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
@@ -386,6 +404,8 @@ LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>%
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID'), as.integer),
             by = c("plot_ID", "inv", "stand_component"))  %>% 
+  left_join(LT_avg_SP_ST_P,  
+            by = c("plot_ID", "inv", "stand_component", "SP_code", "stand")) %>% 
   select(-(n_ha))
 
 

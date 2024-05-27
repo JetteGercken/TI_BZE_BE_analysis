@@ -145,36 +145,55 @@ summarize_data(dbh_growth_tree,
 
 
 # 1.3. changes in BA composition -------------------------------------------
-# select all possible tree species per plot create list of all possible species per plot from both invenoties, to be able to join in basal area shares later and set missing shares to 0
-BA_changes_SP_P <- rbind(BZE3_trees %>% select(plot_ID, SP_code) %>% distinct(),
-                    HBI_trees %>% select(plot_ID, SP_code) %>% distinct()) %>% 
+# select all possible tree species and stands per plot create list of all possible species per plot from both invenoties, to be able to join in basal area shares later and set missing shares to 0
+BA_changes_SP_ST_P <- rbind(BZE3_LT_summary %>% 
+  # filter for plot and species wise summary
+  filter(plot_ID != "all" & SP_code != "all" & stand == "all" |
+   # filter for plot, species and stand wise summary
+           plot_ID != "all" & SP_code != "all" & stand != "all" & !is.na(stand)) %>%
+  # select all possible plot_iD, species and stand combinations
+  select(plot_ID, SP_code, stand) %>% distinct(), 
+HBI_LT_summary %>% 
+  # filter for plot and species wise summary
+  filter(plot_ID != "all" & SP_code != "all" & stand == "all" |
+           plot_ID != "all" & SP_code != "all" & stand != "all" & !is.na(stand)) %>%
+  # select all possible plot_iD, species and stand combinations
+  select(plot_ID, SP_code, stand) %>% distinct()) %>% 
   distinct() %>% 
+  mutate(plot_ID = as.integer(plot_ID)) %>% 
   arrange(plot_ID) %>% 
+  # this is how I used to filter, before we decided to calculate the BA changes for the stand- wise summaries as well
+  # rbind(BZE3_trees %>% select(plot_ID, SP_code, stand) %>% distinct(),
+  #                   HBI_trees %>% select(plot_ID, SP_code, stand) %>% distinct()) %>% 
+  # distinct() %>% 
+  # arrange(plot_ID) %>% 
   # join basal area shares from species in BZE3 dataset according to species, and plot, if the species does have a basal area share in BZE3
   left_join(., BZE3_LT_summary %>% 
               # filter for plot and species wise summary
-              filter(plot_ID != "all" & SP_code != "all" & stand == "all") %>%
+              filter(plot_ID != "all" & SP_code != "all" & stand == "all" |
+                       plot_ID != "all" & SP_code != "all" & stand != "all" & !is.na(stand)) %>%
               # select the BA percent
-              select(plot_ID, SP_code, BA_percent) %>% 
+              select(plot_ID, SP_code, stand, BA_percent) %>% 
               mutate(across(c("plot_ID"), as.integer)) %>% 
               rename(BA_percent_BZE3 = BA_percent) %>% 
               distinct(), 
-            by = c("plot_ID", "SP_code")) %>% 
+            by = c("plot_ID", "SP_code", "stand")) %>% 
   # join basal area shares from species in HBI dataset according to species, and plot, if the species does have a basal area share in BZE3
   left_join(., HBI_LT_summary %>% 
               # filter for plot and species wise summary
-              filter(plot_ID != "all" & SP_code != "all" & stand == "all") %>%
+              filter(plot_ID != "all" & SP_code != "all" & stand == "all"|
+                       plot_ID != "all" & SP_code != "all" & stand != "all" & !is.na(stand)) %>%
               # select the BA percent
-              select(plot_ID, SP_code, BA_percent) %>% 
+              select(plot_ID, SP_code, stand, BA_percent) %>% 
               mutate(across(c("plot_ID"), as.integer)) %>% 
               rename(BA_percent_HBI = BA_percent) %>% 
               distinct(), 
-            by = c("plot_ID", "SP_code")) %>%
+            by = c("plot_ID", "SP_code", "stand")) %>%
   # here we have to set the BA_percent that do not appear in the respective inventory to 0
   mutate(BA_percent_BZE3 = ifelse(is.na(BA_percent_BZE3), 0, BA_percent_BZE3), 
          BA_percent_HBI = ifelse(is.na(BA_percent_HBI), 0, BA_percent_HBI), 
          BA_percent_diff = BA_percent_BZE3-BA_percent_HBI, # calcualte difference in HBI and BZE3 BA share per plot and species
-         stand = "all", 
+         #stand = "all", 
          C_layer = "all") 
   
 
@@ -236,7 +255,7 @@ LT_changes <- dbh_growth_summary %>%
               mutate(across(c("plot_ID"), as.character)), 
             by = c("plot_ID", "stand", "C_layer", "SP_code"), 
             multiple = "all") %>%  # multiple = "all" for compartiments, which is not represented in dbh growth
-  left_join(BA_changes_SP_P %>% 
+  left_join(BA_changes_SP_ST_P %>% 
               select(plot_ID, stand, SP_code, C_layer, contains("diff")) %>% 
               mutate(across(c("plot_ID"), as.character)), 
             by = c("plot_ID", "stand", "SP_code", "C_layer") ) %>% 
