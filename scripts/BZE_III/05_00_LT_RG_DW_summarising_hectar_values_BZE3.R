@@ -829,6 +829,13 @@ write.csv(LT_RG_DW_P, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_s
 
 stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values BZE3 starts")
 
+
+
+view(LT_RG_DW_P %>%
+  filter(plot_ID == 140037 | plot_ID == "all") %>% 
+ select(stand_component, plot_ID, inv, inv_year, stand,  SP_code, dw_sp,	dw_type,	decay,	ST_LY_type, compartiment) %>% 
+  distinct())
+
 # 5. visuals --------------------------------------------------------------
 
 # 5.1. biomass compartiments ----------------------------------------------

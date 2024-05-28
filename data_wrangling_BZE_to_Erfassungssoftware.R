@@ -5,34 +5,70 @@
 
 
 # Tables we need: 
-## be_waldraender.csv --> from be.csv
+## tit_1.csv: tit_1.csv only appears in database datasets not in software
+    # database: "bund_nr"    "team"       "datum"      "status"     "re_form"    "re_lage"    "neigung"    "exposition" "anmerkung" 
 
-## be.csv
-  # database:  bund_nr,lfd_nr,baumkennzahl,zwiesel,bart,alter,alter_methode,d_mess,bhd_hoehe,hoehe,kransatz,azi,hori,kraft,schi
-  # software: 
 
-## beab.csv
-  # database:  
-  # software: 
+## be_waldraender.csv 
+    # database: we have to build it from --> from be.csv  read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+    # software: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/be_waldraender.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"     "lfd_nr"      "randtyp"     "randform"    "anfang_dist" "end_dist"    "knick_dist"  "anfang_azi"  "end_azi"     "knick_azi"
+
+
+## be.csv: be.csv in database contains columns that are usually found in be_waldraender.csv
+  # database: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"                "team"                   "datum"                  "geraet"                 "randtyp_1"              "randform_1"             "anfang_dist_1"         
+      # "anfang_azi_1"           "end_dist_1"             "end_azi_1"              "knick_dist_1"           "knick_azi_1"            "randtyp_2"              "randform_2"            
+      # "anfang_dist_2"          "anfang_azi_2"           "end_dist_2"             "end_azi_2"              "knick_dist_2"           "knick_azi_2"            "hbi_status"            
+      # "beart"                  "besttyp"                "struktur"               "schlussgrad_schi1"      "schlussgrad_schi2"      "mischung"               "pk1_aufnahme"          
+      # "pk2_aufnahme"           "pk3_aufnahme"           "beschreibungbestockung" "anmerkung" 
+  # software:  read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"                "ld_bze"                 "bwi_tnr"                "bwi_eck"                "team"                   "datum"                  "srid_ist"              
+      # "istre"                  "istho"                  "hbi_status"             "beart"                  "besttyp"                "struktur"               "schlussgrad_schi1"     
+      # "schlussgrad_schi2"      "mischung"               "pk1_aufnahme"           "pk2_aufnahme"           "pk3_aufnahme"           "geraet"                 "beschreibungbestockung"
+      # "anmerkung"
+
+
+## beab.csv: beab.csv in software has additional column bhd
+  # database:  read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/beab.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"       "lfd_nr"        "baumkennzahl"  "zwiesel"       "bart"          "alter"         "alter_methode" "d_mess"        "bhd_hoehe"     "hoehe"         "kransatz"     
+      # "azi"           "hori"          "kraft"         "schi" 
+  # software: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/beab.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"       "lfd_nr"        "baumkennzahl"  "zwiesel"        "bart"         "alter"         "alter_methode"  "d_mess"        "bhd_hoehe"    "hoehe"         "kransatz"      
+      # "azi"           "hori"          "kraft"         "schi"           "bhd"                         
+
 
 ## be_totholz_liste.csv --> bedw_liste.csv
-  # database:  
-  # software: 
+  # database:   read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/bedw_liste.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr"     "lfd_nr"      "typ"         "baumgruppe"  "anzahl"      "durchmesser" "laenge"      "zersetzung" 
+  # software: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/be_totholz_liste.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+      # "bund_nr"     "lfd_nr"       "typ"         "baumgruppe"  "anzahl"      "durchmesser" "laenge"      "zersetzung"  "anmerkung"  
+
 
 ## be_totholz_punkt.csv --> bedw_punkt.csv
-  # database:  
-  # software: 
+  # database:  read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/bedw.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr" "status"  "pk_dist" "pk_azi" 
+  # software:  read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/be_totholz_punkt.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr" "status"  "pk_dist" "pk_azi" 
+
 
 ## bej.csv
-  # database:  
-  # software: 
+  # database: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/bej.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr"      "pk_nr"        "pk_richtung"  "pk_dist"      "pk_aufnahme"  "pk_maxdist"   "pk_anmerkung"
+  # software: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/bej.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr"      "pk_nr"       "pk_richtung"   "pk_dist"     "pk_aufnahme"   "pk_maxdist" 
+
 
 ## bejb.csv
-  # database:  
-  # software: 
+  # database: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/bejb.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr"  "pk_nr"    "lfd_nr"   "bart"     "hoehe"    "grklasse"
+  # software: read.delim(file = here("data/input/BZE2_HBI/SN/BZE_BE_software_format/bejb.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+      # "bund_nr"  "pk_nr"    "lfd_nr"   "bart"     "hoehe"    "grklasse" 
+
 
 # be_waldränder from be.csv
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",", dec = ",") %>% 
+forest_edges <- read.delim(file = here("data/input/BZE2_HBI/SN/BZE_database_format/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% 
+  # these are the columns we want to acchive: "bund_nr"     "lfd_nr"      "randtyp"     "randform"    "anfang_dist" "end_dist"    "knick_dist"  "anfang_azi"  "end_azi"     "knick_azi"
   # select only forest edge relevant column
   select(bund_nr,randtyp_1 , randtyp_2, randform_1 , randform_2, anfang_dist_1, anfang_dist_2, anfang_azi_1, anfang_azi_2, end_dist_1, end_dist_2, 
          end_azi_1, end_azi_2,  knick_dist_1, knick_dist_2, knick_azi_1, knick_azi_2) %>% 
