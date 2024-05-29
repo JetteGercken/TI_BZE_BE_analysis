@@ -247,6 +247,19 @@ trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_co
 
 
 
+# as we collect all growth info in regard to the BZE3 by left_joining in HBI data,
+# plots that have a calculated stock that are not present in BZE3 anymore , there will be no "negative growth" registered
+# this is why we save perfectly fine HBI plots that do not have a counter/ Pertner plot in BZE3 in a separate dataset: 
+HBI_plots_not_represented_in_BZE3 <- HBI_summary %>% semi_join(., HBI_summary %>% 
+                                                                 select(plot_ID) %>% 
+                                                                 distinct() %>% 
+                                                                 anti_join(., BZE3_summary %>% select(plot_ID) %>% distinct(), by = "plot_ID"), 
+                                                               by = "plot_ID")
+
+
+
+
+
 # binding all LT growth datasets together ---------------------------------
 LT_changes <- dbh_growth_summary %>% 
   left_join(., 

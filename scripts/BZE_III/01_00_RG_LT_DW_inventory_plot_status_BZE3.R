@@ -231,6 +231,7 @@ trees_data <- trees_data %>%
 
 
 
+
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
 SP_NAs <- trees_data %>% 
   anti_join(SP_names_com_ID_tapeS %>% 

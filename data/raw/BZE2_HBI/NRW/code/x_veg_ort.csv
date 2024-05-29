@@ -1,9 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,,
--1,nicht erhoben,Merkmal nicht erhoben,,
-a,A,"SW - südwestlichste Ecke, an der die Distanzlinie endet (Teilfläche 100 m²)",,
-b,B,NW - nordwestliche Ecke (Teilfläche 100 m²),,
-c,C,NO - nordöstliche Ecke (Teilfläche 100 m²),,
-d,D,SO - Südöstliche Ecke (Teilfläche 100 m²),,
-z,Z,Komplett:  400 m² Fläche,,

@@ -2004,35 +2004,51 @@ all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4,
 all.edges.area.df.nogeo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 4, 6)], as.numeric) 
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
-trees_update_1 <-trees_data%>%  
+trees_update_1 <- trees_data %>%  
   # join in stand of each tree
   left_join(., all.trees.status.df %>% 
               select(plot_ID, tree_ID, inv_year, t_stat) %>% 
               distinct(),
             by = c("plot_ID", "tree_ID", "inv_year")) %>% 
-  rename(stand = t_stat) %>% 
+  rename(stand = t_stat) 
+
+# this if statement is in case there are no forest edges for that dataset... which is unlikely
+if(exists("all.edges.area.df.nogeo")){
   # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
-  left_join(., all.edges.area.df.nogeo %>% 
-              select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
-            by = c("plot_ID", "CCS_r_m", "stand")) %>% 
-  # if there was no plot area claualted due to the fact that there is no edger at the plot, 
-  # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
-  mutate(area_m2 = ifelse(is.na(e_ID) & is.na(area_m2) |
-                            # for trees alloceted to a in a cirlce without intersections wil not run throuhg the loops
-                            # thus they do  have an edge ID but no calcualted areas or assigned intersection status
-                            # therefore we have to calculate their area manually subsequently
-                            # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.nogeo" assigned
-                            # as this stand category doesn´t exist
-                            # trees with the status "warning" will be excluded from the analysis
-                            stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
-                            stand == "A" & is.na(inter_stat) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
-         # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
-         stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
-         # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-         plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
-# left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
-# mutate(east_tree =  X_tree + RW_MED, 
-#        north_tree = Y_tree + HW_MED)
+  trees_update_1 <- trees_update_1 %>% 
+    left_join(., all.edges.area.df.nogeo %>% 
+                select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
+              by = c("plot_ID", "CCS_r_m", "stand"))%>% 
+    # if there was no plot area claualted due to the fact that there is no edger at the plot, 
+    # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
+    mutate(area_m2 = ifelse(is.na(e_ID) & is.na(area_m2) |
+                              # for trees alloceted to a in a cirlce without intersections wil not run throuhg the loops
+                              # thus they do  have an edge ID but no calcualted areas or assigned intersection status
+                              # therefore we have to calculate their area manually subsequently
+                              # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.nogeo" assigned
+                              # as this stand category doesn´t exist
+                              # trees with the status "warning" will be excluded from the analysis
+                              stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
+                              stand == "A" & is.na(inter_stat) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
+           # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
+           stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
+           # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+           plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
+  # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
+  # mutate(east_tree =  X_tree + RW_MED, 
+  #        north_tree = Y_tree + HW_MED)
+}else{
+  trees_update_1 <- trees_update_1 %>%
+    mutate(# this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+      plot_A_ha = c_A(CCS_r_m)/10000,
+      # if there are no edges the area is equal to the plot area in m2
+      area_m2 = c_A(CCS_r_m), 
+      # if there are no edges this column contains the same area s the plot and the area column this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
+      stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
+      inter_stat = NA) 
+}
+
+
 
 
 
@@ -2125,6 +2141,19 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 

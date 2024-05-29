@@ -1,0 +1,18 @@
+id;kurz;lang;gueltig_ab;gueltig_bis;lang_2024
+-9;fehlt;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;01.01.1989;;
+-2;nicht ausgeprägt;Merkmal nicht ausgeprägt/nicht vorhanden;01.01.1989;01.01.2006;
+-1;nicht erhoben;Merkmal nicht erhoben;01.01.1989;;
+1;Fi-Rein;Fichten(rein)bestand (>= 70 % Fichte);01.01.1989;;
+2;Ki-Rein;Kiefern(rein)bestand (>= 70 % Kiefer);01.01.1989;;
+3;sonst-Nd;sonstige Nadelbaumart (>= 70 % sonstiges Nadelholz);01.01.1989;;
+4;Bu-Rein;Buchen(rein)bestand (>= 70 % Buche);01.01.1989;;
+5;Ei-Rein;Eichen(rein)bestand (>= 70 % Eiche);01.01.1989;;
+6;Nd-Lb-Misch;Laubholzreiche Nadelmischbestände (> 30 % Laubholz);01.01.1989;;Laubholzreiche Nadelmischbest�nde (50 % > Laubholz >30% )
+7;Lb-Nd-Misch;Nadelholzreiche Laubholzmischbestände (> 30 % Nadelholz);01.01.1989;;Nadelholzreiche Laubholzmischbest�nde  (50 % > Nadelholz >30%)
+8;sonst-Lb;sonstige Laubbaumart (>= 70 % sonstiges Laubholz);01.01.1989;;
+9;Nb-Lb<30;Nadelholzmischbestand (< 30 % Laubholz);01.01.2022;;Nadelholzmischbestand (Laubholz <= 30 % , Nadelholz >= 70%)
+10;Lb-NB<30;Laubholzmischbestand (< 30 % Nadelholz);01.01.2022;;Laubholzmischbestand ( Nadelholz <=30 %, Laubholz >= 70%)
+11;abgeleitet;wird aus den Einzelbaumdaten abgeleitet;01.01.2022;;
+91;Lb;Laubbestand (nicht näher spezifizierbar);01.01.2006;01.01.2006;
+92;Nb;Nadelbestand (nicht näher spezifizierbar);01.01.2006;01.01.2006;
+99;Unbekannt;Unbekannter Bestandestyp;01.01.2022;;z.B Nadelholz = 50% und Laubholz = 50%

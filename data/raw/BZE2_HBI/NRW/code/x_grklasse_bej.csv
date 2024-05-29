@@ -1,8 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-0,h < 130,Kein BHD (Höhe < 130 cm),1989-01-01,
-1,"d < 4,9","BHD < 4,9 cm",1989-01-01,
-2,"d 5 < 5,9","BHD 5 < 5,9 cm",1989-01-01,
-3,"d 6 < 6,9","BHD 6 < 6,9 cm",1989-01-01,

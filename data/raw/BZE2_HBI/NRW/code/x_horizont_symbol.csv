@@ -1,7 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
--,-,Übergangshorizont,2022-01-01,
-+,+,Verzahnungshorizont,2022-01-01,
-°,°,Überprägungshorizont/überprägter Horizont,2022-01-01,

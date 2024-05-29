@@ -1,9 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,Merkmal nicht erhoben,2006-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
--1,nicht erhoben,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
-ls,ls,lose,2006-01-01,
-br,br,bröckelig,2006-01-01,
-ks,ks,"kompakt, scharfkantig brechbar",2006-01-01,
-ku,ku,"kompakt, unscharf brechbar",2006-01-01,
-fi,fi,filmartig,,1899-12-31

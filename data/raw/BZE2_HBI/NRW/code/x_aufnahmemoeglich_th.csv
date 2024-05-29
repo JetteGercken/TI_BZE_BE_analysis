@@ -1,8 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
--1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
-1,durchgeführt,Aufnahme wurde erfolgreich durchgeführt,2022-01-01,
-2,"nicht möglich, ohne TH","Aufnahme war nicht möglich, keine Objekte vorhanden",2022-01-01,
-3,"nicht möglich, sonstiges","Aufnahme war nicht möglich, sonst. Gründe (Störung etc.)",2022-01-01,
-4,"0,5 Probekreis","Aufnahme auf 0,5 der Probekreisfläche",2022-01-01,

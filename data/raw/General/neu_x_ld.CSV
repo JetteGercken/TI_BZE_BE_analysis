@@ -1,0 +1,21 @@
+ICode;KurzD;LangD;KurzE;LangE;icp_code;bl;region;anmerkung;beginn;ende
+-9;fehlt;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;missing;Characteristic forgotten, not reconstructable or unknown;;-9;-2;;01.01.1984;
+-2;nicht ausgeprägt;Merkmal nicht ausgeprägt/nicht vorhanden;not pronounced;Characteristic not pronounced/not available;;-2;-2;;01.01.1984;01.01.1987
+-1;nicht erhoben;Merkmal nicht erhoben;not surveyed;Characteristic not surveyed;;-1;-2;;01.01.1984;01.01.1987
+1;SH;Schleswig-Holstein;SH;Schleswig-Holstein;3004;1;1;;01.01.1984;
+2;HH;Hansestadt Hamburg;HH;Hamburg (state);9804;1;1;;01.01.1984;
+3;NI;Niedersachsen;NI;Lower Saxony;3004;3;1;;01.01.1984;
+4;HB;Hansestadt Bremen;HB;Bremen (state);3004;3;1;;01.01.1984;
+5;NW;Nordrhein-Westfalen;NW;North Rhine-Westphalia;3204;5;2;;01.01.1984;
+6;HE;Hessen;HE;Hesse;3004;6;2;;01.01.1984;
+7;RP;Rheinland-Pfalz;RP;Rhineland Palatinate;3304;7;2;;01.01.1984;
+8;BW;Baden-Württemberg;BW;Baden-Wuerttemberg;2804;8;3;;01.01.1984;
+9;BY;Bayern;BY;Bavaria;2904;9;3;;01.01.1984;
+10;SL;Saarland;SL;Saarland;3504;10;2;;01.01.1984;
+11;BE;Berlin;BE;Berlin;2704;12;2;;01.01.1984;
+12;BB;Brandenburg;BB;Brandenburg;2704;12;2;;01.01.1984;
+13;MV;Mecklenburg-Vorpommern;MV;Mecklenburg-Western Pomerania;3104;13;1;;01.01.1984;
+14;SN;Sachsen;SN;Saxony;3604;14;2;;01.01.1984;
+15;ST;Sachsen-Anhalt;ST;Saxony-Anhalt;3004;15;2;;01.01.1984;
+16;TH;Thüringen;TH;Thuringia;3704;16;2;;01.01.1984;
+20;TD;Testdaten;TD;Testdaten;;20;-2;;01.01.1984;01.01.1987

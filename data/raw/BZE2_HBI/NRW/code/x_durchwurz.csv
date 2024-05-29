@@ -1,9 +1,0 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal wurde vergessen, nicht rekonstruierbar oder unbekannt.",2006-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt,2006-01-01,2021-01-01
--1,nicht erhoben,Merkmal wurde nicht erhoben.,2006-01-01,
-1,nicht vorhanden,nicht vorhanden; 0 Vol.-%,2006-01-01,
-2,gering,gering; > 0 - < 10 Vol.-%,2006-01-01,
-3,mittel,mittel; 10 - < 30 Vol.-%,2006-01-01,
-4,hoch,hoch; >= 30 Vol.-%,2006-01-01,
-5,extrem,estrem; >=50,2021-01-01,

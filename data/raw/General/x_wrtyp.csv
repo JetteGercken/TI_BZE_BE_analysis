@@ -1,0 +1,9 @@
+id;kurz;lang;gueltig_ab;gueltig_bis
+-9;fehlt;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;01.01.1998;
+-2;nicht ausgeprägt;Merkmal nicht ausgeprägt/nicht vorhanden;01.01.1998;01.01.2022
+-1;nicht erhoben;Merkmal nicht erhoben;01.01.1998;
+0;kW;kein Waldrand und keine Bestandesgrenze;01.01.2022;
+1;WA;Waldaußenrand;01.01.1989;
+2;WI;Waldinnenrand;01.01.1989;
+3;BE;Bestandesgrenze;01.01.1989;
+4;sBE;sonst. Bestandesgrenze;01.01.1989;
