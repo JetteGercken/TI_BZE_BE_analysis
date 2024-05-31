@@ -30,7 +30,7 @@ trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct()
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
-  # i = 2977
+  # i = 2
   # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
@@ -49,7 +49,7 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
   
   # create object  
   obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
-  
+   
   # calculate biomass per compartiment
   bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>% 
     pivot_longer(cols = stw:ndl,
@@ -78,8 +78,6 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
     
 }
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
-
-
 
 
 # 1.1.2. biomass belowground compartiments ----------------------------------
@@ -116,6 +114,8 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 bio_bg_kg_df <- as.data.frame(rbindlist(bio.bg.kg.list))
 
 
+
+
 # 1.1.3. biomass all compartiments - total ----------------------------------
 
 bio_total_kg_df <- 
@@ -144,6 +144,7 @@ bio_ag_kg_df[,c(1,2, 4, 6)] <- lapply(bio_ag_kg_df[,c(1,2,4, 6)], as.numeric)
 bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
 
+
 # 1.1.4. join biomass into tree dataset -----------------------------------
 trees_data <- trees_data %>% 
   left_join(., 
@@ -161,6 +162,7 @@ N_ag_bg_kg_df <- trees_data %>%
   filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
   mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
+
 
 # 1.2.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
 N_total_kg_df <- 

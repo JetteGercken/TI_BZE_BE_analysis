@@ -1115,6 +1115,14 @@ f = function(x,y,a,b){
 # ---- 1.9.2. einheitshoehenkurve------------------------------------------------------
 # ---- 1.9.2.1. Sloboda ------------------------------------------------------
 ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
+  # regarding the units: all diameters in mm and all heights in dm 
+  # od, if the /10 in the h_pred fruntion would be removed: all diameter in cm all heights in m 
+  # spec = H_SP_group 
+  # d_i = measured dbh in mm
+  # d_g = dbh of a stem representing the mean of the stand in mm
+  # h_g = height of a stem representing the mean of the stand in dm 
+  # h_pred = predicted height in m
+  
   k0 <- c(fi = 0.183, ta = 0.079, dgl = 0.24, ki = 0.29, lae = 0.074, bu = 0.032, ei = 0.102, alh = 0.122, aln = 0.032)
   k1 <- c(fi = 5.688, ta = 3.992, dgl = 6.033, ki = 1.607, lae = 3.692, bu = 6.04, ei = 3.387, alh = 5.04, aln = 4.24)
   k2 <- c(fi = 0.29, ta = 0.317, dgl = 0.33, ki = 0.388, lae = 0.342, bu = 0.367, ei = 0.488, alh = 0.47, aln = 0.461)
@@ -1133,7 +1141,7 @@ ehk_sloboda <- function(spec, d_i, d_mean, d_g, h_g) { #, id_broken) {
   #   else if (id_broken == 1) f_red <- 1 - 2/h_pred
   #   else if (id_broken == 2) f_red <- 1 - k2[tolower(spec)]
   # }  
-  return(h_pred)#*f_red)
+  return(h_pred)#*f_red) # predicted height in m
 }
 
 # ---- 1.9.2.2. Curtis ------------------------------------------------------

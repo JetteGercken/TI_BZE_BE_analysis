@@ -38,7 +38,11 @@ BZE3_trees <- BZE3_trees %>%
   mutate(old_tree_ID = tree_ID, 
          tree_inventory_status = old_tree_inventory_status)
 
+
 # # create fake/ practice BZE3/ post dataset from HBI/ pre data
+
+#BZE3_trees$tree_inventory_status[1] <- 5
+
 # BZE3_trees <- HBI_trees %>%
 #   filter(plot_ID == 50001) %>% 
 #   mutate(inv_year = 2023, 
@@ -146,9 +150,9 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
 
   print(ggplot()+ 
           geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
-          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
-          geom_point(aes(x.tree.post, y.tree.post, size = my.dbh.cm, color= "red"))+ 
-          guides(color=guide_legend(title="tree from inv. 2"))+
+          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id], colour = "pre tree"))+
+          geom_point(aes(x.tree.post, y.tree.post, size = my.dbh.cm, color= "post tree", alpha = .3))+ 
+          guides(color=guide_legend(title="tree from inv. 2 (post)"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_text(aes(x.tree.pre, y.tree.pre), 
                     label= HBI_trees$tree_ID[HBI_trees$plot_ID == my.plot.id],
@@ -262,8 +266,8 @@ for (i in 1:length(BZE3_trees_1$tree_ID)) {
   
   print(ggplot()+ 
           geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
-          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
-          geom_point(aes(x.tree.post, y.tree.post, size = my.dbh.cm, color= "red"))+ 
+          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id], color = "tree pre" ))+
+          geom_point(aes(x.tree.post, y.tree.post, size = my.dbh.cm, color= "tree post", alpha = .3))+ 
           guides(color=guide_legend(title="tree from inv. 2"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_text(aes(x.tree.pre, y.tree.pre), 
@@ -365,8 +369,8 @@ for (i in 1:length(BZE3_trees_4$tree_ID)) {
   
   print(ggplot()+ 
           geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
-          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
-          geom_point(aes(x.tree.post, y.tree.post, size =my.dbh.cm, color= "red"))+ 
+          geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id], color= "pre trees"))+
+          geom_point(aes(x.tree.post, y.tree.post, size =my.dbh.cm, color= "post tree", alpha = .3))+ 
           guides(color=guide_legend(title="tree from inv. 2"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_text(aes(x.tree.pre, y.tree.pre), 
@@ -416,7 +420,6 @@ HBI_trees <- HBI_trees %>%
       # tree species of candidate and original tree match
 # 4. after that we partner the closest candidate originating from tree i/ my.tree with the potential partner tree from 
 #    the previous inventory if there is one
-
 
 BZE3_trees_6 <- BZE3_trees %>% filter(tree_inventory_status == 6)
 tree_inventory_status_6.list <- vector(mode = "list", length = length(BZE3_trees_6$tree_ID))
@@ -537,8 +540,8 @@ for (i in 1:length(BZE3_trees_6$tree_ID)) {
   print(ggplot()+ 
           geom_circle(aes(x0 = data_circle$x0, y0 = data_circle$y0, r = data_circle$r0))+
           geom_point(aes(x.tree.pre, y.tree.pre, size = HBI_trees$DBH_cm[HBI_trees$plot_ID == my.plot.id]))+
-          geom_point(aes(x.tree.post, y.tree.post, size =my.dbh.cm, color= "my tree"))+ 
-          geom_point(aes(x.all.trees.post, y.all.trees.post, size = closest.trees.canidates.post$DBH_cm, color = "BZE3 nearest neighbours"))+
+          geom_point(aes(x.tree.post, y.tree.post, size =my.dbh.cm, color= "my tree", alpha = .3))+ 
+          geom_point(aes(x.all.trees.post, y.all.trees.post, size = closest.trees.canidates.post$DBH_cm, color = "BZE3 nearest neighbours", alpha = 0.3))+
           guides(color=guide_legend(title="tree from inv. 2"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_text(aes(x.tree.pre, y.tree.pre), 
@@ -612,7 +615,7 @@ growth.df <- left_join(HBI_trees %>%
 
                       
 
-BZE3_trees_5 <- BZE3_trees %>% filter(old_tree_inventory_status == 5)
+BZE3_trees_5 <- BZE3_trees %>% filter(tree_inventory_status == 5)
 tree_inventory_status_5.list <- vector(mode = "list", length = length(BZE3_trees_5$tree_ID))
 for (i in 1:length(BZE3_trees_5$tree_ID)) {
   # i = 1
@@ -644,7 +647,7 @@ tree_inventory_status_5.df <- as.data.frame(tree_inventory_status_5.list)
 # remove trees with inventory status 5 that match with trees in the tree_inventory_status_5.df 
 BZE3_trees <- rbind(BZE3_trees %>% 
   anti_join(., tree_inventory_status_5.df, 
-            by = c("plot_ID","tree_ID", "inv", "inv_year", "tree_inventory_status" )), 
+            by = c("plot_ID","tree_ID", "inv", "inv_year", "old_tree_inventory_status" )), 
   # then bind in the corrected data of that tree, with new tree_inventory_status == 1
   tree_inventory_status_5.df %>% filter(inv == "BZE3")
   )
@@ -660,7 +663,7 @@ HBI_trees <- rbind(HBI_trees,
 
 
 
-# remove trees that are not part of invenotry anymore ---------------------
+# remove trees that are not part of inventory anymore ---------------------
 # only pass on trees for analysis that are processed through new_invntory_status and labelled as 
 # new, repeated or unknown inventory
 # we can only do this after the trees with inventory status 4, 5 and 6 have been processed

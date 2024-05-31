@@ -58,7 +58,11 @@ trees_total <-  rbind(HBI_trees, BZE3_trees %>%
          BA_m2 = c_A(DBH_cm/2)*0.0001) %>% # *0.0001 to convert cm2 in m2 %>% 
  arrange(plot_ID, inv)
 
-
+trees_total <- rbind(trees_total %>% mutate(H_m = H_m+1.5, 
+                                      DBH_cm = DBH_cm+10), 
+                     trees_total %>% mutate(H_m = H_m-1.5, 
+                                            DBH_cm = DBH_cm-10),
+                     trees_total)
 
 
 # 2. estimating tree height -----------------------------------------------
@@ -125,6 +129,7 @@ coeff_H_SP <- left_join(trees_total %>%
                           filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                           group_by(SP_code) %>% 
                           filter(n() >= 3),
+                        # dataset with height coefficients
                         trees_total %>% 
                           select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                           filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class) ) %>% 
@@ -134,9 +139,9 @@ coeff_H_SP <- left_join(trees_total %>%
                           #https://stackoverflow.com/questions/20204257/subset-data-frame-based-on-number-of-rows-per-group
                           filter(n() >= 3)%>%    
                           group_by(SP_code) %>%
-                          nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
-                                     mod_start = c(b0=23, b1=0.03, b2 =1.3), 
-                                     output = "table"), 
+                           nls_table( H_m ~ b0 * (1 - exp( -b1 * DBH_cm))^b2, 
+                                      mod_start = c(b0=23, b1=0.03, b2 =1.3), 
+                                      output = "table"), 
                         by = c("SP_code"))%>%
   mutate(H_est = b0 * (1 - exp( -b1 * DBH_cm))^b2) %>% 
   group_by(SP_code) %>% 
@@ -168,8 +173,8 @@ coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coe
  trees_total %>% 
    group_by(inv, plot_ID, stand, C_layer, SP_code) %>% 
    summarise(mean_DBH_mm = mean(DBH_cm)*10,
-             D_g = sqrt(mean(BA_m2[!is.na(H_dm)])*4/pi)*100,
-             H_g = sum((H_dm[!is.na(H_dm)]/10)*BA_m2[!is.na(H_dm)])/sum(BA_m2[!is.na(H_dm)])) 
+             D_g = sqrt(mean(BA_m2[!is.na(H_dm)])*4/pi)*100, # dg in cm --> that´s why the *100 --> m in cm
+             H_g = sum((H_dm[!is.na(H_dm)]/10)*BA_m2[!is.na(H_dm)])/sum(BA_m2[!is.na(H_dm)]))  # hg in m --> because BA is in m2 and we divided H_dm by 10 to have H_m
  
  
   
@@ -207,7 +212,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
                          is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g*10, H_g*10),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
@@ -220,6 +225,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
             SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
              DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
+
 
  
 
@@ -251,7 +257,7 @@ BZE3_trees_update_3 <-  trees_total %>%
                          is.na(H_m) & is.na(R2.x) & R2.y > 0.70 | is.na(H_m) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_cm),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na but there is a h_g and d_G
-                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g, H_g),
+                         is.na(H_m) & is.na(R2_comb) & !is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g*10, H_g*10),
                          # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
                          # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
                          is.na(H_m) & is.na(R2_comb) & is.na(H_g)| is.na(H_m) & R2_comb < 0.70 & is.na(H_g) ~ h_curtis(H_SP_group, DBH_cm*10), 
@@ -265,7 +271,6 @@ BZE3_trees_update_3 <-  trees_total %>%
             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
- 
 
 # 1.1.2.6. remove problematik trees ---------------------------------------
  HBI_trees_removed_3 <- HBI_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") 
