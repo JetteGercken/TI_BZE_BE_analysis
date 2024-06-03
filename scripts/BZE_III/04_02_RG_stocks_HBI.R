@@ -40,6 +40,7 @@ RG_data <- RG_data %>%
 # 1.2.1. biomass for RG trees height > 1.3m -------------------------------
 # subset those trees that have a height above 1.3m and thus a DBH which allows them to be processed in TapeS
 RG_above_1.3 <- RG_data[RG_data$H_m > 1.3, ]
+
 # 1.2.1.1. aboveground biomass for RG trees height > 1.3m -------------------------------
 # create output list
 bio.ag.bg.kg.RG.above.1.3 <- vector("list", length = nrow(RG_above_1.3))

@@ -45,7 +45,7 @@ RG_above_1.3 <- RG_data[RG_data$H_m > 1.3, ]
 # create output list
 bio.ag.bg.kg.RG.above.1.3 <- vector("list", length = nrow(RG_above_1.3))
 for (i in 1:nrow(RG_above_1.3)) {
-  # i = 13
+  # i = 1
   
   # basic tree info
   # select one tree ID and plot ID for each individual tree per plot and sampling circuit
@@ -62,23 +62,27 @@ for (i in 1:nrow(RG_above_1.3)) {
   # poorter et al. function for aboveground biomass for trees 
   spp_LHNH = unique(RG_above_1.3$LH_NH[RG_above_1.3$plot_ID==my.plot.id & RG_above_1.3$tree_ID==my.tree.id & RG_above_1.3$CCS_nr==my.ccs.id])
   
-  
-  # calculate biomass per compartiment
+ 
+ 
+   # calculate biomass per compartiment
   bio.df <- as.data.frame(cbind(
     "compartiment" = c("fwb", "ndl", "ag", "bg"), 
     # sw+ fwb compartiment: 
     # for conifers we have to deduct the leaf biomass estimated by poorter because it is included in the aboveground biomass
     # for broadleafed trees we don´t have to 
-    "B_kg_tree" = c(ifelse(spp_LHNH == "NB", ag_GHGI - as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,], ag_GHGI),
-                    # foliage "ndl"
-                    as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],
-                    # abovegorund "ag":
-                    # for broadleafed we have to add the leaf biomass estimated by poorter because it is included in the aboveground biomass
-                    # for conifers trees we don´t have to 
-                    ifelse(spp_LHNH == "LB", ag_GHGI + as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],ag_GHGI),
-                    # belowground "bg"  
-                    as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
+    "B_kg_tree" = c(
+      # fine wood: for RG it is called fine wood "fwb" but it means all woody compartiments (stemwood, stembark, stumpwood, stumpbark)
+      ifelse(spp_LHNH == "NB", ag_GHGI - as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,], ag_GHGI),
+      # foliage "ndl"
+      as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],
+      # abovegorund "ag":
+      # for broadleafed we have to add the leaf biomass estimated by poorter because it is included in the aboveground biomass
+      # for conifers trees we don´t have to 
+      ifelse(spp_LHNH == "LB", ag_GHGI + as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],ag_GHGI),
+      # belowground "bg"  
+      as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
     ))) 
+  
   
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
@@ -148,6 +152,10 @@ N_ag_bg_kg_comps_df <- RG_data %>%
                                TRUE ~ NA)) %>% 
   select("plot_ID","CCS_nr", "tree_ID", "inv", 
          "inv_year", "compartiment", "N_kg_tree")
+
+
+
+
 
 # 1.3.2. total Nitrogen stock ---------------------------------------------------------------
 N_total_kg_df <- 

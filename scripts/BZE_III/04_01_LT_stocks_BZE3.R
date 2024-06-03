@@ -210,4 +210,4 @@ write.csv(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)
 write.csv(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
-stop("this is where stock calculation of BTE3 ends")
+stop("this is where stock calculation of BZE3 ends")
