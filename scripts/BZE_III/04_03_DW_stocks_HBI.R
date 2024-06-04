@@ -74,7 +74,7 @@ DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
 for (i in 1:nrow( DW_data_whole)){
-  # i = 616
+  # i = 2
   
   # select general info about the DW item
   my.plot.id <-  DW_data_whole[,"plot_ID"][i]
@@ -95,6 +95,8 @@ for (i in 1:nrow( DW_data_whole)){
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
  
+  
+  
   # calculate biomass
   # check if there is an error withthe monotone settings: https://stackoverflow.com/questions/2158780/catching-an-error-and-then-branching-logic 
   t <- try(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp))
@@ -198,7 +200,7 @@ bio_dw_broken_kg_df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
 DW_data_stump <- DW_data[DW_data$dw_type == 4 & DW_data$decay  %in% c(1,2),]
 bio.dw.stump.kg.list <- vector("list", length = nrow(DW_data_stump))
 for (i in 1:nrow(DW_data_stump)){
-  # i = 3
+  # i = 1
   
   # select general info about the DW item
   my.plot.id <- DW_data_stump[,"plot_ID"][i]
@@ -217,7 +219,8 @@ for (i in 1:nrow(DW_data_stump)){
   Hm = as.list(as.numeric(1.3))
   Ht = (as.numeric(estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
   
-  
+ 
+
   # compartiments
   comp <- c("stw", "stb")
   

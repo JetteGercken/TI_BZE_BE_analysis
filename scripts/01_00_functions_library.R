@@ -1563,6 +1563,10 @@ B_DW <- function(V.m3, dec.type, SP){     # dec_SP = a column that holds the deg
 # Biomasse unzersetzt * (100% - relative Veränderung der Dichte) = 
 # B * (1-(D1 - D2/ D1))
 rdB_DW <- function(B, dec.type, SP){     # a column that holds the degree of decay and the species type has to be created (united)
+  # b = Biomass
+  # dec.type = decay type according to BWI classification
+  # SP = number code for deadwood species group
+  
   # create combination of decay and species to select correct BEF 
   SP_dec <- paste0(SP, "_", dec.type)
   # relatve density
