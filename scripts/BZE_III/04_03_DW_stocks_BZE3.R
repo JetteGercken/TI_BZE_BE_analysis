@@ -74,7 +74,7 @@ DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
 for (i in 1:nrow( DW_data_whole)){
-  # i = 616
+  # i = 2
   
   # select general info about the DW item
   my.plot.id <-  DW_data_whole[,"plot_ID"][i]
@@ -94,6 +94,8 @@ for (i in 1:nrow( DW_data_whole)){
   
   # create object  
   obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  
+  
   
   # calculate biomass
   # check if there is an error withthe monotone settings: https://stackoverflow.com/questions/2158780/catching-an-error-and-then-branching-logic 
@@ -198,7 +200,7 @@ bio_dw_broken_kg_df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
 DW_data_stump <- DW_data[DW_data$dw_type == 4 & DW_data$decay  %in% c(1,2),]
 bio.dw.stump.kg.list <- vector("list", length = nrow(DW_data_stump))
 for (i in 1:nrow(DW_data_stump)){
-  # i = 3
+  # i = 1
   
   # select general info about the DW item
   my.plot.id <- DW_data_stump[,"plot_ID"][i]
@@ -216,6 +218,7 @@ for (i in 1:nrow(DW_data_stump)){
   # estimate height a tree with the estimated DBH diameter would have
   Hm = as.list(as.numeric(1.3))
   Ht = (as.numeric(estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
+  
   
   
   # compartiments
@@ -329,9 +332,11 @@ N_dw_ag_comps_kg_df <- DW_data %>%
            dw_type %in% c(1, 6)) %>% 
   mutate(N_kg_tree = case_when(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), 
                                # for all trees that are not copmartioned (meaning all trees that don´t have )
-                               dw_type %in% c(1, 6) & compartiment == "ag" | dw_type %in% c(2, 5, 3, 4) & decay > 2 & compartiment =="ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sb"), 
+                               dw_type %in% c(1, 6) & compartiment == "ag" | dw_type %in% c(2, 5, 3, 4) & decay > 2 & compartiment =="ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sw"), 
                                TRUE ~ NA)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, dw_type, compartiment, N_kg_tree) 
+
+
 
 
 # 1.4.2. total nitrogen stocks: sum up Nitrogen stock in compartiments -----------------------------------------

@@ -332,9 +332,11 @@ N_dw_ag_comps_kg_df <- DW_data %>%
            dw_type %in% c(1, 6)) %>% 
   mutate(N_kg_tree = case_when(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), 
                                # for all trees that are not copmartioned (meaning all trees that don´t have )
-                               dw_type %in% c(1, 6) & compartiment == "ag" | dw_type %in% c(2, 5, 3, 4) & decay > 2 & compartiment =="ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sb"), 
+                               dw_type %in% c(1, 6) & compartiment == "ag" | dw_type %in% c(2, 5, 3, 4) & decay > 2 & compartiment =="ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group,"sw"), 
                                TRUE ~ NA)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, dw_type, compartiment, N_kg_tree) 
+
+
 
 
 # 1.4.2. total nitrogen stocks: sum up Nitrogen stock in compartiments -----------------------------------------

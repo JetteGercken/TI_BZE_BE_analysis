@@ -23,6 +23,7 @@
 #  install.packages("RODBC")
 #  install.packages("rstudioapi")
 #  install.packages("gsubfn")
+#  install.packages("sjmisc")
 #   ## laTex
 #   install.packages("stargazer")  #for compatability with Latex
 #   install.packages("tikzDevice") #for compatability with Latex#
@@ -49,7 +50,7 @@
  #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
  #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 #  install.packages("magrittr")
-#  install.packages("sjmisc")
+
 #  if(!require(devtools)) install.packages("devtools")
 #  devtools::install_github("kassambara/ggcorrplot")
 # # spatial
