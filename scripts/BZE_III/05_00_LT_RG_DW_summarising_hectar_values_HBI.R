@@ -110,6 +110,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
            }
 
 
+
 # 1.4.2. plot, species, stand: stocks per ha, finest summary --------------
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   LT_SP_ST_P_BCNBAn_ha <- plyr::rbind.fill(trees_data  %>% 
@@ -215,6 +216,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     summarise(BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
     mutate(stand_component = "LT") %>% 
     #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+    # join in total BA_m2_ha dataset to calculate relationship between species & standwise BA and standwise BA
     left_join(., 
               trees_data %>% 
                 filter(plot_ID == my.plot.id & stand == "A") %>% 
@@ -352,7 +354,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     # 17m circle
     my.tree.df[my.tree.df$CCS_r_m == 17.84, ][rep(seq_len(nrow(my.tree.df[my.tree.df$CCS_r_m == 17.84, ])), 
                                                   each = my.n.ha.df$n.rep.each.tree[my.n.ha.df$CCS_r_m == 17.84]), ])
-  
+
   
   LT_avg_SP_ST_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv, SP_code, stand) %>% 
@@ -367,28 +369,28 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   
   LT_avg_SP_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv, SP_code) %>% 
-    summarise(stand = "all", 
-              mean_DBH_cm = mean(DBH_cm), 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
               sd_DBH_cm = sd(DBH_cm),
               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
               mean_BA_m2 = mean(BA_m2),
               mean_H_m = mean(H_m), 
               sd_H_m = sd(H_m), 
               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
-    mutate(stand_component = "LT")
+    mutate(stand_component = "LT", 
+           stand = "all")
   
   LT_avg_P_list[[i]] <- my.tree.rep.df %>% 
     group_by(plot_ID, inv) %>% 
-    summarise(SP_code = "all",
-              stand = "all",
-              mean_DBH_cm = mean(DBH_cm), 
+    summarise(mean_DBH_cm = mean(DBH_cm), 
               sd_DBH_cm = sd(DBH_cm),
               Dg_cm = ((sqrt(mean(BA_m2)/pi))*2)*100,  
               mean_BA_m2 = mean(BA_m2),
               mean_H_m = mean(H_m), 
               sd_H_m = sd(H_m), 
               Hg_m = sum(mean(na.omit(mean_H_m))*sum(BA_m2))/sum(sum(BA_m2))) %>% 
-    mutate(stand_component = "LT")
+    mutate(stand_component = "LT", 
+           SP_code = "all",
+           stand = "all")
   
 }
 LT_avg_SP_ST_P <- as.data.frame(rbindlist(LT_avg_SP_ST_P_list))
@@ -445,10 +447,10 @@ LT_TY <- LT_P %>%
   summarise(B_t_ha = mean(B_t_ha),
             C_t_ha = mean(C_t_ha), 
             N_t_ha = mean(N_t_ha))%>%
-  # so ba, n_ha, n_SP are only calculated for compartiment "ag", meaning with 1 row per plot not 6 as we have compartiments
   left_join(., 
             LT_P %>% 
               select(stand_type, compartiment, stand_component, inv, BA_m2_ha, n_ha, n_SP) %>% 
+              # select only compartiment "ag" so ba, n_ha, n_SP are only calculated for compartiment "ag", meaning with 1 row per plot not 6 as we have compartiments
               filter(compartiment == "ag") %>%
               group_by(stand_type, compartiment, stand_component, inv) %>% 
               summarise(BA_m2_ha = mean(BA_m2_ha), 
