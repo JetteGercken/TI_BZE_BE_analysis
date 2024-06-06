@@ -518,6 +518,15 @@ RG_n_ha <- RG_data %>%
   distinct() %>% 
   mutate(stand_component = "RG")
 
+RG_n_ha_ST <- RG_data %>% 
+  filter(compartiment == "ag") %>% 
+  left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
+  group_by(plot_ID, inv, stand) %>% 
+  # sum number of trees  per sampling circuit
+  reframe(n_ha = n()/plot_A_ha) %>% 
+  distinct() %>% 
+  mutate(stand_component = "RG")
+
 # 2.3. number of RG  species per hectar ----------------------------------------------
 RG_n_SP_plot <- RG_data %>%
   filter(compartiment == "ag") %>%
@@ -559,7 +568,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
     reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
             N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-    distinct()
+    distinct() %>% 
   arrange(plot_ID) %>% 
     group_by(plot_ID, plot_A_ha, inv, stand, compartiment, SP_code) %>%
     summarise(B_t_ha = sum(B_t_ha),
@@ -583,7 +592,8 @@ RG_summary <- plyr::rbind.fill(
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "stand"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
-                 operation = "sum_df") %>% # statistical operation 
+                 operation = "sum_df") %>% # statistical operation
+    left_join(., RG_n_ha_ST, by = c("plot_ID", "inv", "stand_component", "stand")) %>% 
     mutate(SP_code = "all"),
   # 2.4.4. RG summary by plot, inventory, compartiment, not by speci --------
   summarize_data(RG_SP_ST_BCN_ha,
@@ -773,19 +783,6 @@ DW_summary <-
 
 
 # 4. creating dataset with all stand components ---------------------------
-# LT_RG_DW_P <- rbind(
-#   # plotwise summar yof tree dataset
-#   LT_P %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-#   RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
-#   DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% 
-#     # as there is no bg and total compartiment, this filter will only select ag compartiments
-#     filter(compartiment %in% c("ag", "bg", "total")),
-#   # take all "ag" compartiments of DW and assign them to the compartiment "total" as well, so we can create a row of total stocks for all stand components
-#   DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, B_t_ha, C_t_ha, N_t_ha) %>% mutate(compartiment = "total"),
-#   # total plot data over all stand components
-# ) %>% 
-#   arrange(plot_ID) 
-
 LT_RG_DW_P <- 
   plyr::rbind.fill(
     plyr::rbind.fill(
