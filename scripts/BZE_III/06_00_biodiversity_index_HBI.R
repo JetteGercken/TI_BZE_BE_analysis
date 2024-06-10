@@ -98,7 +98,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                select(plot_ID) ) %>% 
     # if the Rbind caused NAs to appear because there were whole plots without a any tree CCS then we have to set the respective variable to 0
     mutate(LT_RMS_DBH = ifelse(is.na(LT_RMS_DBH), 0, LT_RMS_DBH)) %>%  
-    mutate(LT_FSI_DBH_RMS =  as.numeric(FSI(LT_RMS_DBH)))
+    mutate(LT_FSI_DBH_RMS = FSI(LT_RMS_DBH))  # as.numeric(FSI(LT_RMS_DBH)))
 }else{
   FSI_df <- trees_data %>% 
     group_by(plot_ID) %>% 

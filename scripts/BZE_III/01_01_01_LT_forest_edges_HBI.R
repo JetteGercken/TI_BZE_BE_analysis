@@ -26,6 +26,14 @@ geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
 
+# for test purposes
+# we need a solution in the interception and in the coords function that returns the accurate koordinates for the following distances and azis
+#if(A_azi == 0 & B_azi == 200)  # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|r.max) x_A = 0, y_A = r.max and B (0|-r.max) x_A = 0, y_A =- r.max
+#if  (A_azi == 200 & B_azi == 0 ) # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|-r.max) x_A = 0, y_A = -r.max and B (0|r.max) x_A = 0, y_A = r.max
+# if A_azi == 100 & B_azi == 300 # the line will go straight to the x achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0
+#if  A_azi == 300 & B_azi == 0 #  the line will go straight to the y achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0
+
+
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
 geo_loc <- geo_loc[1:12] 
@@ -178,8 +186,6 @@ forest_edges.man <- forest_edges %>%
 
 
 
-
-
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1) # %>% 
@@ -189,7 +195,7 @@ triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1
 triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
 
 for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
-  # i = 2
+  # i = 1
   # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
@@ -203,32 +209,34 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle center and radius to calcualte intersections 
-  c.x0 = 0   
-  c.y0 = 0   
+  c.x0 = 1  
+  c.y0 = 1   
   c.r0 = 17.84
-  c.rmax = 60
+  c.rmax =  60
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <- forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)       # this is: easting, longitude, RW
-  y.A <- dist.A*cos(azi.A)       # this is: northing, latitude, HW
+  dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
+  azi.A <-   forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
+  x.A <- dist.A*sin(azi.A)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- dist.A*cos(azi.A)       # this is: northing, latitude, HW ##test*pi/200
   # point B
-  dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)      # this is: easting, longitude, RW
-  y.B <- dist.B*cos(azi.B)      # this is: northing, latitude, HW
+  dist.B <-  forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
+  azi.B <-   forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
+  x.B <- dist.B*sin(azi.B)      # this is: easting, longitude, RW #test*pi/200
+  y.B <- dist.B*cos(azi.B)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
+
   
   # calculate polar coordiantes of intersections of AB line with 
   x.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x1") # this is: easting, longitude, RW
   y.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "y1") # this is: northing, latitude, HW
   x.2 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x2") # this is: easting, longitude, RW
   y.2 <- intersection_line_circle(b0, b1 ,c.x0, c.y0,  c.rmax, coordinate = "y2") # this is: northing, latitude, HW
+  
   
   # for edge form 1 we have to consider that the square has to be directed into the direction of the smaller half of the circle
   # calculate coordiantes of the middle of thie line between 
@@ -430,7 +438,7 @@ remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(f
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){ 
-  # i = 48
+  # i = 1
   #i = which(grepl(50131, (forest_edges.man.sub.1.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -643,7 +651,7 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 18
+  # i = 1
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 

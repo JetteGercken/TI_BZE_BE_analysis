@@ -303,29 +303,11 @@ coord <- function(x.c, y.c, d, azi, coordinate){
   # azi =  Azimute betweeen Point and other ppoint (centre)
   
   switch(coordinate, 
-  x = x.c + d * sin(azi),  # x is the latitude or "easting"
-  y = y.c + d * cos(azi)  #  y is the longitude or "northing"
+  x = x.c + d * sin(azi*pi/200),  # x is the latitude or "easting"
+  y = y.c + d * cos(azi*pi/200)  #  y is the longitude or "northing"
   )  
 }
   
-  
-y_coord <- function(Dcp, AZIcp){      # originally x_coord
-  # Xc =  x coordinate of centre = 0 
-  # Dcp = Distance between point and centre
-  # AZIcp=  Azimute betweeen Point and centre
-  Xc <- 0;   # this is set to 2000 to avoid negative 
-  X = Xc + Dcp * cos(AZIcp);
-  return(X)
-}
-
-x_coord <- function(Dcp, AZIcp){  # originally y_coord
-  # Yc =  y coordinate of centre = 0 
-  # Dcp = Distance between point and centre
-  # AZIcp=  Azimute betweeen Point and centre
-  Yc <- 0;
-  Y = Yc + Dcp * sin(AZIcp);
-  return(Y)
-}
 
 
 
@@ -412,7 +394,11 @@ slope <- function(x1, y1, x2, y2){
 intercept <- function(x1, y1, x2, y2){
   # resolve line function towards b0 after inserting known coordinates and slope
   # Y_A = b1_AB*X_A + b0_AB | (-b1_AB*X_A) 
+ 
+   #calcualte b0 by equaling equations https://studyflix.de/mathematik/y-achsenabschnitt-berechnen-2122
+  #b0 = ((x.B*y.A)-(x.A*y.B))/(x.B-x.A)
   # Y_A - b1_AB*X_A = b0_AB 
+  
   b1 = (y2 - y1)/(x2 - x1);
   b0 = y1 - b1*x1;
   return(b0)
