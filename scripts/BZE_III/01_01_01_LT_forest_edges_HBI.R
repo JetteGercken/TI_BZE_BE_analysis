@@ -25,13 +25,17 @@ geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
+forest_edges$A_dist <- 1784 # test
+forest_edges$A_azi <- 100     # test
+forest_edges$B_dist <- 1784 # test
+forest_edges$B_azi <- 300    # test
 
 # for test purposes
 # we need a solution in the interception and in the coords function that returns the accurate koordinates for the following distances and azis
-#if(A_azi == 0 & B_azi == 200)  # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|r.max) x_A = 0, y_A = r.max and B (0|-r.max) x_A = 0, y_A =- r.max
-#if  (A_azi == 200 & B_azi == 0 ) # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|-r.max) x_A = 0, y_A = -r.max and B (0|r.max) x_A = 0, y_A = r.max
-# if A_azi == 100 & B_azi == 300 # the line will go straight to the x achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0
-#if  A_azi == 300 & B_azi == 0 #  the line will go straight to the y achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0
+#if(A_azi == 0 & B_azi == 200)  # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|r.max) x_A = 0, y_A = r.max and B (0|-r.max) x_A = 0, y_A =- r.max and MC will be x_MC = r.max, y_mc = 0
+#if  (A_azi == 200 & B_azi == 0 ) # the line will go straight to the y achis so the x is 0 coodrinates for A has to be  (0|-r.max) x_A = 0, y_A = -r.max and B (0|r.max) x_A = 0, y_A = r.max and MC will be x_MC = r.max, y_mc = 0
+# if A_azi == 100 & B_azi == 300 # the line will go straight to the x achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0 and MC will be x_MC = 0, y_mc = r.max
+#if  A_azi == 300 & B_azi == 0 #  the line will go straight to the y achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0 and MC will be x_MC = 0, y_mc = r.max
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
@@ -209,27 +213,35 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle center and radius to calcualte intersections 
-  c.x0 = 1  
-  c.y0 = 1   
+  c.x0 = 0 
+  c.y0 = 0   
   c.r0 = 17.84
   c.rmax =  60
+  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
+  
+  # build polygon (circlular buffer) around center point
+  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  ## assing crs to cirlce corodiantes
+  # sf::st_crs(circle.pt) <- my.utm.epsg
+  circle.17 <- sf::st_buffer(circle.pt, c.r0)
+  circle.max <- sf::st_buffer(circle.pt, c.rmax)
   
   # extract polar coordiantes of forest edge
   # point A 
   dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
   azi.A <-   forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)       # this is: easting, longitude, RW ##test*pi/200
-  y.A <- dist.A*cos(azi.A)       # this is: northing, latitude, HW ##test*pi/200
+  x.A <- dist.A*sin(azi.A*pi/200)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- dist.A*cos(azi.A*pi/200)       # this is: northing, latitude, HW ##test*pi/200
   # point B
   dist.B <-  forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
   azi.B <-   forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)      # this is: easting, longitude, RW #test*pi/200
-  y.B <- dist.B*cos(azi.B)      # this is: northing, latitude, HW #test*pi/200
+  x.B <- dist.B*sin(azi.B*pi/200)      # this is: easting, longitude, RW #test*pi/200
+  y.B <- dist.B*cos(azi.B*pi/200)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
-
+  
   
   # calculate polar coordiantes of intersections of AB line with 
   x.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x1") # this is: easting, longitude, RW
@@ -244,7 +256,7 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   y_m_line = (y.1 + y.2)/2
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line)
-  b0_MC = intercept(c.x0, c.y0, x_m_line, y_m_line)
+  b0_MC =  intercept(c.x0, c.y0, x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
   X1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x1") 
   X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x2")
@@ -262,7 +274,7 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # line from the middle of the AB.inter-ray and the circle center (MC_line) with 
   # the 60m radius at the "shorter side" so the intersection of the MC_line with a 60m radius that has le lest distance to the MC point on the AB.inter-ray
   turning.east <- X_inter_MC_shorter_side   # + my.center.easting
-  turning.north <-  Y_inter_MC_shorter_side # + my.center.northing
+  turning.north <- Y_inter_MC_shorter_side # + my.center.northing
   
   # UTM coordiantes of corner points 
   x1.east <- x.1   # + my.center.easting 
@@ -277,6 +289,18 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
                                         "e_ID" = c(my.e.id, my.e.id, my.e.id, my.e.id), 
                                         "inv_year" = c(my.inv.year, my.inv.year, my.inv.year, my.inv.year)))
   
+  # this is a correction in case that either the base line of the triangle 
+  # runs along with/ parallel to the y achis (meaning the b1 = Inf) or
+  # that the line from the middle of the trinangle base to the outer edge of the cirlce is parrallel to the y achsis and the b1_MC is Inf
+  triangle.e1.df %>%
+    mutate(lon = case_when(b1_MC == Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat)| # X 
+                             b1_MC == -Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat) ~ 0,
+                           TRUE ~ lon), 
+           lat = case_when(b1_MC == Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat)| # y
+                             b1_MC == -Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat) ~ 60,
+                           TRUE ~ lon)
+           )
+  
   # creating polygones in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
   triangle.e1.poly <-  sfheaders::sf_polygon(obj = triangle.e1.df  
                                              , x = "lon"
@@ -290,6 +314,22 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # sf::st_crs(triangle.e1.poly) <- my.utm.epsg
   
   print(plot(triangle.e1.poly, main = my.plot.id))
+  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  c.poly.17 <- sf::st_buffer(c.pt, 17.84)
+  c.poly.12 <- sf::st_buffer(c.pt, 12.62)
+  c.poly.5 <- sf::st_buffer(c.pt, 5.64)
+  c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
+  # test 
+  print(ggplot() +
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.60, aes(alpha = 0))+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
+          xlim(-80, 80)+
+          ylim(-80, 80))
   
   #save polygones in list 
   triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, triangle.e1.poly)
