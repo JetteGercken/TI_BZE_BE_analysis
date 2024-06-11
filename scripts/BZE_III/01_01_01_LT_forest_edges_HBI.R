@@ -25,10 +25,10 @@ geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
-forest_edges$A_dist <- 1784 # test
-forest_edges$A_azi <- 100     # test
-forest_edges$B_dist <- 1784 # test
-forest_edges$B_azi <- 300    # test
+# forest_edges$A_dist <- 1784 # test
+# forest_edges$A_azi <- 0     # test
+# forest_edges$B_dist <- 1784 # test
+# forest_edges$B_azi <- 200    # test
 
 # for test purposes
 # we need a solution in the interception and in the coords function that returns the accurate koordinates for the following distances and azis
@@ -217,14 +217,7 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   c.y0 = 0   
   c.r0 = 17.84
   c.rmax =  60
-  center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
   
-  # build polygon (circlular buffer) around center point
-  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
-  ## assing crs to cirlce corodiantes
-  # sf::st_crs(circle.pt) <- my.utm.epsg
-  circle.17 <- sf::st_buffer(circle.pt, c.r0)
-  circle.max <- sf::st_buffer(circle.pt, c.rmax)
   
   # extract polar coordiantes of forest edge
   # point A 
@@ -292,13 +285,29 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # this is a correction in case that either the base line of the triangle 
   # runs along with/ parallel to the y achis (meaning the b1 = Inf) or
   # that the line from the middle of the trinangle base to the outer edge of the cirlce is parrallel to the y achsis and the b1_MC is Inf
-  triangle.e1.df %>%
-    mutate(lon = case_when(b1_MC == Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat)| # X 
-                             b1_MC == -Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat) ~ 0,
-                           TRUE ~ lon), 
-           lat = case_when(b1_MC == Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat)| # y
-                             b1_MC == -Inf & row_number() %in% c(1, 4) & is.na(lon) & is.na(lat) ~ 60,
-                           TRUE ~ lon)
+  triangle.e1.df <- triangle.e1.df %>%
+    mutate(lon = case_when(
+      # base line of triangle (edge line) is line from east to west (along x achsis)
+      b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lon) | # X turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
+        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lon) |
+      # base of triangle (edge line) is line from north to south (along y achsis)
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(2, 3) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) & row_number() %in% c(2, 3) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ 0, # X2 when base of triable B to A runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ -c.rmax,
+        TRUE ~ lon), 
+      lat = case_when(
+        # base of triangle (edge line) is a line from east to west (along x achsis)
+        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lat) | # Y turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
+          b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lat) |
+          b1 %in% c(Inf, -Inf) &  row_number() == 3 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number()==3 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ -c.rmax, # Y2 when base of triable B to A runs along y-achsis (gon 0 and 200)
+        # base line of triangle (edge line) is line from north to south (along y achsis)
+        b1 %in% c(Inf, -Inf) &  row_number() == 2 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number()==2 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ c.rmax, # Y1 when base of triable B to A runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ 0,# y turning point when base of triable A to B runs along y-achsis (gon 0 and 200)
+        TRUE ~ lat)
            )
   
   # creating polygones in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
@@ -382,20 +391,20 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # point A 
   dist.A <- forest_edges.man.sub.e2.nogeo[i, "A_dist"] 
   azi.A <- forest_edges.man.sub.e2.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)   # longitude, easting, RW, X
-  y.A <- dist.A*cos(azi.A)   # latitude, northing, HW, y 
+  x.A <- dist.A*sin(azi.A*pi/200)   # longitude, easting, RW, X
+  y.A <- dist.A*cos(azi.A*pi/200)   # latitude, northing, HW, y 
   
   # point B
   dist.B <- forest_edges.man.sub.e2.nogeo[i, "B_dist"] 
   azi.B <- forest_edges.man.sub.e2.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)   # longitude, easting, RW, X
-  y.B <- dist.B*cos(azi.B)   # latitude, northing, HW, y 
+  x.B <- dist.B*sin(azi.B*pi/200)   # longitude, easting, RW, X
+  y.B <- dist.B*cos(azi.B*pi/200)   # latitude, northing, HW, y 
   
   # point T
   dist.T <- forest_edges.man.sub.e2.nogeo[i, "T_dist"] 
   azi.T <- forest_edges.man.sub.e2.nogeo[i, "T_azi"] 
-  x.T <- dist.T*sin(azi.T)   # longitude, easting, RW, X
-  y.T <- dist.T*cos(azi.T)   # latitude, northing, HW, y 
+  x.T <- dist.T*sin(azi.T*pi/200)   # longitude, easting, RW, X
+  y.T <- dist.T*cos(azi.T*pi/200)   # latitude, northing, HW, y 
   
   b0.AT = intercept(x.T, y.T, x.A, y.A)
   b1.AT = slope(x.T, y.T, x.A, y.A)
@@ -730,8 +739,8 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   # calcualte polar coordinates of trees
   tree.coord.df <- outer.trees.df %>% 
     mutate(dist_tree = dist_cm/100, 
-           x_tree = dist_tree*sin(azi_gon), 
-           y_tree = dist_tree*cos(azi_gon), 
+           x_tree = dist_tree*sin(azi_gon*pi/200), 
+           y_tree = dist_tree*cos(azi_gon*pi/200), 
            lon = x_tree, #+ my.center.easting, 
            lat =  y_tree ) %>% # + my.center.northing)
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
@@ -1331,8 +1340,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # calcualte polar coordinates of trees
   tree.coord.df <- outer.trees.df %>% 
     mutate(dist_tree = dist_cm/100, 
-           x_tree = dist_tree*sin(azi_gon), 
-           y_tree = dist_tree*cos(azi_gon), 
+           x_tree = dist_tree*sin(azi_gon*pi/200), 
+           y_tree = dist_tree*cos(azi_gon*pi/200), 
            lon = x_tree, #+ my.center.easting, 
            lat =  y_tree ) %>% # + my.center.northing)
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
@@ -1673,7 +1682,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
 outer.edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.edges.list.two.edges.nogeo))
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
 outer.intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame(rbindlist(outer.intersection.warning.edges.list.nogeo, fill=TRUE)))
-if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
+if(nrow(outer.intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
                                                            Please check dataset intersection.two.edges.warning.df.nogeo")}
 # save intersection polygones into dataframe 
 # list of polygones 1 of forest edges 
@@ -1754,8 +1763,8 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.one.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.one.edge.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   # transform polar into cartesian coordiantes
   tree.east <- x.tree   # + my.center.easting 
   tree.north <-  y.tree # + my.center.northing
@@ -1859,8 +1868,8 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.two.edges.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.two.edges.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
   # transform polar into cartesian coordiantes
   tree.east <- x.tree  # + my.center.easting 
@@ -1958,8 +1967,8 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.no.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
   
   # transform polar into cartesian coordiantes

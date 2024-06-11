@@ -177,8 +177,6 @@ forest_edges.man <- forest_edges %>%
 
 
 
-
-
 # 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1) # %>% 
@@ -188,7 +186,7 @@ triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1
 triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
 
 for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
-  # i = 2
+  # i = 1
   # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
@@ -202,26 +200,28 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
   
   # circle center and radius to calcualte intersections 
-  c.x0 = 0   
+  c.x0 = 0 
   c.y0 = 0   
   c.r0 = 17.84
-  c.rmax = 60
+  c.rmax =  60
+  
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <- forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)       # this is: easting, longitude, RW
-  y.A <- dist.A*cos(azi.A)       # this is: northing, latitude, HW
+  dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
+  azi.A <-   forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
+  x.A <- dist.A*sin(azi.A*pi/200)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- dist.A*cos(azi.A*pi/200)       # this is: northing, latitude, HW ##test*pi/200
   # point B
-  dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)      # this is: easting, longitude, RW
-  y.B <- dist.B*cos(azi.B)      # this is: northing, latitude, HW
+  dist.B <-  forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
+  azi.B <-   forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
+  x.B <- dist.B*sin(azi.B*pi/200)      # this is: easting, longitude, RW #test*pi/200
+  y.B <- dist.B*cos(azi.B*pi/200)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
+  
   
   # calculate polar coordiantes of intersections of AB line with 
   x.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x1") # this is: easting, longitude, RW
@@ -229,13 +229,14 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   x.2 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x2") # this is: easting, longitude, RW
   y.2 <- intersection_line_circle(b0, b1 ,c.x0, c.y0,  c.rmax, coordinate = "y2") # this is: northing, latitude, HW
   
+  
   # for edge form 1 we have to consider that the square has to be directed into the direction of the smaller half of the circle
   # calculate coordiantes of the middle of thie line between 
   x_m_line = (x.1 + x.2)/2
   y_m_line = (y.1 + y.2)/2
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
   b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line)
-  b0_MC = intercept(c.x0, c.y0, x_m_line, y_m_line)
+  b0_MC =  intercept(c.x0, c.y0, x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
   X1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x1") 
   X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x2")
@@ -253,7 +254,7 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # line from the middle of the AB.inter-ray and the circle center (MC_line) with 
   # the 60m radius at the "shorter side" so the intersection of the MC_line with a 60m radius that has le lest distance to the MC point on the AB.inter-ray
   turning.east <- X_inter_MC_shorter_side   # + my.center.easting
-  turning.north <-  Y_inter_MC_shorter_side # + my.center.northing
+  turning.north <- Y_inter_MC_shorter_side # + my.center.northing
   
   # UTM coordiantes of corner points 
   x1.east <- x.1   # + my.center.easting 
@@ -268,6 +269,34 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
                                         "e_ID" = c(my.e.id, my.e.id, my.e.id, my.e.id), 
                                         "inv_year" = c(my.inv.year, my.inv.year, my.inv.year, my.inv.year)))
   
+  # this is a correction in case that either the base line of the triangle 
+  # runs along with/ parallel to the y achis (meaning the b1 = Inf) or
+  # that the line from the middle of the trinangle base to the outer edge of the cirlce is parrallel to the y achsis and the b1_MC is Inf
+  triangle.e1.df <- triangle.e1.df %>%
+    mutate(lon = case_when(
+      # base line of triangle (edge line) is line from east to west (along x achsis)
+      b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lon) | # X turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
+        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lon) |
+        # base of triangle (edge line) is line from north to south (along y achsis)
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(2, 3) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) & row_number() %in% c(2, 3) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ 0, # X2 when base of triable B to A runs along y-achsis (gon 0 and 200)
+      b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ -c.rmax,
+      TRUE ~ lon), 
+      lat = case_when(
+        # base of triangle (edge line) is a line from east to west (along x achsis)
+        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lat) | # Y turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
+          b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lat) |
+          b1 %in% c(Inf, -Inf) &  row_number() == 3 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number()==3 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ -c.rmax, # Y2 when base of triable B to A runs along y-achsis (gon 0 and 200)
+        # base line of triangle (edge line) is line from north to south (along y achsis)
+        b1 %in% c(Inf, -Inf) &  row_number() == 2 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number()==2 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ c.rmax, # Y1 when base of triable B to A runs along y-achsis (gon 0 and 200)
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lat)| 
+          b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ 0,# y turning point when base of triable A to B runs along y-achsis (gon 0 and 200)
+        TRUE ~ lat)
+    )
+  
   # creating polygones in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
   triangle.e1.poly <-  sfheaders::sf_polygon(obj = triangle.e1.df  
                                              , x = "lon"
@@ -281,6 +310,22 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # sf::st_crs(triangle.e1.poly) <- my.utm.epsg
   
   print(plot(triangle.e1.poly, main = my.plot.id))
+  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  c.poly.17 <- sf::st_buffer(c.pt, 17.84)
+  c.poly.12 <- sf::st_buffer(c.pt, 12.62)
+  c.poly.5 <- sf::st_buffer(c.pt, 5.64)
+  c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
+  # test 
+  print(ggplot() +
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.60, aes(alpha = 0))+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
+          xlim(-80, 80)+
+          ylim(-80, 80))
   
   #save polygones in list 
   triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, triangle.e1.poly)
@@ -333,20 +378,20 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # point A 
   dist.A <- forest_edges.man.sub.e2.nogeo[i, "A_dist"] 
   azi.A <- forest_edges.man.sub.e2.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A)   # longitude, easting, RW, X
-  y.A <- dist.A*cos(azi.A)   # latitude, northing, HW, y 
+  x.A <- dist.A*sin(azi.A*pi/200)   # longitude, easting, RW, X
+  y.A <- dist.A*cos(azi.A*pi/200)   # latitude, northing, HW, y 
   
   # point B
   dist.B <- forest_edges.man.sub.e2.nogeo[i, "B_dist"] 
   azi.B <- forest_edges.man.sub.e2.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B)   # longitude, easting, RW, X
-  y.B <- dist.B*cos(azi.B)   # latitude, northing, HW, y 
+  x.B <- dist.B*sin(azi.B*pi/200)   # longitude, easting, RW, X
+  y.B <- dist.B*cos(azi.B*pi/200)   # latitude, northing, HW, y 
   
   # point T
   dist.T <- forest_edges.man.sub.e2.nogeo[i, "T_dist"] 
   azi.T <- forest_edges.man.sub.e2.nogeo[i, "T_azi"] 
-  x.T <- dist.T*sin(azi.T)   # longitude, easting, RW, X
-  y.T <- dist.T*cos(azi.T)   # latitude, northing, HW, y 
+  x.T <- dist.T*sin(azi.T*pi/200)   # longitude, easting, RW, X
+  y.T <- dist.T*cos(azi.T*pi/200)   # latitude, northing, HW, y 
   
   b0.AT = intercept(x.T, y.T, x.A, y.A)
   b1.AT = slope(x.T, y.T, x.A, y.A)
@@ -429,7 +474,7 @@ remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(f
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){ 
-  # i = 48
+  # i = 1
   #i = which(grepl(50131, (forest_edges.man.sub.1.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -642,7 +687,7 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 18
+  # i = 1
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
   # select plot ID of the respective circle 
@@ -681,8 +726,8 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   # calcualte polar coordinates of trees
   tree.coord.df <- outer.trees.df %>% 
     mutate(dist_tree = dist_cm/100, 
-           x_tree = dist_tree*sin(azi_gon), 
-           y_tree = dist_tree*cos(azi_gon), 
+           x_tree = dist_tree*sin(azi_gon*pi/200), 
+           y_tree = dist_tree*cos(azi_gon*pi/200), 
            lon = x_tree, #+ my.center.easting, 
            lat =  y_tree ) %>% # + my.center.northing)
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
@@ -1282,8 +1327,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # calcualte polar coordinates of trees
   tree.coord.df <- outer.trees.df %>% 
     mutate(dist_tree = dist_cm/100, 
-           x_tree = dist_tree*sin(azi_gon), 
-           y_tree = dist_tree*cos(azi_gon), 
+           x_tree = dist_tree*sin(azi_gon*pi/200), 
+           y_tree = dist_tree*cos(azi_gon*pi/200), 
            lon = x_tree, #+ my.center.easting, 
            lat =  y_tree ) %>% # + my.center.northing)
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
@@ -1624,7 +1669,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
 outer.edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.edges.list.two.edges.nogeo))
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
 outer.intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame(rbindlist(outer.intersection.warning.edges.list.nogeo, fill=TRUE)))
-if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
+if(nrow(outer.intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
                                                            Please check dataset intersection.two.edges.warning.df.nogeo")}
 # save intersection polygones into dataframe 
 # list of polygones 1 of forest edges 
@@ -1705,8 +1750,8 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.one.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.one.edge.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   # transform polar into cartesian coordiantes
   tree.east <- x.tree   # + my.center.easting 
   tree.north <-  y.tree # + my.center.northing
@@ -1810,8 +1855,8 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.two.edges.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.two.edges.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
   # transform polar into cartesian coordiantes
   tree.east <- x.tree  # + my.center.easting 
@@ -1909,8 +1954,8 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   # point A 
   dist.tree <- trees.no.edge.nogeo[i, "dist_cm"]/100 
   azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
-  x.tree <- dist.tree*sin(azi.tree)   # longitude, easting, RW, X
-  y.tree <- dist.tree*cos(azi.tree)   # latitude, northing, HW, y 
+  x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
+  y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
   
   # transform polar into cartesian coordiantes
@@ -2011,41 +2056,41 @@ trees_update_1 <- trees_data %>%
             by = c("plot_ID", "tree_ID", "inv_year")) %>% 
   rename(stand = t_stat) 
 
- # this if statement is in case there are no forest edges for that dataset... which is unlikely
-  if(exists("all.edges.area.df.nogeo")){
+# this if statement is in case there are no forest edges for that dataset... which is unlikely
+if(exists("all.edges.area.df.nogeo")){
   # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
-    trees_update_1 <- trees_update_1 %>% 
-      left_join(., all.edges.area.df.nogeo %>% 
-              select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
-            by = c("plot_ID", "CCS_r_m", "stand"))%>% 
-  # if there was no plot area claualted due to the fact that there is no edger at the plot, 
-  # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
-  mutate(area_m2 = ifelse(is.na(e_ID) & is.na(area_m2) |
-                            # for trees alloceted to a in a cirlce without intersections wil not run throuhg the loops
-                            # thus they do  have an edge ID but no calcualted areas or assigned intersection status
-                            # therefore we have to calculate their area manually subsequently
-                            # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.nogeo" assigned
-                            # as this stand category doesn´t exist
-                            # trees with the status "warning" will be excluded from the analysis
-                            stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
-                            stand == "A" & is.na(inter_stat) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
-         # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
-         stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
-         # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-         plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
-# left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
-# mutate(east_tree =  X_tree + RW_MED, 
-#        north_tree = Y_tree + HW_MED)
-  }else{
-    trees_update_1 <- trees_update_1 %>%
-      mutate(# this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-        plot_A_ha = c_A(CCS_r_m)/10000,
-        # if there are no edges the area is equal to the plot area in m2
-        area_m2 = c_A(CCS_r_m), 
+  trees_update_1 <- trees_update_1 %>% 
+    left_join(., all.edges.area.df.nogeo %>% 
+                select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
+              by = c("plot_ID", "CCS_r_m", "stand"))%>% 
+    # if there was no plot area claualted due to the fact that there is no edger at the plot, 
+    # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
+    mutate(area_m2 = ifelse(is.na(e_ID) & is.na(area_m2) |
+                              # for trees alloceted to a in a cirlce without intersections wil not run throuhg the loops
+                              # thus they do  have an edge ID but no calcualted areas or assigned intersection status
+                              # therefore we have to calculate their area manually subsequently
+                              # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.nogeo" assigned
+                              # as this stand category doesn´t exist
+                              # trees with the status "warning" will be excluded from the analysis
+                              stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
+                              stand == "A" & is.na(inter_stat) & is.na(area_m2), c_A(CCS_r_m), area_m2), 
+           # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
+           stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
+           # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+           plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
+  # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
+  # mutate(east_tree =  X_tree + RW_MED, 
+  #        north_tree = Y_tree + HW_MED)
+}else{
+  trees_update_1 <- trees_update_1 %>%
+    mutate(# this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+      plot_A_ha = c_A(CCS_r_m)/10000,
+      # if there are no edges the area is equal to the plot area in m2
+      area_m2 = c_A(CCS_r_m), 
       # if there are no edges this column contains the same area s the plot and the area column this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
       stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
       inter_stat = NA) 
-  }
+}
 
 
 
@@ -2154,14 +2199,12 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 
 
-
-
 # 3.4. visulaizing for all plots, edges, trees -------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
-  #i = 1
+  #i = 2
   # i = which(grepl(50124, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
