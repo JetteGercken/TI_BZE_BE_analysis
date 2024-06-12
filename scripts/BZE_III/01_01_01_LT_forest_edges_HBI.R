@@ -34,6 +34,11 @@ forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], 
 # if A_azi == 100 & B_azi == 300 # the line will go straight to the x achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0 and MC will be x_MC = 0, y_mc = r.max
 #if  A_azi == 300 & B_azi == 0 #  the line will go straight to the y achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0 and MC will be x_MC = 0, y_mc = r.max
 
+# test 
+forest_edges$A_dist <- 500
+forest_edges$A_azi <- 10
+forest_edges$B_dist <- 500
+forest_edges$B_azi <- 190
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
@@ -219,18 +224,27 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # extract polar coordiantes of forest edge
   # point A 
   dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <-   forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A*pi/200)       # this is: easting, longitude, RW ##test*pi/200
-  y.A <- dist.A*cos(azi.A*pi/200)       # this is: northing, latitude, HW ##test*pi/200
+  azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
+  x.A <- round(dist.A*sin(azi.A*pi/200), digits = 12)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- round(dist.A*cos(azi.A*pi/200), digits = 12)       # this is: northing, latitude, HW ##test*pi/200
   # point B
-  dist.B <-  forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <-   forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B*pi/200)      # this is: easting, longitude, RW #test*pi/200
-  y.B <- dist.B*cos(azi.B*pi/200)      # this is: northing, latitude, HW #test*pi/200
+  dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
+  azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
+  x.B <-  round(dist.B*sin(azi.B*pi/200), digits = 12)      # this is: easting, longitude, RW #test*pi/200
+  y.B <-  round(dist.B*cos(azi.B*pi/200), digits = 12)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
+  
+  # test
+  plot(x = c(x.B, x.A, 0), y = c(y.B, y.A, 0), add = T)
+  # the problem with the y achis paralel function si, that we cannto calcualte the circle intersection as we thought we could 
+  # usually it works with the b0 and b1 but in case of y parallels wei dont have either of the both
+  # thus we could try to apply the inter-for-triangle function, going from a in the direktcion of the outer cirlce and from b in the excat other direction 
+  # othersie we have to modify inter.line.circle in a way that it is open to 
+  # https://www.bbc.co.uk/bitesize/guides/z9pssbk/revision/5
+  # test end
   
   
   # calculate polar coordiantes of intersections of AB line with 
@@ -250,8 +264,8 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
     # accordng to https://www.sofatutor.com/mathematik/videos/parallele-und-orthogonale-geraden#orthogonale-geraden
     # we can create the function of a orthogonal line by the function: 
     # -1 = AB_b1 * MC_b1 <=> MC_b1 = -1/(AB_b1)
-  b1_MC = ortho_line(b1, x_m_line, y_m_line, parameter= "slope") # slope(c.x0, c.y0, x_m_line, y_m_line)
-  b0_MC =  ortho_line(b1, x_m_line, y_m_line, parameter= "intercept") # intercept(c.x0, c.y0, x_m_line, y_m_line)
+  b1_MC = ortho_line(b1, c.x0, c.y0, parameter= "slope") # slope(c.x0, c.y0, x_m_line, y_m_line)
+  b0_MC =  ortho_line(b1, c.x0, c.y0, parameter= "intercept") # intercept(c.x0, c.y0, x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
   X1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x1") 
   X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x2")
@@ -297,7 +311,10 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
         b1 %in% c(Inf, -Inf) & row_number() %in% c(2, 3) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ 0, # X2 when base of triable B to A runs along y-achsis (gon 0 and 200)
         b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
         b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ -c.rmax,
-        TRUE ~ lon), 
+      # base of triangle is line parrallel to y achsis but not ON y-achsis:
+      b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & x.A > 0 & x.B >0 & is.na(lon) ~ c.rmax, #  if the line is in the x >0 part of the circle, x of turning point had to be +60
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & x.A < 0 & x.B < 0 & is.na(lon) ~ -c.rmax, #  if the line is in the x >0 part of the circle, x of turning point had to be -60
+           TRUE ~ lon), 
       lat = case_when(
         # base of triangle (edge line) is a line from east to west (along x achsis)
         b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lat) | # Y turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
@@ -308,7 +325,10 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
         b1 %in% c(Inf, -Inf) &  row_number() == 2 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
           b1 %in% c(Inf, -Inf) & row_number()==2 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ c.rmax, # Y1 when base of triable B to A runs along y-achsis (gon 0 and 200)
         b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lat)| 
-          b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ 0,# y turning point when base of triable A to B runs along y-achsis (gon 0 and 200)
+          b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lat)| # y turning point when base of triable A to B runs along y-achsis (gon 0 and 200)
+        # base of triangle is line parrallel to y achsis but not ON y-achsis:
+        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & x.A > 0 & x.B >0 & is.na(lat) |
+          b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & x.A < 0 & x.B < 0 & is.na(lat) ~ 0,
         TRUE ~ lat)
            )
   

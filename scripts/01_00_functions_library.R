@@ -303,8 +303,8 @@ coord <- function(x.c, y.c, d, azi, coordinate){
   # azi =  Azimute betweeen Point and other ppoint (centre)
   
   switch(coordinate, 
-  x = x.c + d * sin(azi*pi/200),  # x is the latitude or "easting"
-  y = y.c + d * cos(azi*pi/200)  #  y is the longitude or "northing"
+  x = round(x=x.c + d * sin(azi*pi/200), digits=10) ,  # x is the latitude or "easting"
+  y = round(x=y.c + d * cos(azi*pi/200), digits=10)  #  y is the longitude or "northing"
   )  
 }
   
