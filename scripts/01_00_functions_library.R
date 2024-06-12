@@ -389,6 +389,19 @@ slope <- function(x1, y1, x2, y2){
   return(b1)
 }
 
+# this function calcualtes the slope of a an orthogonal line in relation to the slope of another line
+# https://www.sofatutor.com/mathematik/videos/parallele-und-orthogonale-geraden#orthogonale-geraden
+ortho_line <- function(slope.original.line, x1, y1, parameter){
+  # slope.original.line is the slope of the line we want to draw a orthogonal line through
+  b1.ortho = (-1)/slope.original.line ;
+  # intercept of the othogonal line, calculated from slope and 1 known point on the line 
+  # in our case often the center of the circle 
+  b0.ortho = y1 - b1.ortho*x1 ;
+  switch (parameter,
+    slope = b1.ortho, 
+    intercept = b0.ortho
+  )
+}
 # ----- 1.5.2. intercept y axis line -------------------------------------------------
 # this function returns the intercept of a line between two points
 intercept <- function(x1, y1, x2, y2){

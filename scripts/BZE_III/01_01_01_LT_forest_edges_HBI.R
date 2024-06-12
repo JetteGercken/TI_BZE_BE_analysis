@@ -25,10 +25,7 @@ geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
-# forest_edges$A_dist <- 1784 # test
-# forest_edges$A_azi <- 0     # test
-# forest_edges$B_dist <- 1784 # test
-# forest_edges$B_azi <- 200    # test
+
 
 # for test purposes
 # we need a solution in the interception and in the coords function that returns the accurate koordinates for the following distances and azis
@@ -243,13 +240,18 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   y.2 <- intersection_line_circle(b0, b1 ,c.x0, c.y0,  c.rmax, coordinate = "y2") # this is: northing, latitude, HW
   
   
-  # for edge form 1 we have to consider that the square has to be directed into the direction of the smaller half of the circle
-  # calculate coordiantes of the middle of thie line between 
+  # for edge form 1 we have to consider that the triangle has to be directed into the direction of the smaller half of the circle
+  # calculate coordiantes of the middle of thie line between inter_1 and inter_2
   x_m_line = (x.1 + x.2)/2
   y_m_line = (y.1 + y.2)/2
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
-  b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line)
-  b0_MC =  intercept(c.x0, c.y0, x_m_line, y_m_line)
+    # here we have to consider that if the middle between the intersections is equal to the center of the circle, 
+    # we cannot calculate the slope or intercept of the line between the center of AB line and center of the circle
+    # accordng to https://www.sofatutor.com/mathematik/videos/parallele-und-orthogonale-geraden#orthogonale-geraden
+    # we can create the function of a orthogonal line by the function: 
+    # -1 = AB_b1 * MC_b1 <=> MC_b1 = -1/(AB_b1)
+  b1_MC = ortho_line(b1, x_m_line, y_m_line, parameter= "slope") # slope(c.x0, c.y0, x_m_line, y_m_line)
+  b0_MC =  ortho_line(b1, x_m_line, y_m_line, parameter= "intercept") # intercept(c.x0, c.y0, x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
   X1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x1") 
   X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x2")
@@ -2217,7 +2219,7 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
-  #i = 2
+  #i = 1
   # i = which(grepl(50124, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
