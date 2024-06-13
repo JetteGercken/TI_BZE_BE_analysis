@@ -244,6 +244,13 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # thus we could try to apply the inter-for-triangle function, going from a in the direktcion of the outer cirlce and from b in the excat other direction 
   # othersie we have to modify inter.line.circle in a way that it is open to 
   # https://www.bbc.co.uk/bitesize/guides/z9pssbk/revision/5
+  
+  p = 1 #((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
+  q = x.A^2-2*x.A*c.x0+c.x0^2+c.y0^2-c.rmax^2-x.A;
+  
+  y1.test =  -(p/2) + sqrt( ((p*-1)/2)^2-q )
+  y2.test =  -(p/2) - sqrt( ((p*-1)/2)^2-q )
+  
   # test end
   
   

@@ -474,8 +474,25 @@ intersection_line_circle <- function(l.b0, l.b1, c.y0, c.x0, c.r0, coordinate) {
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
   
+  # "normal" line cirlce interception
   p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
   q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
+  # calculate x1, x2, and inset it in function to get y1, y2
+  x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+  x2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
+  y1 = l.b0 + l.b1*(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
+  y2 = l.b0 + l.b1*( -(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  
+  
+  # there can be the case that the line is parallel to the y-achsis, causing the b1 to be -Inf/Inf as well as the b0 to be NaN or Inf
+  # in this case we have the following known variables: c.x0, c.y0, x1, x2, c.r0 and we are looking for y1 and y2 
+  # thus we cannot aply the usual function for q but have to adjust it: 
+  p.y.achsis.parallel = 1;
+  q.y.achsis.parallel = x^2 - 2*x*c.x0 + c.x0^2 + c.y0^2 - c.r0^2 - x;
+  y1.y.achsis.parallel =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+  y2.y.achsis.parallel =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
+  x1.y.achsis.parallel
+  
   
   switch(coordinate, 
          x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q ),
