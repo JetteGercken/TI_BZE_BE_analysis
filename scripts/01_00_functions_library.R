@@ -6,59 +6,60 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-#  install.packages("usethis")
-#  install.packages('RPostgreSQL')
-#  install.packages("RPostgres")
-#  install.packages("DBI")
-#   install.packages("here")
-#   install.packages("readr")
-#   install.packages("tidyverse")
-#   install.packages("tibble")
-#   install.packages("dplyr")
-#   install.packages("data.table")
-#   install.packages("broom")
-#   install.packages("purrr")
-#   install.packages("devtools")
-#   install.packages("plyr")
-#  install.packages("RODBC")
-#  install.packages("rstudioapi")
-#  install.packages("gsubfn")
-#  install.packages("sjmisc")
-#   ## laTex
-#   install.packages("stargazer")  #for compatability with Latex
-#   install.packages("tikzDevice") #for compatability with Latex#
-#   # visualisation
-#   install.packages("ggthemes")
-#   install.packages("ggplot2")
-#   install.packages("reshape2") #for multiple y values
-#   install.packages("ggforce") #for zooming in parts of the plot
-#   install.packages("ggrepel")
-#   options(tz="CA")
-#   install.packages("reshape2")
-#   install.packages("gridExtra")
-# # analysis
-#   install.packages("corrplot")
-#   install.packages("AICcmodavg")
-# # forest related
-#    install.packages("forestmangr")
-#   install.packages("rBDAT")
-#   install.packages("TapeR")
-#  install.packages("pkgbuild")
- # require("devtools")
- #   if (! require("remotes")) 
- #     install.packages("remotes")
- #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
- #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-#  install.packages("magrittr")
-
-#  if(!require(devtools)) install.packages("devtools")
-#  devtools::install_github("kassambara/ggcorrplot")
-# # spatial
-#  install.packages("sf")
-#  install.packages("rgdal")
-#  install.packages("terra")
-# install.packages("sfheaders")
-
+#   install.packages("usethis")
+#   install.packages('RPostgreSQL')
+#   install.packages("RPostgres")
+#   install.packages("DBI")
+#    install.packages("here")
+#    install.packages("readr")
+#    install.packages("tidyverse")
+#    install.packages("tibble")
+#    install.packages("dplyr")
+#    install.packages("data.table")
+#    install.packages("broom")
+#    install.packages("purrr")
+#    install.packages("devtools")
+#    install.packages("plyr")
+#   install.packages("RODBC")
+#   install.packages("rstudioapi")
+#   install.packages("gsubfn")
+#   install.packages("sjmisc")
+#    ## laTex
+#    install.packages("stargazer")  #for compatability with Latex
+#    install.packages("tikzDevice") #for compatability with Latex#
+#    # visualisation
+#    install.packages("ggthemes")
+#    install.packages("ggplot2")
+#    install.packages("reshape2") #for multiple y values
+#    install.packages("ggforce") #for zooming in parts of the plot
+#    install.packages("ggrepel")
+#    options(tz="CA")
+#    install.packages("reshape2")
+#    install.packages("gridExtra")
+#  # analysis
+#    install.packages("corrplot")
+#    install.packages("AICcmodavg")
+#  # forest related
+#     install.packages("forestmangr")
+#    install.packages("rBDAT")
+#    install.packages("TapeR")
+#   install.packages("pkgbuild")
+#  require("devtools")
+#    if (! require("remotes")) 
+#      install.packages("remotes")
+# #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
+# #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#   install.packages("magrittr")
+# 
+#   if(!require(devtools)) install.packages("devtools")
+#   devtools::install_github("kassambara/ggcorrplot")
+#  # spatial
+#   install.packages("sf")
+#   install.packages("rgdal")
+#   install.packages("terra")
+#  install.packages("sfheaders")
+ 
+ 
 # ----- 0.2. require   ---------------------------------------------------------
 # datamanagement
 require(usethis)
@@ -463,44 +464,47 @@ l <- function(b0, b1, x){
 
 
 # intersection between line and circle via switch function 
-intersection_line_circle <- function(l.b0, l.b1, c.y0, c.x0, c.r0, coordinate) {
+intersection_line_circle <- function(l.b0, l.b1, x.a, x.b, c.y0, c.x0, c.r0, coordinate) {
   
   # quadratic formula
   # 0 = ((1 +l.df$e_b1_AB^2)/(1 +l.df$e_b1_AB^2))*X^2  -   ((2*c.df$x0 - 2*l.df$e_b1_AB*(l.df$e_b0_AB - c.df$y0))/(1 +l.df$e_b1_AB^2))*X   +     (c.df$x0^2 + (l.df$e_b0_AB - c.df$y0)^2 - c.df$r0^2)/(1 +l.df$e_b1_AB^2)
-  
   # x1 = -(p/2)+(sqrt((p/2)^2-q))
   # x2 = -(p/2)-(sqrt((p/2)^2-q))
-  
+
   # p = b so the number before x in quadratic formula
   # q = c so the number at the end of quadratic fomula
   
-  # "normal" line cirlce interception
-  p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
-  q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
-  # calculate x1, x2, and inset it in function to get y1, y2
-  x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
-  x2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
-  y1 = l.b0 + l.b1*(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
-  y2 = l.b0 + l.b1*( -(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  if(isTRUE(l.b1 %in% c(-Inf, Inf) & x.a == x.b & is.na(l.b0) | 
+            l.b1 %in% c(-Inf, Inf) & x.a == x.b & l.b0  %in% c(-Inf, Inf) ) == T){
+    # there can be the case that the line is parallel to the y-achsis, causing the b1 to be -Inf/Inf as well as the b0 to be NaN or Inf
+    # in this case we have the following known variables: c.x0, c.y0, x1, x2, c.r0 and we are looking for y1 and y2 
+    # thus we cannot aply the usual function for q but have to adjust it: 
+    # quadratic formula resulting from x = (x - c.x0)^2 + (y - c.y0)^2 - r^2 <=> (solving quadratic function and transform towards 0)
+    p = 1;
+    q = x.a^2 - 2*x.a*c.x0 + c.x0^2 + c.y0^2 - c.r0^2 - x.a;
+    y1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+    y2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
+    x1 = x.a
+    x2 = x.b
+    
+  }else{
+    # "normal" line cirlce interception
+    p = ((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
+    q = (c.x0^2 + (l.b0 - c.y0)^2 - c.r0^2)/(1 +l.b1^2);
+    # calculate x1, x2, and inset it in function to get y1, y2
+    x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
+    x2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
+    y1 = l.b0 + l.b1*(-(p/2) + sqrt( ((p*-1)/2)^2-q ));
+    y2 = l.b0 + l.b1*( -(p/2) - sqrt( ((p*-1)/2)^2-q ));
+  }
   
-  
-  # there can be the case that the line is parallel to the y-achsis, causing the b1 to be -Inf/Inf as well as the b0 to be NaN or Inf
-  # in this case we have the following known variables: c.x0, c.y0, x1, x2, c.r0 and we are looking for y1 and y2 
-  # thus we cannot aply the usual function for q but have to adjust it: 
-  # quadratic formula resulting from x = (x - c.x0)^2 + (y - c.y0)^2 - r^2 <=> (solving quadratic function and transform towards 0)
-  p.y.achsis.parallel = 1;
-  q.y.achsis.parallel = x^2 - 2*x*c.x0 + c.x0^2 + c.y0^2 - c.r0^2 - x;
-  y1.y.achsis.parallel =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
-  y2.y.achsis.parallel =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
-  x1.y.achsis.parallel = x
-  x2.y.achsis.parallel = x
   
   switch(coordinate, 
-         x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q ),
-         x2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q ),
-         y1 = l.b0 + l.b1*(-(p/2) + sqrt( ((p*-1)/2)^2-q )),
-         y2 = l.b0 + l.b1*( -(p/2) - sqrt( ((p*-1)/2)^2-q ))
-  )
+         x1 =  x1,
+         x2 =  x2,
+         y1 = y1,
+         y2 = y2 )
+  
 }
 
 
@@ -594,11 +598,11 @@ inter.for.triangle <- function(l.b0, l.b1, c.x0, c.y0, c.r0.inter, x, y, x.t, y.
   # c.r0.inter means the r0 at which i want to have the intersection, which is not necesarrily similar to the c.r0 that is used to locate T 
   
   # calcualte x coordinates of the possible intresections
-  x1.inter <- intersection_line_circle (l.b0, l.b1, c.x0, c.y0, c.r0.inter, coordinate = "x1");
-  x2.inter <- intersection_line_circle (l.b0, l.b1, c.x0, c.y0, c.r0.inter, coordinate = "x2");
+  x1.inter <- intersection_line_circle (l.b0, l.b1, x, x.t, c.x0, c.y0, c.r0.inter, coordinate = "x1");
+  x2.inter <- intersection_line_circle (l.b0, l.b1, x, x.t, c.x0, c.y0, c.r0.inter, coordinate = "x2");
   # calcualte y coordinates of the possible intresections: 
-  y1.inter <- intersection_line_circle(l.b0, l.b1, c.x0, c.y0, c.r0.inter, coordinate = "y1");
-  y2.inter <- intersection_line_circle(l.b0, l.b1, c.x0, c.y0, c.r0.inter, coordinate = "y2");
+  y1.inter <- intersection_line_circle(l.b0, l.b1, x, x.t, c.x0, c.y0, c.r0.inter, coordinate = "y1");
+  y2.inter <- intersection_line_circle(l.b0, l.b1, x, x.t, c.x0, c.y0, c.r0.inter, coordinate = "y2");
   
   # azimut between intersection point 1 and the turning point
   azi.inter.1.t <- azi(x1.inter, y1.inter, x.t, y.t);

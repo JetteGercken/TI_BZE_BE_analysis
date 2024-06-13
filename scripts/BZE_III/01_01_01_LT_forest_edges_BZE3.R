@@ -108,30 +108,30 @@ forest_edges.man <- forest_edges %>%
   ### 17m circle --> used for tree status also   
   # find x coordinate of the interception between line and 17.84m circle: insert line equation in circle equation (function: intersection_line_circle)
   # for AB line 
-  mutate(X1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-         X2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
-         inter_status_AB_17 = intersection.status(intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-                                                  intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")),
+  mutate(X1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_AB_17 = intersection.status(intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+                                                  intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")),
          # for AT line
-         X1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-         X2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2"), 
-         inter_status_AT_17 = intersection.status(intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"), 
-                                                  intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2")),
+         X1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2"), 
+         inter_status_AT_17 = intersection.status(intersection_line_circle(b0_AT, b1_AT,X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"), 
+                                                  intersection_line_circle(b0_AT, b1_AT,X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2")),
          # for BT line
-         X1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"),
-         X2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
-         inter_status_BT_17 = intersection.status(intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"), 
-                                                  intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"))) %>%   
+         X1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"),
+         X2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_BT_17 = intersection.status(intersection_line_circle(b0_BT, b1_BT,X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"), 
+                                                  intersection_line_circle(b0_BT, b1_BT, X_B, X_T,data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"))) %>%   
   # y intersection with 17m circle: insert x of intercept with circle in equation of line
   # AB line 
-  mutate(Y1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y1"),
-         Y2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y2"), 
+  mutate(Y1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y1"),
+         Y2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y2"), 
          # AT line 
-         Y1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y1"), 
-         Y2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y2"),
+         Y1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y1"), 
+         Y2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, X_A, X_T,data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="y2"),
          # BT line 
-         Y1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="y1"), 
-         Y2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="y2")) %>%
+         Y1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT,  X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="y1"), 
+         Y2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT,  X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="y2")) %>%
   
   # distance interception centre --> to see if points are actually placed on the rim of the circle 
   mutate(inter_1_dist = distance(X1_inter_AB_17, Y1_inter_AB_17, 0, 0)) %>%     # this is just to control if the whole thing worked and 
@@ -209,40 +209,48 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # extract polar coordiantes of forest edge
   # point A 
   dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <-   forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- dist.A*sin(azi.A*pi/200)       # this is: easting, longitude, RW ##test*pi/200
-  y.A <- dist.A*cos(azi.A*pi/200)       # this is: northing, latitude, HW ##test*pi/200
+  azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
+  x.A <- round(dist.A*sin(azi.A*pi/200), digits = 12)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- round(dist.A*cos(azi.A*pi/200), digits = 12)       # this is: northing, latitude, HW ##test*pi/200
   # point B
-  dist.B <-  forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <-   forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <- dist.B*sin(azi.B*pi/200)      # this is: easting, longitude, RW #test*pi/200
-  y.B <- dist.B*cos(azi.B*pi/200)      # this is: northing, latitude, HW #test*pi/200
+  dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
+  azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
+  x.B <-  round(dist.B*sin(azi.B*pi/200), digits = 12)      # this is: easting, longitude, RW #test*pi/200
+  y.B <-  round(dist.B*cos(azi.B*pi/200), digits = 12)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
   
+  # test begin
+  plot(x = c(x.B, x.A, 0), y = c(y.B, y.A, 0), add = T)
+  
   
   # calculate polar coordiantes of intersections of AB line with 
-  x.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x1") # this is: easting, longitude, RW
-  y.1 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "y1") # this is: northing, latitude, HW
-  x.2 <- intersection_line_circle(b0, b1, c.x0, c.y0,  c.rmax, coordinate = "x2") # this is: easting, longitude, RW
-  y.2 <- intersection_line_circle(b0, b1 ,c.x0, c.y0,  c.rmax, coordinate = "y2") # this is: northing, latitude, HW
+  x.1 <- intersection_line_circle(b0, b1, x.A, x.B, c.x0, c.y0,  c.rmax, coordinate = "x1") # this is: easting, longitude, RW
+  y.1 <- intersection_line_circle(b0, b1, x.A, x.B, c.x0, c.y0,  c.rmax, coordinate = "y1") # this is: northing, latitude, HW
+  x.2 <- intersection_line_circle(b0, b1, x.A, x.B, c.x0, c.y0,  c.rmax, coordinate = "x2") # this is: easting, longitude, RW
+  y.2 <- intersection_line_circle(b0, b1, x.A, x.B,c.x0, c.y0,  c.rmax, coordinate = "y2") # this is: northing, latitude, HW
   
   
-  # for edge form 1 we have to consider that the square has to be directed into the direction of the smaller half of the circle
-  # calculate coordiantes of the middle of thie line between 
+  # for edge form 1 we have to consider that the triangle has to be directed into the direction of the smaller half of the circle
+  # calculate coordiantes of the middle of thie line between inter_1 and inter_2
   x_m_line = (x.1 + x.2)/2
   y_m_line = (y.1 + y.2)/2
   # calculate the parameters of the equation between the middle of the line and the centre of the circle
-  b1_MC = slope(c.x0, c.y0, x_m_line, y_m_line)
-  b0_MC =  intercept(c.x0, c.y0, x_m_line, y_m_line)
+  # here we have to consider that if the middle between the intersections is equal to the center of the circle, 
+  # we cannot calculate the slope or intercept of the line between the center of AB line and center of the circle
+  # accordng to https://www.sofatutor.com/mathematik/videos/parallele-und-orthogonale-geraden#orthogonale-geraden
+  # we can create the function of a orthogonal line by the function: 
+  # -1 = AB_b1 * MC_b1 <=> MC_b1 = -1/(AB_b1)
+  b1_MC = ortho_line(b1, c.x0, c.y0, parameter= "slope") # slope(c.x0, c.y0, x_m_line, y_m_line)
+  b0_MC =  ortho_line(b1, c.x0, c.y0, parameter= "intercept") # intercept(c.x0, c.y0, x_m_line, y_m_line)
   # calcualte the x corrdiante of the interception of the line between M and the centre of the cirle and the circle at the given radio
-  X1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x1") 
-  X2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "x2")
+  X1_inter_MC = intersection_line_circle(b0_MC, b1_MC, x_m_line, c.x0, c.x0, c.y0,  c.rmax,  coordinate = "x1") 
+  X2_inter_MC = intersection_line_circle(b0_MC, b1_MC, x_m_line, c.x0, c.x0, c.y0,  c.rmax,  coordinate = "x2")
   # insert the intersection x corodinate in the line function to get the respective y coordinate
-  y1_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "y1") 
-  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC,  c.x0, c.y0,  c.rmax,  coordinate = "y2")
+  y1_inter_MC = intersection_line_circle(b0_MC, b1_MC, x_m_line, c.x0, c.x0, c.y0,  c.rmax,  coordinate = "y1") 
+  y2_inter_MC = intersection_line_circle(b0_MC, b1_MC, x_m_line, c.x0,  c.x0, c.y0,  c.rmax,  coordinate = "y2")
   # distance between the intersections (inter_MC_1, inter_MC_2) to M on the line 
   dist_C_inter_1_MC = distance(X1_inter_MC, y1_inter_MC, x_m_line, y_m_line)
   dist_C_inter_2_MC = distance(X2_inter_MC, y2_inter_MC, x_m_line, y_m_line) 
@@ -269,33 +277,6 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
                                         "e_ID" = c(my.e.id, my.e.id, my.e.id, my.e.id), 
                                         "inv_year" = c(my.inv.year, my.inv.year, my.inv.year, my.inv.year)))
   
-  # this is a correction in case that either the base line of the triangle 
-  # runs along with/ parallel to the y achis (meaning the b1 = Inf) or
-  # that the line from the middle of the trinangle base to the outer edge of the cirlce is parrallel to the y achsis and the b1_MC is Inf
-  triangle.e1.df <- triangle.e1.df %>%
-    mutate(lon = case_when(
-      # base line of triangle (edge line) is line from east to west (along x achsis)
-      b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lon) | # X turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
-        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lon) |
-        # base of triangle (edge line) is line from north to south (along y achsis)
-        b1 %in% c(Inf, -Inf) &  row_number() %in% c(2, 3) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
-        b1 %in% c(Inf, -Inf) & row_number() %in% c(2, 3) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ 0, # X2 when base of triable B to A runs along y-achsis (gon 0 and 200)
-      b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lon)| # X1 when base of triable A to B runs along y-achsis (gon 0 and 200)
-        b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lon)  ~ -c.rmax,
-      TRUE ~ lon), 
-      lat = case_when(
-        # base of triangle (edge line) is a line from east to west (along x achsis)
-        b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 100 & azi.B == 300 &  is.na(lat) | # Y turning point when A to B or B to A are a straight line along  x achsis (gon 100 and 300) so that the right-angle MC line runs from gon 0 to 200
-          b1_MC %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 300 & azi.B == 100 &  is.na(lat) |
-          b1 %in% c(Inf, -Inf) &  row_number() == 3 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
-          b1 %in% c(Inf, -Inf) & row_number()==3 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ -c.rmax, # Y2 when base of triable B to A runs along y-achsis (gon 0 and 200)
-        # base line of triangle (edge line) is line from north to south (along y achsis)
-        b1 %in% c(Inf, -Inf) &  row_number() == 2 & azi.A == 0 & azi.B == 200 & is.na(lat)| 
-          b1 %in% c(Inf, -Inf) & row_number()==2 & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ c.rmax, # Y1 when base of triable B to A runs along y-achsis (gon 0 and 200)
-        b1 %in% c(Inf, -Inf) &  row_number() %in% c(1, 4) & azi.A == 0 & azi.B == 200 & is.na(lat)| 
-          b1 %in% c(Inf, -Inf) & row_number() %in% c(1, 4) & azi.A == 200 & azi.B == 0 & is.na(lat)  ~ 0,# y turning point when base of triable A to B runs along y-achsis (gon 0 and 200)
-        TRUE ~ lat)
-    )
   
   # creating polygones in sf: https://stackoverflow.com/questions/61215968/creating-sf-polygons-from-a-dataframe
   triangle.e1.poly <-  sfheaders::sf_polygon(obj = triangle.e1.df  
@@ -328,16 +309,14 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
           ylim(-80, 80))
   
   #save polygones in list 
-  triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, triangle.e1.poly)
+  triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e1.poly)
   
   # save coordiantes of polygones in list
-  triangle.e1.coords.nogeo[[i]] <- triangle.e1.df
+  triangle.e1.coords.nogeo[[i]] <- triangle.e1.df %>% mutate(e_form = my.e.form)
   
 } # closing loop for square polys of edge form 1
-triangle.e1.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e1.list.nogeo, fill=TRUE)) %>% mutate("e_form" = 1)
-
-triangle.e1.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e1.coords.nogeo)) %>% 
-  mutate("e_form" = 1)
+triangle.e1.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e1.list.nogeo, fill=TRUE)) 
+triangle.e1.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e1.coords.nogeo))
 
 
 
@@ -355,7 +334,7 @@ forest_edges.man.sub.e2.nogeo <- forest_edges.man %>%
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID) )
 triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID))
 for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
-  # i = 5
+  # i = 1
   # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID)
   
   # select plot ID accordint to positioin in the list
@@ -436,17 +415,16 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   print(plot(triangle.e2.poly$geometry, main = my.plot.id))
   
   # save polygones in list
-  triangle.e2.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, triangle.e2.poly)
+  triangle.e2.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e2.poly)
   
   # save coordiantes of polygones in list
-  triangle.e2.coords.nogeo[[i]] <- triangle.e2.df
+  triangle.e2.coords.nogeo[[i]] <- triangle.e2.df %>% mutate(e_form = my.e.form)
 }
 # list of polygones
-triangle.e2.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e2.list.nogeo)) %>% mutate("e_form" = 2)
+triangle.e2.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e2.list.nogeo))
 
 #list of coordiantes of triangle.e2 polygones
-triangle.e2.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e2.coords.nogeo)) %>%  mutate("e_form" = 2) 
-
+triangle.e2.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e2.coords.nogeo)) 
 
 # 3.2.1.3. loop for intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
 # 3.2.1.3.1. loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
@@ -1220,7 +1198,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   
 }
 # save areas into dataframe
-edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo))
+edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo)) %>% filter(!is.na(plot_ID))
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
 intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame( rbindlist(intersection.warning.edges.list.nogeo, fill=TRUE)))
 if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
@@ -1677,7 +1655,7 @@ outer.inter.poly.1.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.inter.pol
 # list of polygones 2 of forest edges 
 outer.inter.poly.2.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.inter.poly.2.list.nogeo, fill=TRUE))
 # bind the both edges per plot together
-outer.inter.poly.two.edges.df.nogeo <- rbind(outer.inter.poly.1.two.edges.df.nogeo, outer.inter.poly.2.two.edges.df.nogeo) %>% arrange(plot_ID, e_ID)
+outer.inter.poly.two.edges.df.nogeo <- rbind(outer.inter.poly.1.two.edges.df.nogeo, outer.inter.poly.2.two.edges.df.nogeo)
 
 # list of polygones of remainign circles 
 outer.rem.circle.poly.two.edges.list.final.nogeo <- rbindlist(outer.rem.circle.poly.2.edges.list.nogeo, fill = TRUE)
@@ -2185,15 +2163,6 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
-
-
-
-
-
-
-
-
-
 
 
 
