@@ -35,10 +35,10 @@ forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], 
 #if  A_azi == 300 & B_azi == 0 #  the line will go straight to the y achis so the y is 0 coodrinates for A has to be  (r.max|0) x_A = r.max, y_A = 0 and B (-r.max|0) x_A =- r.max , y_A = 0 and MC will be x_MC = 0, y_mc = r.max
 
 # test 
-forest_edges$A_dist <- 500
-forest_edges$A_azi <- 10
-forest_edges$B_dist <- 500
-forest_edges$B_azi <- 190
+forest_edges$A_dist <- 1784
+forest_edges$A_azi <- 50
+forest_edges$B_dist <- 1784
+forest_edges$B_azi <- 350
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
@@ -237,7 +237,7 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
   
-  # test
+  # test begin
   plot(x = c(x.B, x.A, 0), y = c(y.B, y.A, 0), add = T)
   # the problem with the y achis paralel function si, that we cannto calcualte the circle intersection as we thought we could 
   # usually it works with the b0 and b1 but in case of y parallels wei dont have either of the both
@@ -246,10 +246,13 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # https://www.bbc.co.uk/bitesize/guides/z9pssbk/revision/5
   
   p = 1 #((2*c.x0) + (2*l.b1*(l.b0 - c.y0)))/(1 + l.b1^2);
-  q = x.A^2-2*x.A*c.x0+c.x0^2+c.y0^2-c.rmax^2-x.A;
+  q = x.A^2 - 2*x.A*c.x0 + c.x0^2 + c.y0^2 - c.rmax^2 - x.A;
   
-  y1.test =  -(p/2) + sqrt( ((p*-1)/2)^2-q )
-  y2.test =  -(p/2) - sqrt( ((p*-1)/2)^2-q )
+  y.1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q )
+  y.2 =  -(p/2) - sqrt( ((p*-1)/2)^2-q )
+  x.1 = x.A
+  x.2 = x.B
+  
   
   # test end
   

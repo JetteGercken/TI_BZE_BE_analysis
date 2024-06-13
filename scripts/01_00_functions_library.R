@@ -487,12 +487,13 @@ intersection_line_circle <- function(l.b0, l.b1, c.y0, c.x0, c.r0, coordinate) {
   # there can be the case that the line is parallel to the y-achsis, causing the b1 to be -Inf/Inf as well as the b0 to be NaN or Inf
   # in this case we have the following known variables: c.x0, c.y0, x1, x2, c.r0 and we are looking for y1 and y2 
   # thus we cannot aply the usual function for q but have to adjust it: 
+  # quadratic formula resulting from x = (x - c.x0)^2 + (y - c.y0)^2 - r^2 <=> (solving quadratic function and transform towards 0)
   p.y.achsis.parallel = 1;
   q.y.achsis.parallel = x^2 - 2*x*c.x0 + c.x0^2 + c.y0^2 - c.r0^2 - x;
   y1.y.achsis.parallel =  -(p/2) + sqrt( ((p*-1)/2)^2-q );
   y2.y.achsis.parallel =  -(p/2) - sqrt( ((p*-1)/2)^2-q );
-  x1.y.achsis.parallel
-  
+  x1.y.achsis.parallel = x
+  x2.y.achsis.parallel = x
   
   switch(coordinate, 
          x1 =  -(p/2) + sqrt( ((p*-1)/2)^2-q ),
