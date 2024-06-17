@@ -81,15 +81,17 @@ fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.cs
 # It measures the absolute magnitude of a set of numbers, and is calculated by:
 # RMS = sqrt(sum(x)^2/n)
 
+
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   FSI_df <- plyr::rbind.fill(trees_data %>% 
+                               filter(compartiment == "ag") %>% 
                                group_by(plot_ID) %>% 
                                reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
                                distinct() , 
                              # select only those plots with empty sampling circuits that have all 3 circuits empty
                              # by counting the circuits per plot and filtering for those with n_CCS ==3
                              trees_stat_2 %>% 
-                               filter(!is.na(plot_ID)) %>% 
+                               filter(!is.na(plot_ID) & compartiment == "ag") %>% 
                                select(plot_ID, CCS_r_m) %>% 
                                distinct()%>% 
                                group_by(plot_ID) %>% 
@@ -101,6 +103,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     mutate(LT_FSI_DBH_RMS = FSI(LT_RMS_DBH))  # as.numeric(FSI(LT_RMS_DBH)))
 }else{
   FSI_df <- trees_data %>% 
+    filter(compartiment == "ag") %>% 
     group_by(plot_ID) %>% 
     reframe(LT_RMS_DBH = RMS(DBH_cm)) %>% 
     distinct()%>% 

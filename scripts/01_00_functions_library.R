@@ -1711,7 +1711,7 @@ summarize_data <- function(data, group_vars, columns, operation) {
 # 1.18.1. RMS root mean square ----------------------------------------------
 # https://www.statisticshowto.com/quadratic-mean/
 RMS <- function(x){
-  rms = sqrt(sum(x^2)/length(x));
+  rms = sqrt((sum(x)/length(x))^2);
   return(rms)
 } 
 
