@@ -189,6 +189,8 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # i = 1
   # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
   
+  #if(nrow(forest_edges.man.sub.e1.nogeo) == 0){break}
+   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
   my.plot.id <- forest_edges.man.sub.e1.nogeo[i, "plot_ID"] 
   my.e.id <- forest_edges.man.sub.e1.nogeo[i, "e_ID"]
@@ -221,9 +223,6 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
   b0 <- y.B - b1*x.B
-  
-  # test begin
-  plot(x = c(x.B, x.A, 0), y = c(y.B, y.A, 0), add = T)
   
   
   # calculate polar coordiantes of intersections of AB line with 
@@ -337,6 +336,8 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # i = 1
   # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID)
   
+  #if(nrow(forest_edges.man.sub.e2.nogeo) == 0){break}
+  
   # select plot ID accordint to positioin in the list
   my.plot.id <- forest_edges.man.sub.e2.nogeo[i, "plot_ID"] 
   my.e.id <- forest_edges.man.sub.e2.nogeo[i, "e_ID"] 
@@ -426,12 +427,14 @@ triangle.e2.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e2.list.nogeo))
 #list of coordiantes of triangle.e2 polygones
 triangle.e2.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e2.coords.nogeo)) 
 
-# 3.2.1.3. loop for intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
-# 3.2.1.3.1. loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
 
+
+# 3.2.1.3. loop for intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # bind polygone dataframes together
-edge.poly.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo) # rows: 83
+edge.poly.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo) # rows: 83
+
+# 3.2.1.3.1. loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
 # createa dataframe with plots that have only one forest edges
 forest_edges.man.sub.1.edge.nogeo <- forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
@@ -454,6 +457,8 @@ remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(f
 for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){ 
   # i = 1
   #i = which(grepl(50131, (forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+  
+ # if(nrow(forest_edges.man.sub.1.edge.nogeo) == 0){break}
   
   # select plot ID of the respective circle 
   my.plot.id <- forest_edges.man.sub.1.edge.nogeo[i, "plot_ID"]
@@ -639,7 +644,7 @@ rem.circle.poly.df.nogeo <- as.data.frame(rbindlist(remaining.circle.poly.list.n
 # list of multipolygones of remaining circles
 rem.circle.multipoly.df.nogeo <- as.data.frame(rbindlist(remaining.circle.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
 # binding the both circle lists back together 
-rem.circle.one.edge.df.nogeo <- rbind(rem.circle.poly.df.nogeo, rem.circle.multipoly.df.nogeo)
+rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(rem.circle.poly.df.nogeo, rem.circle.multipoly.df.nogeo)
 
 
 # 3.2.1.3.2.outer forest edge: loop for intersections for plots with once adge and edge type %in% c(1, 2) --------
@@ -667,6 +672,9 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
   # i = 1
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+  
+  # break loop if dataset for loop is empty to avoid error messages
+  #if(nrow(forest_edges.man.sub.1.outer.edge.nogeo) == 0) {break}
   
   # select plot ID of the respective circle 
   my.plot.id <- forest_edges.man.sub.1.outer.edge.nogeo[i, "plot_ID"]
@@ -900,7 +908,7 @@ outer.rem.circle.poly.df.nogeo <- as.data.frame(rbindlist(outer.remaining.circle
 # list of multipolygones of remaining circles
 outer.rem.circle.multipoly.df.nogeo <- as.data.frame(rbindlist(outer.remaining.circle.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
 # binding the both circle lists back together 
-outer.rem.circle.one.edge.df.nogeo <- rbind(outer.rem.circle.poly.df.nogeo, outer.rem.circle.multipoly.df.nogeo)
+outer.rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(outer.rem.circle.poly.df.nogeo, outer.rem.circle.multipoly.df.nogeo)
 
 
 
@@ -945,6 +953,8 @@ intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(f
 for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){ 
   #i = 2
   # i = which(grepl(50075, unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+  
+  #if(nrow(forest_edges.man.sub.2.edges.nogeo) == 0){break}
   
   # select plot ID of the respective circle 
   my.plot.id <- unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)[i]
@@ -1198,7 +1208,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   
 }
 # save areas into dataframe
-edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo)) %>% filter(!is.na(plot_ID))
+edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo)) 
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
 intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame( rbindlist(intersection.warning.edges.list.nogeo, fill=TRUE)))
 if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
@@ -1210,7 +1220,7 @@ inter.poly.1.two.edges.df.nogeo <- as.data.frame(rbindlist(inter.poly.1.list.nog
 # list of polygones 2 of forest edges 
 inter.poly.2.two.edges.df.nogeo <- as.data.frame(rbindlist(inter.poly.2.list.nogeo, fill=TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")]
 # bind the both edges per plot together
-inter.poly.two.edges.df.nogeo <- rbind(inter.poly.1.two.edges.df.nogeo, inter.poly.2.two.edges.df.nogeo) %>% arrange(plot_ID, e_ID)
+inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(inter.poly.1.two.edges.df.nogeo, inter.poly.2.two.edges.df.nogeo) %>% arrange(plot_ID, e_ID)
 
 # list of polygones of remainign circles 
 rem.circle.poly.two.edges.df.nogeo <- as.data.frame(rbindlist(rem.circle.poly.2.edges.list.nogeo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")]  %>% distinct()
@@ -1220,7 +1230,7 @@ rem.circle.multipoly.two.edges.df.nogeo <- if(nrow(as.data.frame(rbindlist(rem.c
 }else{  data.frame()}
 # binding the both circle lists back together 
 rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(rem.circle.multipoly.two.edges.df.nogeo) != 0) == T){
-  rbind(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
+  plyr::rbind.fill(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
 }else{rem.circle.poly.two.edges.df.nogeo}
 
 
@@ -1270,6 +1280,8 @@ outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(un
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
   #i = 3
   # i = which(grepl(140068, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+   
+  #if(nrow(forest_edges.man.sub.2.outer.edges.nogeo) == 0){break}
   
   # select plot ID of the respective circle 
   my.plot.id <- unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)[i]
@@ -1655,7 +1667,7 @@ outer.inter.poly.1.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.inter.pol
 # list of polygones 2 of forest edges 
 outer.inter.poly.2.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.inter.poly.2.list.nogeo, fill=TRUE))
 # bind the both edges per plot together
-outer.inter.poly.two.edges.df.nogeo <- rbind(outer.inter.poly.1.two.edges.df.nogeo, outer.inter.poly.2.two.edges.df.nogeo)
+outer.inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(outer.inter.poly.1.two.edges.df.nogeo, outer.inter.poly.2.two.edges.df.nogeo)
 
 # list of polygones of remainign circles 
 outer.rem.circle.poly.two.edges.list.final.nogeo <- rbindlist(outer.rem.circle.poly.2.edges.list.nogeo, fill = TRUE)
@@ -1666,7 +1678,7 @@ outer.rem.circle.multipoly.two.edges.df.nogeo <- if(nrow(as.data.frame(rbindlist
 }else{  data.frame()}
 # binding the both circle lists back together 
 outer.rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(outer.rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(outer.rem.circle.multipoly.two.edges.df.nogeo) != 0) == T){
-  rbind(outer.rem.circle.poly.two.edges.df.nogeo, outer.rem.circle.multipoly.two.edges.df.nogeo)
+  plyr::rbind.fill(outer.rem.circle.poly.two.edges.df.nogeo, outer.rem.circle.multipoly.two.edges.df.nogeo)
 }else{outer.rem.circle.poly.two.edges.df.nogeo}
 
 
@@ -1676,9 +1688,9 @@ outer.rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(outer.rem.circle.poly.two.
 # 3.2.1.4. binding all egde and remaining circle areas and polys tog --------
 
 # bind all edges area dataframes together
-all.edges.area.df.nogeo <- rbind(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% arrange(plot_ID)
-inter.poly.one.edge.df.nogeo <- rbind(inter.poly.one.edge.df.nogeo, outer.inter.poly.one.edge.df.nogeo %>% select(colnames(inter.poly.one.edge.df.nogeo)))%>% arrange(plot_ID)
-rem.circle.one.edge.df.nogeo <- rbind(rem.circle.one.edge.df.nogeo, outer.rem.circle.one.edge.df.nogeo %>% select(colnames(rem.circle.one.edge.df.nogeo)))%>% arrange(plot_ID)
+all.edges.area.df.nogeo <- plyr::rbind.fill(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
+inter.poly.one.edge.df.nogeo <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo, outer.inter.poly.one.edge.df.nogeo) # %>% select(colnames(inter.poly.one.edge.df.nogeo)))
+rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, outer.rem.circle.one.edge.df.nogeo) # %>% select(colnames(rem.circle.one.edge.df.nogeo)))
 
 # 3.2.2. sorting TREES into edge and remaining circle polygones ---------
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
@@ -1697,8 +1709,10 @@ trees.one.edge.nogeo <- trees_data %>%
 tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
-  #i = 63
+  #i = 1
   # i = which(grepl(50009, (trees.one.edge.nogeo$plot_ID)))
+  
+  #if(nrow(trees.one.edge.nogeo) == 0){break}
   
   # select plot ID accordint to positioin in the list
   my.plot.id <-trees.one.edge.nogeo [i, "plot_ID"] 
@@ -1783,8 +1797,8 @@ tree.points.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.points.list.nogeo)
 
 # 3.2.2.2. plots with 2 edges: sorting trees into edge and remaining circle polygones ---------
 # bind all edges area dataframes together
-inter.poly.two.edges.df.nogeo <- rbind(inter.poly.two.edges.df.nogeo, outer.inter.poly.two.edges.df.nogeo %>% select(colnames(inter.poly.two.edges.df.nogeo)))%>% arrange(plot_ID)
-rem.circle.two.edges.df.nogeo <- rbind(rem.circle.two.edges.df.nogeo, outer.rem.circle.two.edges.df.nogeo %>% select(colnames(rem.circle.two.edges.df.nogeo)))%>% arrange(plot_ID)
+inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(inter.poly.two.edges.df.nogeo, outer.inter.poly.two.edges.df.nogeo)# %>% select(colnames(inter.poly.two.edges.df.nogeo)))%>% arrange(plot_ID)
+rem.circle.two.edges.df.nogeo <- plyr::rbind.fill(rem.circle.two.edges.df.nogeo, outer.rem.circle.two.edges.df.nogeo)# %>% select(colnames(rem.circle.two.edges.df.nogeo)))%>% arrange(plot_ID)
 
 # intersection of trees with 2 edges
 trees.two.edges.nogeo <- trees_data %>%
@@ -1803,6 +1817,8 @@ tree.points.two.edges.list.nogeo <- vector("list", length = length(trees.two.edg
 for (i in 1:length(trees.two.edges.nogeo$tree_ID)){ 
   # i = 1
   # i = which(grepl(50122, (trees.two.edges.nogeo$plot_ID)))[2]
+  
+  #if(nrow(trees.two.edges.nogeo) == 0){break}
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.two.edges.nogeo[i, "plot_ID"] 
@@ -1890,7 +1906,7 @@ tree.points.two.edges.df.nogeo <- as.data.frame( rbindlist(tree.points.two.edges
 
 # 3.2.2.3. binding datasets together --------------------------------------
 # bind the tree point datafarmes of one and two edges plots together
-two.and.one.edge.trees.points.df.nogeo <- rbind(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
+two.and.one.edge.trees.points.df.nogeo <- plyr::rbind.fill(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
 # this step i separated in case both of the rbinded dfs are empty and the mutate wouldn´t grip
 two.and.one.edge.trees.points.df.nogeo <- two.and.one.edge.trees.points.df.nogeo %>% mutate(plot_ID = as.integer(plot_ID)) 
 
@@ -1915,6 +1931,8 @@ tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.n
 for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
   #i = 2173
   #i = which(grepl(50124, unique(trees.no.edge.nogeo$plot_ID)))
+  
+  #if(nrow(trees.no.edge.nogeo) == 0){break}
   
   # select plot ID accordint to positioin in the list
   my.plot.id <- trees.no.edge.nogeo[i, "plot_ID"] 
@@ -2000,7 +2018,7 @@ tree.points.no.edges.df.nogeo <- as.data.frame(rbindlist(tree.points.no.edge.lis
 
 # bind all tree point.sf dataframes (with & without edges together)
 all.trees.points.df.nogeo <- 
-  rbind(tree.points.one.edge.df.nogeo , 
+  plyr::rbind.fill(tree.points.one.edge.df.nogeo , 
         tree.points.two.edges.df.nogeo,
         tree.points.no.edges.df.nogeo) %>% 
   mutate(across(plot_ID:tree_ID, ~ as.integer(.x))) %>% 
@@ -2012,7 +2030,7 @@ all.trees.points.df.nogeo <-
 
 # bind all tree status dataframes together (one edge, two edges, no edge plots)
 all.trees.status.df <- 
-  rbind(tree.status.no.edges.df.nogeo, 
+  plyr::rbind.fill(tree.status.no.edges.df.nogeo, 
         tree.status.one.edge.df.nogeo, 
         tree.status.two.edges.df.nogeo)
 
@@ -2079,10 +2097,10 @@ trees_removed_1 <- trees_update_1 %>% filter(stand == "warning")
 trees_update_1 <- trees_update_1 %>% filter(stand != "warning")
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
-all.triangle.polys.df.nogeo <- rbind(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
-all.edge.intersections.poly  <- rbind(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
-all.remaning.circles.poly <- rbind(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) #%>% nest("geometry" = geometry)
-all.triangle.coords.df.nogeo <- rbind(triangle.e1.coords.df.nogeo, triangle.e2.coords.df.nogeo) %>% 
+all.triangle.polys.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo) %>% filter(!is.na(plot_ID))
+all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo) %>% filter(!is.na(plot_ID))
+all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) %>% filter(!is.na(plot_ID)) 
+all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, triangle.e2.coords.df.nogeo) %>% 
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
   mutate(CCS_r_m = 17.84) %>% 
   # join in the stand info by plot_ID, e_ID, CCS_r_M

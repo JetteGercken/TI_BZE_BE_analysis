@@ -73,20 +73,20 @@ forest_edges <- forest_edges %>%
   ### 17m circle --> used for tree status also   
   # find x coordinate of the interception between line and 17.84m circle: insert line equation in circle equation (function: intersection_line_circle)
   # for AB line 
-  mutate(X1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-         X2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
-         inter_status_AB_17 = intersection.status(intersection_line_circle(b0_AB, b1_AB,  data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-                                                  intersection_line_circle(b0_AB, b1_AB, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")),
+  mutate(X1_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB,  X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AB_17 = intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_AB_17 = intersection.status(intersection_line_circle(b0_AB, b1_AB,  X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+                                                  intersection_line_circle(b0_AB, b1_AB, X_A, X_B, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")),
          # for AT line
-         X1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
-         X2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2"), 
-         inter_status_AT_17 = intersection.status(intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"), 
-                                                  intersection_line_circle(b0_AT, b1_AT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2")),
+         X1_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT, X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"),
+         X2_inter_AT_17 = intersection_line_circle(b0_AT, b1_AT,X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2"), 
+         inter_status_AT_17 = intersection.status(intersection_line_circle(b0_AT, b1_AT,X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x1"), 
+                                                  intersection_line_circle(b0_AT, b1_AT, X_A, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3], coordinate="x2")),
          # for BT line
-         X1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"),
-         X2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
-         inter_status_BT_17 = intersection.status(intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"), 
-                                                  intersection_line_circle(b0_BT, b1_BT, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")))
+         X1_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"),
+         X2_inter_BT_17 = intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2"), 
+         inter_status_BT_17 = intersection.status(intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x1"), 
+                                                  intersection_line_circle(b0_BT, b1_BT, X_B, X_T, data_circle$y0[3], data_circle$x0[3], data_circle$r0[3],  coordinate="x2")))
 
 
 

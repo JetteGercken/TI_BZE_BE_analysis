@@ -1,6 +1,16 @@
 bund_nr,ld_bze,bwi_tnr,bwi_eck,team,datum,srid_ist,istre,istho,hbi_status,beart,besttyp,struktur,schlussgrad_schi1,schlussgrad_schi2,mischung,pk1_aufnahme,pk2_aufnahme,pk3_aufnahme,geraet,beschreibungbestockung,anmerkung
-"140040,184,,,PiKï¿½,2022-09-13,31468,4570300,5591700,1,1,1,5,6,2,1,1,1,1,Vertex IV,""- frisch durchforstet"
-#NAME?
+140039,176,,,PiKï¿½,2022-10-13,31468,4578850,5607400,2,1,1,4,5,6,1,1,1,1,Vertex,"- Hauptbestand: mittl-st Bmh
+- GFI in Nordost gerï¿½umt (Kï¿½ferloch)
+- WZE-Satelliten in Nord und Ost ausgefallen (Borkenkï¿½fer)
+- RBU-Voranbau - Jungwuchs - flï¿½chig
++ zusï¿½tzliche Naturverjï¿½ngung: GBI + Vogelbeere + GFI
+- Grenze 1: NHB - Holzpolter
+- Grenze 2: Bestandesgrenze ","keine Angaben von ""Markierungsrohr zu Pflock"",
+da der Pflock aufgrund des Holzeinschlags neben der Grube lag
+- HBI-Mittelpunkt lokalisiert aber nicht fï¿½r Derbholzaufnahme verwendbar, da er in der frisch ausgeschachteten Grube liegt 
+- Neuaufnahme; ->>Messung von 5 Hï¿½hen pro Durchmesserstufe 
+ "
+140040,184,,,PiKï¿½,2022-09-13,31468,4570300,5591700,1,1,1,5,6,2,1,1,1,1,Vertex IV,"- frisch durchforstet
+- Hauptbestand: mittl-starkes Baumholz
 - Unterbau aus WTA+RBU, Jungwuchs, gezï¿½unt
-"- Naturverjï¿½ngung aus Vogelbeere+GFI+BAH, durchschnittlich 1m hoch"",Markierungsrohr zu Pflock 345cm + 263gon"
-"140039,176,,,PiKü,2022-10-13,31468,4578850,5607400,2,1,1,4,5,6,1,1,1,1,Vertex,""- Hauptbestand: mittl-st Bmh"
+- Naturverjï¿½ngung aus Vogelbeere+GFI+BAH, durchschnittlich 1m hoch",Markierungsrohr zu Pflock 345cm + 263gon

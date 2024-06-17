@@ -328,6 +328,7 @@ tree_inv_info <- tree_inv_info %>%
 trees_stat_2 <- as.data.frame(tree_inv_info[tree_inv_info$CCS_LT_inv_status == 2, ])
 LT.data.stat.2.list <- vector("list", length = nrow(trees_stat_2))
 for (i in 1:nrow(trees_stat_2)) {
+ 
   # i = 2
   my.plot.id <- trees_stat_2[, "plot_ID"][i]
   my.ccs.r <- trees_stat_2[, "CCS_r_m"][i]

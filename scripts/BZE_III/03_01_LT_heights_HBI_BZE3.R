@@ -58,11 +58,11 @@ trees_total <-  rbind(HBI_trees, BZE3_trees %>%
          BA_m2 = c_A(DBH_cm/2)*0.0001) %>% # *0.0001 to convert cm2 in m2 %>% 
  arrange(plot_ID, inv)
 
-trees_total <- rbind(trees_total %>% mutate(H_m = H_m+1.5, 
-                                      DBH_cm = DBH_cm+10), 
-                     trees_total %>% mutate(H_m = H_m-1.5, 
-                                            DBH_cm = DBH_cm-10),
-                     trees_total)
+# trees_total <- rbind(trees_total %>% mutate(H_m = H_m+1.5, 
+#                                       DBH_cm = DBH_cm+10), 
+#                      trees_total %>% mutate(H_m = H_m-1.5, 
+#                                             DBH_cm = DBH_cm-10),
+#                      trees_total)
 
 
 # 2. estimating tree height -----------------------------------------------
