@@ -162,7 +162,7 @@ HBI_LT_summary %>%
   distinct() %>% 
   mutate(plot_ID = as.integer(plot_ID)) %>% 
   arrange(plot_ID) %>% 
-  # this is how I used to filter, before we decided to calculate the BA changes for the stand- wise summaries as well
+  ## this is how I used to filter, before we decided to calculate the BA changes for the stand- wise summaries as well
   # rbind(BZE3_trees %>% select(plot_ID, SP_code, stand) %>% distinct(),
   #                   HBI_trees %>% select(plot_ID, SP_code, stand) %>% distinct()) %>% 
   # distinct() %>% 
