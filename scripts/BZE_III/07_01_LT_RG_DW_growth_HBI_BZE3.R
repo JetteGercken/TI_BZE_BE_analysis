@@ -226,10 +226,13 @@ BZE3_LT_summary %>%
   mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
   # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
   # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
-  mutate(across(contains("n_ha") | contains("n_SP")  | contains("Hg")  | contains("Dg"), ~ifelse(is.na(.x) & 
-                                                      plot_ID != "all"&
-                                                      stand == "all" & 
-                                                      SP_code == "all", 0, .x)) ) %>% 
+  mutate(across(contains("n_ha") | 
+                  contains("n_SP")  | 
+                  contains("Hg")  | 
+                  contains("Dg"), ~ifelse(is.na(.x) & 
+                                            plot_ID != "all"&
+                                            stand == "all" & 
+                                            SP_code == "all", 0, .x)) ) %>% 
   # for the means and sds we calcualted values in the catagories : SP_code, plot and plot. Thus we have to set only NAs that occure in these groups and columns to 0 
   mutate(across(contains("mean") | contains("sd")  | contains("Hg")  | contains("Dg") , ~ifelse(is.na(.x) & 
                                                                 plot_ID != "all"&
@@ -244,7 +247,6 @@ post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
 trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
 trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment) %>%
   mutate(C_layer = "all")
-
 
 
 # as we collect all growth info in regard to the BZE3 by left_joining in HBI data,
@@ -285,7 +287,9 @@ RG_stock_changes_P <-
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
-  left_join(., HBI_RG_summary %>% 
+  # we use an inner join here because there are compartiments which are represented in RG BZE3
+  # are represented in HBI but we have to discuss this !!!!
+  inner_join(., HBI_RG_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
@@ -328,7 +332,9 @@ DW_stock_changes_P <-
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_dec, n_dw_TY, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m)) %>% 
-  left_join(., HBI_DW_summary %>% 
+  # we will have to put a inner join here to, since the compartiments can differ, 
+  # depending on the deadwood types present in the respective inventory !!!!!
+  inner_join(., HBI_DW_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, dw_sp, dw_type, ST_LY_type, decay, 
                      compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_dec, n_dw_TY, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m) %>%
@@ -480,3 +486,17 @@ write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_tree
 
 
 
+# notes -------------------------------------------------------------------
+
+
+trees_stock_changes_P <- trees_stock_changes_P %>% select(stand_component, plot_ID,stand , stand_type, SP_code,compartiment, 
+                                                          B_t_ha_BZE3, B_t_ha_HBI, B_t_ha_diff, 
+                                                          C_t_ha_BZE3, C_t_ha_HBI, C_t_ha_diff, 
+                                                          N_t_ha_BZE3, N_t_ha_HBI, N_t_ha_diff, 
+                                                          n_ha_BZE3, n_ha_HBI, n_ha_diff, 
+                                                          n_SP_BZE3, n_SP_HBI, n_SP_diff,
+                                                          mean_DBH_cm_BZE3, mean_DBH_cm_HBI, mean_DBH_cm_diff, 
+                                                          sd_DBH_cm_BZE3, sd_DBH_cm_HBI, sd_DBH_cm_diff, 
+                                                          Dg_cm_BZE3, Dg_cm_HBI, Dg_cm_diff, 
+                                                          mean_BA_m2_BZE3, mean_BA_m2_HBI, mean_BA_m2_diff, 
+                                                          mean_H_m_BZE3, mean_H_m_HBI, mean_H_m_diff)
