@@ -68,6 +68,20 @@ HBI_FSI <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_FSI.
 
 
 
+# data sorting ------------------------------------------------------------
+# as we collect all growth info in regard to the BZE3 by left_joining in HBI data,
+# plots that have a calculated stock that are not present in BZE3 anymore , there will be no "negative growth" registered
+# this is why we save perfectly fine HBI plots that do not have a counter/ Pertner plot in BZE3 in a separate dataset: 
+HBI_plots_not_represented_in_BZE3 <- HBI_summary %>% semi_join(., HBI_summary %>% 
+                                                                 select(plot_ID, stand, SP_code, compartiment, dw_sp, dw_type, decay, stand_type ) %>% 
+                                                                 distinct() %>% 
+                                                                 anti_join(., BZE3_summary %>% 
+                                                                             select(plot_ID, stand, SP_code, compartiment,dw_sp,dw_type,decay, stand_type) %>% 
+                                                                             distinct(), by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type")), 
+                                                               by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type"))
+
+
+
 
 
 # 1. LIVING TREES CALCULATIONS ---------------------------------------------------------
@@ -247,17 +261,6 @@ post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
 trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
 trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment) %>%
   mutate(C_layer = "all")
-
-
-# as we collect all growth info in regard to the BZE3 by left_joining in HBI data,
-# plots that have a calculated stock that are not present in BZE3 anymore , there will be no "negative growth" registered
-# this is why we save perfectly fine HBI plots that do not have a counter/ Pertner plot in BZE3 in a separate dataset: 
-HBI_plots_not_represented_in_BZE3 <- HBI_summary %>% semi_join(., HBI_summary %>% 
-                                                                 select(plot_ID) %>% 
-                                                                 distinct() %>% 
-                                                                 anti_join(., BZE3_summary %>% select(plot_ID) %>% distinct(), by = "plot_ID"), 
-                                                               by = "plot_ID")
-
 
 
 
