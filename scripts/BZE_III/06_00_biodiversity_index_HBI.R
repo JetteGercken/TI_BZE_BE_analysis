@@ -397,7 +397,6 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 
 
-
 # 1.2. DEADWOOD ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.2.1. number of decay classes ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 FSI_df <- FSI_df %>% 
@@ -418,6 +417,8 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
     left_join(., plyr::rbind.fill(
       # filter for those plots that have only one S/L datatype and the type is "L", 
       # because these plots have a d_cm in group S of 0cm
+      # through rbind.fill we will create the column DW_LY_mean_D_cm which will be NA 
+      # for the only S-type plots so the NA can be replaced by 0 in the next step
       DW_data %>%
         select(plot_ID, ST_LY_type, inv) %>% distinct() %>% 
         semi_join(., 
@@ -426,9 +427,13 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
                     distinct() %>% 
                     group_by(plot_ID, inv) %>% 
                     summarise(n_S_L_TY = n()) %>% 
+                    # check if the plot has 2 different S/L types or not
                     filter(n_S_L_TY < 2) %>% 
                     select(plot_ID), 
                   by = "plot_ID") %>% 
+        # if the S/L type number is below 2 and the respective type ist "S" we have to bind this plot 
+        # in to the dataset with the rbind.fill creating an empty column for the diameter of the "L"
+        # type woods 
         filter(ST_LY_type == "S") %>% 
         select(plot_ID, inv),
       # DW_dataset with mean diemater of downed deadwood
@@ -546,7 +551,7 @@ FSI_df<- FSI_df %>%
       # subset for columns that contain FSI: https://stackoverflow.com/questions/18587334/subset-data-to-contain-only-columns-whose-names-match-a-condition
       FSI_df[ , grepl( "FSI" , names( FSI_df ) ) ])) %>%
       # calculate the sum of all FSI scores of the respective variables per plot 
-      mutate(FSI_sum = select(., LT_FSI_DBH_RMS:DW_FSI_ST_mean_D_cm) %>% rowSums(na.rm = TRUE),
+      mutate(FSI_sum = select(., LT_FSI_DBH_RMS:RG_FSI_n_SP) %>% rowSums(na.rm = TRUE),
              #calcualte relative FSI by dividing FSI sum by total number od variables includedin the FSI calculation
              FSI_total = FSI_sum/length(FSI_df[,grepl("FSI" ,names(FSI_df))]) ) %>% 
       select(plot_ID, inv, FSI_sum, FSI_total),
@@ -563,7 +568,7 @@ write.csv(FSI_df, paste0(out.path.BZE3, paste0(unique(FSI_df$inv)[1], "_FSI",  "
 
 
 # 3. visualization ----------------------------------------------------------------------------------------------------------------
-stop("visuals and notes of biodiverity script")
+stop("visuals and notes of biodiverity script HBI")
 
 for (i in 1:length(unique(FSI_df$plot_ID))) {
   # i = 1
