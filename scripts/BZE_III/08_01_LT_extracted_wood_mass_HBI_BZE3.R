@@ -13,35 +13,60 @@ getwd()
 out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
 # 0.3. data import --------------------------------------------------------
 # tree data
-BZE3_trees_removed <- read.delim(file = here("output/out_data/out_data_BZE/BZE3_LT_removed_2.csv"), sep = ",", dec = ".")
-HBI_trees <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_update_3.csv"), sep = ",", dec = ".")
+BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_removed_2.csv")), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_3.csv")), sep = ",", dec = ".")
+
+# tree summaries 
+HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".") %>% 
+  filter(stand_component == "LT" & plot_ID != "all") %>% 
+  select(inv, plot_ID, stand, SP_code, mean_DBH_cm,Dg_cm, Hg_m) %>% distinct()
+
+BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".") %>% 
+  filter(stand_component == "LT" & plot_ID != "all") %>% 
+  select(inv, plot_ID, stand, SP_code, mean_DBH_cm,Dg_cm, Hg_m)%>% distinct()
+
+
 # growth
 growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_RG_DW_changes_all_groups.csv"), sep = ",", dec = ".") %>% 
   filter(stand_component == "LT") %>% 
-  select(stand_component, plot_ID, stand, stand_type, C_layer, SP_code, age_period ,annual_growth_cm) %>% distinct()
+  select(stand_component, plot_ID, stand, C_layer, SP_code, age_period ,annual_growth_cm) %>% distinct()
   
+# height coefficient 
+coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
+coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
+
 
 
 # 1. calculations --------------------------------------------------------------------------------------
 # 1.1. find  trees in HBI dataset that were found removed in BZE3  ------------------------------------
 # filter join for trees that are labelled with tree inventory status 2 in the BZE3 (post) inventory 
+# we have to look for them in HBI_update_3 because we need the trees with the height already estimated
 trees_harvested <- HBI_trees %>% 
   semi_join(., BZE3_trees_removed %>% 
               filter(tree_inventory_status == 2), # filter for trees in HBI which have the same plot_ID and tree_ID of those marked 2 in BZE3
             by = c("plot_ID", "tree_ID")) %>% 
   distinct()
 
+# test begin
+# as we dont have trees with the tree inv status 2 we will treat 7 trees as status 2 
+trees_harvested <- HBI_trees %>% 
+  semi_join(BZE3_trees_removed, by = c("plot_ID", "tree_ID")) %>% slice(2, 3)
+# test end
 
-# 1.2. add 4 times diameter growth to the diameter of the trees removed between HBI and BZE3 --------
-# we will have to build a loop that selects the growth per plot, stand, c_layer, species
+
+# 1.2. DBH estimation --------------------------------------------------------------------------------------
+#  the goal is to add 4 times diameter growth to the diameter of the trees removed between HBI and BZE3
+# we will build a loop that selects the growth per plot, stand, c_layer, species
 # if we can´t find average growth in this group, select growth by plot, stand, species
 # if we can´t find average growth in this group, select growth by plot, species
 # if we can´t find average growth in this group, select growth by species
 
+# 1.2.1. assinging DBH growth --------------------------------------------------------------------------------------
 # prepare dataset for DBH at middle of harvesting period 
+
 dbh_incl_growth.list <- vector("list", length = length(unique(trees_harvested$tree_ID)))
 for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
-  # i = 57
+  # i = 1 
   my.inv <- trees_harvested[, "inv"][i]
   my.plot.id <- trees_harvested[, "plot_ID"][i]
   my.tree.id <- trees_harvested[, "tree_ID"][i]
@@ -95,25 +120,82 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
 }
 dbh_incl_growth.df <- as.data.frame(rbindlist(dbh_incl_growth.list))
 
+
+# 1.2.2. join DBH including growth to tree dataset ------------------------------------------------------------------------------
 # add dbh with growth to HBI_trees dataframe to calcualte biomass 
 trees_harvested <- trees_harvested %>% 
   left_join(dbh_incl_growth.df %>% 
-              mutate(across(c("plot_ID", "tree_ID"), as.integer)), 
+              mutate(across(c("plot_ID", "tree_ID", "DBH_incl_growth"), as.numeric)), 
             by = c("plot_ID", "inv", "tree_ID"))
 
 
-# 1.3. Biomass ------------------------------------------------------------
+
+# 1.3.1. height estimation ----------------------------------------------------------------------------------------------------------
+# 1.3.1.1. get average dg and hg over both inventories -------------------------------------------------------------------------------
+# calcualte average hg between the both inventories 
+Hg_Dg_trees_total.df <- rbind(HBI_summary, 
+                              BZE3_summary) %>% 
+  group_by(plot_ID, stand, SP_code) %>% 
+  summarise(Hg_m = mean(Hg_m), 
+            Dg_cm = mean(Dg_cm), 
+            mean_DBH_cm = mean(mean_DBH_cm))
+
+# 1.3.1.2. calcualte missing heights --------------------------------------------------------------------------------------------------
+# as the tree grows not only in whith but also in height we´ll have to estimate a "new" height according to 
+# the "new" diameter. therefore we follow the same procedure as in the LT_heights script
+# another option woul dbe to calcualte the height growth similar to the diameter growth and then add it to the original height from HBI
+
+trees_harvested <- trees_harvested %>% 
+  mutate(height_inc_growth = NA, 
+         DBH_h_m = DBH_h_cm/100) %>% 
+  ## 2.3.1. joining coefficients and Hg-Dg-data in 
+  unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>%            # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+  left_join(.,coeff_H_SP_P %>% 
+              mutate(plot_ID = as.integer(plot_ID)) %>% # joining R2 from coeff_SP_P -> R2.x
+              select(plot_ID, SP_code, R2) %>% 
+              unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE),   # create column matching vectorised coefficients of coeff_SP_P (1.3. functions, h_nls_SP_P, dplyr::pull)
+            by = c("plot_ID", "SP_code", "SP_P_ID")) %>% 
+  left_join(., coeff_H_SP %>% select(SP_code, R2),               # joing R2 from coeff_SP data set -> R2.y
+            by = "SP_code") %>% 
+  # this is joins in a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
+  left_join(., Hg_Dg_trees_total.df%>% 
+              mutate(plot_ID = as.integer(plot_ID)),
+            by = c("plot_ID", "stand", "SP_code")) %>% 
+  mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher
+         H_new_method = case_when(is.na(height_inc_growth) & !is.na(R2.x) & R2.x > 0.70 | is.na(height_inc_growth) & R2.x > R2.y & R2.x > 0.70 ~ "coeff_SP_P", 
+                              is.na(height_inc_growth) & is.na(R2.x) & R2.y > 0.70| is.na(height_inc_growth) & R2.x < R2.y & R2.y > 0.70 ~ "coeff_sp",
+                              is.na(height_inc_growth) & is.na(R2_comb) & !is.na(Hg_m)| is.na(height_inc_growth) & R2_comb < 0.70 & !is.na(Hg_m) ~ "ehk_sloboda",
+                              is.na(height_inc_growth) & is.na(R2_comb) & is.na(Hg_m)| is.na(height_inc_growth) & R2_comb < 0.70 & is.na(Hg_m) ~ "h_curtis", 
+                              TRUE ~ "sampled")) %>% 
+  # When h_m is na but there is a plot and species wise model with R2 above 0.7, use the model to predict the height
+  mutate(height_inc_growth = as.numeric(case_when(is.na(height_inc_growth) & !is.na(R2.x) & R2.x > 0.70 | is.na(height_inc_growth) & R2.x > R2.y & R2.x > 0.70 ~ h_nls_SP_P(SP_P_ID, DBH_incl_growth),
+                                                   # if H_m is na and there is an R2 from coeff_SP_P thats bigger then 0.75 or of theres no R2 from 
+                                                   # coeff_SP_plot that´s bigger then R2 of coeff_SP_P while the given R2 from coeff_SP_P is above 
+                                                   # 0.75 then use the SP_P models
+                                                   is.na(height_inc_growth) & is.na(R2.x) & R2.y > 0.70 | is.na(height_inc_growth) & R2.x < R2.y & R2.y > 0.70 ~ h_nls_SP(SP_code, DBH_incl_growth),
+                                                   # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                                                   # and hm is na but there is a h_g and d_G
+                                                   is.na(height_inc_growth) & is.na(R2_comb) & !is.na(Hg_m)| is.na(height_inc_growth) & R2_comb < 0.70 & !is.na(Hg_m) ~ ehk_sloboda(H_SP_group, DBH_incl_growth*10, mean_DBH_cm*10, Dg_cm*10, Hg_m*10),
+                                                   # when there´s still no model per species or plot, or the R2 of both self-made models is below 0.7 
+                                                   # and hm is na and the Slobody function cannot eb applied because there is no h_g calculatable use the curtis function
+                                                   is.na(height_inc_growth) & is.na(R2_comb) & is.na(Hg_m)| is.na(height_inc_growth) & R2_comb < 0.70 & is.na(Hg_m) ~ h_curtis(H_SP_group, DBH_incl_growth*10), 
+                                                  TRUE ~ height_inc_growth))) %>% 
+  # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
+  # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
+  mutate(height_inc_growth = ifelse(DBH_h_m > height_inc_growth, h_proportional(Dg_cm, Hg_m, DBH_incl_growth), height_inc_growth)) 
+
+
+
+
+
+# 1.4. Biomass --------------------------------------------------------------------------------------------------------------------------
 # now we will calcualte the Biomass of the trees with the "new" diameter at the middle of the harvest period
 # which means we run all biomass loops from 04_01_LT_stocks again
-# 1.3.1. data preparation ---------------------------------------------------------
-trees_harvested <- trees_harvested %>% mutate(H_m = as.numeric(H_m))
 
-
-# 1.1. biomass -----------------------------------------------------------------
-# 1.1.1. biomass aboveground compartiments ---------------------------------------
+# 1.4.1. biomass aboveground compartiments --------------------------------------------------------------------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
-  # i = 60
+  # i = 1
   # i = trees_harvested %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
@@ -124,9 +206,9 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
   
   # select variales for tree object: tapes species, diameter, diameter measuring height, tree height
   spp = na.omit(unique(trees_harvested$tpS_ID[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))
-  Dm = na.omit(as.list(as.numeric(unique(trees_harvested$DBH_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))) 
+  Dm = na.omit(as.list(as.numeric(unique(trees_harvested$DBH_incl_growth[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))) 
   Hm = na.omit(as.list(as.numeric(unique(trees_harvested$DBH_h_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])/100)))
-  Ht = na.omit(as.numeric(unique(trees_harvested$H_m[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))
+  Ht = na.omit(as.numeric(unique(trees_harvested$height_inc_growth[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])))
   # create tapes compartiments
   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
   
@@ -164,7 +246,7 @@ bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 
 
 
-# 1.1.2. biomass belowground compartiments ----------------------------------
+# 1.4.2. biomass belowground compartiments ---------------------------------------------------------------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
   # i = 60
@@ -178,7 +260,7 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
   
   # select variales for tree object
   spp = unique(trees_harvested$Bio_SP_group[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id])
-  dbh.cm = as.numeric(unique(trees_harvested$DBH_cm[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))
+  dbh.cm = as.numeric(unique(trees_harvested$DBH_incl_growth[trees_harvested$plot_ID==my.plot.id & trees_harvested$tree_ID==my.tree.id]))
   
   
   # calculate biomass per compartiment
@@ -199,8 +281,7 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
 bio_bg_kg_df <- as.data.frame(rbindlist(bio.bg.kg.list))
 
 
-# 1.1.3. biomass all compartiments - total ----------------------------------
-
+# 1.4.3. biomass all compartiments - total ------------------------------------------------------------------------
 bio_total_kg_df <- 
   rbind(
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
@@ -219,16 +300,14 @@ bio_total_kg_df <-
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"))
 
-# 1.1.4. harmonizing biomass strings and compartiment names ---------------
+# 1.4.4. harmonizing biomass strings and compartiment names ----------------------------------------------------------
 #  harmonize strings of bio_total_kg_df  
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 bio_total_kg_df[,c(1,2, 4, 6)] <- lapply(bio_total_kg_df[,c(1,2,4, 6)], as.numeric)
 bio_ag_kg_df[,c(1,2, 4, 6)] <- lapply(bio_ag_kg_df[,c(1,2,4, 6)], as.numeric)
 bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
-
-# 1.1.4. join biomass into tree dataset -----------------------------------
-
+# 1.4.5. join biomass into tree dataset ----------------------------------------------------------------------------------
 trees_harvested <- trees_harvested %>% distinct() %>% 
   left_join(., 
             rbind(bio_ag_kg_df , 
@@ -239,14 +318,16 @@ trees_harvested <- trees_harvested %>% distinct() %>%
             multiple = "all") 
 
 
-# 1.2. Nitrogen calculation -----------------------------------------------
-# 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
+
+
+# 1.5. Nitrogen calculation --------------------------------------------------------------------------------------
+# 1.5.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
 N_ag_bg_kg_df <- trees_harvested %>%
   filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
   mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
 
-# 1.2.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
+# 1.5.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
 N_total_kg_df <- 
   rbind(
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
@@ -266,7 +347,7 @@ N_total_kg_df <-
              "inv_year", "compartiment", "N_kg_tree"))
 
 
-# 1.2.3. join Nitrogen stocks into tree dataset -----------------------------------
+# 1.5.3. join Nitrogen stocks into tree dataset -----------------------------------
 trees_harvested <- trees_harvested %>% left_join(., 
                                        rbind(N_ag_bg_kg_df , 
                                              N_total_kg_df), 
@@ -274,8 +355,19 @@ trees_harvested <- trees_harvested %>% left_join(.,
                                        multiple = "all")
 
 
-# 1.3. carbon stock per tree & compartiment -------------------------------------------------------
+# 1.6. carbon stock per tree & compartiment -------------------------------------------------------
 trees_harvested <- trees_harvested %>% mutate(C_kg_tree = carbon(B_kg_tree))
+
+
+
+
+
+
+
+
+
+
+
 
 
 
