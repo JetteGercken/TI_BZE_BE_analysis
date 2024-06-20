@@ -101,17 +101,6 @@ bio.ag.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.ag.bg.kg.RG.above.1.
   
 
 
-# 1.2.1.3. total and total aboveground biomass for RG trees height > 1.3m -------------------------------
-  bio.total.kg.RG.above.1.3.df <- 
-   # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
-    bio.ag.bg.kg.RG.above.1.3.df%>% 
-      filter(compartiment %in% c("ag", "bg")) %>% 
-      group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
-      summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
-  mutate(compartiment = "total") %>% 
-      select("plot_ID","CCS_nr", "tree_ID", "inv", 
-             "inv_year", "compartiment", "B_kg_tree")
-
 
 
 # 1.2.2. biomass for RG trees height < 1.3m -------------------------------
@@ -125,11 +114,48 @@ bio.ag.kg.RG.below.1.3.df <- RG_data %>%
                   "inv_year", "compartiment", "B_kg_tree") 
   
   
+# 1.2.1.1.2. belowground biomass for RG trees height > 1.3m -------------------------------
+# to ensure every RG emelemnt has all compartiments, we have to add the compartiment "bg" for trees
+# below 1.3m height, even though it is 0 as we do not calculate it. This way we can calculate a 
+# compartiment "total" for every tree in the RG dataset
+bio.bg.kg.RG.below.1.3.df <- RG_data %>% 
+  filter(H_m <= 1.3) %>% 
+  mutate(compartiment = "bg") %>% 
+  mutate(B_kg_tree = 0) %>% 
+  select("plot_ID","CCS_nr", "tree_ID", "inv", 
+         "inv_year", "compartiment", "B_kg_tree") 
+
+
+
+
+
+# 1.2.3. biomass for RG trees height above and below 1.3m together -------------------------------
+# 1.2.3.1. total biomass for RG trees height above and below 1.3m together -------------------------------
+bio.total.kg.RG.df <- 
+  # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
+  rbind(
+    # RG trees above 1.3m height 
+    bio.ag.bg.kg.RG.above.1.3.df%>% 
+      filter(compartiment %in% c("ag", "bg")), 
+    # RG trees below 1.3m height 
+    bio.ag.kg.RG.below.1.3.df, 
+    bio.bg.kg.RG.below.1.3.df
+    ) %>% 
+  group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+  summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+  mutate(compartiment = "total") %>% 
+  select("plot_ID","CCS_nr", "tree_ID", "inv", 
+         "inv_year", "compartiment", "B_kg_tree")
+
+
+
+
 # 1.2.3. join RG biomass for trees <1.3m and >1.3m height  ----------------
 RG_data <- RG_data %>% left_join(., rbind(
-  bio.ag.bg.kg.RG.above.1.3.df,
-  bio.total.kg.RG.above.1.3.df, 
-  bio.ag.kg.RG.below.1.3.df),
+  bio.ag.bg.kg.RG.above.1.3.df, # all compartiments for RG trees >1.3
+  bio.ag.kg.RG.below.1.3.df,    # ag compartiment dor RG trees < 1.3m 
+  bio.bg.kg.RG.below.1.3.df,     # ag compartiment dor RG trees < 1.3m
+  bio.total.kg.RG.df),          # total compartiment (ag+bg) for trees above and below 1.3m 
   by = c("plot_ID", "CCS_nr", "tree_ID", "inv", "inv_year"),
   multiple = "all") 
 
@@ -139,20 +165,22 @@ RG_data <- RG_data %>% left_join(., rbind(
 # 1.3 Nitrogen stock ------------------------------------------------------
 # 1.3.1. Nitrogen stock for aboveground  & belowgrowground ---------------------------------
 N_ag_bg_kg_comps_df <- RG_data %>% 
-  filter(H_m <= 1.3 & compartiment %in% c("ag") |
+  filter(H_m <= 1.3 & compartiment %in% c("ag", "bg") |
            H_m > 1.3 & !(compartiment %in% c("ag", "total"))) %>% 
           # calcualte nitrogen content for RG items with comppartiments "ndl", "fwb", "bg"
     mutate(N_kg_tree = case_when(H_m > 1.3 & !(compartiment %in% c("ag", "total")) ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment),
           # small trees are treated as "fwb" compartiment tho their only available compartiment is "ag" which is treated as "fwb"
-                                 H_m <= 1.3 & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, "fwb"),
-                                 TRUE ~ NA)) %>% 
+                                 H_m <= 1.3 & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, "fwb"), # we cannot use "compartiment" here because the function doesn´t include compartiment "ag"
+                                 H_m <= 1.3 & compartiment == "bg" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), # we can use compartiment here because the function does include the compartiment "bg"
+                                           TRUE ~ NA)) %>% 
   select("plot_ID","CCS_nr", "tree_ID", "inv", 
          "inv_year", "compartiment", "N_kg_tree")
   
 # 1.3.2. total Nitrogen stock ---------------------------------------------------------------
 N_total_kg_df <- 
-# total N_stock in kg
-rbind(N_ag_bg_kg_comps_df %>% 
+rbind(
+  # ag N_stock in kg
+  N_ag_bg_kg_comps_df %>% 
         # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
         semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
   # select compartiments "ndl", "fwb",  and add them together
@@ -164,10 +192,13 @@ rbind(N_ag_bg_kg_comps_df %>%
          "inv_year", "compartiment", "N_kg_tree"),
 # total N_stock in kg
 N_ag_bg_kg_comps_df %>% 
- # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
-  semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
+  # filter for trees with 1.3m height or more because for total we have to sum up all compartimetns per tree: ndl, fwb, bg
+  semi_join(RG_data %>% filter(H_m > 1.3 & !(compartiment %in% c("ag", "total")) |
+  # filter for trees below 1.3 height with compartimetns "ag" and "bg" and summ them up per tree
+                               H_m < 1.3 & compartiment %in% c("ag", "bg")),
+  by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
   # select compartiments "ndl", "fwb", "bg" and add them together
-  filter(!(compartiment %in% c("ag", "total"))) %>% 
+  # filter(!(compartiment %in% c("ag", "total"))) %>% 
   group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
   summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
   mutate(compartiment = "total") %>% 

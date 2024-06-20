@@ -292,7 +292,7 @@ RG_stock_changes_P <-
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
   # we use an inner join here because there are compartiments which are represented in RG BZE3
   # are represented in HBI but we have to discuss this !!!!
-  inner_join(., HBI_RG_summary %>% 
+  left_join(., HBI_RG_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
@@ -337,7 +337,7 @@ DW_stock_changes_P <-
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_dec, n_dw_TY, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m)) %>% 
   # we will have to put a inner join here to, since the compartiments can differ, 
   # depending on the deadwood types present in the respective inventory !!!!!
-  inner_join(., HBI_DW_summary %>% 
+  left_join(., HBI_DW_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, dw_sp, dw_type, ST_LY_type, decay, 
                      compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_dec, n_dw_TY, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m) %>%
@@ -487,6 +487,8 @@ write.csv(LT_RG_DW_P_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3
 
 write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "FSI_growth_changes", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
+
+stop("this is where notes of growth script hbi bze3 start")
 
 
 # notes -------------------------------------------------------------------

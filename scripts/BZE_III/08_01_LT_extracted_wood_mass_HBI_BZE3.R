@@ -27,11 +27,12 @@ BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stoc
 
 
 # growth
-growth <- read.delim(file = here("output/out_data/out_data_BZE/HBI_BZE3_LT_RG_DW_changes_all_groups.csv"), sep = ",", dec = ".") %>% 
+growth <- read.delim(file = here(paste0(out.path.BZE3, "HBI_BZE3_LT_RG_DW_changes_all_groups.csv")), sep = ",", dec = ".") %>% 
   filter(stand_component == "LT") %>% 
   select(stand_component, plot_ID, stand, C_layer, SP_code, age_period ,annual_growth_cm) %>% distinct()
   
 # height coefficient 
+# recreate the same datasets we use in the height calculation script
 coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
 coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
 
