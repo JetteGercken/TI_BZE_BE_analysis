@@ -48,11 +48,6 @@ trees_harvested <- HBI_trees %>%
             by = c("plot_ID", "tree_ID")) %>% 
   distinct()
 
-# test begin
-# as we dont have trees with the tree inv status 2 we will treat 7 trees as status 2 
-trees_harvested <- HBI_trees %>% 
-  semi_join(BZE3_trees_removed, by = c("plot_ID", "tree_ID")) %>% slice(2, 3)
-# test end
 
 
 # 1.2. DBH estimation --------------------------------------------------------------------------------------
@@ -188,7 +183,6 @@ trees_harvested <- trees_harvested %>%
 
 
 
-
 # 1.4. Biomass --------------------------------------------------------------------------------------------------------------------------
 # now we will calcualte the Biomass of the trees with the "new" diameter at the middle of the harvest period
 # which means we run all biomass loops from 04_01_LT_stocks again
@@ -239,6 +233,7 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
                               B_kg_tree)) %>% 
     dplyr::select(-c("LH_NH"))
   
+  
   bio.ag.kg.list[[i]] <- bio.info.df
   
   
@@ -250,7 +245,7 @@ bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))
 # 1.4.2. biomass belowground compartiments ---------------------------------------------------------------------------------------
 bio.bg.kg.list <- vector("list", length = nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")]))) {
-  # i = 60
+  # i = 1
   # i = trees_harvested %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
@@ -379,3 +374,42 @@ write.csv(trees_harvested, paste0(out.path.BZE3, paste(unique(trees_harvested$in
 stop("this is where 08_01 script for harvested tree stocks ends")
 
 
+
+# notes and tests ---------------------------------------------------------
+# create test dataset 
+# test begin
+# as we dont have trees with the tree inv status 2 we will treat 7 trees as status 2 
+trees_harvested <- HBI_trees %>% 
+  semi_join(BZE3_trees_removed, by = c("plot_ID", "tree_ID")) %>% slice(2, 3)
+# test end
+
+# height calc test --------------------------------------------------------
+# test beginn
+
+# because I cannot combine 3 variabels in one vector, 
+b0 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b0, SP_P_ID);
+b1 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b1, SP_P_ID);
+b2 <- coeff_H_SP_P %>% unite(SP_P_ID, plot_ID, SP_code, sep = "", remove = FALSE) %>% dplyr::pull(b2, SP_P_ID);
+
+# our nls 
+31.72121 *(1 - exp( -0.0609014  * 40.73636))^1.472459 
+# height tree 140439, 2, hbi: 28.79518
+# height tree 140439, 3, hbi: 27.89165
+
+# pettersen function tapes
+estHeight(45.23636, 1) 
+# height tree 140439, 2, hbi: 29.91592
+# height tree 140439, 3, hbi: 28.3137
+
+# test end
+
+# test wutzler when 140039, 2, would be BL
+0.0377*45.2^2.43*28.8^-0.913 #  = 18.4849147214053
+# test 
+
+
+# test start 
+# belowground biomass 140039, 2, hbi 
+#   b0[spec]*dbh^b1[spec])
+# 0.003720*45.2^2.792465 # 155.7611
+# test end
