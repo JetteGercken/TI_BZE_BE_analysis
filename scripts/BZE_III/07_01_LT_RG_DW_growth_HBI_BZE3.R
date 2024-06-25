@@ -290,8 +290,6 @@ RG_stock_changes_P <-
   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
   rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
-  # we use an inner join here because there are compartiments which are represented in RG BZE3
-  # are represented in HBI but we have to discuss this !!!!
   left_join(., HBI_RG_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
