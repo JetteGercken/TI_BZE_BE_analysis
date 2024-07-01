@@ -93,7 +93,9 @@ trees_data <- trees_data %>%
   left_join(., forest_edges %>% 
               select(plot_ID, e_ID, e_type, e_form), 
             by = "plot_ID", 
-            multiple = "all") # this is necesarry since there are, apperently, multiple edges per plot 
+            multiple = "all", 
+            relationship = "many-to-many") # this is necesarry since there are multiple edges per plot and multiple trees per plot 
+
 
 
 
@@ -199,7 +201,6 @@ forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1) # %>%
 
 triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID))
 triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
-
 for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # i = 1
   # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
@@ -678,14 +679,16 @@ forest_edges.man.sub.1.outer.edge.nogeo <- forest_edges.man %>% # rows:84
 
 # prepare output datasets
 outer.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+
 outer.inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+outer.inter.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
 #inter.poly.NA.list <- vector("list", length = length(unique(forest_edges.man.sub.1.edge$plot_ID)))
 outer.remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
 outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 1
+  # i = 3
   #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
   # break loop if dataset for loop is empty to avoid error messages
@@ -744,11 +747,11 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     left_join(forest_edges.man %>% select(plot_ID, e_ID, e_type), by = c("plot_ID", "e_ID"))
   
   # print the cirlce and edge polygone
-  # print(
-  #   c(plot(st_geometry(circle.17), main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)) ,
-  #       plot(st_geometry(my.poly), col = "green", add = TRUE),
-  #       plot(st_geometry(tree.sf), add = TRUE))
-  # )
+   # print(
+   #   c(plot(st_geometry(circle.17), main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)) ,
+   #       plot(st_geometry(my.poly), col = "green", add = TRUE),
+   #       plot(st_geometry(tree.sf), add = TRUE))
+   # )
   
   
   #### 17m circle
@@ -892,8 +895,15 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   outer.edges.list.nogeo[[i]] <- inter.area.df
   
   # create lists with polgons of intersections if there are intersections, if there is non, save the edge triangle polygone instead. 
-  outer.inter.poly.list.nogeo[[i]] <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
-  
+  edge.poly <- if(isTRUE(nrow(inter.poly.17)!= 0)){inter.poly.17}else{my.poly}
+  # if the edge.poly doesn´t have a stand yet we have to assign it later
+  edge.poly <- if(isTRUE(length(edge.poly$stand)== 0)){edge.poly %>% mutate(stand = my.poly$stand) }else{edge.poly}
+  # create list wit polygones of the remaining cirlce when it´s only one polygone
+  outer.inter.poly.list.nogeo[[i]] <- if(st_geometry_type(edge.poly)== "POLYGON"){c(edge.poly)}else{}
+  # create list wit polygones of the remaining cirlce when it´s a multipoligone
+  outer.inter.multipoly.list.nogeo[[i]] <- if(st_geometry_type(edge.poly)== "MULTIPOLYGON"){c(edge.poly)}else{}
+ 
+
   # testing if corect inter was saved: 
   #  i.plot <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
   # plot(i.plot$geometry)
@@ -917,7 +927,12 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
 # list of areas
 outer.edges.area.df.nogeo <- as.data.frame( rbindlist(outer.edges.list.nogeo))
 # list of polygones of forest edges 
-outer.inter.poly.one.edge.df.nogeo <- as.data.frame(rbindlist(outer.inter.poly.list.nogeo, fill=TRUE))#[,c(2, 1, 3, 5)]%>% arrange(id, e_id)
+outer.inter.poly.df.nogeo <- as.data.frame(rbindlist(outer.inter.poly.list.nogeo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
+# list of multipolygones of remaining circles
+outer.inter.multipoly.df.nogeo <- as.data.frame(rbindlist(outer.inter.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
+# binding the both circle lists back together 
+outer.inter.poly.one.edge.df.nogeo <- plyr::rbind.fill(outer.inter.poly.df.nogeo, outer.inter.multipoly.df.nogeo)
+
 # list of polygones of remainign circles 
 outer.rem.circle.poly.df.nogeo <- as.data.frame(rbindlist(outer.remaining.circle.poly.list.nogeo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
 # list of multipolygones of remaining circles
@@ -2037,6 +2052,7 @@ all.trees.points.df.nogeo <-
                    tree.points.two.edges.df.nogeo,
                    tree.points.no.edges.df.nogeo) %>% 
   mutate(across(plot_ID:tree_ID, ~ as.integer(.x))) %>% 
+  distinct() %>% 
   left_join(., trees_data %>% 
               select(plot_ID, tree_ID, inv_year, DBH_cm), 
             by = c("plot_ID", "tree_ID", "inv_year"), 
@@ -2212,7 +2228,7 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 
 
-# 3.4. visulaizing for all plots, edges, trees -------------------------
+# 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
