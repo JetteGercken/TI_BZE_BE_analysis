@@ -225,11 +225,11 @@ DBH_c_function <- function(dbh, DBH_c){
  
    ## 5 step dbh classes
   # create label for diameter classes according to BZE3 Bestandesaufnahmeanleitung
-  labs_DBH_5 <- c(seq(5, 55, by = 5)) ; 
+  # labs_DBH_5 <- c(seq(5, 55, by = 5)) ; 
  
    DBH_c_5 <- cut(as.numeric(dbh),                               # cut the diameter
                breaks = c(seq(5, 55, by = 5), Inf),  # in sequences of 5
-               labels = labs_DBH_5,                    # and label it according to labs (1.4.1)
+               labels = c(seq(5, 55, by = 5)),                    # and label it according to labs (1.4.1)
                right = FALSE);
    
    ## 10 step dbh classes
@@ -239,8 +239,8 @@ DBH_c_function <- function(dbh, DBH_c){
                   labels = labs_DBH_10,                    # and label it according to labs (1.4.1)
                   right = FALSE);
   switch(DBH_c, 
-         class_10 = DBH_c_10, 
-         class_5 = DBH_c_5)
+         "class_10" = DBH_c_10, 
+         "class_5" = DBH_c_5)
 }
 
 # 1.2.2. DBH correction --------------------------------------------------------

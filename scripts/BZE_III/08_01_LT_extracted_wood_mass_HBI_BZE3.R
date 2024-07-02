@@ -16,7 +16,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # tree data
 BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_removed_2.csv")), sep = ",", dec = ".")
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
-HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".") 
 
 # tree summaries 
 HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".") 
@@ -32,16 +32,22 @@ coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")
 # 0.4 data prep -----------------------------------------------------------
 # 0.4.1. add DBH class and state to tree datasets -----------------------------------------------------------
 BZE3_trees_removed <- BZE3_trees_removed  %>%    
+  # select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2)))
+         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+  distinct()
 
-BZE3_trees <- BZE3_trees %>%    
+BZE3_trees <- BZE3_trees %>% 
+  select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2)))
+         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+  distinct()
 
-HBI_trees <- HBI_trees %>%    
+HBI_trees <- HBI_trees %>% 
+  select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2)))
+         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+  distinct()
 
 
 # 0.4.2. filter summaries -------------------------------------------------
@@ -76,14 +82,14 @@ dbh_growth_tree <- left_join(
  ## BZE3 trees
   # select trees that are repeatedly inventory, or unknown status
   BZE3_trees %>% 
-    filter(tree_inventory_status %in% c(1) & compartiment == "ag") %>% 
+    filter(tree_inventory_status %in% c(1)) %>% 
     rename(BZE3_DBH_cm = DBH_cm) %>% 
     rename(BZE3_inv_year = inv_year) %>% 
     select(state, plot_ID, tree_ID, BZE3_inv_year, stand, DBH_class_10, SP_code, BZE3_DBH_cm), 
  ## HBI trees
   HBI_trees %>% 
     # select trees that were newly inventored, repeated inventory, or unknown status
-    filter(tree_inventory_status %in% c(0, 1, -9) & compartiment == "ag")%>% 
+    filter(tree_inventory_status %in% c(0, 1, -9))%>% 
     distinct() %>% 
     rename(HBI_DBH_cm = DBH_cm) %>% 
     rename(HBI_inv_year = inv_year) %>% 
@@ -108,12 +114,12 @@ growth <- plyr::rbind.fill(
   # annual dbh growth by plot, species, DBH class and stand
   summarize_data(dbh_growth_tree,
                  c("plot_ID", "stand", "SP_code", "DBH_class_10"), 
-                 c("age_period", "annual_growth_cm"), 
+                 c("annual_growth_cm", "age_period"), 
                  operation = "mean_df"), 
   # annual dbh growth by plot, species and DBH class
   summarize_data(dbh_growth_tree, 
                  c("plot_ID", "DBH_class_10", "SP_code"), 
-                 c("age_period", "annual_growth_cm"), 
+                 c("annual_growth_cm", "age_period"), 
                  operation = "mean_df") %>% 
     mutate(stand = "all"))
 
@@ -157,7 +163,8 @@ growth_coeff <- left_join(
              SSres = sum((annual_growth_cm-growth_est)^2), 
              SStot = sum((annual_growth_cm-mean_growth)^2), 
              pseu_R2 = 1-(SSres/SStot), 
-             diff_growth = mean(annual_growth_cm - growth_est))
+             diff_growth = mean(annual_growth_cm - growth_est) ,
+             n = n())
 
 
 # 1.3. DBH estimation --------------------------------------------------------------------------------------
@@ -170,9 +177,8 @@ growth_coeff <- left_join(
 # prepare dataset for DBH at middle of harvesting period 
 
 dbh_incl_growth.list <- vector("list", length = length(unique(trees_harvested$tree_ID)))
-for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
-  # i = 1 
-  my.inv <- trees_harvested[, "inv"][i]
+for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])) ) {
+  # i = 23 
   my.plot.id <- trees_harvested[, "plot_ID"][i]
   my.tree.id <- trees_harvested[, "tree_ID"][i]
   my.dbh.cm <- trees_harvested[, "DBH_cm"][i]
@@ -186,6 +192,7 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
                                          growth$stand == my.stand & 
                                          growth$DBH_class_10 == my.dbh.class & 
                                          growth$SP_code == my.sp]
+  growth.metod <- "growth_df P S DBHC SP"
   
   # if we can´t find growth for the trees species, plot, stand and canopy layer
   # look for annual diameter growth in cm in the plot, stand and species of my.tree
@@ -193,11 +200,18 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
     growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &
                                            growth$stand == "all" & 
                                            growth$DBH_class_10 == my.dbh.class & 
-                                           growth$SP_code == my.sp]}
+                                           growth$SP_code == my.sp]
+    growth.metod <- "growth_df P  DBHC SP"
+    
+    }
   
   # if we cant find growth for the tree species, plot, and DBH class, 
   # we use a model that describes the expectable DBH growth : mean annual growth = DBH_BZE3 grouped by state (bundesland) and species
-  if(length(growth.cm) == 0){
+  # but only if there is a r2 and r2 is => 0.7 
+  if(isTRUE(length(growth.cm) == 0 & 
+     growth_coeff$pseu_R2[growth_coeff$SP_code == my.sp & growth_coeff$state == my.ld.icode] >= 0.7 &
+     !is.na(growth_coeff$pseu_R2[growth_coeff$SP_code == my.sp & growth_coeff$state == my.ld.icode]))== T ){
+    
     b0.dbh <- growth_coeff$b0[growth_coeff$SP_code == my.sp &
                                 growth_coeff$state == my.ld.icode]
     b1.dbh <- growth_coeff$b1[growth_coeff$SP_code == my.sp &
@@ -205,7 +219,15 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
     b2.dbh <- growth_coeff$b2[growth_coeff$SP_code == my.sp &
                                growth_coeff$state == my.ld.icode]
     growth.cm <- b0.dbh * (1 - exp( -b1.dbh * my.dbh.cm))^b2.dbh
-     }
+    growth.metod <- "growth_model"
+  }
+  
+# if we cant use a model because the conditions are not fullfilled, we set the growth to 0 and just calcualte everything 
+# based on the HBI data
+  if(length(growth.cm) == 0){
+    growth.cm <- 0
+    growth.metod <- "no growth"
+  }
   
 
   # add annual diameter growth times 4 to DBH of the tree 
@@ -214,14 +236,14 @@ for (i in 1:length(unique(trees_harvested$tree_ID)) ) {
   
   # export diameters including 
   dbh_incl_growth.list[[i]] <- as.data.frame(cbind(
-    "inv" = c(my.inv)
-    ,"plot_ID" = c(as.integer(my.plot.id))
+    "plot_ID" = c(as.integer(my.plot.id))
     ,"tree_ID" = c(as.integer(my.tree.id))
     ,"DBH_incl_growth" = c(as.numeric(my.dbh.incl.growth.cm))
+    , "growth_method" = c(growth.metod)
     ))
   
 }
-dbh_incl_growth.df <- as.data.frame(rbindlist(dbh_incl_growth.list))
+dbh_incl_growth.df <- as.data.frame(rbindlist(dbh_incl_growth.list)) %>% distinct()
 
 
 # 1.2.2. join DBH including growth to tree dataset ------------------------------------------------------------------------------
@@ -229,7 +251,7 @@ dbh_incl_growth.df <- as.data.frame(rbindlist(dbh_incl_growth.list))
 trees_harvested <- trees_harvested %>% 
   left_join(dbh_incl_growth.df %>% 
               mutate(across(c("plot_ID", "tree_ID", "DBH_incl_growth"), as.numeric)), 
-            by = c("plot_ID", "inv", "tree_ID"))
+            by = c("plot_ID", "tree_ID"))
 
 
 
@@ -559,6 +581,98 @@ dbh_incl_growth.df <- as.data.frame(rbindlist(dbh_incl_growth.list))
 
 
 # TEST --------------------------------------------------------------------------------------
+
+# test for dg hg differences
+Hg_Dg_trees_total.mean <- rbind(HBI_summary, 
+                              BZE3_summary) %>% 
+  group_by(plot_ID, stand, SP_code) %>% 
+  summarise(Hg_m = mean(Hg_m), 
+            Dg_cm = mean(Dg_cm), 
+            mean_DBH_cm = mean(mean_DBH_cm)) %>% 
+  mutate(plot_ID = as.double(plot_ID))
+
+sloboda_H<- plyr::rbind.fill( 
+trees_harvested %>% 
+  left_join(Hg_Dg_trees_total.mean, by = c("plot_ID", "stand", "SP_code")) %>% 
+  mutate(H_m_soloboda = ehk_sloboda(H_SP_group, DBH_incl_growth*10, mean_DBH_cm*10,Dg_cm*10, Hg_m*10 ), 
+         H_meth = "means"), 
+  trees_harvested %>% 
+  left_join(HBI_summary %>% mutate(plot_ID = as.double(plot_ID)), by = c("plot_ID", "stand", "SP_code")) %>% 
+  mutate(H_m_soloboda = ehk_sloboda(H_SP_group, DBH_incl_growth*10, mean_DBH_cm*10,Dg_cm*10, Hg_m*10), 
+         H_meth = "HBI"), 
+  trees_harvested %>% 
+  left_join(BZE3_summary %>% mutate(plot_ID = as.double(plot_ID)), by = c("plot_ID", "stand", "SP_code")) %>% 
+  mutate(H_m_soloboda = ehk_sloboda(H_SP_group, DBH_incl_growth*10, mean_DBH_cm*10,Dg_cm*10, Hg_m*10 ),
+         H_meth = "BZE3"))
+
+## compare mean of sloboda height of spruce by method
+# method: mean HG and Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gfi" & 
+                   H_meth == "means"))
+# 22.122                                                           
+
+# method: HBi Hg, Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gfi"& 
+                   H_meth == "HBI"))
+# 21.913                                                           
+
+# method BZE3 Hg Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gfi"& 
+                   H_meth == "BZE3"))
+# 21.10                                                           
+
+# ANOVA 
+sloboda_H %>% 
+  filter(SP_code == "gfi") %>% 
+  aov(H_m_soloboda ~ H_meth, data = .) %>% 
+  tidy()
+
+# anova result: the method doesn´t matter for H differences
+  # term         df  sumsq  meansq  statistic p.value
+  # <chr>     <dbl>  <dbl>  <dbl>     <dbl>   <dbl>
+  # H_meth        2   175.   87.5      2.23   0.108
+  # Residuals  1076 42105.   39.1     NA      NA 
+
+
+## compare mean of sloboda height of pine by method
+# method: mean HG and Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gki" & 
+                   H_meth == "means"))
+# 18.50                                                             
+
+# method: HBi Hg, Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gki"& 
+                   H_meth == "HBI"))
+# 17.74                                                             
+
+# method BZE3 Hg Dg
+summary(sloboda_H %>% 
+          filter(SP_code == "gki"& 
+                   H_meth == "BZE3"))
+# 18.72                                                             
+
+# ANOVA 
+sloboda_H %>% 
+  filter(SP_code == "gki") %>% 
+  aov(H_m_soloboda ~ H_meth, data = .) %>% 
+  tidy()
+
+# anova result: the method doesn´t matter for H differences
+ #  term         df  sumsq meansq statistic p.value
+ # <chr>     <dbl>  <dbl>  <dbl>     <dbl>   <dbl>
+ #  H_meth        2   59.0   29.5     2.51  0.0831
+ #  Residuals   327 3849.    11.8     NA     NA     
+
+view(sloboda_H %>% 
+       filter(SP_code %in% c("gki", "gfi")) %>% 
+  group_by(SP_code, H_meth) %>% 
+  summarise(H_sloboda_mean = mean(na.omit(H_m_soloboda))))
+
 
 # test for growth strata --------------------------------------------------
 # this test aims to identify differences in the dbg growth of individual trees of the species 

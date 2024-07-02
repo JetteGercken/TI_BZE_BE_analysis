@@ -48,23 +48,25 @@ BZE3_trees[,c("plot_A_ha", "area_m2", "X_tree",  "Y_tree",
 
 
 # 1. joining in external info  -------------------------------------------------
-trees_total <-  rbind(HBI_trees, BZE3_trees %>% 
+trees_total <- rbind(HBI_trees, BZE3_trees %>% 
             select(c(colnames(HBI_trees)))) %>%
 # calcualte diameter and change units -----------------------------------
   mutate(H_m = H_dm/10, 
          DBH_h_m = DBH_h_cm/100) %>%                               # change unit of DBH measuring height from cm into m by dividing by 100  
   #  apply regression of BWI (5.5.1.2.) for DBH estimation when mesasuring height differs from 1.3 m 
-  mutate(DBH_class = DBH_c_function(DBH_cm), 
+  mutate(DBH_class = DBH_c_function(DBH_cm, DBH_c = "class_5"), 
          BA_m2 = c_A(DBH_cm/2)*0.0001) %>% # *0.0001 to convert cm2 in m2 %>% 
  arrange(plot_ID, inv)
 
+# test start
 # trees_total <- rbind(trees_total %>% mutate(H_m = H_m+1.5, 
 #                                       DBH_cm = DBH_cm+10), 
 #                      trees_total %>% mutate(H_m = H_m-1.5, 
 #                                             DBH_cm = DBH_cm-10),
 #                      trees_total)
-
-
+# test end
+ 
+ 
 # 2. estimating tree height -----------------------------------------------
 
 # 2.1. fitting own models H_m ~ nls(DBH_cm) -------------------------------

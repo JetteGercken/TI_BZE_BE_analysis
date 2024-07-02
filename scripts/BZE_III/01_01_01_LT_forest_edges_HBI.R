@@ -349,8 +349,8 @@ forest_edges.man.sub.e2.nogeo <- forest_edges.man %>%
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID) )
 triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID))
 for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
-  # i = 1
-  # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID)
+  # i = 6
+  # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID))
   
   #if(nrow(forest_edges.man.sub.e2.nogeo) == 0){break}
   
@@ -427,6 +427,23 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   ## assing crs
   # sf::st_crs(triangle.e2.poly) <- my.utm.epsg
+  
+  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  c.poly.17 <- sf::st_buffer(c.pt, 17.84)
+  c.poly.12 <- sf::st_buffer(c.pt, 12.62)
+  c.poly.5 <- sf::st_buffer(c.pt, 5.64)
+  c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
+  # test 
+  print(ggplot() +
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.60, aes(alpha = 0))+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e2.poly, aes(alpha = 0))+
+          xlim(-80, 80)+
+          ylim(-80, 80))
   
   # print triangle
   print(plot(triangle.e2.poly$geometry, main = my.plot.id))

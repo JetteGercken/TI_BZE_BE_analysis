@@ -114,36 +114,38 @@ RG_loc <- RG_loc %>%
 # 2. sorting sampling circles into stands ---------------------------------
 # 2.1. plots with 1 edge: sorting sampling circles into stands ---------------------------------
 ## subsetting the RG_loc dataset by filtering for plots that have only one intersecting edge
-RG_one_edge <- RG_loc %>% 
-  #filter for plots that we actually have coordiantes and areas for 
+# we have an issue here because RG_loc and by that RG.one.edge too, where plots do only have one relevant edge, but the filter also 
+# takes the edge that´s not relevant. e.g. 140058 has 2 edges whereby one doesn´t intersect. as we pull single-edge stands 
+# by the plot ID, however, we pull both edges here, also the one that´s not relevant. we have to adjust this
+RG_one_edge <-   
+  RG_loc %>% 
+  # filter for plots that we actually have coordiantes and areas for 
   semi_join(., all_areas_stands %>%
-              filter(CCS_r_m == 17.84 & 
-                       e_ID == 2 &
-                       inter_stat == "partly intersecting" |
-                       CCS_r_m == 17.84 & 
-                       e_ID == 1) %>% 
-              select(plot_ID) %>% 
-              distinct(), 
-            by = c("plot_ID")) %>% 
-  # silter for plots that have only one forest edge
-  anti_join(., all_areas_stands %>%
-              filter(CCS_r_m == 17.84 & 
-                       e_ID %in% c("1", "2")) %>% 
-              select(plot_ID, e_ID) %>% 
-              group_by(plot_ID) %>% 
-              summarise(n = n()) %>% 
-              filter(n > 1 ) %>% 
-              select(plot_ID) %>% 
-              distinct(), 
-            by = "plot_ID") # %>% 
+               filter(CCS_r_m == 17.84 &  # select only outer circle
+                        e_ID %in% c(1, 2) & # select only intersection polys, not remaining cirlces
+                        inter_stat !=  "no intersections") %>%   # select only edges that somehow intersect the circle 
+               select(plot_ID) %>% 
+               distinct(), 
+             by = c("plot_ID")) %>%
+  # filter for plots that have only one forest edge
+   anti_join(., all_areas_stands %>%
+               filter(CCS_r_m == 17.84 & 
+                        e_ID %in% c("1", "2")) %>% 
+               select(plot_ID, e_ID) %>% 
+               group_by(plot_ID) %>% 
+               summarise(n = n()) %>% 
+               filter(n > 1 ) %>% 
+               select(plot_ID) %>% 
+               distinct(), 
+             by = "plot_ID") # %>% 
 ## remove plots that do now have a corresponding center coordiante in the BZE3 loc document
 #semi_join(HBI_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.one.edge.list <- vector("list", length = nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
-  # i = 1 28
-  # i = which(grepl(140187, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
+  # i = 29
+  # i = which(grepl(140058, unique(RG_one_edge[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   
   # regerneation sampling cirlce data
@@ -151,10 +153,12 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   my.ccs.id <- unique(RG_one_edge[c("plot_ID", "CCS_nr")])[, "CCS_nr"][i]    # circle id7 number of respecctive regereation satelite 
   
   # select edge ID 
-  my.e.id <-  RG_one_edge$e_ID[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
-  my.ccs.r <- ( RG_one_edge$CCS_max_dist_cm[ RG_one_edge$plot_ID == my.plot.id & 
-                                               RG_one_edge$CCS_nr == my.ccs.id & 
-                                               RG_one_edge$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
+  #my.e.id <-  RG_one_edge$e_ID[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id] # edge id of the respective edge, because if we filter for the plot ID it might also pull edges that are double edges but one of them does not intersect
+  my.ccs.r <- unique(( RG_one_edge$CCS_max_dist_cm[ RG_one_edge$plot_ID == my.plot.id & 
+                                               RG_one_edge$CCS_nr == my.ccs.id
+                                             #& RG_one_edge$e_ID == my.e.id
+                                             ]
+                ))/100   # max dist of last plant in the circle to create buffer
   
   ## select georefference data
   ## select UTM coordiantes of BZE (NSI point)
@@ -170,8 +174,8 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   c.r3 = 17.84
   
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
-  ccs.dist <-  RG_one_edge$CCS_dist[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id]/100
-  ccs.azi <-  RG_one_edge$CCS_gon[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id]
+  ccs.dist <-  unique(RG_one_edge$CCS_dist[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id]/100) 
+  ccs.azi <-  unique(RG_one_edge$CCS_gon[ RG_one_edge$plot_ID == my.plot.id &  RG_one_edge$CCS_nr == my.ccs.id])
   x_CCS_center = ccs.dist*sin(ccs.azi * pi/200)  # + my.center.easting
   y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)   # + my.center.northing
   
@@ -200,7 +204,7 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   # circle.17$CCS_r_m <- c.r3
   
   # create polygone of edge triangle
-  edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id & e_ID == my.e.id) 
+  edge.poly <- sfheaders::sf_polygon(obj = all_edge_intersections_coords %>% filter(plot_ID == my.plot.id) 
                                      , x = "X"
                                      , y = "Y"
                                      , keep = TRUE)
@@ -303,11 +307,9 @@ RG_two_edges <- RG_loc %>%
   #filter for plots that we actually have coordiantes and areas for all edges 
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
-                       e_ID == 2 &
-                       inter_stat == "partly intersecting" |
-                       CCS_r_m == 17.84 & 
-                       e_ID == 1) %>% 
-              select(plot_ID) %>% 
+                       e_ID %in% c(1, 2) &
+                       inter_stat != "no intersections") %>% 
+              select(plot_ID, e_ID) %>% 
               distinct(), 
             by = c("plot_ID")) %>% 
   # silter for plots that have only one forest edge
@@ -357,11 +359,10 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   
   # spatial data of RG sampling circle
   # select regeneration sampling circuit radius 
-  my.ccs.r <- ( RG_two_edges$CCS_max_dist_cm[ RG_two_edges$plot_ID == my.plot.id & 
-                                                RG_two_edges$CCS_nr == my.ccs.id & 
-                                                RG_two_edges$e_ID == my.e.id])/100   # max dist of last plant in the circle to create buffer
+  my.ccs.r <- unique(( RG_two_edges$CCS_max_dist_cm[ RG_two_edges$plot_ID == my.plot.id & 
+                                                RG_two_edges$CCS_nr == my.ccs.id])/100)   # max dist of last plant in the circle to create buffer
   # determine center corodiantes of the respective regeneration sampling circuit saterilte
-  ccs.dist <-unique(  RG_two_edges$CCS_dist[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id]/100)
+  ccs.dist <- unique(  RG_two_edges$CCS_dist[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id]/100)
   ccs.azi <- unique( RG_two_edges$CCS_gon[ RG_two_edges$plot_ID == my.plot.id &  RG_two_edges$CCS_nr == my.ccs.id])
   x_CCS_center = ccs.dist*sin(ccs.azi* pi/200)  # + my.center.easting
   y_CCS_center = ccs.dist*cos(ccs.azi* pi/200)  # + my.center.northing
@@ -555,5 +556,16 @@ write.csv(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$
 
 stop("that´s were the notes of RG_forest_edges HBI start")
 # notes -------------------------------------------------------------------
-
+## subsetting the RG_loc dataset by filtering for plots that have only one intersecting edge
+# we have an issue here because RG_loc and by that RG.one.edge too, where plots do only have one relevant edge, but the filter also 
+# takes the edge that´s not relevant. e.g. 140058 has 2 edges whereby one doesn´t intersect. as we pull single-edge stands 
+# by the plot ID, however, we pull both edges here, also the one that´s not relevant. we have to adjust this
+RG_one_edge <- RG_loc %>%
+  # filter only rg cirlces that have an edge that actually cuts the circle
+  semi_join(forest_edges %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+              select(plot_ID, e_ID) %>% distinct(), by = c("plot_ID", "e_ID")) %>% 
+  # filter for trees located in plots htat haev only one forest edge: be removing those plots that do officially have 2 edges even according to the 
+  # "active edge" filter 
+  anti_join(forest_edges %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")
 
