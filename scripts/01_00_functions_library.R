@@ -233,9 +233,9 @@ DBH_c_function <- function(dbh, DBH_c){
                right = FALSE);
    
    ## 10 step dbh classes
-   labs_DBH_10 <- c(seq(10, 100, by = 10)) ; 
+   labs_DBH_10 <- c(seq(0, 100, by = 10)) ; 
    DBH_c_10 <- cut(as.numeric(dbh),                               # cut the diameter
-                  breaks = c(seq(10, 100, by = 10), Inf),  # in sequences of 5
+                  breaks = c(seq(0, 100, by = 10), Inf),  # in sequences of 5
                   labels = labs_DBH_10,                    # and label it according to labs (1.4.1)
                   right = FALSE);
   switch(DBH_c, 
