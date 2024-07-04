@@ -261,12 +261,10 @@ trees_harvested <- trees_harvested %>%
 # 1.4.1. height estimation ----------------------------------------------------------------------------------------------------------
 # 1.4.1.1. get average dg and hg over both inventories -------------------------------------------------------------------------------
 # calcualte average hg between the both inventories 
-Hg_Dg_trees_total.df <- rbind(HBI_summary, 
-                              BZE3_summary) %>% 
-  group_by(plot_ID, stand, SP_code) %>% 
-  summarise(Hg_m = mean(Hg_m), 
-            Dg_cm = mean(Dg_cm), 
-            mean_DBH_cm = mean(mean_DBH_cm))
+Hg_Dg_trees_total.df <- HBI_summary %>% 
+  select(-inv) 
+
+
 
 # 1.4.1.2. calcualte missing heights --------------------------------------------------------------------------------------------------
 # as the tree grows not only in whith but also in height we´ll have to estimate a "new" height according to 
@@ -288,7 +286,7 @@ trees_harvested <- trees_harvested %>%
             by = "SP_code") %>% 
   ## joining coefficients and Hg-Dg-data in 
   # this is joins in a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
-  left_join(., Hg_Dg_trees_total.df%>% 
+  left_join(., Hg_Dg_trees_total.df%>%
               mutate(plot_ID = as.integer(plot_ID)),
             by = c("plot_ID", "stand", "SP_code")) %>% 
   mutate(R2_comb = f(R2.x, R2.y, R2.y, R2.x),                               # if R2 is na, put R2 from coeff_SP_P unless R2 from coeff_SP is higher

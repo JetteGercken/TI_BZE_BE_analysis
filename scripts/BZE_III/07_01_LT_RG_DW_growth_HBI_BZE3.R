@@ -214,6 +214,11 @@ HBI_LT_summary %>%
 
 
 # 1.4. changes in stocks per ha --------------------------------------------
+rbind(BZE3_LT_summary,
+       HBI_LT_summary ) %>%
+        # select all possible plot_iD, species and stand combinations
+        select(plot_ID, SP_code, stand) %>% distinct()
+
 trees_stock_changes_P <- 
 BZE3_LT_summary %>% 
   #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
