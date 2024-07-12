@@ -214,11 +214,6 @@ HBI_LT_summary %>%
 
 
 # 1.4. changes in stocks per ha --------------------------------------------
-rbind(BZE3_LT_summary,
-       HBI_LT_summary ) %>%
-        # select all possible plot_iD, species and stand combinations
-        select(plot_ID, SP_code, stand) %>% distinct()
-
 trees_stock_changes_P <- 
 BZE3_LT_summary %>% 
   #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
@@ -508,3 +503,88 @@ trees_stock_changes_P <- trees_stock_changes_P %>% select(stand_component, plot_
                                                           Dg_cm_BZE3, Dg_cm_HBI, Dg_cm_diff, 
                                                           mean_BA_m2_BZE3, mean_BA_m2_HBI, mean_BA_m2_diff, 
                                                           mean_H_m_BZE3, mean_H_m_HBI, mean_H_m_diff)
+
+
+
+
+rbind(BZE3_LT_summary,
+      HBI_LT_summary ) %>%
+  # select all possible plot_iD, species and stand combinations
+  select(plot_ID, SP_code, stand) %>% distinct()
+
+nrow(rbind(BZE3_LT_summary,
+           HBI_LT_summary ) %>%
+       # select all possible plot_iD, species and stand combinations
+       select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment) %>% distinct()) # 6258
+
+nrow(full_join(BZE3_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment) %>% distinct(), 
+               HBI_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment) %>% distinct(), 
+               by =c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand"))) # HBI and BZE3 have 6258 rows all together
+
+nrow(left_join(BZE3_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment) %>% distinct(), 
+               HBI_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment) %>% distinct(), 
+               by =c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand"))) # HBI and BZE have 2424 rows in common
+
+
+view(anti_join(HBI_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code) %>% distinct(), 
+               BZE3_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code) %>% distinct(), 
+               by =c("stand_component", "stand_type" ,"plot_ID", "SP_code", "stand"))) # HBI has 3834 rows that BZE3 doesnt have
+
+
+view(anti_join(BZE3_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code) %>% distinct(),
+               HBI_LT_summary %>% 
+                 select(stand_component, plot_ID, stand, stand_type, SP_code) %>% distinct(), 
+               by =c("stand_component", "stand_type" ,"plot_ID", "SP_code", "stand"))) # BZE3 has 1020 rows that HBI doesn´t have
+
+
+HBI_LT_summary %>% filter(plot_ID == 140041 & stand == "A" & SP_code == "sbi" & compartiment == "ag")
+
+nrow(BZE3_LT_summary %>% 
+       #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+       select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+              mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+       #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+       rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+                   .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
+       distinct()  %>% 
+       # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
+       left_join(., HBI_LT_summary %>% 
+                   #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+                   select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+                          mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+                   # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+                   rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
+                               .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+                                        mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>% 
+                   distinct(), 
+                 by = c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand"))) # 2424
+
+
+nrow(full_join(
+  BZE3_LT_summary %>% 
+    #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+    select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+           mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+    #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+    rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+                .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
+    distinct(), 
+  # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
+  HBI_LT_summary %>% 
+    #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+    select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+           mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+    # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+    rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
+                .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+                         mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>% 
+    distinct(), 
+  by = c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand"))) # 6258
+

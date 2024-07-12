@@ -74,10 +74,19 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                              N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
                                              BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
                                              n_trees_CCS_ha = n()/plot_A_ha) %>% 
-                                     distinct(), 
+                                     distinct(),
+                                  # add status 2 plots if all circles are existing but empty 
                                    trees_stat_2 %>% 
                                      # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
-                                     filter(!is.na(plot_ID)) ) %>% 
+                                     filter(!is.na(plot_ID)) %>% 
+                                     semi_join(., 
+                                               trees_stat_2 %>% 
+                                                 select(plot_ID, CCS_r_m) %>% 
+                                                 distinct() %>% 
+                                                 group_by(plot_ID) %>% 
+                                                 summarize(n_CCS = n()) %>% 
+                                                 filter(n_CCS == 3), 
+                                               by = "plot_ID")) %>%  
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv, compartiment) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
@@ -87,7 +96,8 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
               n_ha = sum(n_trees_CCS_ha)) %>% 
     mutate(stand_component = "LT",
            stand = "all", 
-           SP_code = "all")}else{
+           SP_code = "all")
+  }else{
              LT_BCNBAn_ha <- trees_data %>% 
                group_by(plot_ID, CCS_r_m, inv, compartiment) %>% 
                # convert Biomass into tons per hectar and sum it up per sampling circuit 
@@ -112,6 +122,21 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
 
 
 # 1.4.2. plot, species, stand: stocks per ha, finest summary --------------
+# there is an issue here. we have to think of summarising the hectar values 
+# at the moment we calcualte the value per CCR and then sum them up. 
+# what we have to consider when we do that is that empty, yet inventorisable cirlces with status 2
+# still contribute to the oveall plot area. unlike CCRs that are status 3 and by that reduce the actual plot area by this circle
+# our current methodology does actually not require the empty status 2 circles, as we never relate the 
+#  stock to the total area of all cirlces, so the step is sort of useless, as we only add 0 to the total stock or whatever
+
+# however this is whats been causing the plots that have a species summary but also summaries for NA
+# solutions: 
+# a solution could be to just filter for CCSr that have all CCRs set to status 2 so the empty plots are summarized with the others but the empty plots are not
+# i wonder, however, whats the effect of just ignoring circles with status 2... shouldn´t we somehow include them , 
+# like in the RG calculation where we first caclulate the whole plot area and then relate the whole stock per strata to the whole area
+
+# I have to ask Judith about this
+
 if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
   LT_SP_ST_P_BCNBAn_ha <- plyr::rbind.fill(trees_data  %>% 
                                              group_by(plot_ID, plot_A_ha, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
@@ -124,7 +149,16 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                              distinct(), 
                                            trees_stat_2 %>% 
                                              # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
-                                             filter(!is.na(plot_ID))) %>% 
+                                             filter(!is.na(plot_ID)) %>% 
+                                             semi_join(., 
+                                                       trees_stat_2 %>% 
+                                                         select(plot_ID, CCS_r_m) %>% 
+                                                         distinct() %>% 
+                                                         group_by(plot_ID) %>% 
+                                                         summarize(n_CCS = n()) %>% 
+                                                         filter(n_CCS == 3), 
+                                                       by = "plot_ID")
+                                           ) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
@@ -498,7 +532,8 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                           filter(!is.na(plot_ID))  %>% 
                           select(plot_ID, inv, CCS_nr, plot_A_ha)) %>% 
     group_by(plot_ID, inv) %>% 
-    summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))}else{
+    summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))
+  }else{
       RG_plot_A_ha <- RG_data %>% 
         mutate(plot_A_ha = as.numeric(area_m2)/10000) %>% 
         select(plot_ID, inv, CCS_nr, plot_A_ha) %>% 
