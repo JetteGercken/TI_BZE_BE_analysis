@@ -144,7 +144,7 @@ source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_BZE3.R"))
 
 ##### growth & changes -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # LT, RG, DW growth HBI & BZE3 together
-source(paste0(here(), "/scripts/BZE_III/07_01_LT_RG_DW_growth_HBI_BZE3.R"))
+source(paste0(here(), "/scripts/BZE_III/07_01_LT_RG_DW_changes_HBI_BZE3.R"))
 
 # extraced wood mass
 source(paste0(here(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R"))

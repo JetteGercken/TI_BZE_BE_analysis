@@ -72,13 +72,14 @@ HBI_FSI <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_FSI.
 # as we collect all growth info in regard to the BZE3 by left_joining in HBI data,
 # plots that have a calculated stock that are not present in BZE3 anymore , there will be no "negative growth" registered
 # this is why we save perfectly fine HBI plots that do not have a counter/ Pertner plot in BZE3 in a separate dataset: 
-HBI_plots_not_represented_in_BZE3 <- HBI_summary %>% semi_join(., HBI_summary %>% 
-                                                                 select(plot_ID, stand, SP_code, compartiment, dw_sp, dw_type, decay, stand_type ) %>% 
-                                                                 distinct() %>% 
-                                                                 anti_join(., BZE3_summary %>% 
-                                                                             select(plot_ID, stand, SP_code, compartiment,dw_sp,dw_type,decay, stand_type) %>% 
-                                                                             distinct(), by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type")), 
-                                                               by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type"))
+HBI_plots_not_represented_in_BZE3 <- HBI_summary %>% 
+  semi_join(., HBI_summary %>% 
+              select(plot_ID, stand, SP_code, compartiment, dw_sp, dw_type, decay, stand_type ) %>% 
+              distinct() %>% 
+              anti_join(., BZE3_summary %>% 
+                          select(plot_ID, stand, SP_code, compartiment,dw_sp,dw_type,decay, stand_type) %>% 
+                          distinct(), by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type")), 
+            by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type"))
 
 
 
@@ -215,16 +216,17 @@ HBI_LT_summary %>%
 
 # 1.4. changes in stocks per ha --------------------------------------------
 trees_stock_changes_P <- 
-BZE3_LT_summary %>% 
-  #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
-  select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
-         mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
-  #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
-  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
-              .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
-  distinct()  %>% 
-  # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
-  left_join(., HBI_LT_summary %>% 
+  # we use a full join here, since 
+  full_join(BZE3_LT_summary %>% 
+              #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+              select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+                     mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+              #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+                          .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
+              distinct(), 
+            # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
+            HBI_LT_summary %>% 
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
                      mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
@@ -238,20 +240,19 @@ BZE3_LT_summary %>%
   # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
   # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
   mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
-  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
-  # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
+  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot or the whole stand, 
+  # so we apply the correction only to rows witch plot_ID != all, for stand !=all and stand == all and species == "all"
   mutate(across(contains("n_ha") | 
-                  contains("n_SP")  | 
-                  contains("Hg")  | 
-                  contains("Dg"), ~ifelse(is.na(.x) & 
+                  contains("n_SP")  , ~ifelse(is.na(.x) & 
                                             plot_ID != "all"&
-                                            stand == "all" & 
+                                             # stand = "all"   & 
                                             SP_code == "all", 0, .x)) ) %>% 
-  # for the means and sds we calcualted values in the catagories : SP_code, plot and plot. Thus we have to set only NAs that occure in these groups and columns to 0 
+  # for the means and sds we calcualted values in the catagories :SP_code, plot, stand and SP_code, plot and plot. 
+  # Thus we have to set only NAs that occure in these groups and columns to 0 
   mutate(across(contains("mean") | contains("sd")  | contains("Hg")  | contains("Dg") , ~ifelse(is.na(.x) & 
-                                                                plot_ID != "all"&
-                                                                stand == "all" & 
-                                                                SP_code != "all", 0, .x)) ) %>% 
+                                                                                                  plot_ID != "all"&
+                                                                                                  #stand == "all" & 
+                                                                                                  SP_code != "all", 0, .x)) ) %>% 
   arrange(plot_ID, stand, SP_code, compartiment)
 
 # substact columns edning on BZE3 from columns ednign with HBI 
@@ -264,19 +265,16 @@ trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_co
 
 
 
-
 # binding all LT growth datasets together ---------------------------------
-LT_changes <- dbh_growth_summary %>% 
-  left_join(., 
-            trees_stock_changes_P %>% 
-              select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, C_layer, contains("diff")) %>% 
-              mutate(across(c("plot_ID"), as.character)), 
-            by = c("plot_ID", "stand", "C_layer", "SP_code"), 
-            multiple = "all") %>%  # multiple = "all" for compartiments, which is not represented in dbh growth
+LT_changes <-  trees_stock_changes_P %>% 
+  select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, C_layer, contains("diff")) %>% 
+  mutate(across(c("plot_ID"), as.character))  %>% 
   left_join(BA_changes_SP_ST_P %>% 
               select(plot_ID, stand, SP_code, C_layer, contains("diff")) %>% 
               mutate(across(c("plot_ID"), as.character)), 
             by = c("plot_ID", "stand", "SP_code", "C_layer") ) %>% 
+  left_join(., dbh_growth_summary, 
+            by = c("plot_ID", "stand", "C_layer", "SP_code")) %>%  
   mutate(stand_component = "LT") %>%
   select(stand_component, plot_ID, stand, stand_type, C_layer, SP_code, compartiment, age_period, annual_growth_cm, contains("diff"))%>% 
   arrange(plot_ID)
@@ -285,12 +283,12 @@ LT_changes <- dbh_growth_summary %>%
 # 2. REGENERATION CALCULATIONS --------------------------------------------
 # 2.1. changes in stocks per ha --------------------------------------------
 RG_stock_changes_P <- 
-  BZE3_RG_summary %>% 
-  select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
-  # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
-  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
-              .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)) %>% 
-  left_join(., HBI_RG_summary %>% 
+  full_join(BZE3_RG_summary %>% 
+              select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
+              # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+              rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+                          .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP)), 
+            HBI_RG_summary %>%
               #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
               select(stand_component, plot_ID, stand, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
@@ -588,3 +586,56 @@ nrow(full_join(
     distinct(), 
   by = c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand"))) # 6258
 
+
+
+
+
+
+# full join changes culaction check
+trees_stock_changes_P <- 
+  full_join(BZE3_LT_summary %>% 
+  #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+  select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+         mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+  #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+  rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
+              .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
+  distinct(), 
+  # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
+  HBI_LT_summary %>% 
+    #filter(plot_ID != "all" & SP_code == "all" & stand == "all") %>% 
+    select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+           mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+    # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
+    rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
+                .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
+                         mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>% 
+              distinct(), 
+            by = c("stand_component", "stand_type" ,"plot_ID", "compartiment", "SP_code", "stand")) %>% 
+  # if there are plots/ species or stands that were not established in HBI and thus do not have stocks 
+  # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
+  # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
+  mutate(across(contains("t_ha"), ~ifelse(is.na(.x), 0, .x)) )%>% 
+  # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot we 
+  # apply the correction only to rows witch plot_ID != all, but stand and species == "all"
+  mutate(across(contains("n_ha") | 
+                  contains("n_SP")  | 
+                  contains("Hg")  | 
+                  contains("Dg"), ~ifelse(is.na(.x) & 
+                                            plot_ID != "all"&
+                                            stand == "all" & 
+                                            SP_code == "all", 0, .x)) ) %>% 
+  # for the means and sds we calcualted values in the catagories : SP_code, plot and plot. Thus we have to set only NAs that occure in these groups and columns to 0 
+  mutate(across(contains("mean") | contains("sd")  | contains("Hg")  | contains("Dg") , ~ifelse(is.na(.x) & 
+                                                                                                  plot_ID != "all"&
+                                                                                                  stand == "all" & 
+                                                                                                  SP_code != "all", 0, .x)) ) %>% 
+  arrange(plot_ID, stand, SP_code, compartiment)
+
+# substact columns edning on BZE3 from columns ednign with HBI 
+# https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
+pre_vars <- grep("_HBI", colnames(trees_stock_changes_P), value=TRUE)
+post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
+trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
+trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment) %>%
+  mutate(C_layer = "all")
