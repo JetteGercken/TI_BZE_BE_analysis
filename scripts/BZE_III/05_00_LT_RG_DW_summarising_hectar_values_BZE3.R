@@ -37,7 +37,6 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_D
   mutate(inv = inv_name(inv_year))
 
 
-
 # CALCULATIONS ------------------------------------------------------------
 
 # 1. LIVING TREES -----------------------------------------------
@@ -54,16 +53,15 @@ LT_n_SP_plot <- trees_data %>%
 
 # 1.3. number of stand per plot -------------------------------------------
 n_stand_P <- plyr::rbind.fill(trees_data %>% 
-  filter(compartiment == "ag"),
-  # we have to include RG data too, since there is the possibility, that there are plots that dont have LT but RG and the RG habe stands
-RG_data %>%
-  filter(compartiment == "ag" & !is.na(stand)) )%>%
+                                filter(compartiment == "ag"),
+                              # we have to include RG data too, since there is the possibility, that there are plots that dont have LT but RG and the RG habe stands
+                              RG_data %>%
+                                filter(compartiment == "ag" & !is.na(stand)) ) %>% 
   select(plot_ID, inv, stand) %>% 
   distinct() %>% 
   group_by(plot_ID, inv) %>% 
-  summarise(n_stand = n()) %>% 
-  mutate(stand_component = "LT")
-
+  summarise(n_stands = n()) %>% 
+  mutate(stand_component = "all")
 
 # 1.4. stocks per hektar ------------------------------------------------------
 # 1.4.1. Plot: stocks per hektar ------------------------------------------------------
@@ -229,29 +227,29 @@ LT_SP_BCNBA_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha,
   select(-"BA_m2_ha_total")
 
 
-
 # 1.5. plot: stand type ------------------------------------------------------
 # 1.5.1. calcualte species composition and assing stand type ------------------------------------------------------
 # requires the species plot wise summary
 besttype_list <- vector("list", length = length(unique(trees_data$plot_ID)))
 for (i in 1:length(unique(trees_data$plot_ID))) {
-  # i = 1
+  # i = 47
   my.plot.id <- unique(trees_data$plot_ID)[i]
   my.inv <- unique(trees_data$inv[trees_data$plot_ID == my.plot.id])
-  my.n.stand <- n_stand_P$n_stand[n_stand_P$plot_ID == my.plot.id]
+  my.n.stand <- n_stand_P$n_stands[n_stand_P$plot_ID == my.plot.id]
   
   my.sp.p.df <- trees_data %>% 
     # only determine the stand type for the main stand
     filter(plot_ID == my.plot.id & stand == "A") %>% 
     group_by(plot_ID, CCS_r_m, inv, SP_code, compartiment) %>% 
-    # convert Biomass into tons per hectar and sum it up per sampling circuit 
+    # calculate m2 per hectar and sum it up per sampling circuit 
     reframe(BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha) %>% 
     distinct()%>% 
-    # now we summarise all the t/ha values of the cirlces per plot
+    # now we summarise all the m2/ha values of the cirlces per plot
     group_by(plot_ID, inv, SP_code, compartiment) %>% 
     summarise(BA_m2_ha = sum(BA_CCS_m2_ha)) %>% 
     mutate(stand_component = "LT") %>% 
-    #calcualte species compostiion by calcualting the percent of the respective species contributes to the overall basal area 
+    #calcualte species compostiion by calcualting the percent of the respective 
+    # species contributes to the overall basal area in the stand A
     # join in total BA_m2_ha dataset to calculate relationship between species & standwise BA and standwise BA
     left_join(., 
               trees_data %>% 
@@ -358,7 +356,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     distinct()
   
 }
-LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list)) 
+LT_stand_TY_P <- as.data.frame(rbindlist(besttype_list)) %>% mutate(plot_ID = as.integer(plot_ID))
 
 
 
@@ -475,43 +473,14 @@ LT_P <- LT_BCNBAn_ha %>%
 
 
 
-# 1.7.5. summrizing LT data by stand type ---------------------------------
-LT_TY <- LT_P %>%
-  select(stand_type, compartiment, stand_component, inv, B_t_ha, C_t_ha, N_t_ha) %>% 
-  distinct() %>%
-  group_by(stand_type, compartiment, stand_component, inv) %>% 
-  summarise(B_t_ha = mean(B_t_ha),
-            C_t_ha = mean(C_t_ha), 
-            N_t_ha = mean(N_t_ha))%>%
-  left_join(., 
-            LT_P %>% 
-              select(stand_type, compartiment, stand_component, inv, BA_m2_ha, n_ha, n_SP) %>% 
-              # select only compartiment "ag" so ba, n_ha, n_SP are only calculated for compartiment "ag", meaning with 1 row per plot not 6 as we have compartiments
-              filter(compartiment == "ag") %>%
-              group_by(stand_type, compartiment, stand_component, inv) %>% 
-              summarise(BA_m2_ha = mean(BA_m2_ha), 
-                        n_ha = mean(n_ha), 
-                        n_SP = mean(n_SP)) %>% 
-              ungroup() %>%
-              select(-c("compartiment")), 
-            by = c("stand_type", "stand_component", "inv")) %>%
-  arrange(as.numeric(stand_type)) %>% 
-  mutate(plot_ID = "all", 
-         stand = "all",
-         dom_SP = "all", 
-         SP_code = "all") %>% 
-  distinct()
-
 # 1.7.6. rbinding LT data together ----------------------------------------
 LT_summary <- plyr::rbind.fill(LT_SP_ST_P, 
                                LT_SP_P,
                                LT_ST_P,
-                               LT_P, 
-                               LT_TY) %>% 
+                               LT_P) %>% 
   arrange(plot_ID, stand, SP_code, compartiment)
 
-# to get only stand type summarised data one had to filter for: 
-# plot_ID == "all" & SP_code == "all" & stand  == "all"
+
 # to get the plotwise summarised data one has to filter for: 
 # plot_ID != "all" & SP_code == "all" & stand  == "all"
 # to get the species & plotwise wise summarised data one has to filter for: 
@@ -598,14 +567,13 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
               N_t_ha = sum(N_t_ha))%>% 
     mutate(stand_component = "RG") 
 }else{
-  RG_SP_ST_BCN_ha <-     RG_data %>%
-    left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
-    group_by(plot_ID, CCS_nr, plot_A_ha, inv, stand, compartiment, SP_code) %>% 
+  RG_SP_ST_BCN_ha <-     RG_data %>%group_by(plot_ID, CCS_nr, plot_A_ha, inv, stand, compartiment, SP_code) %>% 
     # sum stocks of trees  per sampling circuit, stand, compartiment, and SP_code
     reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
             N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
     distinct() %>% 
+    left_join(., LT_TY %>% select(inv, plot_ID, stand_type), by = c("plot_ID", "inv")) %>% 
     arrange(plot_ID) %>% 
     group_by(plot_ID, plot_A_ha, inv, stand, compartiment, SP_code) %>%
     summarise(B_t_ha = sum(B_t_ha),
@@ -632,7 +600,7 @@ RG_summary <- plyr::rbind.fill(
                  operation = "sum_df") %>% # statistical operation
     left_join(., RG_n_ha_ST, by = c("plot_ID", "inv", "stand_component", "stand")) %>% 
     mutate(SP_code = "all"),
-  # 2.4.4. RG summary by plot, inventory, compartiment, not by speci --------
+  # 2.4.4. RG summary by plot, inventory, compartiment, not by species no stand --------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
@@ -648,6 +616,8 @@ RG_summary <- plyr::rbind.fill(
            SP_code = "all")
 ) %>% # close rbind
   distinct() %>% 
+  # # add stand type to the RG data accprding to plot ID
+  # left_join(., LT_stand_TY_P %>% select(inv, plot_ID, stand_type), by = c("plot_ID", "inv")) %>% 
   arrange(plot_ID)
 
 
@@ -762,7 +732,7 @@ DW_summary <-
       mutate(decay = "all", 
              dw_type = "all") ,
     
-    # 3.4.8.DW grouped by species group, plot, compartiment, inventory, not by decay, species and deadwood type anymore ----------------------------------------------------------------
+    # 3.4.8.DW grouped by plot, compartiment, inventory, not by decay, species and deadwood type anymore ----------------------------------------------------------------
     summarize_data(DW_BCN_ha_SP_TY_DEC_P, 
                    c("plot_ID", "inv", "compartiment"), 
                    c("B_t_ha", "C_t_ha", "N_t_ha"), 
@@ -811,10 +781,10 @@ DW_summary <-
   ) %>%  # close rbind
   # add stand component for those datasets where it´s not included yet
   mutate(stand_component = "DW") %>% 
+  # # add stand type to the dataset according to the plot id
+  # left_join(., LT_stand_TY_P %>% select(inv, plot_ID, stand_type), by = c("plot_ID", "inv")) %>% 
   distinct() %>% 
   arrange(plot_ID)
-
-
 
 
 
@@ -824,14 +794,14 @@ LT_RG_DW_P <-
   plyr::rbind.fill(
     plyr::rbind.fill(
       #living tree summary all group combination possible , without stocks grouped by stand type tho
-      LT_summary %>% filter(plot_ID != "all") %>% select(-c(dom_SP, stand_type, n_stands))
+      LT_summary %>% select(-c(dom_SP, stand_type, n_stands))
       #regeneration summary all group combination possible  
       ,RG_summary
       #deadwood summary all group combination possible  
       ,DW_summary,
       # dataset with all stand compnents, stand and species combined
       # select only tree plots with plot_ID, not stand type summaries
-      (rbind(LT_summary %>% filter(plot_ID != "all" & stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
+      (rbind(LT_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")), 
              RG_summary %>% filter(stand == "all" & SP_code == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")),
              DW_summary %>% filter(decay == "all" & dw_type == "all" & dw_sp == "all") %>% select(plot_ID, inv, stand_component, compartiment, B_t_ha, C_t_ha, N_t_ha) %>% filter(compartiment %in% c("ag", "bg", "total")) 
       ) %>% 
@@ -846,25 +816,70 @@ LT_RG_DW_P <-
     )%>%  
       left_join(., LT_stand_TY_P %>% 
                   # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
-                  select(-stand_component, n_stands) %>% 
-                  mutate_at(c('inv', 'plot_ID'), as.character),
+                  select(-c(stand_component, n_stands)) %>% 
+                  mutate_at(c('inv', 'plot_ID'), as.character) %>% 
+                  mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))%>%  
       # join in actual number if stands froom LT and RG stand component combined
       left_join(., n_stand_P %>% 
                   select(-stand_component) %>% 
-                  mutate_at(c('inv', 'plot_ID'), as.character),
-                by = c("plot_ID", "inv")),,
-    # add standtype wise dataset
-    LT_summary %>% filter(plot_ID == "all")) %>%
+                  mutate_at(c('inv', 'plot_ID'), as.character) %>% 
+                  mutate_at(c('plot_ID'), as.integer),
+                by = c("plot_ID", "inv"))) %>%
   arrange(plot_ID)
 
 
 
-# 4. data export ----------------------------------------------------------
+
+
+
+# 5. summrizing by stand type ---------------------------------
+LT_RG_DW_TY <- 
+  LT_RG_DW_P %>% 
+  select(stand_type, plot_ID, compartiment, stand_component, inv, B_t_ha, C_t_ha, N_t_ha) %>% 
+  distinct() %>%
+  group_by(stand_type, compartiment, stand_component, inv) %>% 
+  summarise(B_t_ha = mean(B_t_ha),
+            C_t_ha = mean(C_t_ha), 
+            N_t_ha = mean(N_t_ha))%>%
+  left_join(., 
+            LT_RG_DW_P %>% 
+              select(stand_type, plot_ID, compartiment, stand_component, inv, BA_m2_ha,n_ha, n_SP ) %>% 
+              # select only compartiment "ag" so ba, n_ha, n_SP are only calculated for compartiment "ag", meaning with 1 row per plot not 6 as we have compartiments
+              filter(compartiment == "ag") %>%
+              distinct()  %>% 
+              group_by(stand_type, compartiment, stand_component, inv) %>% 
+              summarise(BA_m2_ha = mean(na.omit(BA_m2_ha)), 
+                        n_ha = mean(na.omit(n_ha)), 
+                        n_SP = mean(na.omit(n_SP))) %>% 
+              ungroup() %>%
+              select(-c("compartiment")), 
+            by = c("stand_type", "stand_component", "inv")) %>%
+  arrange(as.numeric(stand_type)) %>% 
+  mutate(plot_ID = "all", 
+         stand = "all",
+         dom_SP = "all", 
+         SP_code = "all") %>% 
+  distinct()
+
+# to get only stand type summarised data one had to filter for: 
+# plot_ID == "all" & SP_code == "all" & stand  == "all"
+
+
+
+# 6. create one summary for RG, DW, LT, TY --------------------------------
+LT_RG_DW <- plyr::rbind.fill(LT_RG_DW_P, 
+                             LT_RG_DW_TY) %>% 
+  arrange(plot_ID, stand, SP_code, stand_component, compartiment, stand_type)
+
+
+# 6. data export ----------------------------------------------------------
 write.csv(LT_summary, paste0(out.path.BZE3, paste(LT_summary$inv[1], "LT_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(RG_summary, paste0(out.path.BZE3, paste(RG_summary$inv[1], "RG_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_summary, paste0(out.path.BZE3, paste(DW_summary$inv[1], "DW_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(LT_RG_DW_P, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_RG_DW_TY, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups_standtype", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_RG_DW_P, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups_plot", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(LT_RG_DW, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_stocks_ha_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 
@@ -1318,6 +1333,39 @@ for (i in 1:length(unique(LT_B_percent_SP$SP_code))) {
   
 }
 
+
+
+
+# NOTES -------------------------------------------------------------------
+
+
+# 1.7.5. summrizing LT data by stand type ---------------------------------
+# old way to summarize stocks per stand type: doesn´t consider RG and DW data 
+LT_TY <- LT_P %>%
+  select(stand_type, compartiment, stand_component, inv, B_t_ha, C_t_ha, N_t_ha) %>% 
+  distinct() %>%
+  group_by(stand_type, compartiment, stand_component, inv) %>% 
+  summarise(B_t_ha = mean(B_t_ha),
+            C_t_ha = mean(C_t_ha), 
+            N_t_ha = mean(N_t_ha))%>%
+  left_join(., 
+            LT_P %>% 
+              select(stand_type, compartiment, stand_component, inv, BA_m2_ha, n_ha, n_SP) %>% 
+              # select only compartiment "ag" so ba, n_ha, n_SP are only calculated for compartiment "ag", meaning with 1 row per plot not 6 as we have compartiments
+              filter(compartiment == "ag") %>%
+              group_by(stand_type, compartiment, stand_component, inv) %>% 
+              summarise(BA_m2_ha = mean(BA_m2_ha), 
+                        n_ha = mean(n_ha), 
+                        n_SP = mean(n_SP)) %>% 
+              ungroup() %>%
+              select(-c("compartiment")), 
+            by = c("stand_type", "stand_component", "inv")) %>%
+  arrange(as.numeric(stand_type)) %>% 
+  mutate(plot_ID = "all", 
+         stand = "all",
+         dom_SP = "all", 
+         SP_code = "all") %>% 
+  distinct()
 
 
 
