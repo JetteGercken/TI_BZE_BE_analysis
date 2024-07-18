@@ -53,11 +53,14 @@ LT_n_SP_plot <- trees_data %>%
 
 
 # 1.3. number of stand per plot -------------------------------------------
-LT_n_stand_P <- trees_data %>% 
-  filter(compartiment == "ag") %>%
+n_stand_P <- plyr::rbind.fill(trees_data %>% 
+  filter(compartiment == "ag"),
+  # we have to include RG data too, since there is the possibility, that there are plots that dont have LT but RG and the RG habe stands
+RG_data %>%
+  filter(compartiment == "ag" & !is.na(stand)) )%>%
   select(plot_ID, inv, stand) %>% 
-  group_by(plot_ID, inv) %>% 
   distinct() %>% 
+  group_by(plot_ID, inv) %>% 
   summarise(n_stand = n()) %>% 
   mutate(stand_component = "LT")
 
@@ -235,7 +238,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   # i = 1
   my.plot.id <- unique(trees_data$plot_ID)[i]
   my.inv <- unique(trees_data$inv[trees_data$plot_ID == my.plot.id])
-  my.n.stand <- LT_n_stand_P$n_stand[LT_n_stand_P$plot_ID == my.plot.id]
+  my.n.stand <- n_stand_P$n_stand[n_stand_P$plot_ID == my.plot.id]
   
   my.sp.p.df <- trees_data %>% 
     # only determine the stand type for the main stand
@@ -842,9 +845,15 @@ LT_RG_DW_P <-
                SP_code = "all"))
     )%>%  
       left_join(., LT_stand_TY_P %>% 
+                  # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
+                  select(-stand_component, n_stands) %>% 
+                  mutate_at(c('inv', 'plot_ID'), as.character),
+                by = c("plot_ID", "inv"))%>%  
+      # join in actual number if stands froom LT and RG stand component combined
+      left_join(., n_stand_P %>% 
                   select(-stand_component) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character),
-                by = c("plot_ID", "inv")),
+                by = c("plot_ID", "inv")),,
     # add standtype wise dataset
     LT_summary %>% filter(plot_ID == "all")) %>%
   arrange(plot_ID)

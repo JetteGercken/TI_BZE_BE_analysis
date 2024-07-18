@@ -224,7 +224,7 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
    mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(D_g, H_g, DBH_cm), H_m)) %>% 
    # select columns that should enter the next step of data processing
      select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-            SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+            SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
              DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
@@ -269,7 +269,7 @@ BZE3_trees_update_3 <-  trees_total %>%
   mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm), H_m))   %>% 
      # select columns that should enter the next step of data processing
      select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-            SP_code, Chr_code_ger, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+            SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
 
@@ -301,6 +301,13 @@ stop("this is where notes of  height calculations start")
 
 
 # NOTES -------------------------------------------------------------------
+
+
+ggplot(data = HBI_trees_update_3 %>% mutate(org_noorg = ifelse(plot_ID == 140010, "org", "min")) %>% filter(startsWith(bot_name, "Betula") & H_method == "sampled"))+ 
+  geom_jitter(aes(x = DBH_cm, y = H_m, colour = as.factor(org_noorg)))
+
+
+
 # old way to calculate H_g, D-G considering concetrtric sampling circuits, which si, according to sebastan Schnell not necesarry
 # this is creates a tree dataset with mean BHD, d_g, h_g per species per plot per canopy layer which we need for SLOBODA 
 Hg_Dg_trees_total.df <- trees_total %>%                              

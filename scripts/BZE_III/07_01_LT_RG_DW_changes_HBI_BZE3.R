@@ -81,9 +81,53 @@ HBI_plots_not_represented_in_BZE3 <- HBI_summary %>%
                           distinct(), by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type")), 
             by = c("plot_ID", "stand", "SP_code", "compartiment", "dw_sp", "dw_type","decay", "stand_type"))
 
+HBI_plots_not_represented_in_BZE3 <- 
+HBI_summary %>% 
+  select(plot_ID) %>% 
+  distinct() %>% 
+  anti_join(., BZE3_summary %>% 
+              select(plot_ID) %>% 
+              distinct(), by = c("plot_ID"))
 
+rbind(
+  plots_to_exclude %>% select(plot_ID),
+LT_CCS_to_exclude %>% 
+  group_by(plot_ID) %>% 
+  summarize(n_CCS = n()) %>% 
+  filter(n_CCS >= 3) %>% 
+  select(plot_ID),
+RG_CCS_to_exclude %>% 
+  group_by(plot_ID) %>% 
+  summarize(n_CCS = n()) %>% 
+  filter(n_CCS >= 4) %>% 
+  select(plot_ID),
+DW_CCS_to_exclude %>% 
+  group_by(plot_ID) %>% 
+  summarize(n_CCS = n()) %>% 
+  filter(n_CCS >= 1) %>% 
+  select(plot_ID)) %>% distinct()
+view(
+BZE3_summary %>% filter(plot_ID == 140065
+                       ))
 
-
+anti_join( 
+          (rbind(
+  plots_to_exclude %>% select(plot_ID),
+  LT_CCS_to_exclude %>% 
+    group_by(plot_ID) %>% 
+    summarize(n_CCS = n()) %>% 
+    filter(n_CCS >= 3) %>% 
+    select(plot_ID),
+  RG_CCS_to_exclude %>% 
+    group_by(plot_ID) %>% 
+    summarize(n_CCS = n()) %>% 
+    filter(n_CCS >= 4) %>% 
+    select(plot_ID),
+  DW_CCS_to_exclude %>% 
+    group_by(plot_ID) %>% 
+    summarize(n_CCS = n()) %>% 
+    filter(n_CCS >= 1) %>% 
+    select(plot_ID)) %>% distinct()),HBI_plots_not_represented_in_BZE3 %>% mutate(plot_ID = as.integer(plot_ID)), by = "plot_ID")
 
 # 1. LIVING TREES CALCULATIONS ---------------------------------------------------------
 # 1.1. average single tree growth -------------------------------------------------

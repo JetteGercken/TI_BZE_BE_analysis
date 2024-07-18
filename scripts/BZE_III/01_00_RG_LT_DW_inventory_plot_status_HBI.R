@@ -495,7 +495,7 @@ DW_inv_info <- DW_inv_info %>%
 # 2.4.2. create dataset with CCS that are not  ------------------------------------------------------------
 DW_CCS_to_exclude <- DW_inv_info %>% 
   # remove plots where one of the four sampling circuits was not inventorable: so status -9. -1, 4
-  filter(!(CCS_DW_inv_status %in% c(1,2, 4, 5)))
+  filter(!(CCS_DW_inv_status %in% c(1,2, 4, 5))) %>% distinct()
 
 
 # 2.4.3. correcting status 2 circles that actually have trees ------------------------------------------------------------------
