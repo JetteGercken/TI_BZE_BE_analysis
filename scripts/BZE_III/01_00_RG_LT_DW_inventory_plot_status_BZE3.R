@@ -172,7 +172,8 @@ colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm"
 # select plots that have a "Punktstatus (x_plotstatus_bze)" 
 plots_to_exclude <- inv_info %>% 
   filter(plot_inv_status >= 21 | plot_inv_status <0) %>% 
-  select(plot_ID)
+  # select(plot_ID) %>% 
+  mutate(rem_reason = "whole plot excluded during inventory status sorting")
 
 
 # 1.2. LIVING TREES ----------------------------------------------------------------------------------------------------------------------------------------
@@ -231,7 +232,6 @@ trees_data <- trees_data %>%
 
 
 
-
 # check if there are no trees left that don´t have a SP_code in xBart/ SP_names_com_ID_tapeS
 SP_NAs <- trees_data %>% 
   anti_join(SP_names_com_ID_tapeS %>% 
@@ -247,11 +247,14 @@ if(nrow(SP_NAs) != 0){print("There are species names or codes in the trees datas
 # save trees to be removed in other dataset
 trees_removed <- trees_data %>% 
   # trees that don´t have a species code or are outside the widest CCS
-  filter(is.na(SP_code) | is.na(plot_ID) | dist_cm > 1784)
+  filter(is.na(SP_code) | is.na(plot_ID) | dist_cm > 1784) %>% 
+  mutate(rem_reason = "single LT excluded during inventory status sorting")
 
 
 # remove trees without species code or plot ID from the dataset
 trees_data <- trees_data %>% 
+  # we cannot do this via antijoining "trees removed" as the species and the plot id 
+  # that we also use to join the data will be NA for removed trees 
   # exclude those trees that don´t have a species code 
   filter(!(is.na(SP_code)) & !(is.na(plot_ID) ))%>% 
   # exclude trees outside the widest CCS
@@ -260,7 +263,7 @@ trees_data <- trees_data %>%
 # 1.2.3. forest edges dataset ---------------------------------------------
 forest_edges <- forest_edges %>% 
   # join in inventory info 
-  left_join(., tree_inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID")
+  left_join(., tree_inv_info %>% dplyr::select("plot_ID", "inv_year", "inv"), by = "plot_ID") 
 
 
 
@@ -293,8 +296,6 @@ DW_data <- DW_data %>%
 # 2.2. LIVING TREES -------------------------------------------------------------------------------------------------------------------------------------------------------
 # 2.2.1. remove not preocessable plots and sampling circuits form tree_inventory_info dataset ------------------------------------------------------------
 tree_inv_info <- tree_inv_info %>% 
-  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., plots_to_exclude, by = "plot_ID") %>%
   # pivoting B, C: https://stackoverflow.com/questions/70700654/pivot-longer-with-names-pattern-and-pairs-of-columns
   pivot_longer(., "CCS_5_inv_status":"CCS_17_inv_status", names_to = "CCS_r_m", values_to = "CCS_LT_inv_status") %>% 
   mutate(CCS_r_m = as.numeric(case_when(CCS_r_m == "CCS_5_inv_status" ~ 5.64, 
@@ -306,8 +307,21 @@ tree_inv_info <- tree_inv_info %>%
 
 # 2.2.2. create dataset with LT CCS to remove from trees data df ------------------------------------------------------------------------------------------------------------------------------------------------------------
 # remove CCS that were not inventorable from the trees df and filter NFI (BWI) plots as well
-LT_CCS_to_exclude <- tree_inv_info %>% filter(!(CCS_LT_inv_status %in% c(1, 2)) | !(hbi_status %in% c(1,2)) )
-
+LT_CCS_to_exclude <- plyr::rbind.fill(
+  tree_inv_info %>% 
+    # selects plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+    semi_join(., plots_to_exclude, by = "plot_ID") %>% 
+    mutate(rem_reason = "whole plot excluded during inventory status sorting"), 
+  # remove CCS that were not inventorable from the trees df and filter NFI (BWI) plots as well
+  tree_inv_info%>%
+    filter(!(CCS_LT_inv_status %in% c(1, 2)) |# CCS that were not inventorable
+             !(hbi_status %in% c(1,2)) |
+             inv == "warning") %>%      # plot was part of NFI not BSI
+    mutate(rem_reason = case_when(
+      !(CCS_LT_inv_status %in% c(1, 2)) ~ "LT circle excluded during inventory status sorting", 
+      !(hbi_status %in% c(1,2)) | inv == "warning" ~ "all LT circles excluded during inventory status sorting", 
+      TRUE ~ NA))) %>% 
+  distinct()
 
 
 #  2.2.3. correct CCS_inv_status == 2 if necesarry -------------------------------------------------------------------------------------------------------------------------
@@ -328,7 +342,6 @@ tree_inv_info <- tree_inv_info %>%
 trees_stat_2 <- as.data.frame(tree_inv_info[tree_inv_info$CCS_LT_inv_status == 2, ])
 LT.data.stat.2.list <- vector("list", length = nrow(trees_stat_2))
 for (i in 1:nrow(trees_stat_2)) {
- 
   # i = 2
   my.plot.id <- trees_stat_2[, "plot_ID"][i]
   my.ccs.r <- trees_stat_2[, "CCS_r_m"][i]
@@ -378,7 +391,8 @@ trees_removed <-
     trees_removed, 
     trees_data %>% 
       semi_join(., tree_inv_info %>% filter(CCS_LT_inv_status != 1),
-                by = c("plot_ID", "CCS_r_m", "inv_year", "inv")) 
+                by = c("plot_ID", "CCS_r_m", "inv_year", "inv")) %>% 
+      mutate(rem_reason = "LT cirlce excluded during inventory status sorting")
   )
 
 
@@ -387,11 +401,24 @@ trees_removed <-
 forest_edges_update_1 <- forest_edges %>% 
   # here we remove those plots from the edges dataset that are not analysed for the HBI/ BZE3
   # we cannot sort for LT_CCS_inv_status in trees_inv_info because there may be plots that have RG (which can be alllocated to stands) but no LT yet
-  anti_join(., plots_to_exclude,  by = c("plot_ID")) %>% 
-  # remove plots with inv_name "waring" as they are not suitable for further processing 
-  filter(inv != "warning")
-
-
+  anti_join(., plots_to_exclude,  by = c("plot_ID"))
+# remove those forest edges with a problematic inventory: 
+filter(inv != "warning") %>% 
+  
+  
+  
+  forest_edges_removed <-  
+  plyr::rbind.fill(
+    forest_edges %>% 
+      # remove those forest edges with a problematic inventory: 
+      filter(inv == "warning") %>% 
+      mutate(rem_reason = "all LT circles excluded during inventory status sorting"), 
+    forest_edges %>% 
+      # here we filter those plots from the edges dataset that are not analysed for the HBI/ BZE3
+      semi_join(., plots_to_exclude,  by = "plot_ID") %>% 
+      mutate(rem_reason = "whole plot excluded during inventory status sorting")
+  ) %>% 
+  distinct()
 
 # 2.2.7. create dataset with NFI plots/ BWI plots -------------------------
 trees_BWI <- trees_data %>% 
@@ -402,9 +429,17 @@ trees_BWI <- trees_data %>%
 # 2.3. RG dataset ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 2.3.1. create dataset with RG CCS that are not processable  ------------------------------------------------------------
-RG_CCS_to_exclude <- RG_loc_info %>% 
-  # remove plots where one of the four sampling circuits was not inventorable
-  filter(!(CCS_RG_inv_status %in% c(1, 2))) 
+RG_CCS_to_exclude <- 
+  plyr::rbind.fill(
+    # RG CCS that were removed because the whole plot was removed
+    RG_loc_info %>% 
+      semi_join(plots_to_exclude, by = "plot_ID") %>% 
+      mutate(rem_reason = "whole plot excluded during inventory status sorting"),
+    # individual RG CCS that were removed
+    RG_loc_info %>% 
+      # remove plots where one of the four sampling circuits was not inventorable
+      filter(!(CCS_RG_inv_status %in% c(1, 2))) %>% 
+      mutate(rem_reason = "RG circle excluded during inventory status sorting"))
 
 # 2.3.2. remove not processable plots and sampling circuits form RG_loc_info dataset ------------------------------------------------------------
 RG_loc_info <- RG_loc_info %>% 
@@ -466,9 +501,16 @@ RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 
 #  2.3.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
 # after this step there are only RG plants remaining which are locate in inventorable and processable CCS
-RG_removed <- RG_data %>% # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status != 1), by = c("plot_ID", "CCS_nr"))
-
+RG_removed <- 
+  plyr::rbind.fill(
+    # RG items removed because plot is excluded
+    RG_data %>% 
+      semi_join(plots_to_exclude, by = "plot_ID") %>% 
+      mutate(rem_reason = "whole plot excluded during inventory status sorting"),
+    # RG plants in removed circles 
+    RG_data %>%  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status != 1), 
+                           by = c("plot_ID", "CCS_nr")) %>% 
+      mutate(rem_reason = "RG circle excluded during inventory status sorting"))
 
 RG_update_1 <- RG_data %>% 
   # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
@@ -482,29 +524,34 @@ RG_update_1 <- RG_data %>%
 
 # 2.4. DW dataset --------------------------------------------------------------------------------------------------------------------------------
 # 2.4.1. remove not process able plots and sampling circuits form DW_inv_info data set ------------------------------------------------------------
+DW_CCS_to_exclude <- plyr::rbind.fill(
+  DW_inv_info %>% # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
+    semi_join(., plots_to_exclude, by = "plot_ID") %>% 
+    mutate(rem_reason = "whole plot excluded during inventory status sorting"),
+  DW_inv_info %>% 
+    # remove plots where one of the four sampling circuits was not inventorable: so status -9. -1, 4
+    filter(!(CCS_DW_inv_status %in% c(1,2, 4, 5))) %>% 
+    distinct() %>% 
+    mutate(rem_reason = "DW circle excluded during inventory status sorting")) %>% 
+  distinct() %>% 
+  # join  in inventory info
+  left_join(., tree_inv_info %>% select(plot_ID, inv_year, inv), by = c("plot_ID"), multiple = "all" )
+
+
+
+
+# 2.4.2. create dataset with CCS that are not inventorable ------------------------------------------------------------
 DW_inv_info <- DW_inv_info %>% 
   # join  in inventory info
-  left_join(., tree_inv_info %>% select(plot_ID, inv_year, inv), by = c("plot_ID"), multiple = "all" ) %>% 
+  left_join(., tree_inv_info %>% select(plot_ID, inv_year, inv) %>% distinct(), by = c("plot_ID") ) %>% 
   # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., plots_to_exclude, by = "plot_ID") %>% 
+  anti_join(., DW_CCS_to_exclude, by = c("plot_ID", "inv_year", "inv")) %>% 
   mutate(plot_A_ha = case_when(CCS_DW_inv_status == 4 ~ (c_A(data_circle$r0[2])/10000)*0.5, 
                                CCS_DW_inv_status == 5 ~ (c_A(data_circle$r0[2])/10000)*0.25,
                                TRUE ~  (c_A(data_circle$r0[2])/10000)))
 
 
-# 2.4.2. create dataset with CCS that are not  ------------------------------------------------------------
-DW_CCS_to_exclude <- DW_inv_info %>% 
-  # remove plots where one of the four sampling circuits was not inventorable: so status -9. -1, 4
-  filter(!(CCS_DW_inv_status %in% c(1,2, 4, 5)))
 
-
-# 2.4.3. correcting status 2 circles that actually have trees ------------------------------------------------------------------
-DW_inv_info <-  DW_inv_info%>%
-  # remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  anti_join(., plots_to_exclude, by = "plot_ID") %>% 
-  # remove CCS with inv status 3
-  anti_join(., DW_CCS_to_exclude, by = c("plot_ID", "inv_year", "inv")) %>% 
-  distinct()
 
 
 # 2.4.4. creating empty plots for circuits labelled empty ------------------------------------------------------------------
@@ -545,10 +592,26 @@ DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
 
 # 2.4.5. prepare DW_data for export ---------------------------------------
-DW_removed <-  DW_data %>% 
-  # select trees in CCS with status 3,  -9, -1 , 2, even though status 2 doesn´t count as being removed, we list it here, since status 2 CCS are not supposed to have DW items anyways 
-  semi_join(., DW_inv_info %>% filter(!(CCS_DW_inv_status %in% c(1, 4, 5))),
-            by = c("plot_ID", "inv", "inv_year"))
+DW_removed <-  
+  plyr::rbind.fill(
+    # use DW_CCS_to remove, to "pull out" the trees from DW data that should be removed
+    # while keeping the reason for the removal at the same time
+    DW_data %>% 
+      semi_join( 
+        DW_CCS_to_exclude %>% 
+          select(plot_ID, inv, inv_year), 
+        by = c("plot_ID", "inv", "inv_year")) %>% 
+      # join in reason for removal
+      left_join(DW_CCS_to_exclude %>% 
+                  select(plot_ID, inv, inv_year, rem_reason), 
+                by = c("plot_ID", "inv", "inv_year")) ,
+    DW_data %>% 
+      # select trees in CCS with status 3,  -9, -1 , 2, even though status 2 doesn´t count as being removed, we list it here, since status 2 CCS are not supposed to have DW items anyways 
+      semi_join(., DW_inv_info %>% 
+                  filter(!(CCS_DW_inv_status %in% c(1, 4, 5))),
+                by = c("plot_ID", "inv", "inv_year")) %>% 
+      mutate(rem_reason = "DW circle excluded during inventory status sorting")
+  )
 
 # select only DW items in CCS with status 1, 4, 5 because status 2 CCSs we have in a separate dataset 
 DW_update_1 <- DW_data %>% 
@@ -570,6 +633,9 @@ write.csv(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "
 write.csv(DW_update_1, paste0(out.path.BZE3, paste(unique(DW_update_1$inv)[1], "DW_update_1", sep = "_"), ".csv"), row.names = FALSE)
 write.csv(DW_data_stat_2, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_stat_2", sep = "_"), ".csv"), row.names = FALSE)
 write.csv(DW_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_plots_removed", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(DW_removed, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_removed_1", sep = "_"), ".csv"), row.names = FALSE)
+
+
 
 # living trees
 write.csv(tree_inv_info, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "LT_inv_update_1", sep = "_"), ".csv"), row.names = FALSE)
@@ -583,6 +649,7 @@ write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1
 write.csv(RG_loc_info, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_loc_update_1", sep = "_"), ".csv"), row.names = FALSE)
 write.csv(RG_data_stat_2, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_stat_2", sep = "_"), ".csv"), row.names = FALSE)
 write.csv(RG_update_1, paste0(out.path.BZE3, paste(unique(RG_update_1$inv)[1], "RG_update_1", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(RG_removed, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_removed_1", sep = "_"), ".csv"), row.names = FALSE)
 write.csv(RG_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)[1], "RG_plots_removed", sep = "_"), ".csv"), row.names = FALSE)
 
 # all trees
@@ -594,6 +661,9 @@ write.csv(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1],
 
 # NFI trees/ BWI trees
 write.csv(trees_BWI, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "trees_BWI", sep = "_"), ".csv"), row.names = FALSE)
+
+
+
 
 
 
