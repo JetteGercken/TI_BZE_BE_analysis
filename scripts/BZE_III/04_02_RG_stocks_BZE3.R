@@ -20,6 +20,8 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
 RG_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_update_2.csv")), sep = ",", dec = ".")
+RG_removed <- read.delim(file = here(paste0(out.path.BZE3, unique(RG_data$inv), "_RG_removed.csv")), sep = ",", dec = ".")
+
 
 
 
@@ -230,11 +232,18 @@ RG_data <- RG_data %>% mutate(C_kg_tree = B_kg_tree*0.5)
 
 # 2. data export ----------------------------------------------------------
 RG_update_4 <- RG_data %>% anti_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
-RG_removed_4 <- RG_data %>% semi_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+RG_removed <- plyr::rbind.fill(
+  RG_removed, 
+  RG_data %>% 
+    semi_join(., 
+              RG_data %>% 
+                filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), 
+              by = c("plot_ID", "tree_ID")) %>% 
+    mutate(rem_reason = "RG excluded during stock calculation"))
 
 # HBI dataset including estimated heights 
 write.csv(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(RG_removed, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

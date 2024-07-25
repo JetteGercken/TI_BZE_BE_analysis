@@ -19,6 +19,9 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
 RG_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_update_2.csv")), sep = ",", dec = ".")
+RG_removed <- read.delim(file = here(paste0(out.path.BZE3, unique(RG_data$inv), "_RG_removed.csv")), sep = ",", dec = ".")
+
+
 
 
 # 1. calculations ---------------------------------------------------------
@@ -27,13 +30,13 @@ RG_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_update_2.csv")),
 # translate size class into diameter
 RG_data <- RG_data %>% 
   mutate(
-  D_cm = sizeclass_to_d(D_class_cm), 
-  H_m = H_cm/100) %>% 
+    D_cm = sizeclass_to_d(D_class_cm), 
+    H_m = H_cm/100) %>% 
   # join in species names and codes from x_bart
   left_join(., SP_names_com_ID_tapeS %>% 
               mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
             by = c("SP_code" = "char_code_ger_lowcase"))
-  
+
 
 
 # 1.2 biomass -------------------------------------------------------------
@@ -66,19 +69,19 @@ for (i in 1:nrow(RG_above_1.3)) {
   # calculate biomass per compartiment
   bio.df <- as.data.frame(cbind(
     "compartiment" = c("fwb", "ndl", "ag", "bg"), 
-                  # sw+ fwb compartiment: 
-                     # for conifers we have to deduct the leaf biomass estimated by poorter because it is included in the aboveground biomass
-                     # for broadleafed trees we don´t have to 
+    # sw+ fwb compartiment: 
+    # for conifers we have to deduct the leaf biomass estimated by poorter because it is included in the aboveground biomass
+    # for broadleafed trees we don´t have to 
     "B_kg_tree" = c(ifelse(spp_LHNH == "NB", ag_GHGI - as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,], ag_GHGI),
-                  # foliage "ndl"
+                    # foliage "ndl"
                     as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],
-                  # abovegorund "ag":
+                    # abovegorund "ag":
                     # for broadleafed we have to add the leaf biomass estimated by poorter because it is included in the aboveground biomass
                     # for conifers trees we don´t have to 
                     ifelse(spp_LHNH == "LB", ag_GHGI + as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "foliage"))[1,],ag_GHGI),
-                  # belowground "bg"  
-                  as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
-                  ))) 
+                    # belowground "bg"  
+                    as.data.frame(Poorter_rg_RSR_RLR(ag_GHGI, spp_LHNH, compartiment = "bg"))[1,]
+    ))) 
   
   bio.info.df <- as.data.frame(cbind(
     "plot_ID" = c(my.plot.id), 
@@ -98,7 +101,7 @@ for (i in 1:nrow(RG_above_1.3)) {
 bio.ag.bg.kg.RG.above.1.3.df <- as.data.frame(rbindlist(bio.ag.bg.kg.RG.above.1.3))
 bio.ag.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)] <- lapply(bio.ag.bg.kg.RG.above.1.3.df[,c(1,2, 3, 5,7)], as.numeric)
 
-  
+
 
 
 
@@ -111,9 +114,9 @@ bio.ag.kg.RG.below.1.3.df <- RG_data %>%
   mutate(compartiment = "ag") %>% 
   mutate(B_kg_tree = (GHGI_aB_Hb1.3(LH_NH, H_m))) %>% 
   select("plot_ID","CCS_nr", "tree_ID", "inv", 
-                  "inv_year", "compartiment", "B_kg_tree") 
-  
-  
+         "inv_year", "compartiment", "B_kg_tree") 
+
+
 # 1.2.1.1.2. belowground biomass for RG trees height > 1.3m -------------------------------
 # to ensure every RG emelemnt has all compartiments, we have to add the compartiment "bg" for trees
 # below 1.3m height, even though it is 0 as we do not calculate it. This way we can calculate a 
@@ -140,7 +143,7 @@ bio.total.kg.RG.df <-
     # RG trees below 1.3m height 
     bio.ag.kg.RG.below.1.3.df, 
     bio.bg.kg.RG.below.1.3.df
-    ) %>% 
+  ) %>% 
   group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
   summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
   mutate(compartiment = "total") %>% 
@@ -161,49 +164,49 @@ RG_data <- RG_data %>% left_join(., rbind(
 
 
 
-    
+
 # 1.3 Nitrogen stock ------------------------------------------------------
 # 1.3.1. Nitrogen stock for aboveground  & belowgrowground ---------------------------------
 N_ag_bg_kg_comps_df <- RG_data %>% 
   filter(H_m <= 1.3 & compartiment %in% c("ag", "bg") |
            H_m > 1.3 & !(compartiment %in% c("ag", "total"))) %>% 
-          # calcualte nitrogen content for RG items with comppartiments "ndl", "fwb", "bg"
-    mutate(N_kg_tree = case_when(H_m > 1.3 & !(compartiment %in% c("ag", "total")) ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment),
-          # small trees are treated as "fwb" compartiment tho their only available compartiment is "ag" which is treated as "fwb"
-                                 H_m <= 1.3 & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, "fwb"), # we cannot use "compartiment" here because the function doesn´t include compartiment "ag"
-                                 H_m <= 1.3 & compartiment == "bg" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), # we can use compartiment here because the function does include the compartiment "bg"
-                                           TRUE ~ NA)) %>% 
+  # calcualte nitrogen content for RG items with comppartiments "ndl", "fwb", "bg"
+  mutate(N_kg_tree = case_when(H_m > 1.3 & !(compartiment %in% c("ag", "total")) ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment),
+                               # small trees are treated as "fwb" compartiment tho their only available compartiment is "ag" which is treated as "fwb"
+                               H_m <= 1.3 & compartiment == "ag" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, "fwb"), # we cannot use "compartiment" here because the function doesn´t include compartiment "ag"
+                               H_m <= 1.3 & compartiment == "bg" ~ N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment), # we can use compartiment here because the function does include the compartiment "bg"
+                               TRUE ~ NA)) %>% 
   select("plot_ID","CCS_nr", "tree_ID", "inv", 
          "inv_year", "compartiment", "N_kg_tree")
-  
+
 # 1.3.2. total Nitrogen stock ---------------------------------------------------------------
 N_total_kg_df <- 
-rbind(
-  # ag N_stock in kg
-  N_ag_bg_kg_comps_df %>% 
-        # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
-        semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
-  # select compartiments "ndl", "fwb",  and add them together
-  filter(!(compartiment %in% c("ag", "bg", "total"))) %>% 
-  group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
-  summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
-  mutate(compartiment = "ag") %>% 
-  select("plot_ID","CCS_nr", "tree_ID", "inv", 
-         "inv_year", "compartiment", "N_kg_tree"),
-# total N_stock in kg
-N_ag_bg_kg_comps_df %>% 
-  # filter for trees with 1.3m height or more because for total we have to sum up all compartimetns per tree: ndl, fwb, bg
-  semi_join(RG_data %>% filter(H_m > 1.3 & !(compartiment %in% c("ag", "total")) |
-  # filter for trees below 1.3 height with compartimetns "ag" and "bg" and summ them up per tree
-                               H_m < 1.3 & compartiment %in% c("ag", "bg")),
-  by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
-  # select compartiments "ndl", "fwb", "bg" and add them together
-  # filter(!(compartiment %in% c("ag", "total"))) %>% 
-  group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
-  summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
-  mutate(compartiment = "total") %>% 
-  select("plot_ID","CCS_nr", "tree_ID", "inv", 
-         "inv_year", "compartiment", "N_kg_tree")) %>% 
+  rbind(
+    # ag N_stock in kg
+    N_ag_bg_kg_comps_df %>% 
+      # filter for trees with 1.3m height or more because those are the only trees that´ll have compartiments
+      semi_join(RG_data %>% filter(H_m > 1.3), by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
+      # select compartiments "ndl", "fwb",  and add them together
+      filter(!(compartiment %in% c("ag", "bg", "total"))) %>% 
+      group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      mutate(compartiment = "ag") %>% 
+      select("plot_ID","CCS_nr", "tree_ID", "inv", 
+             "inv_year", "compartiment", "N_kg_tree"),
+    # total N_stock in kg
+    N_ag_bg_kg_comps_df %>% 
+      # filter for trees with 1.3m height or more because for total we have to sum up all compartimetns per tree: ndl, fwb, bg
+      semi_join(RG_data %>% filter(H_m > 1.3 & !(compartiment %in% c("ag", "total")) |
+                                     # filter for trees below 1.3 height with compartimetns "ag" and "bg" and summ them up per tree
+                                     H_m < 1.3 & compartiment %in% c("ag", "bg")),
+                by = c("plot_ID","CCS_nr", "tree_ID", "inv", "inv_year")) %>% 
+      # select compartiments "ndl", "fwb", "bg" and add them together
+      # filter(!(compartiment %in% c("ag", "total"))) %>% 
+      group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      mutate(compartiment = "total") %>% 
+      select("plot_ID","CCS_nr", "tree_ID", "inv", 
+             "inv_year", "compartiment", "N_kg_tree")) %>% 
   arrange(plot_ID, CCS_nr, tree_ID)
 
 
@@ -213,7 +216,7 @@ RG_data <- RG_data %>% left_join(., rbind(
   N_total_kg_df),
   by = c("plot_ID", "CCS_nr", "tree_ID", "inv", "inv_year", "compartiment"),
   multiple = "all") 
- 
+
 
 
 
@@ -228,11 +231,18 @@ RG_data <- RG_data %>% mutate(C_kg_tree = B_kg_tree*0.5)
 
 # 2. data export ----------------------------------------------------------
 RG_update_4 <- RG_data %>% anti_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
-RG_removed_4 <- RG_data %>% semi_join(., RG_data %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
+RG_removed <- plyr::rbind.fill(
+  RG_removed, 
+  RG_data %>% 
+    semi_join(., 
+              RG_data %>% 
+                filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% distinct(), 
+              by = c("plot_ID", "tree_ID")) %>% 
+    mutate(rem_reason = "RG excluded during stock calculation"))
 
 # HBI dataset including estimated heights 
 write.csv(RG_update_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(RG_removed_4, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(RG_removed, paste0(out.path.BZE3, paste(unique(RG_update_4$inv)[1], "RG_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

@@ -15,12 +15,13 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # DEAD trees
 DW_data <-  read.delim(file =  here(paste0(out.path.BZE3,"BZE3_DW_update_1.csv")), sep = ",", dec = ".")
+DW_removed <-  read.delim(file =  here(paste0(out.path.BZE3, unique(DW_data$inv)[1] , "_DW_removed.csv")), sep = ",", dec = ".")
 
 
-# HBI forest type info per plot  (Bestandestyp)
+# BZE forest type info per plot  (Bestandestyp)
 # this i deed to later say "if the stocking species are mainly coniferous i need this secies group from tapeS
 # and if th estocking species fall in the category broadleafes the other tapes species code"
-forest_info <- read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+forest_info <- read.delim(file = here("data/input", unique(DW_data$inv)[1], "be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
 
 # 0.4 dataprep  -----------------------------------------------------------
 
@@ -370,11 +371,17 @@ DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 # 2. data export ----------------------------------------------------------
 # create export dataset
 DW_data_update_4 <- DW_data %>% anti_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
-DW_removed_4 <- DW_data %>% semi_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
-
+DW_removed_4 <- plyr::rbind.fill(
+  DW_removed, 
+  DW_data %>% semi_join(., DW_data %>% 
+                          filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% 
+                          select(plot_ID, tree_ID) %>% distinct(), 
+                        by = c("plot_ID", "tree_ID")) %>% 
+    mutate(rem_reason = "DW excluded during stock calculation")) 
 
 write.csv(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
 
 
 stop("this is where notes of the DW stocks BZE3 start")

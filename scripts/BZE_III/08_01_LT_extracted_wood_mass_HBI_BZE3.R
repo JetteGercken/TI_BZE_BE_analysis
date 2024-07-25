@@ -14,7 +14,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # 0.3. data import --------------------------------------------------------
 # tree data
-BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_removed_2.csv")), sep = ",", dec = ".")
+BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_removed.csv")), sep = ",", dec = ".")
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".") 
 HBI_trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".") %>% 
@@ -69,8 +69,13 @@ BZE3_summary <- BZE3_summary %>%
 # filter join for trees that are labelled with tree inventory status 2 in the BZE3 (post) inventory 
 # we have to look for them in HBI_update_3 because we need the trees with the height already estimated
 # filter for number 7 too
-trees_harvested <- HBI_trees %>% 
+trees_harvested <- HBI_trees %>%
+  # remove tree inventory status from HBI dataset as we want to keep the status that was assingned in BZE3
+  select(-tree_inventory_status) %>% 
   semi_join(., BZE3_trees_removed %>% 
+              filter(tree_inventory_status %in% c(2, 7)), # filter for trees in HBI which have the same plot_ID and tree_ID of those marked 2 in BZE3
+            by = c("plot_ID", "tree_ID")) %>% 
+  left_join(., BZE3_trees_removed %>% select(plot_ID, tree_ID, tree_inventory_status) %>% 
               filter(tree_inventory_status %in% c(2, 7)), # filter for trees in HBI which have the same plot_ID and tree_ID of those marked 2 in BZE3
             by = c("plot_ID", "tree_ID")) %>% 
   distinct()
@@ -514,7 +519,7 @@ LT_n_stand_P <- trees_harvested %>%
 
 if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
   LT_BCNBAn_ha <- plyr::rbind.fill(trees_harvested  %>% 
-                                     group_by(plot_ID, plot_A_ha, CCS_r_m, inv, compartiment) %>% 
+                                     group_by(plot_ID, plot_A_ha, CCS_r_m, inv, compartiment, tree_inventory_status) %>% 
                                      # convert Biomass into tons per hectar and sum it up per sampling circuit 
                                      reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
                                              C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
@@ -526,7 +531,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
                                      # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
                                      filter(!is.na(plot_ID)) ) %>% 
     # now we summarise all the t/ha values of the cirlces per plot
-    group_by(plot_ID, inv, compartiment) %>% 
+    group_by(plot_ID, inv, compartiment, tree_inventory_status) %>% 
     summarise(B_t_ha = sum(B_CCS_t_ha), 
               C_t_ha = sum(C_CCS_t_ha), 
               N_t_ha = sum(N_CCS_t_ha), 
@@ -536,7 +541,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
            stand = "all", 
            SP_code = "all")}else{
              LT_BCNBAn_ha <- trees_harvested %>% 
-               group_by(plot_ID, CCS_r_m, inv, compartiment) %>% 
+               group_by(plot_ID, CCS_r_m, inv, compartiment, tree_inventory_status) %>% 
                # convert Biomass into tons per hectar and sum it up per sampling circuit 
                reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
                        C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
@@ -545,7 +550,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
                        n_trees_CCS_ha = n()/plot_A_ha) %>% 
                distinct()%>% 
                # now we summarise all the t/ha values of the cirlces per plot
-               group_by(plot_ID, inv, compartiment) %>% 
+               group_by(plot_ID, inv, compartiment, tree_inventory_status) %>% 
                summarise(B_t_ha = sum(B_CCS_t_ha), 
                          C_t_ha = sum(C_CCS_t_ha), 
                          N_t_ha = sum(N_CCS_t_ha),

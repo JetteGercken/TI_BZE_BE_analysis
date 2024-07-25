@@ -18,20 +18,21 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_3.csv")), sep = ",", dec = ".") 
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3,(trees_data$inv)[1] ,"_LT_removed.csv")), sep = ",", dec = ".")
+
 
 
 # 0.4 data preparation ---------------------------------------------------------
-trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m)) %>% distinct()
+trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct() 
 
 
 # 1. calculations ---------------------------------------------------------
-
 
 # 1.1. biomass -----------------------------------------------------------------
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
-  # i = 2977
+  # i = 2
   # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   
   # basic tree info
@@ -115,6 +116,8 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
 bio_bg_kg_df <- as.data.frame(rbindlist(bio.bg.kg.list))
 
 
+
+
 # 1.1.3. biomass all compartiments - total ----------------------------------
 
 bio_total_kg_df <- 
@@ -143,14 +146,17 @@ bio_ag_kg_df[,c(1,2, 4, 6)] <- lapply(bio_ag_kg_df[,c(1,2,4, 6)], as.numeric)
 bio_bg_kg_df[,c(1,2, 4, 6)] <- lapply(bio_bg_kg_df[,c(1,2,4, 6)], as.numeric)
 
 
-# 1.1.4. join biomass into tree dataset -----------------------------------
 
-trees_data <- trees_data %>% left_join(., 
-                                       rbind(bio_ag_kg_df , 
-                                             bio_bg_kg_df, 
-                                             bio_total_kg_df), 
-                                       by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
-                                       multiple = "all") 
+# 1.1.4. join biomass into tree dataset -----------------------------------
+trees_data <- trees_data %>% 
+  left_join(., 
+            rbind(bio_ag_kg_df , 
+                  bio_bg_kg_df, 
+                  bio_total_kg_df) %>% 
+              distinct(),
+            by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
+            multiple = "all") 
+
 
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
@@ -158,6 +164,7 @@ N_ag_bg_kg_df <- trees_data %>%
   filter(!(compartiment %in% c("ag", "total")))  %>%  # make sure the aboveground& belowground dataset doesnt include summed up compartiments like total and aboveground
   mutate(N_kg_tree = N_all_com(B_kg_tree, N_SP_group, N_f_SP_group_MoMoK, N_bg_SP_group, compartiment)) %>% 
   select(plot_ID, tree_ID, inv, inv_year, compartiment, N_kg_tree) 
+
 
 # 1.2.2. Nitrogen ston in all compartiments summed up - total & aboveground  ----------------------------------
 N_total_kg_df <- 
@@ -191,13 +198,19 @@ trees_data <- trees_data %>% left_join(.,
 trees_data <- trees_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
+trees_neg_bio <- trees_data %>% semi_join(., bio_ag_kg_df %>% filter(B_kg_tree <0) %>% select(plot_ID) %>% mutate(plot_ID = as.integer(plot_ID)), by = "plot_ID")
 
-# data export ---------------------------------------------------------------------------------------------
-trees_removed_4 <- trees_data %>% filter(B_kg_tree <0 ) %>% semi_join(., trees_data %>% 
-                                                                        filter(B_kg_tree <0 ) %>% 
-                                                                        select(plot_ID, tree_ID, inv) %>% 
-                                                                        distinct(), 
-                                                                      by = c("plot_ID", "tree_ID", "inv"))
+
+# 2.data export ---------------------------------------------------------------------------------------------
+trees_removed <- plyr::rbind.fill(trees_removed, 
+                                  trees_data  %>% 
+                                    semi_join(., trees_data %>% 
+                                                filter(B_kg_tree <0 ) %>% 
+                                                select(plot_ID, tree_ID, inv) %>% 
+                                                distinct(), 
+                                              by = c("plot_ID", "tree_ID", "inv")) %>% 
+                                    mutate(rem_reason = "LT excluded during stock calculation"))
+
 trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
                                              filter(B_kg_tree <0 ) %>% 
                                              select(plot_ID, tree_ID, inv) %>% 
@@ -207,7 +220,12 @@ trees_update_4 <- trees_data %>% anti_join(., trees_data %>%
 
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
 write.csv(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+# HBI dataset with excluded trees including estimated heights 
+write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
+#write.csv(trees_neg_bio, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_negative_bio", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
+
 
 
 stop("this is where stock calculation of BZE3 ends")

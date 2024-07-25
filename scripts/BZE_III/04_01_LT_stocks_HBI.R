@@ -18,14 +18,15 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_3.csv")), sep = ",", dec = ".")
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_removed.csv")), sep = ",", dec = ".")
+
+
 
 # 0.4 data preparation ---------------------------------------------------------
 trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct() 
 
 
 # 1. calculations ---------------------------------------------------------
-
 
 # 1.1. biomass -----------------------------------------------------------------
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
