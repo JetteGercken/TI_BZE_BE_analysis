@@ -21,11 +21,14 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
   # here we import a dataset called "HBI_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
 HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_1.csv")), sep = ",", dec = ".")
+HBI_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, (HBI_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")
 
-# hbi BE dataset: 
+# BZE3 BE dataset: 
 # this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # here we import a dataset called "BZE3_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
 BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_2.csv")), sep = ",", dec = ".")
+BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, (BZE3_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")
+
 
 # ----- 0.6 harmonising column names & structure  -----------------------------------------------------------------
 ## HBI
@@ -275,8 +278,16 @@ BZE3_trees_update_3 <-  trees_total %>%
 
 
 # 1.1.2.6. remove problematik trees ---------------------------------------
- HBI_trees_removed_3 <- HBI_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") 
- BZE3_trees_removed_3 <- BZE3_trees_update_3 %>% filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") 
+ # HBI
+ HBI_trees_removed <- plyr::rbind.fill(HBI_trees_removed, 
+                                         HBI_trees_update_3 %>%
+                                           filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") %>% 
+                                           mutate(rem_reason = "LT excluded during height estimation"))
+ # BZE3
+ BZE3_trees_removed <- plyr::rbind.fill(BZE3_trees_removed, 
+                                          BZE3_trees_update_3 %>%
+                                            filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") %>% 
+                                            mutate(rem_reason = "LT excluded during height estimation")) 
  
 
 # ---- 1.1.2.6. exporting dataset --------------------------
@@ -285,11 +296,11 @@ write.csv(coeff_H_comb, paste0(out.path.BZE3, paste("coef_H", unique(HBI_trees_u
                                
 # HBI dataset including estimated heights
 write.csv(HBI_trees_update_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "LT_update_3", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(HBI_trees_removed_3, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "LT_removed_3", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(HBI_trees_removed, paste0(out.path.BZE3, paste(unique(HBI_trees_update_3$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 # BZE3 dataset including estimated heights
 write.csv(BZE3_trees_update_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_update_3", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(BZE3_trees_removed_3, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_removed_3", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(BZE3_trees_removed, paste0(out.path.BZE3, paste(unique(BZE3_trees_update_3$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 

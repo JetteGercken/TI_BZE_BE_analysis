@@ -335,8 +335,8 @@ forest_edges.man.sub.e2.nogeo <- forest_edges.man %>%
 triangle.e2.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID) )
 triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID))
 for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
-  # i = 1
-  # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID)
+  # i = 6
+  # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID))
   
   #if(nrow(forest_edges.man.sub.e2.nogeo) == 0){break}
   
@@ -413,6 +413,23 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   ## assing crs
   # sf::st_crs(triangle.e2.poly) <- my.utm.epsg
+  
+  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  c.poly.17 <- sf::st_buffer(c.pt, 17.84)
+  c.poly.12 <- sf::st_buffer(c.pt, 12.62)
+  c.poly.5 <- sf::st_buffer(c.pt, 5.64)
+  c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
+  # test 
+  print(ggplot() +
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.60, aes(alpha = 0))+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e2.poly, aes(alpha = 0))+
+          xlim(-80, 80)+
+          ylim(-80, 80))
   
   # print triangle
   print(plot(triangle.e2.poly$geometry, main = my.plot.id))
@@ -2110,8 +2127,14 @@ if(exists("all.edges.area.df.nogeo")){
 
 
 # 3.3.1.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
-trees_removed_1 <- trees_update_1 %>% filter(stand == "warning")
+trees_removed <- plyr::rbind.fill(trees_removed, 
+                                  trees_update_1 %>% 
+                                    anti_join(., trees_removed, by = c("plot_ID", "tree_ID")) %>% 
+                                    filter(stand == "warning") %>% 
+                                    mutate(rem_reason = "LT excluded during forest edges allocation"))
+
 trees_update_1 <- trees_update_1 %>% filter(stand != "warning")
+
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
@@ -2129,7 +2152,7 @@ all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, tr
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
-if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"), row.names = FALSE)}
+if(nrow(trees_removed)!=0){write.csv2(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)

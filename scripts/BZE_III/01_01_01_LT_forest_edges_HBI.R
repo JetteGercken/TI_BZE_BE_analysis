@@ -18,8 +18,12 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-# here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
+# here one should immport the the dataset called HBI_trees_update_0.csv which includes only trees that are already sortet according to the inventory stati (PK_aufnahme, Punktstatus)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ",", dec = ".")
+# this dataset contains the removed trees that evolved from the inventory status sorting. 
+# we import it to continuously collect removed data in one dataset
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
+
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
 # HBI forest edges (Waldränder) info
@@ -2141,8 +2145,14 @@ if(exists("all.edges.area.df.nogeo")){
 
 
 # 3.3.1.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
-trees_removed_1 <- trees_update_1 %>% filter(stand == "warning")
+trees_removed <- plyr::rbind.fill(trees_removed, 
+                                  trees_update_1 %>% 
+                                    anti_join(., trees_removed, by = c("plot_ID", "tree_ID")) %>% 
+                                    filter(stand == "warning") %>% 
+                                    mutate(rem_reason = "LT excluded during forest edges allocation"))
+
 trees_update_1 <- trees_update_1 %>% filter(stand != "warning")
+
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
@@ -2160,7 +2170,7 @@ all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, tr
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
-if(nrow(trees_removed_1)!=0){write.csv2(trees_removed_1, paste0(out.path.BZE3, paste(unique(trees_removed_1$inv)[1], "LT_removed_1", sep = "_"), ".csv"), row.names = FALSE)}
+if(nrow(trees_removed)!=0){write.csv2(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
