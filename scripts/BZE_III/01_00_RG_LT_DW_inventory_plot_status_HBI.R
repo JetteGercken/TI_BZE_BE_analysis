@@ -316,14 +316,16 @@ LT_CCS_to_exclude <- plyr::rbind.fill(
     mutate(rem_reason = "whole plot excluded during inventory status sorting"), 
   # remove CCS that were not inventorable from the trees df and filter NFI (BWI) plots as well
   tree_inv_info%>%
+    # remove those plots that were allready "pulled" into the bind by the previous semi join with the removed plot
+    # so that we don´t pull then in twice and they remain with one removal reason
+    anti_join(., plots_to_exclude, by = "plot_ID") %>% 
   filter(!(CCS_LT_inv_status %in% c(1, 2)) |# CCS that were not inventorable
            !(hbi_status %in% c(1,2)) |
            inv == "warning") %>%      # plot was part of NFI not BSI
   mutate(rem_reason = case_when(
     !(CCS_LT_inv_status %in% c(1, 2)) ~ "LT circle excluded during inventory status sorting", 
     !(hbi_status %in% c(1,2)) | inv == "warning" ~ "all LT circles excluded during inventory status sorting", 
-         TRUE ~ NA))) %>% 
-  distinct()
+         TRUE ~ NA)))
 
 
 #  2.2.3. correct CCS_inv_status == 2 if necesarry -------------------------------------------------------------------------------------------------------------------------
@@ -403,15 +405,17 @@ trees_removed <-
 forest_edges_update_1 <- forest_edges %>% 
   # here we remove those plots from the edges dataset that are not analysed for the HBI/ BZE3
   # we cannot sort for LT_CCS_inv_status in trees_inv_info because there may be plots that have RG (which can be alllocated to stands) but no LT yet
-  anti_join(., plots_to_exclude,  by = c("plot_ID"))
+  anti_join(., plots_to_exclude,  by = c("plot_ID")) %>% 
   # remove those forest edges with a problematic inventory: 
-  filter(inv != "warning") %>% 
+  filter(inv != "warning")
   
 
 
 forest_edges_removed <-  
     plyr::rbind.fill(
       forest_edges %>% 
+        # make sure we don´t pull in edges that already were removed because the whole plot was removed
+        anti_join(., plots_to_exclude,  by = "plot_ID") %>% 
         # remove those forest edges with a problematic inventory: 
         filter(inv == "warning") %>% 
         mutate(rem_reason = "all LT circles excluded during inventory status sorting"), 
@@ -421,6 +425,7 @@ forest_edges_removed <-
         mutate(rem_reason = "whole plot excluded during inventory status sorting")
       ) %>% 
     distinct()
+
 
 # 2.2.7. create dataset with NFI plots/ BWI plots -------------------------
 trees_BWI <- trees_data %>% 
@@ -439,9 +444,13 @@ RG_CCS_to_exclude <-
         mutate(rem_reason = "whole plot excluded during inventory status sorting"),
       # individual RG CCS that were removed
       RG_loc_info %>% 
+        # to keep one removal reason per plot we remove the CCS that were already "pulled" 
+        # into the bind by the "plots to remove" dataframe from this semi join 
+        anti_join(plots_to_exclude, by = "plot_ID") %>% 
         # remove plots where one of the four sampling circuits was not inventorable
         filter(!(CCS_RG_inv_status %in% c(1, 2))) %>% 
         mutate(rem_reason = "RG circle excluded during inventory status sorting"))
+
 
 # 2.3.2. remove not processable plots and sampling circuits form RG_loc_info dataset ------------------------------------------------------------
 RG_loc_info <- RG_loc_info %>% 
@@ -503,6 +512,10 @@ RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 
 #  2.3.5. clearing tree data and prepare for export (beab) ---------------------------------------------------------------------------------------
 # after this step there are only RG plants remaining which are locate in inventorable and processable CCS
+# generally there are two reasons why an RG tree could be excluded from the processing. 
+# 1. the RG is located in a plot that was removed
+# 2. the RG is located in a sampling cirlce that was removed
+# 3. the RG doesn´t have a size class or species ?? this should actually not be possible due to the plausi check
 RG_removed <- 
   plyr::rbind.fill(
     # RG items removed because plot is excluded
@@ -510,14 +523,17 @@ RG_removed <-
       semi_join(plots_to_exclude, by = "plot_ID") %>% 
       mutate(rem_reason = "whole plot excluded during inventory status sorting"),
     # RG plants in removed circles 
-  RG_data %>%  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status != 1), 
-            by = c("plot_ID", "CCS_nr")) %>% 
+  RG_data %>% 
+    # anti join those RG trees that were already "pulled in" by the previous semi join to avoid doubles in the dataset
+     anti_join(plots_to_exclude, by = "plot_ID") %>% 
+    # filter/ pull those RG trees from the RG_data that are located in circles with status 2 or 3
+    semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status != 1), by = c("plot_ID", "CCS_nr")) %>% 
     mutate(rem_reason = "RG circle excluded during inventory status sorting"))
 
 RG_update_1 <- RG_data %>% 
   # select only RG plants in circles remove plots from dataset where non of the inventories was carried out at the NSI (BZE) inventory ("Ausfall") 
-  semi_join(., RG_loc_info %>% filter(CCS_RG_inv_status == 1), by = c("plot_ID", "CCS_nr", "inv_year", "inv"))
-
+  anti_join(., RG_removed, by = c("plot_ID", "CCS_nr", "tree_ID"))
+ 
 
 
 
@@ -531,13 +547,15 @@ DW_CCS_to_exclude <- plyr::rbind.fill(
     semi_join(., plots_to_exclude, by = "plot_ID") %>% 
     mutate(rem_reason = "whole plot excluded during inventory status sorting"),
   DW_inv_info %>% 
+    # anti join dw cirlces where whole plot was removed since we already pulled them in right above
+    anti_join(., plots_to_exclude, by = "plot_ID") %>% 
     # remove plots where one of the four sampling circuits was not inventorable: so status -9. -1, 4
     filter(!(CCS_DW_inv_status %in% c(1,2, 4, 5))) %>% 
     distinct() %>% 
     mutate(rem_reason = "DW circle excluded during inventory status sorting")) %>% 
   distinct() %>% 
   # join  in inventory info
-  left_join(., tree_inv_info %>% select(plot_ID, inv_year, inv), by = c("plot_ID"), multiple = "all" )
+  left_join(., tree_inv_info %>% select(plot_ID, inv_year, inv) %>% distinct(), by = c("plot_ID"))
 
 
 
