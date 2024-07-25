@@ -18,6 +18,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_3.csv")), sep = ",", dec = ".")
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
 
 # 0.4 data preparation ---------------------------------------------------------
 trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct() 
@@ -197,12 +198,18 @@ trees_data <- trees_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 trees_neg_bio <- trees_data %>% semi_join(., bio_ag_kg_df %>% filter(B_kg_tree <0) %>% select(plot_ID) %>% mutate(plot_ID = as.integer(plot_ID)), by = "plot_ID")
-# data export ---------------------------------------------------------------------------------------------
-trees_removed_4 <- trees_data  %>% semi_join(., trees_data %>% 
+
+
+# 2.data export ---------------------------------------------------------------------------------------------
+trees_removed <- plyr::rbind.fill(trees_removed, 
+                                    trees_data  %>% 
+                                      semi_join(., trees_data %>% 
                                                filter(B_kg_tree <0 ) %>% 
                                                select(plot_ID, tree_ID, inv) %>% 
                                                distinct(), 
-                                             by = c("plot_ID", "tree_ID", "inv"))
+                                             by = c("plot_ID", "tree_ID", "inv")) %>% 
+                                      mutate(rem_reason = "LT excluded during stock calculation"))
+
 trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
                                              filter(B_kg_tree <0 ) %>% 
                                              select(plot_ID, tree_ID, inv) %>% 
@@ -213,9 +220,9 @@ trees_update_4 <- trees_data %>% anti_join(., trees_data %>%
 # HBI dataset including estimated heights (use write.csv2 to make ";" as separator between columns)
 write.csv(trees_update_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 # HBI dataset with excluded trees including estimated heights 
-write.csv(trees_removed_4, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
-write.csv(trees_neg_bio, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_negative_bio", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+#write.csv(trees_neg_bio, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[1], "LT_negative_bio", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 
 
