@@ -60,6 +60,7 @@
 #   install.packages("rgdal")
 #   install.packages("terra")
 #  install.packages("sfheaders")
+# install.packages("splancs")
  
  
 # ----- 0.2. require   ---------------------------------------------------------
@@ -116,7 +117,7 @@ require(sf)
 # require(rgdal)
 require(terra)
 require(sfheaders)
-
+library(splancs)
 
 
 

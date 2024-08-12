@@ -1760,8 +1760,8 @@ trees.one.edge.nogeo <- trees_data %>%
 tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
 for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
-  #i = 1
-  # i = which(grepl(50009, (trees.one.edge.nogeo$plot_ID)))
+  #i = 356 
+  # i = which(grepl(140042, (trees.one.edge.nogeo$plot_ID)))
   
   #if(nrow(trees.one.edge.nogeo) == 0){break}
   
@@ -1819,6 +1819,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
           plot(tree.sf$geometry, add = T))
   )
   
+  # check if tree intersects with polygone of rem cirlce or of edge 
   inter.tree.circle <- sf::st_intersection(tree.sf, my.rem.circle)
   inter.tree.edge <- sf::st_intersection(tree.sf, my.inter)
   
