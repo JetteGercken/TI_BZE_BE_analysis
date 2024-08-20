@@ -232,7 +232,7 @@ LT_SP_BCNBA_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha,
 # requires the species plot wise summary
 besttype_list <- vector("list", length = length(unique(trees_data$plot_ID)))
 for (i in 1:length(unique(trees_data$plot_ID))) {
-  # i = 47
+  # i = 1 
   my.plot.id <- unique(trees_data$plot_ID)[i]
   my.inv <- unique(trees_data$inv[trees_data$plot_ID == my.plot.id])
   my.n.stand <- n_stand_P$n_stands[n_stand_P$plot_ID == my.plot.id]
@@ -280,10 +280,16 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     summarize(BA_m2_ha = sum(BA_m2_ha), 
               BA_per_LHNH = sum(BA_percent))
   
+  
+  
+  
   # exptract the share of coniferous or broadleafed species at the plot
   # if there are no broadleafed/ coniferous species and the search returns an empty variable, set the share to 0 
   my.CF.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"])
   my.BL.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) 
+  
+  # calcualte the ratio between broadleafed and coniferous trees as an indicator for the progress of forest transition
+  my.BLCF.ratio <- my.BL.share/my.CF.share
   
   # select the species with the highest basal area share: 
   # this only selects the one row with the highest value, 
@@ -348,7 +354,8 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   besttype_list[[i]] <- as.data.frame(cbind(
     plot_ID = c(my.plot.id), 
     inv = c(my.inv), 
-    dom_SP = c(main.sp.p.df$SP_code), 
+    dom_SP = c(main.sp.p.df$SP_code),
+    BL_CF_ratio = c(my.BLCF.ratio),
     stand_type = c(besttype.final),
     n_stands = c(my.n.stand), 
     stand_component = c("LT")
@@ -794,7 +801,7 @@ LT_RG_DW_P <-
   plyr::rbind.fill(
     plyr::rbind.fill(
       #living tree summary all group combination possible , without stocks grouped by stand type tho
-      LT_summary %>% select(-c(dom_SP, stand_type, n_stands))
+      LT_summary %>% select(-c(dom_SP, stand_type, n_stands, BL_CF_ratio))
       #regeneration summary all group combination possible  
       ,RG_summary
       #deadwood summary all group combination possible  
@@ -871,6 +878,7 @@ LT_RG_DW_TY <-
 LT_RG_DW <- plyr::rbind.fill(LT_RG_DW_P, 
                              LT_RG_DW_TY) %>% 
   arrange(plot_ID, stand, SP_code, stand_component, compartiment, stand_type)
+
 
 
 # 6. data export ----------------------------------------------------------
