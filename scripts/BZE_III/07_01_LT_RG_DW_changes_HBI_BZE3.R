@@ -231,27 +231,27 @@ trees_stock_changes_P <-
   # e.g. a plot still had some t of spruce in HBI but doesnt habe them in BZE3 BE, we still want to calculate the change 
   full_join(BZE3_LT_summary %>% 
               select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
-                     mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+                     mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m, n_stands, BL_CF_ratio) %>%
               #add "_BZE3" to the names of the valriables we want to calculate the difference for:  https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
               rename_with(.fn = function(.x){paste0(.x,"_BZE3")},
                           .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, stand_type, 
-                                   mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>%
+                                   mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m, n_stands, BL_CF_ratio)) %>%
               distinct(), 
             # jopin in HBI dataset via left join, so that only plots, species, C layers and stands are joined in that have a partner in the current inventory. 
             HBI_LT_summary %>% 
               semi_join(BZE3_LT_summary %>% select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
               select(stand_component, plot_ID, stand, stand_type, SP_code, compartiment, B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, 
-                     mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m) %>%
+                     mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m, n_stands, BL_CF_ratio) %>%
               # https://rstats101.com/add-prefix-or-suffix-to-column-names-of-dataframe-in-r/
               rename_with(.fn = function(.x){paste0(.x,"_HBI")}, 
                           .cols= c(B_t_ha, C_t_ha, N_t_ha, n_ha, n_SP, stand_type,
-                                   mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m)) %>% 
+                                   mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m, n_stands, BL_CF_ratio)) %>% 
               distinct(), 
             by = c("stand_component" ,"plot_ID", "compartiment", "SP_code", "stand")) %>% 
   # if there are plots/ species or stands that were not established in HBI and thus do not have stocks 
   # or if there are plots/ species or stands that are not present in BZE3 anymore but have stocks in HBI
   # we have to set their stock per ha to 0 to make sure the calculations can also track "negative growth"
-  mutate(across(contains("t_ha") | contains("stand_type"), ~ifelse(is.na(.x), 0, .x)) )%>% 
+  mutate(across(contains("t_ha") | contains("stand_type") | contains("n_stands") | contains("BL_CF_ratio"), ~ifelse(is.na(.x), 0, .x)) )%>% 
   # for n_ha and n_SP we do the same but as these values were calculated only for the whole plot or the whole stand, 
   # so we apply the correction only to rows witch plot_ID != all, for stand !=all and stand == all and species == "all"
   mutate(across(contains("n_ha"), ~ifelse(is.na(.x) & 

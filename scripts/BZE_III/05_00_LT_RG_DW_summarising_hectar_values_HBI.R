@@ -280,7 +280,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     summarize(BA_m2_ha = sum(BA_m2_ha), 
               BA_per_LHNH = sum(BA_percent))
   
-   
+  
   
   
   # exptract the share of coniferous or broadleafed species at the plot
@@ -641,8 +641,9 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
                                               # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
                                               reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
                                                       C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-                                                      N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
-                                              distinct(), 
+                                                      N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
+                                                      n_ha = n()/plot_A_ha) %>% 
+                                              distinct() , 
                                             DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))) %>% 
     mutate(stand_component = "DW")
 }else{
@@ -651,10 +652,10 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
     # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
     reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
-            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha) %>% 
+            N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
+            n_ha = n()/plot_A_ha) %>% 
     distinct()
 }
-
 
 
 # 3.4. DW big summary including all grouping variables and combinations -------------------------
@@ -801,7 +802,7 @@ LT_RG_DW_P <-
   plyr::rbind.fill(
     plyr::rbind.fill(
       #living tree summary all group combination possible , without stocks grouped by stand type tho
-      LT_summary %>% select(-c(dom_SP, stand_type, n_stands, BL_CF_ratio))
+      LT_summary %>% select(-c(dom_SP, stand_type, n_stands))
       #regeneration summary all group combination possible  
       ,RG_summary
       #deadwood summary all group combination possible  
@@ -823,7 +824,7 @@ LT_RG_DW_P <-
     )%>%  
       left_join(., LT_stand_TY_P %>% 
                   # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
-                  select(-c(stand_component, n_stands)) %>% 
+                  select(-c(stand_component, n_stands, BL_CF_ratio)) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
                   mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))%>%  
@@ -878,6 +879,7 @@ LT_RG_DW_TY <-
 LT_RG_DW <- plyr::rbind.fill(LT_RG_DW_P, 
                              LT_RG_DW_TY) %>% 
   arrange(plot_ID, stand, SP_code, stand_component, compartiment, stand_type)
+
 
 
 # 6. data export ----------------------------------------------------------
