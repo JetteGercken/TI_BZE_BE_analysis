@@ -23,10 +23,7 @@ RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv
 RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ",", dec = ".")
 
 # this dataset contains the BZE3 forest edges info
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ",", dec = ".") 
-colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
-                            "A_dist", "A_azi",  "B_dist", "B_azi", 
-                            "T_dist", "T_azi") # t = turning point 
+forest_edges <- read.delim(file = here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_HBI", ".csv")), sep = ",", dec = ".")
@@ -94,12 +91,13 @@ forest_edges <- forest_edges %>%
 
 
 
+forest_edges %>% filter(plot_ID >= 140000 & plot_ID <150000 )
 
 # 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
 RG_loc <- RG_loc %>% 
   # relationship = "many-to-many" because there are multiple edges per plot in forest edges but also multiple CCS in RG loc
-  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", relationship = "many-to-many") %>% 
+  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form) %>% distinct(), by = "plot_ID", relationship = "many-to-many") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -315,7 +313,7 @@ RG_two_edges <- RG_loc %>%
               select(plot_ID, e_ID) %>% 
               distinct(), 
             by = c("plot_ID")) %>% 
-  # silter for plots that have only one forest edge
+  # silter for plots that have two one forest edge
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
                        e_ID %in% c("1", "2")) %>% 
@@ -554,6 +552,8 @@ RG_data_update_2 <- RG_data %>%
 # 3.2. export  ------------------------------------------------------------
 write.csv(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
+
 
 
 stop("that´s were the notes of RG_forest_edges BZE3 start")

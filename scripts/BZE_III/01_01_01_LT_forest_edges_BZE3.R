@@ -17,15 +17,15 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
-# HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
+# BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_0.csv")), sep = ",", dec = ".")
 # this dataset contains the removed trees that evolved from the inventory status sorting. 
 # we import it to continuously collect removed data in one dataset
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_removed.csv")), sep = ";", dec = ".")
-# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_removed.csv")), sep = ",", dec = ".")
+# BZE3 BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  "HBI", ".csv")), sep = ",", dec = ",")
-# HBI forest edges (Waldränder) info
+# BZE3 forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
 
@@ -2263,7 +2263,7 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 
 
-
+stop("this is where visualization of forest edges BZE3 starts")
 # 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){

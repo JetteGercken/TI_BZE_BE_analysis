@@ -86,7 +86,7 @@ data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circ
 # subset data frot inventory status -9 
 BZE3_trees_9 <- BZE3_trees %>% filter(old_tree_inventory_status == -9)
 tree_inventory_status_9.list <- vector(mode = "list", length = length(BZE3_trees_9$tree_ID))
-
+if(nrow(BZE3_trees_9) != 0){
 for (i in 1:length(BZE3_trees_9$tree_ID)) {
   # i = 1
   
@@ -165,6 +165,7 @@ for (i in 1:length(BZE3_trees_9$tree_ID)) {
   )
   
 }
+
 # safe list in dataframe
 tree_inventory_status_9.df <- as.data.frame(tree_inventory_status_9.list)
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
@@ -194,7 +195,7 @@ HBI_trees <- HBI_trees %>%
   # remove the column originating from the loop after "tree_inv_status" is updated
   select(-new_tree_inventory_status)
 
-
+}# close if statement that blocks this loop if there are no trees with status 9 
 
 # tree inventory status == -1 ---------------------------------------------
 # this is like NA. 
@@ -204,7 +205,7 @@ HBI_trees <- HBI_trees %>%
 # subset data frot inventory status -1
 BZE3_trees_1 <- BZE3_trees %>% filter(old_tree_inventory_status == -1)
 tree_inventory_status_1.list <- vector(mode = "list", length = length(BZE3_trees_1$tree_ID))
-
+if(nrow(BZE3_trees_1) != 0){
 for (i in 1:length(BZE3_trees_1$tree_ID)) {
   # i = 1
   
@@ -303,7 +304,7 @@ HBI_trees <- HBI_trees %>%
   mutate(tree_inventory_status = ifelse(old_tree_inventory_status == -1 & !is.na(new_tree_inventory_status) | 
                                           is.na(old_tree_inventory_status) & !is.na(new_tree_inventory_status), new_tree_inventory_status, tree_inventory_status)) %>% 
   select(-new_tree_inventory_status)
-
+} # close of stemtent that scipts this chunk if there are no trees with inventory status 1
 
 
 
@@ -314,6 +315,7 @@ HBI_trees <- HBI_trees %>%
 
 BZE3_trees_4 <- BZE3_trees %>% filter(tree_inventory_status == 4)
 tree_inventory_status_4.list <- vector(mode = "list", length = length(BZE3_trees_4$tree_ID))
+if(nrow(BZE3_trees_4) != 0){
 for (i in 1:length(BZE3_trees_4$tree_ID)) {
   # i = 1
   
@@ -396,7 +398,7 @@ BZE3_trees <- BZE3_trees %>%
 HBI_trees <- HBI_trees %>% 
   anti_join(., tree_inventory_status_4.df, 
             by = c("plot_ID","tree_ID", "inv" ))
-
+} # close if statemetn that blocks this part of code if there are no trees with status 4
 
 # tree inventory status == 6 ---------------------------------------------
 # for trees that have the status 6 a tree that was previously part of the inventory is not part of the inventory anymore but 
@@ -425,7 +427,7 @@ HBI_trees <- HBI_trees %>%
 
 BZE3_trees_6 <- BZE3_trees %>% filter(tree_inventory_status == 6)
 tree_inventory_status_6.list <- vector(mode = "list", length = length(BZE3_trees_6$tree_ID))
-
+if(nrow(BZE3_trees_6) != 0){
 for (i in 1:length(BZE3_trees_6$tree_ID)) {
   # i = 1
   
@@ -582,7 +584,7 @@ HBI_trees <- rbind(HBI_trees %>%
     filter(tree_type_status_6 == "partner_tree_pre") %>% 
     select(-c(tree_type_status_6))) %>% 
   arrange(plot_ID, tree_ID)
-
+} # close if statemetn that blocks this part of code if there are no trees with status 6
 
 # tree inventory status == 5 ----------------------------------------------
 # this inventory status means that the tree should have been assessed in the previous 
@@ -619,6 +621,7 @@ growth.df <- left_join(HBI_trees %>%
 
 BZE3_trees_5 <- BZE3_trees %>% filter(tree_inventory_status == 5)
 tree_inventory_status_5.list <- vector(mode = "list", length = length(BZE3_trees_5$tree_ID))
+if(nrow(BZE3_trees_5) != 0){
 for (i in 1:length(BZE3_trees_5$tree_ID)) {
   # i = 1
   
@@ -662,7 +665,7 @@ HBI_trees <- rbind(HBI_trees,
                    )
  
 
-
+} # close if statemetn that blocks this part of code if there are no trees with status 5
 
 
 # remove trees that are not part of inventory anymore ---------------------

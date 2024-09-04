@@ -20,7 +20,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # hbi BE dataset: 
   # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
   # here we import a dataset called "HBI_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
-HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_1.csv")), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_2.csv")), sep = ",", dec = ".")
 HBI_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, (HBI_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")
 
 # BZE3 BE dataset: 

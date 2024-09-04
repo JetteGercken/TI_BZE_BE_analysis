@@ -22,7 +22,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ",", dec = ".")
 # this dataset contains the removed trees that evolved from the inventory status sorting. 
 # we import it to continuously collect removed data in one dataset
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ";", dec = ".")
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ",", dec = ".")
@@ -2277,7 +2277,7 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 
 
-
+stop("this is where visuals of HBI forest edges start")
 
 # 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
 
