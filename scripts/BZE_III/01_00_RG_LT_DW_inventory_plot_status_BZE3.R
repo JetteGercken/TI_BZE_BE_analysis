@@ -103,7 +103,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
 # as we don´t have a  dataset for the current inventory BZE3, we have to use a tit_1 of the previous years. This however, leads to problems with the sortinmg of the plots by plot_status
-inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
+inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
@@ -383,7 +383,8 @@ for (i in 1:nrow(trees_stat_2)) {
           BA_CCS_m2_ha = NA, 
           n_trees_CCS_ha = NA))
       }
-  LT.data.stat.2.list[[i]] <- LT.staus.2.df
+ try(LT.data.stat.2.list[[i]] <- LT.staus.2.df, silent = T)
+  
 }
 LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
 
@@ -507,8 +508,8 @@ for (i in 1:nrow(RG_stat_2)) {
       C_t_ha = NA, 
       N_t_ha = NA))
   }
+  try(RG.data.stat.2.list[[i]] <- RG.status.2.df, silent = T)
   
-  RG.data.stat.2.list[[i]] <- RG.status.2.df
 }
 RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 # there will appear the error "Fehler in RG.data.stat.2.list[[i]] <- as.data.frame(cbind(plot_ID = c(my.plot.id),  
@@ -609,7 +610,7 @@ for (i in 1:nrow(DW_stat_2)) {
       N_t_ha = NA))
   }
   
-  DW.data.stat.2.list[[i]] <- DW.status.2.df
+  try(DW.data.stat.2.list[[i]] <- DW.status.2.df, silent = T)
 }
 DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 

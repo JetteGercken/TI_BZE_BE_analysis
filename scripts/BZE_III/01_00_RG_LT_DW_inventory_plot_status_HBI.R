@@ -103,7 +103,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
-inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit_1.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
+inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
 inv_info$date <- as.Date(inv_info$date)
@@ -118,9 +118,9 @@ tree_inv_info <-  read.delim(file = here("data/input/BZE2_HBI/be.csv"), sep = ",
   select(bund_nr, team,  datum,  beart, besttyp, struktur,  pk1_aufnahme,   pk2_aufnahme, pk3_aufnahme, hbi_status)
 colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", 
                              "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status" , "hbi_status")
-tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(str_detect(plot_ID, '^9') ~ 3,
-                                                                 str_detect(plot_ID, '^11') ~ 3,
-                                                                 str_detect(plot_ID, '^12') ~ 3,
+tree_inv_info <- tree_inv_info %>% mutate(hbi_status = case_when(stringr::str_detect(plot_ID, '^9') ~ 3,
+                                                                 stringr::str_detect(plot_ID, '^11') ~ 3,
+                                                                 stringr::str_detect(plot_ID, '^12') ~ 3,
                                                                  hbi_status == -9 ~ 1,
                                                                  TRUE ~ hbi_status)) 
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
@@ -382,7 +382,8 @@ for (i in 1:nrow(trees_stat_2)) {
           BA_CCS_m2_ha = NA, 
           n_trees_CCS_ha = NA))
       }
-  LT.data.stat.2.list[[i]] <- LT.staus.2.df
+  try(LT.data.stat.2.list[[i]] <- LT.staus.2.df, silent = T)
+  
 }
 LT_data_stat_2 <- as.data.frame(rbindlist(LT.data.stat.2.list))
 
@@ -506,8 +507,8 @@ for (i in 1:nrow(RG_stat_2)) {
       C_t_ha = NA, 
       N_t_ha = NA))
   }
+  try(RG.data.stat.2.list[[i]] <- RG.status.2.df, silent = T)
   
-  RG.data.stat.2.list[[i]] <- RG.status.2.df
 }
 RG_data_stat_2 <- as.data.frame(rbindlist(RG.data.stat.2.list))
 # there will appear the error "Fehler in RG.data.stat.2.list[[i]] <- as.data.frame(cbind(plot_ID = c(my.plot.id),  
@@ -608,7 +609,7 @@ for (i in 1:nrow(DW_stat_2)) {
       N_t_ha = NA))
   }
   
-  DW.data.stat.2.list[[i]] <- DW.status.2.df
+  try(DW.data.stat.2.list[[i]] <- DW.status.2.df, silent = T)
 }
 DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 
@@ -650,8 +651,6 @@ DW_update_1 <- DW_data %>%
 
 
 
-
-
 # 3. export dataset --------------------------------------------------------------------------------------------------------------
 # deadwood
 write.csv(DW_inv_info, paste0(out.path.BZE3, paste(unique(DW_inv_info$inv)[1], "DW_inv_update_1", sep = "_"), ".csv"), row.names = FALSE)
@@ -689,7 +688,6 @@ write.csv(forest_edges_removed, paste0(out.path.BZE3, paste(unique(tree_inv_info
 
 # NFI trees/ BWI trees
 write.csv(trees_BWI, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "trees_BWI", sep = "_"), ".csv"), row.names = FALSE)
-
 
 
 

@@ -28,9 +28,12 @@ colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form",
                             "A_dist", "A_azi",  "B_dist", "B_azi", 
                             "T_dist", "T_azi") # t = turning point 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_HBI", ".csv")), sep = ";", dec = ",")
-HBI_loc <- HBI_loc[,1:12] 
-colnames(HBI_loc) <- c("plot_ID", "ToEckId", "K2_RW","K2_HW", "K3_RW", "K3_HW", "RW_MED","HW_MED",  "LAT_MED",  "LON_MED", "LAT_MEAN", "LON_MEAN") 
+# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
+HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_HBI", ".csv")), sep = ",", dec = ".")
+# HBI locations
+HBI_loc <- HBI_loc[1:3] 
+colnames(HBI_loc) <- c("plot_ID",  "RW_MED", "HW_MED") 
+
 
 
 # import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------

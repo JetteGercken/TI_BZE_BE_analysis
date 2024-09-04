@@ -20,19 +20,19 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_0.csv")), sep = ",", dec = ".")
+# this dataset contains the removed trees that evolved from the inventory status sorting. 
+# we import it to continuously collect removed data in one dataset
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_removed.csv")), sep = ";", dec = ".")
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  "HBI", ".csv")), sep = ";", dec = ",")
+geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  "HBI", ".csv")), sep = ",", dec = ",")
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
-geo_loc <- geo_loc[1:12] 
-colnames(geo_loc) <- c("plot_ID", "ToEckId", "K2_RW",
-                       "K2_HW", "K3_RW", "K3_HW", "RW_MED",
-                       "HW_MED",  "LAT_MED",  "LON_MED", 
-                       "LAT_MEAN", "LON_MEAN") 
+geo_loc <- geo_loc[1:3] 
+colnames(geo_loc) <- c("plot_ID",  "RW_MED", "HW_MED") 
 
 
 
@@ -1688,8 +1688,6 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   outer.inter.poly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "POLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
   outer.inter.multipoly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "MULTIPOLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
   
-  
-  
   # poly.2
   outer.inter.poly.2.both.types <- if(nrow(inter.poly.17.2)!= 0){inter.poly.17.2}else{
     # this is in case one of the inter polys is empty but we still want to transport the stand info with the polygone
@@ -1843,6 +1841,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # export tree points as sf
   tree.points.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
+  print(paste(my.plot.id, my.tree.id))
 }
 # save tree corodiantes and status into dataframe
 tree.status.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.status.list.nogeo))
@@ -1953,6 +1952,8 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
     "t_stat" = c(tree_status))) 
   
   tree.points.two.edges.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  
+  print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
@@ -2065,6 +2066,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   
   tree.points.no.edge.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
+  print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
@@ -2173,6 +2175,7 @@ all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, tr
 
 
 
+
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
@@ -2252,12 +2255,21 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 
 
-# 3.4. visulaizing for all plots, edges, trees -------------------------
+
+
+
+
+
+
+
+
+
+# 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
-  #i = 2
+  #i = 1
   # i = which(grepl(50124, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
@@ -2270,7 +2282,6 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   
   all.trees.points.df.nogeo.sp <- all.trees.points.df.nogeo %>% 
     filter(plot_ID == my.plot.id) %>% 
-    distinct() %>% 
     left_join(trees_data %>% 
                 filter(plot_ID == my.plot.id) %>%
                 select(plot_ID, tree_ID, SP_code), by = c("plot_ID", "tree_ID"),
@@ -2296,6 +2307,9 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   )
   
 }
+
+
+
 
 stop("this is where visualization of forest edges BZE3 starts")
 

@@ -22,10 +22,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ",", dec = ".")
 # this dataset contains the removed trees that evolved from the inventory status sorting. 
 # we import it to continuously collect removed data in one dataset
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
+trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ";", dec = ".")
 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ";", dec = ",")
+geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ",", dec = ".")
 # HBI forest edges (Waldränder) info
 forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
 
@@ -46,11 +46,8 @@ forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
-geo_loc <- geo_loc[1:12] 
-colnames(geo_loc) <- c("plot_ID", "ToEckId", "K2_RW",
-                       "K2_HW", "K3_RW", "K3_HW", "RW_MED",
-                       "HW_MED",  "LAT_MED",  "LON_MED", 
-                       "LAT_MEAN", "LON_MEAN") 
+geo_loc <- geo_loc[1:3] 
+colnames(geo_loc) <- c("plot_ID",  "RW_MED", "HW_MED") 
 
 
 
@@ -1859,6 +1856,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   # export tree points as sf
   tree.points.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
+  print(paste(my.plot.id, my.tree.id))
 }
 # save tree corodiantes and status into dataframe
 tree.status.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.status.list.nogeo))
@@ -1969,6 +1967,8 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
     "t_stat" = c(tree_status))) 
   
   tree.points.two.edges.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  
+  print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
@@ -2081,6 +2081,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   
   tree.points.no.edge.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
+  print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
@@ -2284,7 +2285,7 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 1
-  # i = which(grepl(50124, unique(trees_data$plot_ID)))
+  # i = which(grepl(160036, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   
