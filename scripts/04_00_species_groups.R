@@ -21,19 +21,19 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
-SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",", encoding = "latin1") %>% 
-  select(- c(anmerkung, beginn, ende)) %>% 
+SP_names <- read.delim(file = here("data/input/general/x_bart.csv"), sep = ",", dec = ".", encoding = "latin1") %>% 
+   select(- c(gueltig_ab, gueltig_bis)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
   unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
   mutate(bot_name = ifelse(bot_name == "-2 -2", -2, bot_name))   # the error codes are joined in one column too, which i don´t want, so I´ll keep them single
+
+# import species list from TapeS 
 SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
 
 # ----- 1.2.2. species list BZE --------------------------------------------------------------
-colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
-                        "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
-                        "BZE_al")
+colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "icode", "bot_name", "bot_genus", "bot_species","BWI",  "LH_NH")
 
 # ----- 1.4.2. tree species -----------------------------------------
 # Goal 1: assiging the correct latin name to the individual trees through SP_names dataset
@@ -415,9 +415,10 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 
          
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
-write.csv2(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv", row.names = FALSE)#, fileEncoding = "UTF-8")
+write.csv(SP_names_com_ID_tapeS, "output/out_data/x_bart_tapeS.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(SP_names_com_ID_tapeS, ("data/input/General/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
-
+stop("this is where species groups script of bze2 bze3 ends")
 
 
 

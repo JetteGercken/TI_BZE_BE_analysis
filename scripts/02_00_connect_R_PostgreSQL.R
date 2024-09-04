@@ -27,8 +27,7 @@
 # db_port <- '5432'  # this info you can find in the PGadmin properties of the server
 # # database username
 # db_user <- 'hgercken'  # 'henriette.gercken@thuenen.de'  
-# # database password
-# db_password <-  'Ao1ieDahthaheoPh' # 'Jette$Thuenen_2024' 
+
 
 
 # 0.SETUP --------------------------------------------------------------------------------------------------------------------
@@ -71,8 +70,8 @@ con <- sqlconnection(db_name, db_server,db_port, db_user, my_db_password)
 
 
 # names of the tables we want to import to our raw data folder: 
-code_table_names <- c("neu_x_ld", "neu_k_tangenz", "x_bart_neu")
-data_table_names <- c("b2beab", "tit_1", "be", "beab", "be_waldraender", "bej", "bejb", "bedw", "bedw_liste", "punkt", "HBI_location")
+code_table_names <- c("x_ld", "k_tangenz", "x_bart")
+data_table_names <- c("tit", "be", "beab", "be_waldraender", "bej", "bejb", "be_totholz_punkt", "be_totholz_liste", "punkt")
 
 # 2.1. code tables ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 2.1.1. import code tables from database to raw folder -----------------------------------------------------------------------------------------------------------------------------------------
@@ -83,7 +82,7 @@ for (i in 1:length(code_table_names)) {
   # set schema name
   my.schema.name <- "code"
   # set database name 
-  db_name <- 'bze3'
+  db_name <- 'bze3_altdaten'
   # set db connection
   con <- sqlconnection(db_name, db_server, db_port, db_user, my_db_password)
   # get table from database and transform into dataframe
@@ -91,6 +90,8 @@ for (i in 1:length(code_table_names)) {
   # name dataframe and export it to raw data folder
   write.csv(df, paste0(here("data/raw/general"), "/", my.table.name, ".csv"), row.names = FALSE)
 }
+
+
 # 2.1.2. copy code files from raw data general to input general fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # copy everything imported from database from raw folder to input folder
 # 1. create raw data path: 
@@ -113,15 +114,33 @@ for (i in 1:length(data_table_names)) {
   # get table name
   my.table.name <- data_table_names[i]
   # set schema name
-  my.schema.name <- "bze2_bestock" # we have to change this later
+  my.schema.name <- "data" # we have to change this later
   # set database name 
-  con_df$db_name <- 'bze2'
+  db_name <- 'bze3_altdaten'
   # set db connection
-  con <- dbConnect(RPostgres::Postgres(), dbname = db_name, host=db_server, port=db_port, user=db_user, password=db_password) 
+  con <- sqlconnection(db_name, db_server, db_port, db_user, my_db_password)
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
-  # name dataframe 
-  write.csv(df, paste0(here("data/input/BZE2_HBI"), "/", my.table.name, ".csv"), row.names = FALSE)
+  # name dataframe and export it to raw data folder
+  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", my.table.name, ".csv"), row.names = FALSE)
+  
+}
+
+# get HBI locations
+data_table_names_2 <- c("vm_lokation_hbi")
+for (i in 1:length(data_table_names_2)) {
+  # get table name
+  my.table.name <-data_table_names_2[i]
+  # set schema name
+  my.schema.name <- "bze2_extern" # we have to change this later
+  # set database name 
+  db_name <- 'bze2'
+  # set db connection
+  con <- sqlconnection(db_name, db_server, db_port, db_user, my_db_password)
+  # get table from database and transform into dataframe
+  df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
+  # name dataframe and export it to raw data folder
+  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", "location_HBI", ".csv"), row.names = FALSE)
   
 }
 # 2.2.2. copy data files from raw data bze2 to input bze2 fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -141,18 +160,19 @@ file.copy(from = paste0(raw.path.bze2, bze2.in.files),
 
 # 2.3. BZE3 data tables -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # 2.3.1. import data tables from bze3 database to raw folder -----------------------------------------------------------------------------------------------------------------------------------------
-for (i in 1:length(table_names)) {
+for (i in 1:length(data_table_names)) {
   # i = 1
-  # get table name
-  my.table.name <- table_names[i]
+  my.table.name <- data_table_names[i]
   # set schema name
-  my.schema.name <- "data"
+  my.schema.name <- "data" # we have to change this later
   # set database name 
-  con_df$db_name <- 'bze3'
+  db_name <- 'bze3'
   # set db connection
-  con <- dbConnect(RPostgres::Postgres(), dbname = db_name, host= db_server, port=db_port, user=db_user, password=db_password) 
+  con <- sqlconnection(db_name, db_server, db_port, db_user, my_db_password)
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
+  # name dataframe and export it to raw data folder
+  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", "location_HBI", ".csv"), row.names = FALSE)
   # name dataframe 
   write.csv(df, paste0(here("data/input/BZE3"), "/", my.table.name, ".csv"), row.names = FALSE)
 
@@ -174,73 +194,76 @@ file.copy(from = paste0(raw.path.bze3, bze3.in.files),
 
 
 
+stop("this is where notes and trials of dataimport start")
 
 
 
+# # ----- 0.4.1. diameter correction Dahm parameters ------------------------
+# # this we´ll have to remove later 
+# # change region sheet to x_ld_neu aus code tables
+# DBH_region <- read.delim(file = here("data/input/general/x_ld.csv"), sep = ",", dec = ".")
+# DBH_region <- DBH_region %>% dplyr::select(id, kurz,lang, region)
+# colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG","country",  "region")
+# 
+# # change tangenz csv to neu_k_tangens from code tabellen in 
+# DBH_tan <- read.delim(file = here("data/input/general/k_tangenz.csv"), sep = ",", dec = ".")
+# DBH_tan <- DBH_tan %>% dplyr::select(ba_bwi, region, tangenz)
+# colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz")
+# dput(DBH_tan)
+# 
+# 
+# # ----- 0.4.2. nitrogen content datasets ----------------------------------
+# ## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
+# # import
+# N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
+# # harmonize N_con_f compartiment names with trees compartiments names, which are based on TapeS compartiment names
+# N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl",
+#                                                        TRUE ~ compartiment))
+# ## nitrogen content in woody compartiments and needles 
+# # reference: 
+# # Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
+# # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, 
+# # Tab.: 3.2 - 3.6, S. 10
+# # import
+# N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
+# # hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
+# N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
+#                                                        compartiment == "swb" ~ "sb", 
+#                                                        compartiment == "stwb" ~"stb",
+#                                                        compartiment == "fw" ~ "fwb", 
+#                                                        TRUE ~ compartiment))
+# 
+# ## belowground biomass notrogen contents in percent (mgg/1000)
+# # reference: 
+# # Jacobsen et al. 2003; 
+# # Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
+# # Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
+# # Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
+# # Niedersächsische Forstliche Versuchsanstalt;
+# # N Gehalte Grobwurzeln (D > 2mm), Tab. 7
+# # import
+# N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" , "BI" , "LA"), 
+#                                 "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
+#                                 "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
+# 
+# 
+# # 0.4.3. import species names dataest x_bart ------------------------------
+# # species names & codes 
+# SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
+# # the join always works like this: 
+# # left_join(., SP_names_com_ID_tapeS %>% 
+# #             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
+# #           by = c("SP_code" = "char_code_ger_lowcase"))
+# 
+# 
+# 
+# # 0.4.4. create sampling cuicits dataset ------------------------------
+# # creating dataset with information about the concentric sampling circles
+# data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
+#                           y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
+#                           r0 = c(5.64, 12.62, 17.84), # darius in m
+#                           rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
+# 
+# 
 
-# ----- 0.4.1. diameter correction Dahm parameters ------------------------
-# this we´ll have to remove later 
-# change region sheet to x_ld_neu aus code tables
-DBH_region <- read.delim(file = here("data/input/general/neu_x_ld.csv"), sep = ";", dec = ",")
-DBH_region <- DBH_region %>% dplyr::select(ICode, KurzD,  LangD, bl, region)
-colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG","country",  "region")
-
-# change tangenz csv to neu_k_tangens from code tabellen in 
-DBH_tan <- read.delim(file = here("data/input/general/neu_k_tangenz.csv"), sep = ";", dec = ",")
-DBH_tan <- DBH_tan %>% dplyr::select( ba_bwi, region, tangenz, Icode)
-colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz", "icode")
-dput(DBH_tan)
-
-
-# ----- 0.4.2. nitrogen content datasets ----------------------------------
-## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
-# import
-N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
-# harmonize N_con_f compartiment names with trees compartiments names, which are based on TapeS compartiment names
-N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl",
-                                                       TRUE ~ compartiment))
-## nitrogen content in woody compartiments and needles 
-# reference: 
-# Rumpf, Sabine & Schoenfelder, Egbert & Ahrends, Bernd. (2018). Biometrische Schätzmodelle für Nährelementgehalte in Baumkompartimenten.
-# https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, 
-# Tab.: 3.2 - 3.6, S. 10
-# import
-N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
-# hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
-N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
-                                                       compartiment == "swb" ~ "sb", 
-                                                       compartiment == "stwb" ~"stb",
-                                                       compartiment == "fw" ~ "fwb", 
-                                                       TRUE ~ compartiment))
-
-## belowground biomass notrogen contents in percent (mgg/1000)
-# reference: 
-# Jacobsen et al. 2003; 
-# Gehalte chemischer Elemente in Baumkompartimenten Literaturstudie und Datensammlung, 
-# Berichte des Forschungszentrums Waldökosysteme, Reihe B, Bd. 69, 2003
-# Carsten Jacobsen, Peter Rademacher, Henning Meesenburg und Karl Josef Meiwes
-# Niedersächsische Forstliche Versuchsanstalt;
-# N Gehalte Grobwurzeln (D > 2mm), Tab. 7
-# import
-N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" , "BI" , "LA"), 
-                                "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
-                                "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
-
-
-# 0.4.3. import species names dataest x_bart ------------------------------
-# species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ",", dec = ",") 
-# the join always works like this: 
-# left_join(., SP_names_com_ID_tapeS %>% 
-#             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
-#           by = c("SP_code" = "char_code_ger_lowcase"))
-
-
-
-# 0.4.4. create sampling cuicits dataset ------------------------------
-# creating dataset with information about the concentric sampling circles
-data_circle <- data.frame(x0 = c(0,0,0),       # x of centre point of all 3 circles is 0 
-                          y0 = c(0,0,0),       # y of centre point of all 3 circles is 0 
-                          r0 = c(5.64, 12.62, 17.84), # darius in m
-                          rmax = c(30.00, 30.00, 30.00)) # these are the radi of the sampling circuits in m
 

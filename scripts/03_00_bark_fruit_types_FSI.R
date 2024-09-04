@@ -11,21 +11,96 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # 0.2. improt data --------------------------------------------------------
 # bark diversity for storch FSI index
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_storch_2018.csv"), sep = ";", dec = ",")
-SP_names <- read.delim(file = here("data/input/General/x_bart_neu.csv"), sep = ";", dec = ",")
+# bark_div <- read.delim(file = here("data/input/general/barkdiv_FSI_storch_2018.csv"),  sep = ",", dec = ".")
+# we don´t import but write da dataframe here, ebcause we cannot be sure that any user of this code has acces to it
+# the following dataframe is, however identiacal to the tables of the annex of Felix storchs paper
+bark_div <- structure(list(Tree.species = c("Abies alba", "Acer campestre", 
+                                            "Acer platanoides", "Acer pseudoplatanus", "Alnus spp.", "Betula spp.", 
+                                            "broadleaf species", "Carpinus betulus", "Castanea sativa", "conifer species", 
+                                            "Fagus sylvatica", "Fraxinus excelsior", "Larix decidua", "Larix kaempferi", 
+                                            "Malus sylvestris", "Picea abies", "Pinus nigra", "Pinus spp.", 
+                                            "Populus balsamifera", "Populus spp.", "Prunus avium", "Pseudotsuga menziesii", 
+                                            "Pyrus pyraster", "Quercus rubra", "Quercus spp.", "Robinia pseudoacacia", 
+                                            "Salix spp.", "Sorbus aria", "Sorbus domestica", "Sorbus spp.", 
+                                            "Sorbus torminalis", "Taxus baccata", "Tilia spp.", "Ulmus spp."), 
+                           Bark.Type = c("scaly", "scaly", "scaly", "scaly", "furrowed", 
+                                         "furrowed", "?", "smooth", "furrowed", "?", "smooth", "furrowed", 
+                                         "furrowed", "furrowed", "scaly", "scaly", "scaly", "scaly", "furrowed", 
+                                         "furrowed", "smooth", "furrowed", "scaly", "furrowed", "furrowed", 
+                                         "furrowed", "furrowed", "smooth/scaly", "scaly", "smooth", "scaly", 
+                                         "scaly", "furrowed", "furrowed"), 
+                 DBH.Type.1 = c("< 20 cm", "< 20 cm", 
+                                "< 15 cm", "< 20 cm", "< 15 cm", "< 15 cm", "?", "< 30 cm", "< 20 cm", 
+                                "?", "omitted", "< 20 cm", "< 10 cm", "< 10 cm", "< 20 cm", "< 20 cm", 
+                                "< 15 cm", "< 15 cm", "< 15 cm", "< 15 cm", "omitted", "< 20 cm", 
+                                "< 20 cm", "< 20 cm", "< 10 cm", "< 10 cm", "< 20 cm", "< 20 cm", 
+                                "< 20 cm", "omitted", "< 15 cm", "< 20 cm", "< 20 cm", "< 20 cm"), 
+                 DBH.Type.2 = c("20 - 40 cm", ">20 cm", "15 - 35 cm", "20 - 40 cm", 
+                                   "15 - 30 cm", "15 - 25 cm", "?", ">30 cm", "20 - 35 cm", "?", 
+                                   "omitted", "20 - 35 cm", "10 - 30 cm", "10 - 30 cm", "20 - 40 cm", 
+                                   "20 - 40 cm", "15 - 30 cm", "15 - 30 cm", "15 - 25 cm", "15 - 25 cm", 
+                                   "omitted", "20 - 35 cm", "20 - 40 cm", "20 - 40 cm", "10 - 30 cm", 
+                                   "10 - 25 cm", "20 - 35 cm", ">20 cm", "20 - 40 cm", "omitted", 
+                                   ">15 cm", ">20 cm", "20 - 35 cm", "20 - 35 cm"), 
+                 DBH.Type.3 = c("> 40 cm", 
+                                 "omitted", "> 35 cm", "> 40 cm", "> 30 cm", "> 25 cm", "?", "omitted", 
+                                 "> 35 cm", "?", "omitted", "> 35 cm", "> 30 cm", "> 30 cm", "> 40 cm", 
+                                 "> 40 cm", "> 30 cm", "> 30 cm", "> 25 cm", "> 25 cm", "omitted", 
+                                 "> 35 cm", "> 40 cm", "> 40 cm", "> 30 cm", "> 25 cm", "> 35 cm", 
+                                 "omitted", "> 40 cm", "omitted", "omitted", "omitted", "> 35 cm", 
+                                 "> 35 cm")), class = "data.frame", row.names = c(NA, -34L))
+write.csv(bark_div, paste0(here("data/raw/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+write.csv(bark_div, paste0(here("data/input/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+
+## fruit diversity for storch FSI index
+# fruit_div <- read.delim(file = here("data/input/general/fruitdiv_FSI_storch_2018.csv"),  sep = ",", dec = ".")
+# we don´t import but write da dataframe here, ebcause we cannot be sure that any user of this code has acces to it
+# the following dataframe is, however identiacal to the tables of the annex of Felix storchs paper
+fruit_div <- as.data.frame(structure(list(
+  Tree.species = c("Acer pseudoplatanus", "Betula spp.", 
+                   "Populus balsamifera", "Fagus sylvatica", "Pseudotsuga menziesii", 
+                   "Quercus spp.", "Sorbus torminalis", "Larix decidua", "Alnus spp.", 
+                   "Fraxinus excelsior", "Acer campestre", "Picea abies", "Carpinus betulus", 
+                   "Larix kaempferi", "Castanea sativa", "Pinus spp.", "Prunus avium", 
+                   "Tilia spp.", "Populus balsamifera", "Quercus rubra", "Robinia pseudoacacia", 
+                   "Acer platanoides", "Pinus nigra", "broadleaf species", "conifer species", 
+                   "Abies alba", "Ulmus spp", "Sorbus spp.", "Salix spp.", "Sorbus domestica", 
+                   "Taxus baccata", "Sorbus aria", "Malus sylvestris", "Pyrus pyraster"), 
+  Fruct..age = c(30L, 25L, 10L, 60L, 25L, 65L, 15L, 35L, 25L, 
+                  40L, 40L, 55L, 25L, 35L, 25L, 40L, 20L, 40L, 10L, 50L, 20L, 30L, 
+                  40L, 0L, 0L, 60L, 35L, 10L, 15L, 10L, 30L, 15L, 15L, 15L), 
+  Pollination = c("cross + animal", 
+               "cross + wind", "cross + wind", "cross + wind", "cross + wind", 
+               "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+               "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+               "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+               "cross + animal", "cross + wind", "cross + wind", "cross + animal", 
+               "cross + animal", "cross + wind", "0", "0", "cross + wind", "self", 
+               "cross + animal", "cross + animal", "cross + animal", "wind", 
+               "cross + animal", "cross + animal", "cross + animal"), 
+  Fruit.type = c("schizocarpic fruit", 
+               "wingnut", "capsule fruit", "nut", "cone", "nut", "apple fruit", 
+               "cone", "cone", "nut", "schizocarpic fruit", "cone", "nut", "cone", 
+               "capsule fruit", "cone", "drupe", "nut", "capsule fruit", "nut", 
+               "legume", "schizocarpic fruit", "cone", "0", "0", "cone", "wingnut", 
+               "apple fruit", "capsule fruit", "apple fruit", "cone", "apple fruit", 
+               "apple fruit", "apple fruit")), class = "data.frame", row.names = c(NA, 
+                                                                                   -34L)))
+# export FSI fruitdiv "raw" original dataframe by felix storch                                                                                                                                                                                                                                        -34L)))
+write.csv(fruit_div, paste0(here("data/raw/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+write.csv(fruit_div, paste0(here("data/input/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+SP_names <- read.delim(file = here("data/input/general/x_bart.csv"), sep = ",", dec = ".")
 
 
 # ----- 0.3. dataprep & colnames --------------------------------------------------------------
 # species list NSI / BZE
 SP_names <- SP_names  %>% 
-  select(- c(anmerkung, beginn, ende)) %>% 
+  select(- c(gueltig_ab, gueltig_bis)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
   unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
   mutate(bot_name = ifelse(bot_name == "-2 -2", -2, bot_name))   # the error codes are joined in one column too, which i don´t want, so I´ll keep them single
-colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "bot_name", "bot_genus", 
-                        "bot_species", "Flora_EU", "LH_NH", "IPC", "WZE", "BWI",  
-                        "BZE_al")
+colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "icode", "bot_name", "bot_genus", 
+                        "bot_species","BWI",  "LH_NH")
 
 # barkdiversity dataset 
 colnames(bark_div) <- c("species", "bark_type", "DBH_type_1", "DBH_type_2", "DBH_type_3")
@@ -65,7 +140,8 @@ bark_TY_species_groups_3 <- bark_TY_species_groups_2 %>%
             by = "bot_genus")
 
 ## bark diversity 
-bark_div <- 
+try( # "try" statement needed so the run_NDI script can run, since the coercion creates NAs which causes a warning which stops the external run
+  {bark_div <- 
   plyr::rbind.fill(bark_div %>% 
                      mutate(., across(c("DBH_type_1", "DBH_type_2", "DBH_type_3"), ~ replace(., is.na(.), "omitted"))) %>% 
                      # define upper border for type 1
@@ -127,6 +203,7 @@ bark_div <-
   mutate(across(u_border_cm_TY1:l_border_cm_TY3, as.numeric)) %>% 
   mutate(across(u_border_cm_TY1:l_border_cm_TY3,  ~na_if(., 0))) %>% 
   mutate(bark_type = ifelse(bark_type == "?", "unkown", bark_type))
+  }  ,silent = T)
   
 
 
@@ -211,7 +288,7 @@ write.csv(bark_div, paste0("data/input/general/", paste0("barkdiv_FSI_modified",
 
 
 
-
+stop("this is where notes of FSI species groups script start")
 
 # 3. explore differnces between species groups of fruit vs. bark  --------
 # check for differences in the fruit types species groups and bark types species groups

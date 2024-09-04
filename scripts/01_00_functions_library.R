@@ -6,101 +6,103 @@
 # ----- 0. SETUP ---------------------------------------------------------------
 # ----- 0.1. Packages  ---------------------------------------------------------
 ## datamanagement
-#   install.packages("usethis")
-#   install.packages('RPostgreSQL')
-#   install.packages("RPostgres")
-#   install.packages("DBI")
-#    install.packages("here")
-#    install.packages("readr")
-#    install.packages("tidyverse")
-#    install.packages("tibble")
-#    install.packages("dplyr")
-#    install.packages("data.table")
-#    install.packages("broom")
-#    install.packages("purrr")
-#    install.packages("devtools")
-#    install.packages("plyr")
-#   install.packages("RODBC")
-#   install.packages("rstudioapi")
-#   install.packages("gsubfn")
-#   install.packages("sjmisc")
-#    ## laTex
-#    install.packages("stargazer")  #for compatability with Latex
-#    install.packages("tikzDevice") #for compatability with Latex#
-#    # visualisation
-#    install.packages("ggthemes")
-#    install.packages("ggplot2")
-#    install.packages("reshape2") #for multiple y values
-#    install.packages("ggforce") #for zooming in parts of the plot
-#    install.packages("ggrepel")
-#    options(tz="CA")
-#    install.packages("reshape2")
-#    install.packages("gridExtra")
-#  # analysis
-#    install.packages("corrplot")
-#    install.packages("AICcmodavg")
-#  # forest related
-#     install.packages("forestmangr")
-#    install.packages("rBDAT")
-#    install.packages("TapeR")
-#   install.packages("pkgbuild")
-#  require("devtools")
-#    if (! require("remotes")) 
-#      install.packages("remotes")
-# #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
-# #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-#   install.packages("magrittr")
-# 
-#   if(!require(devtools)) install.packages("devtools")
-#   devtools::install_github("kassambara/ggcorrplot")
+ #  install.packages("usethis")
+ #   install.packages('RPostgreSQL')
+ #   install.packages("RPostgres")
+ #   install.packages("DBI")
+ #    install.packages("here")
+ #    install.packages("readr")
+ #    install.packages("tidyverse")
+ #    install.packages("tidyr")
+ #    install.packages("tibble")
+ #    install.packages("dplyr")
+ #    install.packages("data.table")
+ #    install.packages("broom")
+ #    install.packages("purrr")
+ #    install.packages("devtools")
+ #    install.packages("plyr")
+ #   install.packages("RODBC")
+ #   install.packages("rstudioapi")
+ #   install.packages("gsubfn")
+ #   install.packages("sjmisc")
+ #    ## laTex
+ #    install.packages("stargazer")  #for compatability with Latex
+ #    install.packages("tikzDevice") #for compatability with Latex#
+ #    # visualisation
+ #    install.packages("ggthemes")
+ #    install.packages("ggplot2")
+ #    install.packages("reshape2") #for multiple y values
+ #    install.packages("ggforce") #for zooming in parts of the plot
+ #    install.packages("ggrepel")
+ #    options(tz="CA")
+ #    install.packages("reshape2")
+ #    install.packages("gridExtra")
+ #  # analysis
+ #    install.packages("corrplot")
+ #    install.packages("AICcmodavg")
+ #  # forest related
+ #     install.packages("forestmangr")
+ #    install.packages("rBDAT")
+ #    install.packages("TapeR")
+ #   install.packages("pkgbuild")
+ #  require("devtools")
+ #    if (! require("remotes")) 
+ #      install.packages("remotes")
+ # #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
+ # #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+ #   install.packages("magrittr")
+ # 
+ #   if(!require(devtools)) install.packages("devtools")
+ #   devtools::install_github("kassambara/ggcorrplot")
+ # 
+ #  # spatial
+ #   install.packages("sf")
+ #   install.packages("rgdal")
+ #   install.packages("terra")
+ #  install.packages("sfheaders")
+ # install.packages("splancs")
 
 
-#  # spatial
-#   install.packages("sf")
-#   install.packages("rgdal")
-#   install.packages("terra")
-#  install.packages("sfheaders")
-# install.packages("splancs")
- 
- 
 # ----- 0.2. require   ---------------------------------------------------------
 # datamanagement
-require(usethis)
+library(usethis)
 library(RPostgreSQL)
 library(RPostgres)
 library(DBI)
-require(here)
-require(readr)
-require(tidyverse)
-require(tibble)
-require(dplyr)
-require(data.table)
-require(broom)
-require(purrr)
-require(remotes)
-require(devtools)
+library(here)
+library(readr)
+# install.packages("tidyverse")
+# library(tidyverse)
+ library(tidyr)
+library(tibble)
+library(dplyr)
+library(data.table)
+library(broom)
+library(purrr)
+library(remotes)
+# library(devtools)
 library(RODBC)
 library(rstudioapi)
 library(gsubfn)
-#require(plyr)
+#library(plyr)
 # laTex
-require(stargazer)  #for compatability with Latex
-require(tikzDevice) #for compatability with Latex
+library(stargazer)  #for compatability with Latex
+library(tikzDevice) #for compatability with Latex
 # visualisation
-require(ggthemes)
-require(ggplot2)
-require(reshape2) #for multiple y values
-require(ggforce) #for zooming in parts of the plot
-require(ggrepel)
-require(gridExtra)
+library(ggthemes)
+library(ggplot2)
+library(reshape2) #for multiple y values
+library(ggforce) #for zooming in parts of the plot
+library(ggrepel)
+library(gridExtra)
 options(tz="CA")
 # analysis
-require(corrplot)
-require(AICcmodavg)
-require(ggcorrplot)
+library(corrplot)
+library(AICcmodavg)
+library(ggcorrplot)
 # forest related
-require(forestmangr)
-require(rBDAT)
+library(forestmangr)
+library(rBDAT)
 require(TapeR)
 if (! require("remotes")) 
   install.packages("remotes")
@@ -109,14 +111,14 @@ require(remotes)
 #remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 require(TapeS)
 #require(tapes)
-require(magrittr)
-require(sjmisc)
-require(ggforce)                      # Load ggforce package
+library(magrittr)
+library(sjmisc)
+library(ggforce)                      # Load ggforce package
 # spatial 
-require(sf)
+library(sf)
 # require(rgdal)
-require(terra)
-require(sfheaders)
+library(terra)
+library(sfheaders)
 library(splancs)
 
 
@@ -130,12 +132,13 @@ here::here()
 
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
 # change region sheet to x_ld_neu aus code tables
-DBH_region <- read.delim(file = here("data/input/general/neu_x_ld.csv"), sep = ";", dec = ",")
+try({
+DBH_region <- read.delim(file = here("data/input/general/x_ld.csv"), sep = ";", dec = ",")
 DBH_region <- DBH_region %>% dplyr::select(ICode, KurzD,  LangD, bl, region)
 colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG","country",  "region")
 
 # change tangenz csv to neu_k_tangens from code tabellen in 
-DBH_tan <- read.delim(file = here("data/input/general/neu_k_tangenz.csv"), sep = ";", dec = ",")
+DBH_tan <- read.delim(file = here("data/input/general/k_tangenz.csv"), sep = ";", dec = ",")
 DBH_tan <- DBH_tan %>% dplyr::select( ba_bwi, region, tangenz, Icode)
 colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz", "icode")
 dput(DBH_tan)
@@ -187,7 +190,7 @@ SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.cs
 #             mutate(char_code_ger_lowcase = tolower(Chr_code_ger)), 
 #           by = c("SP_code" = "char_code_ger_lowcase"))
 
-
+}, silent = T) # close the try statement 
 
 # 0.4.4. create sampling cuicits dataset ------------------------------
 # creating dataset with information about the concentric sampling circles
@@ -275,7 +278,7 @@ DBH_Dahm <- function(plot.id, d.mm, d.h.cm, spec){
   # the DBH tangez region 
   # https://www.geeksforgeeks.org/count-number-of-characters-in-string-in-r/
   # https://stackoverflow.com/questions/61954941/extract-first-x-digits-of-n-digit-numbers
-  ld_icode <- ifelse(str_length(plot.id) == 5, substr(plot.id, 1, 1), substr(plot.id, 1, 2))
+  ld_icode <- ifelse(stringr::str_length(plot.id) == 5, substr(plot.id, 1, 1), substr(plot.id, 1, 2))
   #ld <- DBH_region$icode_reg[which(grepl(ld_plot, DBH_region$icode_reg))]
   # select the region belonign to the state that belongs to the plot_ID from DBH_region dataset 
   reg_tan <- unique(DBH_region$region[which(DBH_region$icode_reg %in% ld_icode)])
@@ -2677,3 +2680,74 @@ if(!exists('DBH_tan')){
 
 
 
+# FSI datasets ------------------------------------------------------------
+
+# if(!exists('bark_div')){
+#   bark_div <- as.data.frame(structure(list(Tree.species = c("Abies alba", "Acer campestre", 
+#                                   "Acer platanoides", "Acer pseudoplatanus", "Alnus spp.", "Betula spp.", 
+#                                   "broadleaf species", "Carpinus betulus", "Castanea sativa", "conifer species", 
+#                                   "Fagus sylvatica", "Fraxinus excelsior", "Larix decidua", "Larix kaempferi", 
+#                                   "Malus sylvestris", "Picea abies", "Pinus nigra", "Pinus spp.", 
+#                                   "Populus balsamifera", "Populus spp.", "Prunus avium", "Pseudotsuga menziesii", 
+#                                   "Pyrus pyraster", "Quercus rubra", "Quercus spp.", "Robinia pseudoacacia", 
+#                                   "Salix spp.", "Sorbus aria", "Sorbus domestica", "Sorbus spp.", 
+#                                   "Sorbus torminalis", "Taxus baccata", "Tilia spp.", "Ulmus spp."
+#   ), Bark.Type = c("scaly", "scaly", "scaly", "scaly", "furrowed", 
+#                    "furrowed", "?", "smooth", "furrowed", "?", "smooth", "furrowed", 
+#                    "furrowed", "furrowed", "scaly", "scaly", "scaly", "scaly", "furrowed", 
+#                    "furrowed", "smooth", "furrowed", "scaly", "furrowed", "furrowed", 
+#                    "furrowed", "furrowed", "smooth/scaly", "scaly", "smooth", "scaly", 
+#                    "scaly", "furrowed", "furrowed"), DBH.Type.1 = c("< 20 cm", "< 20 cm", 
+#                                                                     "< 15 cm", "< 20 cm", "< 15 cm", "< 15 cm", "?", "< 30 cm", "< 20 cm", 
+#                                                                     "?", "omitted", "< 20 cm", "< 10 cm", "< 10 cm", "< 20 cm", "< 20 cm", 
+#                                                                     "< 15 cm", "< 15 cm", "< 15 cm", "< 15 cm", "omitted", "< 20 cm", 
+#                                                                     "< 20 cm", "< 20 cm", "< 10 cm", "< 10 cm", "< 20 cm", "< 20 cm", 
+#                                                                     "< 20 cm", "omitted", "< 15 cm", "< 20 cm", "< 20 cm", "< 20 cm"
+#                    ), DBH.Type.2 = c("20 - 40 cm", ">20 cm", "15 - 35 cm", "20 - 40 cm", 
+#                                      "15 - 30 cm", "15 - 25 cm", "?", ">30 cm", "20 - 35 cm", "?", 
+#                                      "omitted", "20 - 35 cm", "10 - 30 cm", "10 - 30 cm", "20 - 40 cm", 
+#                                      "20 - 40 cm", "15 - 30 cm", "15 - 30 cm", "15 - 25 cm", "15 - 25 cm", 
+#                                      "omitted", "20 - 35 cm", "20 - 40 cm", "20 - 40 cm", "10 - 30 cm", 
+#                                      "10 - 25 cm", "20 - 35 cm", ">20 cm", "20 - 40 cm", "omitted", 
+#                                      ">15 cm", ">20 cm", "20 - 35 cm", "20 - 35 cm"), DBH.Type.3 = c("> 40 cm", 
+#                                                                                                      "omitted", "> 35 cm", "> 40 cm", "> 30 cm", "> 25 cm", "?", "omitted", 
+#                                                                                                      "> 35 cm", "?", "omitted", "> 35 cm", "> 30 cm", "> 30 cm", "> 40 cm", 
+#                                                                                                      "> 40 cm", "> 30 cm", "> 30 cm", "> 25 cm", "> 25 cm", "omitted", 
+#                                                                                                      "> 35 cm", "> 40 cm", "> 40 cm", "> 30 cm", "> 25 cm", "> 35 cm", 
+#                                                                                                      "omitted", "> 40 cm", "omitted", "omitted", "omitted", "> 35 cm", 
+#                                                                                                      "> 35 cm")), class = "data.frame", row.names = c(NA, -34L)))
+#   write.csv(bark_div, paste0(here("data/raw/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+#   write.csv(bark_div, paste0(here("data/input/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)}
+
+# if(!exists('fruit_div')){
+#   fruit_div <- as.data.frame(structure(list(Tree.species = c("Acer pseudoplatanus", "Betula spp.", 
+#                                                              "Populus balsamifera", "Fagus sylvatica", "Pseudotsuga menziesii", 
+#                                                              "Quercus spp.", "Sorbus torminalis", "Larix decidua", "Alnus spp.", 
+#                                                              "Fraxinus excelsior", "Acer campestre", "Picea abies", "Carpinus betulus", 
+#                                                              "Larix kaempferi", "Castanea sativa", "Pinus spp.", "Prunus avium", 
+#                                                              "Tilia spp.", "Populus balsamifera", "Quercus rubra", "Robinia pseudoacacia", 
+#                                                              "Acer platanoides", "Pinus nigra", "broadleaf species", "conifer species", 
+#                                                              "Abies alba", "Ulmus spp", "Sorbus spp.", "Salix spp.", "Sorbus domestica", 
+#                                                              "Taxus baccata", "Sorbus aria", "Malus sylvestris", "Pyrus pyraster"
+#   ), Fruct..age = c(30L, 25L, 10L, 60L, 25L, 65L, 15L, 35L, 25L, 
+#                     40L, 40L, 55L, 25L, 35L, 25L, 40L, 20L, 40L, 10L, 50L, 20L, 30L, 
+#                     40L, 0L, 0L, 60L, 35L, 10L, 15L, 10L, 30L, 15L, 15L, 15L), Pollination = c("cross + animal", 
+#                                                                                                "cross + wind", "cross + wind", "cross + wind", "cross + wind", 
+#                                                                                                "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+#                                                                                                "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+#                                                                                                "cross + wind", "cross + animal", "cross + wind", "cross + wind", 
+#                                                                                                "cross + animal", "cross + wind", "cross + wind", "cross + animal", 
+#                                                                                                "cross + animal", "cross + wind", "0", "0", "cross + wind", "self", 
+#                                                                                                "cross + animal", "cross + animal", "cross + animal", "wind", 
+#                                                                                                "cross + animal", "cross + animal", "cross + animal"), Fruit.type = c("schizocarpic fruit", 
+#                                                                                                                                                                      "wingnut", "capsule fruit", "nut", "cone", "nut", "apple fruit", 
+#                                                                                                                                                                      "cone", "cone", "nut", "schizocarpic fruit", "cone", "nut", "cone", 
+#                                                                                                                                                                      "capsule fruit", "cone", "drupe", "nut", "capsule fruit", "nut", 
+#                                                                                                                                                                      "legume", "schizocarpic fruit", "cone", "0", "0", "cone", "wingnut", 
+#                                                                                                                                                                      "apple fruit", "capsule fruit", "apple fruit", "cone", "apple fruit", 
+#                                                                                                                                                                      "apple fruit", "apple fruit")), class = "data.frame", row.names = c(NA, 
+#                                                                                                                                                                                                                                          -34L)))
+#     
+#     write.csv(fruit_div, paste0(here("data/raw/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+#     write.csv(fruit_div, paste0(here("data/input/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+#     }
