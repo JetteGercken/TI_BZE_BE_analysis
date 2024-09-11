@@ -132,6 +132,8 @@ for (i in 1:nrow( DW_data_whole)){
   ))
   
   bio.dw.whole.kg.list[[i]] <- bio.info.df
+ 
+   print(paste(i, my.plot.id, my.tree.id))
 
 }
 bio_dw_whole_kg_df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))

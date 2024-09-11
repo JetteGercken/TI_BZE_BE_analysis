@@ -19,7 +19,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info
 RG_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_update_2.csv")), sep = ",", dec = ".")
-RG_removed <- read.delim(file = here(paste0(out.path.BZE3, unique(RG_data$inv), "_RG_removed.csv")), sep = ",", dec = ".")
+RG_removed <- read.delim(file = here(paste0(out.path.BZE3, unique(RG_data$inv)[1], "_RG_removed.csv")), sep = ",", dec = ".")
 
 
 

@@ -91,13 +91,12 @@ forest_edges <- forest_edges %>%
 
 
 
-forest_edges %>% filter(plot_ID >= 140000 & plot_ID <150000 )
 
 # 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
 RG_loc <- RG_loc %>% 
   # relationship = "many-to-many" because there are multiple edges per plot in forest edges but also multiple CCS in RG loc
-  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form) %>% distinct(), by = "plot_ID", relationship = "many-to-many") %>% 
+  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", relationship = "many-to-many") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -222,7 +221,6 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   #   }
   
   
-  
   ## importing the remianing circle polygone directly fro the all_rem_circles_coords.df wouldn not work so well 
   # since we´d have to find a way to first export and then mport and convert multipolygones 
   # accurately, which is to much effort given that we can just wirk with the whole cirlce and the edge-intersections
@@ -280,21 +278,23 @@ for (i in 1:nrow(unique(RG_one_edge[c("plot_ID", "CCS_nr")]))) {
   ## put dataframe in export list
   RG.CCS.one.edge.list[[i]] <- rg.edge.data
   
+  print(paste(i, my.plot.id, my.ccs.id, sep = " "))
   
-  print(ggplot() +
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
-                                                            "lat" = c.y0)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
-                                                            "lat" = y_CCS_center)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
-          geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
-          geom_sf(data = my.rg.ccs.poly, aes(colour = rg.edge.data$stand), fill = NA)+
-          ggtitle(my.plot.id, my.ccs.id)+ 
-          xlim(-60,60)+
-          ylim(-60,60)
-  )
+  # try( print(ggplot() +
+  #          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
+  #                                                            "lat" = c.y0)),
+  #                                        coords = c("lon", "lat"))), aes(),fill = NA)+
+  #          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
+  #                                                            "lat" = y_CCS_center)),
+  #                                        coords = c("lon", "lat"))), aes(),fill = NA)+
+  #          geom_sf(data = rem.circle.17, aes(colour = stand),fill = NA)+
+  #          geom_sf(data = edge.poly, aes(colour = stand), fill = NA)+
+  #          geom_sf(data = my.rg.ccs.poly, aes(colour = rg.edge.data$stand), fill = NA)+
+  #          ggtitle(my.plot.id, my.ccs.id)+ 
+  #          xlim(-60,60)+
+  #          ylim(-60,60), silent = T)
+  # )
+  
 }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into  RG dataset later      
 RG_one_edge_stands_areas <- as.data.frame(rbindlist(RG.CCS.one.edge.list))
@@ -313,7 +313,7 @@ RG_two_edges <- RG_loc %>%
               select(plot_ID, e_ID) %>% 
               distinct(), 
             by = c("plot_ID")) %>% 
-  # silter for plots that have two one forest edge
+  # silter for plots that have only one forest edge
   semi_join(., all_areas_stands %>%
               filter(CCS_r_m == 17.84 & 
                        e_ID %in% c("1", "2")) %>% 
@@ -331,7 +331,7 @@ RG_two_edges <- RG_loc %>%
 # for each plot_id and regeneration circle at plots with one edge only 
 RG.CCS.two.edges.list <- vector("list", length = nrow(unique(RG_two_edges[c("plot_ID", "CCS_nr")])))
 for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
-  # i = 13
+  # i = 164
   # i = which(grepl(50132, unique( RG_two_edges[c("plot_ID", "CCS_nr")][, "plot_ID"])))
   
   # assign crs
@@ -486,21 +486,21 @@ for (i in 1:nrow(unique( RG_two_edges[c("plot_ID", "CCS_nr")]))) {
   ## put dataframe in export list
   RG.CCS.two.edges.list[[i]] <- rg.edge.data
   
-  #print(my.plot.id)
+  print(paste(i, my.plot.id, my.ccs.id, sep = " "))
   
-  print(ggplot() +
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
-                                                            "lat" = c.y0)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
-                                                            "lat" = y_CCS_center)),
-                                        coords = c("lon", "lat"))), aes(),fill = NA)+
-          geom_sf(data = rem.circle.17.2, aes(colour = stand),fill = NA)+
-          geom_sf(data = edge.poly.1, aes(colour = stand), fill = NA)+
-          geom_sf(data = edge.poly.2, aes(colour = stand), fill = NA)+
-          geom_sf(data = my.rg.ccs.poly,aes(colour = rg.edge.data$stand), fill = NA)+
-          ggtitle(my.plot.id, my.ccs.id)
-  )
+  # try(print(ggplot() +
+  #         geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = c.x0, 
+  #                                                           "lat" = c.y0)),
+  #                                       coords = c("lon", "lat"))), aes(),fill = NA)+
+  #         geom_sf(data = ( sf::st_as_sf(as.data.frame(cbind("lon" = x_CCS_center, 
+  #                                                           "lat" = y_CCS_center)),
+  #                                       coords = c("lon", "lat"))), aes(),fill = NA)+
+  #         geom_sf(data = rem.circle.17.2, aes(colour = stand),fill = NA)+
+  #         geom_sf(data = edge.poly.1, aes(colour = stand), fill = NA)+
+  #         geom_sf(data = edge.poly.2, aes(colour = stand), fill = NA)+
+  #         geom_sf(data = my.rg.ccs.poly,aes(colour = rg.edge.data$stand), fill = NA)+
+  #         ggtitle(my.plot.id, my.ccs.id)
+  # ), silent = T)
   
 }
 # bind areas and stands in one dataframe with plot_ID, CCS_nr to join stand & area info into BZE3_RG dataset later      
@@ -552,7 +552,6 @@ RG_data_update_2 <- RG_data %>%
 # 3.2. export  ------------------------------------------------------------
 write.csv(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
-
 
 
 

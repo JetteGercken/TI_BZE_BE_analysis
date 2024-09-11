@@ -67,6 +67,8 @@ trees_total <- rbind(HBI_trees, BZE3_trees %>%
 #                      trees_total %>% mutate(H_m = H_m-1.5, 
 #                                             DBH_cm = DBH_cm-10),
 #                      trees_total)
+ 
+ 
 # test end
  
  
@@ -89,7 +91,7 @@ coeff_H_SP_P <- left_join(
     filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
     group_by(plot_ID, SP_code) %>%
     # filter for plots that have at least 3 heights measured per species
-    filter(n() >= 3),
+    filter(n() >= 5), ###change
   # creaing & joining in coeff_H_SP_P dataset 
   trees_total %>% 
     select(plot_ID, SP_code, H_m, DBH_cm) %>% 
@@ -133,7 +135,7 @@ coeff_H_SP <- left_join(trees_total %>%
                           select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                           filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                           group_by(SP_code) %>% 
-                          filter(n() >= 3),
+                          filter(n() >= 5),  ###change
                         # dataset with height coefficients
                         trees_total %>% 
                           select(SP_code, H_m, DBH_cm, DBH_class) %>% 
@@ -164,7 +166,8 @@ coeff_H_SP <- left_join(trees_total %>%
              SSres = sum((H_m-H_est)^2), 
              SStot = sum((H_m-mean_h)^2), 
              pseu_R2 = 1-(SSres/SStot), 
-             diff_h = mean(H_m - H_est)) %>% 
+             diff_h = mean(H_m - H_est), 
+             n = n()) %>% 
   mutate(plot_ID = as.factor('all')) %>% 
   select(plot_ID, SP_code, b0, b1, b2, bias, rsme, R2, mean_h, SSres, SStot, pseu_R2, diff_h)
 
@@ -174,17 +177,18 @@ coeff_H_SP <- left_join(trees_total %>%
 coeff_H_comb <- rbind(coeff_H_SP_P %>% mutate(plot_ID = as.factor(plot_ID)), coeff_H_SP)
 
 # 2.2 calculating Hg, Dg etc. per plot, stand, species--------------------------
+#calcualte the height and diameter of a stem reprensenting the mean basal area
+
  Hg_Dg_trees_total.df <- 
  trees_total %>% 
    group_by(inv, plot_ID, stand, C_layer, SP_code) %>% 
    summarise(mean_DBH_mm = mean(DBH_cm)*10,
-             D_g = sqrt(mean(BA_m2[!is.na(H_dm)])*4/pi)*100, # dg in cm --> that´s why the *100 --> m in cm
-             H_g = sum((H_dm[!is.na(H_dm)]/10)*BA_m2[!is.na(H_dm)])/sum(BA_m2[!is.na(H_dm)]))  # hg in m --> because BA is in m2 and we divided H_dm by 10 to have H_m
+             D_g = sqrt(mean(na.omit(BA_m2[!is.na(H_dm)]))*4/pi)*100, # dg in cm --> that´s why the *100 --> m in cm
+             H_g = sum((na.omit(H_dm[!is.na(H_dm)])/10)*na.omit(BA_m2[!is.na(H_dm)]))/sum(na.omit(BA_m2[!is.na(H_dm)])))  # hg in m --> because BA is in m2 and we divided H_dm by 10 to have H_m
  
- 
-  
 
-#calcualte the height and diameter of a stem reprensenting the mean basal area 
+
+ 
 
 
 # 2.3. height calculation -------------------------------------------------
@@ -224,15 +228,20 @@ HBI_trees_update_3 <-     # this should actually be the BZE3 Datset
                          TRUE ~ H_m))) %>% 
    # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
    # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
-   mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(D_g, H_g, DBH_cm), H_m)) %>% 
+   mutate(H_method = case_when(DBH_h_m > H_m & !is.na(H_g) ~ "ehk_sloboda_2",
+                               DBH_h_m > H_m & is.na(H_g) ~ "curtis_2", 
+                               TRUE ~ H_method),
+          H_m = case_when(DBH_h_m > H_m & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g*10, H_g*10),
+                               DBH_h_m > H_m & is.na(H_g) ~  h_curtis(H_SP_group, DBH_cm*10), 
+                               TRUE ~ H_m)) %>% 
    # select columns that should enter the next step of data processing
-     select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-            SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
-             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
-            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
+      select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
+             SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+              DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha) %>% 
+   filter(!is.na(H_m))
 
 
- 
 
 # 2.3.2. height calculation BZE -------------------------------------------------
 BZE3_trees_update_3 <-  trees_total %>% 
@@ -269,24 +278,30 @@ BZE3_trees_update_3 <-  trees_total %>%
                          TRUE ~ H_m))) %>% 
     # as there were some trees that had an estimated height which was lower then the DBH measuring height. this is not only implausible but also won´t work for TapeS 
   # thus we correct these heights afterwards by estimating their height from the relation between the dg and hg and dg and the trees DBH (dreisatz, h_proportional function)
-  mutate(H_m = ifelse(DBH_h_m > H_m, h_proportional(d_g, H_g, DBH_cm), H_m))   %>% 
-     # select columns that should enter the next step of data processing
+   mutate(H_method = case_when(DBH_h_m > H_m & !is.na(H_g) ~ "ehk_sloboda_2",
+                               DBH_h_m > H_m & is.na(H_g) ~ "curtis_2", 
+                               TRUE ~ H_method),
+          H_m = case_when(DBH_h_m > H_m & !is.na(H_g) ~ ehk_sloboda(H_SP_group, DBH_cm*10, mean_DBH_mm, D_g*10, H_g*10),
+                          DBH_h_m > H_m & is.na(H_g) ~  h_curtis(H_SP_group, DBH_cm*10), 
+                          TRUE ~ H_m))  %>% #select columns that should enter the next step of data processing
      select(plot_ID, inv, inv_year, stand, tree_ID,  tree_inventory_status,  multi_stem, dist_cm,  azi_gon, age, age_meth,  
-            SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
-            DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
-            CCS_r_m, stand, stand_plot_A_ha, plot_A_ha)
+             SP_code, Chr_code_ger, bot_name, tpS_ID, LH_NH, H_SP_group, BWI_SP_group, Bio_SP_group, N_SP_group, N_bg_SP_group, N_f_SP_group_MoMoK,
+             DBH_class,  Kraft, C_layer, H_dm, H_m, H_method, C_h_dm, D_mm,   DBH_h_cm,  DBH_cm, BA_m2,
+             CCS_r_m, stand, stand_plot_A_ha, plot_A_ha) %>% 
+   filter(!is.na(H_m))
+
 
 
 # 1.1.2.6. remove problematik trees ---------------------------------------
  # HBI
  HBI_trees_removed <- plyr::rbind.fill(HBI_trees_removed, 
                                          HBI_trees_update_3 %>%
-                                           filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") %>% 
+                                           filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled" | is.na(H_m)) %>% 
                                            mutate(rem_reason = "LT excluded during height estimation"))
  # BZE3
  BZE3_trees_removed <- plyr::rbind.fill(BZE3_trees_removed, 
                                           BZE3_trees_update_3 %>%
-                                            filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled") %>% 
+                                            filter(DBH_h_cm/100 >= H_m | H_m >40 & H_method != "sampled" | is.na(H_m)) %>% 
                                             mutate(rem_reason = "LT excluded during height estimation")) 
  
 
@@ -312,11 +327,20 @@ stop("this is where notes of  height calculations start")
 
 
 # NOTES -------------------------------------------------------------------
-
+ggplot()+ 
+  geom_jitter(data = HBI_trees_update_3  %>% filter(plot_ID == 80016 & SP_code == "wta"), 
+               aes(x = DBH_cm, y = H_m, colour = as.factor(H_method)))# + 
+  # geom_jitter(data = BZE3_trees_update_3 %>%   filter(plot_ID == 80016 & SP_code == "wta"), 
+  #             aes(x = DBH_cm, y = H_m, colour = as.factor(H_method)))
+  
+HBI_trees_update_3 %>% filter(plot_ID == 30639 & SP_code == "gki")
 
 ggplot(data = HBI_trees_update_3 %>% mutate(org_noorg = ifelse(plot_ID == 140010, "org", "min")) %>% filter(startsWith(bot_name, "Betula") & H_method == "sampled"))+ 
   geom_jitter(aes(x = DBH_cm, y = H_m, colour = as.factor(org_noorg)))
 
+coeff_H_SP_P
+ggplot(data = coeff_H_SP_P  %>% filter(plot_ID == 30639 & SP_code == "gki"))+ 
+  geom_jitter(aes(x = DBH_cm, y = H_m, colour = as.factor(H_method)))
 
 
 # old way to calculate H_g, D-G considering concetrtric sampling circuits, which si, according to sebastan Schnell not necesarry

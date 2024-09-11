@@ -32,12 +32,14 @@ trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct()
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
-  # i = 2
+  # i = 4188
   # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
+  # i = trees_data %>%  select(plot_ID, tree_ID) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(plot_ID == 30639 & tree_ID == 16) %>% pull(r_no) 
+  #i = i
   
   # basic tree info
   # select one tree ID and plot ID for each individual tree per plot through unique(trees_data[, c("plot_ID", "tree_ID")])
-  my.plot.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
+  my.plot.id <-  unique(trees_data[, c("plot_ID", "tree_ID")])[,"plot_ID"][i]
   my.tree.id <- unique(trees_data[, c("plot_ID", "tree_ID")])[,"tree_ID"][i]
   BL.or.CF <- unique(trees_data$LH_NH[trees_data$plot_ID==my.plot.id & trees_data$tree_ID==my.tree.id])
   
@@ -77,6 +79,7 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
   
   bio.ag.kg.list[[i]] <- bio.info.df
   
+  print(paste(i, my.plot.id, my.tree.id))
     
 }
 bio_ag_kg_df <- as.data.frame(rbindlist(bio.ag.kg.list))

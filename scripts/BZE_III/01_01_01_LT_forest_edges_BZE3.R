@@ -692,10 +692,8 @@ outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(un
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
 for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
   # i = 38
-  #i = which(grepl(50124, (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+  #i = which(grepl(60130    , (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
   
-  # break loop if dataset for loop is empty to avoid error messages
-  #if(nrow(forest_edges.man.sub.1.outer.edge.nogeo) == 0) {break}
   
   # select plot ID of the respective circle 
   my.plot.id <- forest_edges.man.sub.1.outer.edge.nogeo[i, "plot_ID"]
@@ -755,6 +753,16 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   #       plot(st_geometry(my.poly), col = "green", add = TRUE),
   #       plot(st_geometry(tree.sf), add = TRUE))
   # )
+  
+  # first we have to figure out which of the both halfs is the circle and which is the edge
+  # this is done by identifying the partial cirlce intersecting with the circles center
+  # if the poly holds the center of the plot we change it´s geometry to 
+  # the respective other half of the circle to make sure that the edge poly is
+  # actually the edge
+  if(isTRUE(nrow(sf::st_intersection(my.poly, circle.pt)) != 0) == T){
+    my.poly$geometry <- sf::st_difference(circle.17, my.poly)$geometry
+  }
+  
   
   
   #### 17m circle
@@ -858,14 +866,19 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   
   
   # assing stand to the edges depedning on area
-  # to assign the stand we have to filter for the polygone that doesn´t have trees left so we take the edge poly and the rem cirlce of 17 and look for the polygone that doesn´t intersect with trees
-  inter.trees.circle <- sf::st_intersection(remaining.circle.poly.17, tree.sf)
-  inter.trees.edge <- sf::st_intersection(my.poly, tree.sf)
-  # if the edge doesnt have trees 
-  if(isTRUE(nrow(inter.trees.edge) == 0)){
+  # to assign the stand we have to check if the edge polygone (defined earlier
+  # as the part of the poly that doesn´t include the center of the cirlce)
+  # doesn´t contain trees
+  
+  # if the edge poly doesn´t have trees and doesnt have the center its a "no forest" 
+  # and the remaining circle is stand A
+  if(isTRUE(nrow(sf::st_intersection(my.poly, tree.sf)) == 0 & 
+            nrow(sf::st_intersection(my.poly, circle.pt)) == 0) == T){
     remaining.circle.poly.17$stand <- "A"
     my.poly$stand <- "no forest"
-  }else if(isTRUE(nrow(inter.trees.circle) != 0)){
+    # if the edge poly contains trees tho its identified as edge since 
+    # it doesn´t hold the center of the plot we assign the status "warning"
+  }else if(isTRUE(nrow(sf::st_intersection(my.poly, tree.sf)) != 0)==T){
     my.poly$stand <- "warning" 
     remaining.circle.poly.17$stand <- "A"
   }else{
@@ -1324,8 +1337,8 @@ outer.rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(
 outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
 
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
-  #i = 18
-  # i = which(grepl(140068, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+  #i = 30
+  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
   
   #if(nrow(forest_edges.man.sub.2.outer.edges.nogeo) == 0){break}
   
@@ -1383,8 +1396,37 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   #  this part is about whicht polgone to priotiise if there are two overlapping edges: 
   # usually we would select the polygone with edge_ID == 1 to be the priotiised one. now however, we will select the polygone with 
   # no trees to be the prioritized 
+  # plot(my.plot.polys.df$geometry[1])
+  # plot(my.plot.polys.df$geometry[2], add = T, col = "grey")
+  # plot(circle.17, add = T)
+  # plot(circle.pt, add =T, col = "red")
+  
   
   ## create the polygones of the edge geometries
+  
+  ## determine intersection status poly and circle center to identify "outer" side
+  # we have to think about this again. 
+  # actually  we have to sort the edges first by the question "is this poly an edge or not" 
+  # the criteria to decide this by is the intersections with the circle center. 
+  # is the cirlce center in the poly? then the poly becomes the rem. cirlce and the rem. cirlce becomes one of the edges. 
+  # so actually i first have to intersect the edges with the circle and define the "side" they are on. then i start the intersection stuff
+  # so poly 1 should be the half of the circle between poly.1 and cirlce that holds the center of the circle
+  # same for poly 2
+  # then only we check them for the order between poly 1 and 2 
+  
+  # if the edge poly is an outer edge and it includes the center of the cirlce the remaining cirlce after intersecting the cirlce and the edge poly becomes
+  # the new edge poly 
+  # if the poly doesnt cut the circle, it could never include the center so we don´t have to worry about this stuff 
+  # poly 1
+  if(isTRUE(my.plot.polys.df$e_type[1] %in% c(1,2) & nrow(sf::st_intersection(sf::st_as_sf(my.plot.polys.df[1,]), circle.pt) ) != 0 ) == T){
+    my.plot.polys.df$geometry[1] <-  sf::st_geometry(sf::st_difference(circle.17, sf::st_as_sf(my.plot.polys.df[1,])))
+  } # if the condition is not true do nothing
+  # poly 2
+  if(isTRUE(my.plot.polys.df$e_type[2] %in% c(1,2) & nrow(sf::st_intersection(sf::st_as_sf(my.plot.polys.df[2,]), circle.pt) ) != 0 ) == T){
+    my.plot.polys.df$geometry[2] <-  sf::st_geometry(sf::st_difference(circle.17, sf::st_as_sf(my.plot.polys.df[2,])))
+  }
+  
+  
   # determine intersection status between poly and trees
   # select the polygone with no trees and make it poly.1
   # if the first polygone intersects with trees, but the second polygone doesn´t have intersections with trees while the edge type is 1 or 2,
@@ -1394,7 +1436,6 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # poly.1 means that this is the polygone to be prioritized while 
   # --> this means the only way to prioritize the polygonn with the ID 2 is when it is an edge is an outer edge and it really doesnt have trees
   # in any other case edge ID 1is prioritized
-  
   # nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[1,]), tree.sf)) != 0) && 
   if(isTRUE(my.plot.polys.df$e_type[2] %in% c(1,2) & nrow(st_intersection(sf::st_as_sf(my.plot.polys.df[2,]), tree.sf)) == 0 &
             !(my.plot.polys.df$e_type[1] %in% c(1,2)))){
@@ -1409,6 +1450,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     
   }
   
+  
   # select edge ID of edge polygones
   my.e.id.1 <- my.poly.1$e_ID
   my.e.id.2 <- my.poly.2$e_ID
@@ -1420,7 +1462,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   # print(c(plot(circle.17$geometry),
   #         plot(my.poly.1$geometry, col = "red", add = T),
   #       plot(my.poly.2$geometry, col = "blue",  add = T), 
-  #       plot(st_geometry(tree.sf), add = TRUE)))
+  #       plot(st_geometry(tree.sf), add = TRUE)), 
+  #       plot(circle.pt$geometry, col = "green", add = T))
   
   
   #### intersections between polygones and circles   
@@ -1444,7 +1487,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   remaining.circle.17.1 <- if(nrow(st_intersection(remaining.circle.17.1.a, circle.pt))!=0){remaining.circle.17.1.a}else{inter.poly.17.1.a}
   
   # print(plot(inter.poly.17.1$geometry, col = "grey", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
-  # print(plot(remaining.circle.17.1$geometry, col = "grey", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
+  # print(plot(remaining.circle.17.1$geometry, col = "white", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3), add = T)) 
   
   
   ## create polygone of intersecting area of second polygone with remaining circle
@@ -1460,7 +1503,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
-  #print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
+  # print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
   
   ### 12m circle 
   my.circle = circle.12
@@ -1593,22 +1636,30 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     mutate(across(c("plot_ID", "e_ID", "inv_year", "CCS_r_m", "area_m2"), as.numeric))
   
   # assing stand to the edges depedning on area and the stand with trees
-  # is there a polygone that does not incluce the middle of the plot, has the t<pe 1 or 2 (if its an edge) and doesn´t have trees 
+  # actually what i should do here is to identify which poly out of poly 1, poly2 and rem.circle holds the center of the 
+  # plot. this 
+  # all.polys.of.circle <- rbind(terra::vect(inter.poly.17.1), terra::vect(inter.poly.17.2), terra::vect(remaining.circle.17.1.and.2.poly))
+  # plot(all.polys.of.circle)
+  # text(all.polys.of.circle, labels = all.polys.of.circle$e_ID)
+  # plot(terra::vect(circle.pt), add = T)
+  #  is.related(terra::vect(circle.pt), all.polys.of.circle, "intersects") 
+  # # select the polygone out of the cirlce, inter 1 and onter 2 that intsersects the  center of the cirlce becomes the new remaining cirlce 
+  #  remaining.circle.17.1.and.2.poly <- all.polys.of.circle[apply(relate(terra::vect(circle.pt), all.polys.of.circle, "intersects"), 1, which),] 
+  
+  
+  # is there a polygone that does not incluce the middle of the plot, has the type 1 or 2 (if its an edge) and doesn´t have trees 
   # then the poylgone is labelled with "no forest" and the remaining polygones are allocated into stands by area
-  # first "if": both edges are edge type 1 or 2 and do not have trees and do not have the middle of the plot
+  # first "if": both edges are edge type 1 or 2 and do not have trees and do not have the middle of the plot --> forest edge
+  # if poly has the center of the plot but 
   if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))!=0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.tree.stat <- "trees but outer edge"}else{inter.17.1.tree.stat <- NA}
   if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))!=0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.tree.stat <- "trees but outer edge"}else{inter.17.2.tree.stat <- NA}
-  if(isTRUE(nrow(st_intersection(inter.poly.17.1, circle.pt))!=0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.center.stat <- "center but outer edge"}else{inter.17.1.center.stat <- NA}
-  if(isTRUE(nrow(st_intersection(inter.poly.17.2, circle.pt))!=0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.center.stat <- "center but outer edge"}else{inter.17.2.center.stat <- NA}
   if(isTRUE(nrow(st_intersection(inter.poly.17.1, tree.sf))==0 & nrow(st_intersection(inter.poly.17.1, circle.pt))==0 & my.poly.1$e_type %in% c(1,2))){inter.17.1.forest.stat <- "no forest"}else{inter.17.1.forest.stat <- NA}
   if(isTRUE(nrow(st_intersection(inter.poly.17.2, tree.sf))==0 & nrow(st_intersection(inter.poly.17.2, circle.pt))==0 & my.poly.2$e_type %in% c(1,2))){inter.17.2.forest.stat <- "no forest"}else{inter.17.2.forest.stat <- NA}
-  my.poly.1$stand <- case_when(inter.17.1.tree.stat ==  "trees but outer edge" | inter.17.1.center.stat == "center but outer edge" ~ "warning",
-                               inter.17.1.tree.stat ==  "trees but outer edge" & inter.17.1.center.stat == "center but outer edge" ~ "warning",
+  my.poly.1$stand <- case_when(inter.17.1.tree.stat ==  "trees but outer edge"  ~ "warning_1",
                                inter.17.1.forest.stat == "no forest"~ "no forest", 
                                TRUE ~ NA)
   
-  my.poly.2$stand <- case_when(inter.17.2.tree.stat ==  "trees but outer edge" | inter.17.2.center.stat == "center but outer edge" ~ "warning",
-                               inter.17.2.tree.stat ==  "trees but outer edge" | inter.17.2.center.stat == "center but outer edge" ~ "warning",
+  my.poly.2$stand <- case_when(inter.17.2.tree.stat ==  "trees but outer edge" ~ "warning_2",
                                inter.17.2.forest.stat == "no forest"~ "no forest", 
                                TRUE ~ NA)
   
@@ -1630,7 +1681,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
         left_join(., stand.df, by = c("plot_ID", "e_ID")) %>% 
         group_by(plot_ID, inv_year) %>% 
         arrange(desc(area_m2)) %>% 
-        filter(!(stand %in% c("no forest", "warning"))) %>% 
+        filter(!(stand %in% c("no forest", "warning_1", "warning_2"))) %>% 
         # assing stand according to row number by selecting the letter of the alphabet with the respective number e.g. row == 1 --> A: 
         # https://www.geeksforgeeks.org/sequence-of-alphabetical-character-letters-from-a-z-in-r/
         # lowest area receives stand ID C, then B, then A
@@ -1640,7 +1691,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
         filter(CCS_r_m  == 17.84) %>% 
         mutate(area_m2 = as.numeric(area_m2)) %>% 
         left_join(., stand.df, by = c("plot_ID", "e_ID")) %>% 
-        filter(stand %in% c("no forest", "warning")) %>% 
+        filter(stand %in% c("no forest", "warning_1", "warning_2")) %>% 
         mutate(stand = as.character(stand))
     ) %>% 
     # make stand.df joinable by only leaving plot_ID, e_ID, no matter the diameter of the CCS
@@ -1655,18 +1706,18 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   inter.area.df <- inter.area.df %>% left_join(., stand.df, 
                                                by = c("plot_ID", "e_ID", "inv_year"))
   
-  # print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)), 
-  #           plot(remaining.circle.17.1.and.2.poly$geometry, col = "grey", add = T),
-  #           plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
-  #           plot(remaining.circle.5.1.and.2.poly$geometry, add = T),
-  #           plot(inter.poly.17.1$geometry, col = "green", add =TRUE),
-  #           plot(inter.poly.17.2$geometry, col = "blue", add =TRUE),
-  #           plot(circle.pt$geometry, col = "red",  add = TRUE),
-  #           legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.1$e_ID]),":",  my.poly.1$e_type), 
-  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.2$e_ID]),":",  my.poly.2$e_type), 
-  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
-  #                  col=c("green", "blue", "grey"), lty=1:2, cex=0.8),
-  #           plot(st_geometry(tree.sf), add = TRUE)))
+  try(print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)), 
+                plot(remaining.circle.17.1.and.2.poly$geometry, col = "grey", add = T),
+                plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
+                plot(remaining.circle.5.1.and.2.poly$geometry, add = T),
+                plot(inter.poly.17.1$geometry, col = "green", add =TRUE),
+                plot(inter.poly.17.2$geometry, col = "blue", add =TRUE),
+                plot(circle.pt$geometry, col = "red",  add = TRUE),
+                legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.1$e_ID]),":",  my.poly.1$e_type), 
+                                           paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.2$e_ID]),":",  my.poly.2$e_type), 
+                                           paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+                       col=c("green", "blue", "grey"), lty=1:2, cex=0.8),
+                plot(st_geometry(tree.sf), add = TRUE))), silent = T)
   
   # save datacframe per plot in list
   outer.edges.list.two.edges.nogeo[[i]] <- inter.area.df
@@ -1871,7 +1922,7 @@ trees.two.edges.nogeo <- trees_data %>%
 tree.status.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
 tree.points.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
 for (i in 1:length(trees.two.edges.nogeo$tree_ID)){ 
-  # i = 1
+  # i = 3225
   # i = which(grepl(50122, (trees.two.edges.nogeo$plot_ID)))[2]
   
   #if(nrow(trees.two.edges.nogeo) == 0){break}
@@ -2150,16 +2201,14 @@ if(exists("all.edges.area.df.nogeo")){
 
 
 
-
-
 # 3.3.1.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
 trees_removed <- plyr::rbind.fill(trees_removed, 
                                   trees_update_1 %>% 
                                     anti_join(., trees_removed, by = c("plot_ID", "tree_ID")) %>% 
-                                    filter(stand == "warning") %>% 
+                                    filter(stringr::str_detect(stand, "warning")) %>% 
                                     mutate(rem_reason = "LT excluded during forest edges allocation"))
 
-trees_update_1 <- trees_update_1 %>% filter(stand != "warning")
+trees_update_1 <- trees_update_1 %>% filter(!(stringr::str_detect(stand, "warning"))) 
 
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
@@ -2179,7 +2228,7 @@ all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, tr
 # 3.3.2. exporting data ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
-if(nrow(trees_removed)!=0){write.csv2(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
+if(nrow(trees_removed)!=0){write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
@@ -2248,13 +2297,6 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
-
-
-
-
-
-
-
 
 
 
