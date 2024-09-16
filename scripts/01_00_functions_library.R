@@ -133,21 +133,22 @@ here::here()
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
 # change region sheet to x_ld_neu aus code tables
 try({
-DBH_region <- read.delim(file = here("data/input/general/x_ld.csv"), sep = ";", dec = ",")
-DBH_region <- DBH_region %>% dplyr::select(ICode, KurzD,  LangD, bl, region)
-colnames(DBH_region) <- c("icode_reg", "reg_shortG", "reg_longG","country",  "region")
+DBH_region <- read.delim(file = here("data/input/general/x_ld.csv"), sep = ",", dec = ".")
+DBH_region <- DBH_region %>% dplyr::select(id, kurz, lang, region)
+colnames(DBH_region) <- c("icode_reg", "reg_shortG", "country",  "region")
 
 # change tangenz csv to neu_k_tangens from code tabellen in 
-DBH_tan <- read.delim(file = here("data/input/general/k_tangenz.csv"), sep = ";", dec = ",")
-DBH_tan <- DBH_tan %>% dplyr::select( ba_bwi, region, tangenz, Icode)
-colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz", "icode")
-dput(DBH_tan)
+DBH_tan <- read.delim(file = here("data/input/general/k_tangenz.csv"), sep = ",", dec = ".")
+DBH_tan <- DBH_tan %>% dplyr::select( ba_bwi, region, tangenz)
+colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz")
 
+}, silent = T) # close the try statement 
 
 # ----- 0.4.2. nitrogen content datasets ----------------------------------
+try({
 ## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
   # import
-N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ",")
+N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ".")
   # harmonize N_con_f compartiment names with trees compartiments names, which are based on TapeS compartiment names
 N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl",
                                                        TRUE ~ compartiment))
@@ -157,7 +158,7 @@ N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "nd
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, 
   # Tab.: 3.2 - 3.6, S. 10
   # import
-N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ",")
+N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ".")
   # hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
 N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
                                                        compartiment == "swb" ~ "sb", 
@@ -177,11 +178,12 @@ N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "nd
 N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" , "BI" , "LA"), 
                                 "N_con" = c(3.71,3.03, 4.14, 1.77,  1.76, 3.7, 2.8)/1000, 
                                 "compartiment" = c("bg", "bg", "bg", "bg", "bg", "bg", "bg")))
-
+}, silent = T) # close the try statement 
 
 # 0.4.3. import species names dataest x_bart ------------------------------
+try({
 # species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("output/out_data/x_bart_tapeS.csv"), sep = ";", dec = ".", 
+SP_names_com_ID_tapeS <- read.delim(file = here("data/input/general/x_bart_tapeS.csv"), sep = ",", dec = ".", 
                                     encoding = "UTF-8", 
                                     stringsAsFactors=FALSE
                                     ) 
