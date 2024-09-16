@@ -617,6 +617,7 @@ DW_data_stat_2 <- as.data.frame(rbindlist(DW.data.stat.2.list))
 # 2.4.5. prepare DW_data for export ---------------------------------------
 DW_removed <-  
   plyr::rbind.fill(
+    ## DW trees from removed plots or removed CCS 
     # use DW_CCS_to remove, to "pull out" the trees from DW data that should be removed
     # while keeping the reason for the removal at the same time
     DW_data %>% 
@@ -628,6 +629,7 @@ DW_removed <-
       left_join(DW_CCS_to_exclude %>% 
                   select(plot_ID, inv, inv_year, rem_reason), 
                 by = c("plot_ID", "inv", "inv_year")) ,
+    ## DW trees with CCS status 3, -9, -1, 2 
     DW_data %>% 
       # make sure that trees pulled in by the removed DW circles are nt selected double 
       anti_join(DW_CCS_to_exclude,  by = c("plot_ID", "inv", "inv_year")) %>% 
@@ -636,18 +638,39 @@ DW_removed <-
       semi_join(., DW_inv_info %>% 
                   filter(!(CCS_DW_inv_status %in% c(1, 4, 5))),
                 by = c("plot_ID", "inv", "inv_year")) %>% 
-      mutate(rem_reason = "DW circle excluded during inventory status sorting")
-  )
+      mutate(rem_reason = "DW circle excluded during inventory status sorting"),
+    ## trees with na , -9 or -2 in one of their variables that are relevant for processing 
+    DW_data %>% 
+      # make sure that trees pulled in by the wrong length are not selected double cause they were allready removed in the steps before 
+      anti_join(., DW_data %>% 
+                  semi_join( 
+                    DW_CCS_to_exclude %>% 
+                      select(plot_ID, inv, inv_year), 
+                    by = c("plot_ID", "inv", "inv_year")) %>% 
+                  # join in reason for removal
+                  left_join(DW_CCS_to_exclude %>% 
+                              select(plot_ID, inv, inv_year, rem_reason), 
+                            by = c("plot_ID", "inv", "inv_year")) ,
+                DW_data %>% 
+                  # make sure that trees pulled in by the removed DW circles are nt selected double 
+                  anti_join(DW_CCS_to_exclude,  by = c("plot_ID", "inv", "inv_year")) %>% 
+                  # select trees in CCS with status 3,  -9, -1 , 2, 
+                  # even though status 2 doesn´t count as being removed, we list it here, since status 2 CCS are not supposed to have DW items anyways 
+                  semi_join(., DW_inv_info %>% 
+                              filter(!(CCS_DW_inv_status %in% c(1, 4, 5))),
+                            by = c("plot_ID", "inv", "inv_year")),
+                by = (c("plot_ID", "inv", "inv_year"))) %>% 
+      filter(if_any(c( "tree_ID", "dw_type", "dw_sp", "d_cm", "l_dm", "decay"), ~ is.na(.x) | .x <0 )) %>% 
+      mutate(rem_reason = "single DW removed")
+  ) # close rbindfill
 
 # select only DW items in CCS with status 1, 4, 5 because status 2 CCSs we have in a separate dataset 
 DW_update_1 <- DW_data %>% 
-  # remove trees in CCS with status 3 
-  semi_join(., DW_inv_info %>% filter(CCS_DW_inv_status %in% c(1, 4, 5)),
-            by = c("plot_ID", "inv", "inv_year")) %>% 
+  # remove DW trees from removed plots, removed CCS, or sinlge removed trees because of flaws in their processing-relevant variables
+   anti_join(.,DW_removed, by = c("plot_ID", "inv", "inv_year", "tree_ID")) %>% 
   # join in the plot area for the deadwood 
   left_join(., DW_inv_info %>% select(plot_ID, inv, inv_year, plot_A_ha),
             by = c("plot_ID", "inv", "inv_year"))
-
 
 
 

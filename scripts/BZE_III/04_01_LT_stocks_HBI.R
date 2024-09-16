@@ -32,7 +32,7 @@ trees_data <- trees_data %>% mutate(H_m = as.numeric(H_m))  %>% distinct()
 # 1.1.1. biomass aboveground compartiments ---------------------------------------
 bio.ag.kg.list <- vector("list", length = nrow(unique(trees_data[, c("plot_ID", "tree_ID")])))
 for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
-  # i = 4188
+  # i = 1
   # i = trees_data %>%  select(plot_ID, tree_ID, LH_NH) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(LH_NH == "LB") %>%slice(1)%>% pull(r_no)
   # i = trees_data %>%  select(plot_ID, tree_ID) %>% distinct() %>% mutate(r_no = row_number()) %>% filter(plot_ID == 30639 & tree_ID == 16) %>% pull(r_no) 
   #i = i

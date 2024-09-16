@@ -644,7 +644,8 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
                                                       N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
                                                       n_ha = n()/plot_A_ha) %>% 
                                               distinct() , 
-                                            DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))) %>% 
+                                            DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))
+                                            ) %>% 
     mutate(stand_component = "DW")
 }else{
   DW_BCN_ha_SP_TY_DEC_P <- DW_data %>% 

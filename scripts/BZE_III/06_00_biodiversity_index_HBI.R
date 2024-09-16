@@ -66,8 +66,8 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_
 
 
 # bark and fruit types
-bark_div <- read.delim(file = here("data/input/General/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
-fruit_div <- read.delim(file = here("data/input/General/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
+bark_div <- read.delim(file = here("data/input/general/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
+fruit_div <- read.delim(file = here("data/input/general/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
 
 
 

@@ -70,12 +70,12 @@ DW_data <- DW_data %>%
 
 # 1.3.1 biomass whole deadwood trees (ganzer Baum stehend 2/ liegend 5) ------------------------------------------------------------------------
 # for whole standing or laying deadwood trees all compartiments except foliage ("ndl" ) are calculated via TapeS
-DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2), ]
+DW_data_whole <- DW_data[DW_data$dw_type %in% c(2, 5) & DW_data$decay  %in% c(1,2) & DW_data$l_dm > 13, ] ## change
 # export list for biomasse
 bio.dw.whole.kg.list <- vector("list", length = nrow(  DW_data_whole))
 # export list for volume
 for (i in 1:nrow( DW_data_whole)){
-  # i = 2
+  # i = 512
   
   # select general info about the DW item
   my.plot.id <-  DW_data_whole[,"plot_ID"][i]
@@ -85,7 +85,6 @@ for (i in 1:nrow( DW_data_whole)){
   my.CF.BL <-  DW_data_whole[,"LH_NH_stand"][i]
   
   # select variables fot TprTrees object
-  # translating Species groups into TapeS codes
   spp =  na.omit(as.numeric(unique( DW_data_whole$tpS_ID[DW_data_whole$plot_ID==my.plot.id & DW_data_whole$tree_ID==my.tree.id]))) 
   Dm = na.omit(as.list(as.numeric(unique(DW_data_whole$d_cm[ DW_data_whole$plot_ID==my.plot.id & DW_data_whole$tree_ID==my.tree.id])))) # diameter in cm
   Hm = as.list(as.numeric(1.3))
@@ -131,6 +130,8 @@ for (i in 1:nrow( DW_data_whole)){
   ))
   
   bio.dw.whole.kg.list[[i]] <- bio.info.df
+  
+  print(paste(i, my.plot.id, my.tree.id))
   
 }
 bio_dw_whole_kg_df <- as.data.frame(rbindlist(bio.dw.whole.kg.list))
@@ -191,6 +192,8 @@ for (i in 1:nrow(DW_data_broken)){
   ) )
   
   bio.dw.broken.kg.list[[i]] <- bio.info.df
+  
+  print(paste(i, my.plot.id, my.tree.id))
   
 }
 bio_dw_broken_kg_df <- as.data.frame(rbindlist(bio.dw.broken.kg.list))
@@ -278,6 +281,8 @@ for (i in 1:nrow(DW_data_stump)){
   
   bio.dw.stump.kg.list[[i]] <- bio.info.df
   
+  
+  print(paste(i, my.plot.id, my.tree.id))
 }
 bio_dw_stump_kg_df <- as.data.frame(rbindlist(bio.dw.stump.kg.list))
 
@@ -381,6 +386,7 @@ DW_removed_4 <- plyr::rbind.fill(
 
 write.csv(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
+
 
 
 
