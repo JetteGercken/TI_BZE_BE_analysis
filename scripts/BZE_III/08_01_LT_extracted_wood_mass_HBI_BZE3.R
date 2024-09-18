@@ -36,19 +36,19 @@ coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")
 BZE3_trees_removed <- BZE3_trees_removed  %>%    
   # select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+         state = ifelse(stringr::str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
   distinct()
 
 BZE3_trees <- BZE3_trees %>% 
   select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+         state = ifelse(stringr::str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
   distinct()
 
 HBI_trees <- HBI_trees %>% 
   select(-c(compartiment, B_kg_tree, C_kg_tree, N_kg_tree)) %>% 
   mutate(DBH_class_10 = DBH_c_function(DBH_cm, "class_10"), 
-         state = ifelse(str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
+         state = ifelse(stringr::str_length(plot_ID) == 5, substr(plot_ID, 1, 1), substr(plot_ID, 1, 2))) %>% 
   distinct()
 
 
@@ -192,7 +192,7 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])) ) {
   my.sp <- trees_harvested[, "SP_code"][i]
   my.stand <- trees_harvested[, "stand"][i]
   my.dbh.class <- trees_harvested[, "DBH_class_10"][i]
-  my.ld.icode <- trees_harvested[, "state"][i]#  ifelse(str_length(my.plot.id) == 5, substr(my.plot.id, 1, 1), substr(my.plot.id, 1, 2))
+  my.ld.icode <- trees_harvested[, "state"][i]#  ifelse(stringr::str_length(my.plot.id) == 5, substr(my.plot.id, 1, 1), substr(my.plot.id, 1, 2))
   
   # look for annual diameter growth in cm in the plot, species, stand and canopy layer of my.tree
   growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &

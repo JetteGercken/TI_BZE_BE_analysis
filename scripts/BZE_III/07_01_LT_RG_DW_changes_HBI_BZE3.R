@@ -276,7 +276,7 @@ trees_stock_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(trees_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
-trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
+trees_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
 trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment) %>%
   mutate(C_layer = "all")
 
@@ -333,7 +333,7 @@ RG_stock_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(RG_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(RG_stock_changes_P), value=TRUE)
-RG_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- RG_stock_changes_P[, post_vars] - RG_stock_changes_P[, pre_vars]
+RG_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- RG_stock_changes_P[, post_vars] - RG_stock_changes_P[, pre_vars]
 RG_stock_changes_P <- RG_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment)
 
 
@@ -400,7 +400,7 @@ DW_stock_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(DW_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(DW_stock_changes_P), value=TRUE)
-DW_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- DW_stock_changes_P[, post_vars] - DW_stock_changes_P[, pre_vars]
+DW_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- DW_stock_changes_P[, post_vars] - DW_stock_changes_P[, pre_vars]
 DW_stock_changes_P <- DW_stock_changes_P %>% arrange(plot_ID, dw_sp, dw_type, ST_LY_type, decay, compartiment)
 
 DW_changes <- DW_stock_changes_P %>% select(stand_component, plot_ID, dw_sp, dw_type, ST_LY_type, decay, compartiment, contains("diff"))
@@ -448,7 +448,7 @@ all_components_stock_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(all_components_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(all_components_stock_changes_P), value=TRUE)
-all_components_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- all_components_stock_changes_P[, post_vars] - all_components_stock_changes_P[, pre_vars]
+all_components_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- all_components_stock_changes_P[, post_vars] - all_components_stock_changes_P[, pre_vars]
 all_components_stock_changes_P <- all_components_stock_changes_P %>% arrange(plot_ID, compartiment)
 
 all_components_changes <- all_components_stock_changes_P %>% 
@@ -496,7 +496,7 @@ TY_stock_changes_P <-
  # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(TY_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(TY_stock_changes_P), value=TRUE)
-TY_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- TY_stock_changes_P[, post_vars] - TY_stock_changes_P[, pre_vars]
+TY_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- TY_stock_changes_P[, post_vars] - TY_stock_changes_P[, pre_vars]
 
 # 5.3. prepare dataset for changes by forest type  -------------------------------------------------------
 TY_stock_changes <- TY_stock_changes_P %>% 
@@ -529,7 +529,7 @@ FSI_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(FSI_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(FSI_changes_P), value=TRUE)
-FSI_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- FSI_changes_P[, post_vars] - FSI_changes_P[, pre_vars]
+FSI_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- FSI_changes_P[, post_vars] - FSI_changes_P[, pre_vars]
 FSI_changes_P <- FSI_changes_P %>% arrange(plot_ID) %>% 
   select(plot_ID, contains("diff")) %>% 
   # as the FSI is calculated plot wise we don´t differ ebtween strata at the plot and have to set them to "all"
@@ -711,6 +711,6 @@ trees_stock_changes_P <-
 # https://stackoverflow.com/questions/47478125/create-new-columns-by-substracting-column-pairs-from-each-other-in-r
 pre_vars <- grep("_HBI", colnames(trees_stock_changes_P), value=TRUE)
 post_vars <- grep("_BZE3", colnames(trees_stock_changes_P), value=TRUE)
-trees_stock_changes_P[, paste0(str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
+trees_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- trees_stock_changes_P[, post_vars] - trees_stock_changes_P[, pre_vars]
 trees_stock_changes_P <- trees_stock_changes_P %>% arrange(plot_ID, stand, SP_code, compartiment) %>%
   mutate(C_layer = "all")

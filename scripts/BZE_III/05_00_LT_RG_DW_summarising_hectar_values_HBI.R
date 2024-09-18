@@ -508,6 +508,15 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                         RG_stat_2 %>% 
                           # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
                           filter(!is.na(plot_ID))  %>% 
+                          # only bind those RG_stat_2 plots in, that don´t have any data, meaning all CCS are empty 
+                          semi_join(., 
+                                    RG_stat_2 %>% 
+                                      select(plot_ID, CCS_nr) %>% 
+                                      distinct() %>% 
+                                      group_by(plot_ID) %>% 
+                                      summarize(n_CCS = n()) %>% 
+                                      filter(n_CCS == 4), 
+                                    by = "plot_ID") %>% 
                           select(plot_ID, inv, CCS_nr, plot_A_ha)) %>% 
     group_by(plot_ID, inv) %>% 
     summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))
@@ -555,6 +564,8 @@ RG_n_SP_plot <- RG_data %>%
 if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
   RG_SP_ST_BCN_ha <- plyr::rbind.fill(
     RG_data %>%
+      # join in plot area based on all inventorised RG CCS per plot, also those cirlce areas that originate form emtpy cirlces
+      # to not overestimate the stocks 
       left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
       group_by(plot_ID, CCS_nr, plot_A_ha, inv, stand, compartiment, SP_code) %>% 
       # sum number of trees  per sampling circuit
@@ -565,6 +576,15 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
     RG_stat_2 %>% 
       # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
       filter(!is.na(plot_ID))  %>% 
+      # only bind those RG_stat_2 plots in, that don´t have any data, meaning all CCS are empty 
+      semi_join(., 
+                RG_stat_2 %>% 
+                  select(plot_ID, CCS_nr) %>% 
+                  distinct() %>% 
+                  group_by(plot_ID) %>% 
+                  summarize(n_CCS = n()) %>% 
+                  filter(n_CCS == 4), 
+                by = "plot_ID") %>% 
       select(plot_ID, CCS_nr, plot_A_ha, inv, compartiment, B_t_ha, C_t_ha, N_t_ha)
   ) %>% 
     arrange(plot_ID) %>% 

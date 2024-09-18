@@ -201,7 +201,7 @@ trees_data <- trees_data %>% left_join(.,
 trees_data <- trees_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
-trees_neg_bio <- trees_data %>% semi_join(., bio_ag_kg_df %>% filter(B_kg_tree <0) %>% select(plot_ID) %>% mutate(plot_ID = as.integer(plot_ID)), by = "plot_ID")
+trees_neg_bio <- trees_data %>% semi_join(., bio_ag_kg_df %>% filter(B_kg_tree <0) %>% select(plot_ID, tree_ID) %>% mutate(across(c("plot_ID", "tree_ID"), as.integer)), by =c("plot_ID", "tree_ID"))
 
 
 # 2.data export ---------------------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ trees_removed <- plyr::rbind.fill(trees_removed,
                                                select(plot_ID, tree_ID, inv) %>% 
                                                distinct(), 
                                              by = c("plot_ID", "tree_ID", "inv")) %>% 
-                                      mutate(rem_reason = "LT excluded during stock calculation"))
+                                      mutate(rem_reason = "single LT excluded during stock calculation"))
 
 trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
                                              filter(B_kg_tree <0 ) %>% 

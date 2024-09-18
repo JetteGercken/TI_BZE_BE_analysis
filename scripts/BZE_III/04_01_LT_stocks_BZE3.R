@@ -209,7 +209,7 @@ trees_removed <- plyr::rbind.fill(trees_removed,
                                                 select(plot_ID, tree_ID, inv) %>% 
                                                 distinct(), 
                                               by = c("plot_ID", "tree_ID", "inv")) %>% 
-                                    mutate(rem_reason = "LT excluded during stock calculation"))
+                                    mutate(rem_reason = "single LT excluded during stock calculation"))
 
 trees_update_4 <- trees_data %>% anti_join(., trees_data %>% 
                                              filter(B_kg_tree <0 ) %>% 
