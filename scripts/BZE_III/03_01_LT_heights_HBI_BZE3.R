@@ -91,7 +91,7 @@ coeff_H_SP_P <- left_join(
     filter(!is.na(H_m) & !is.na(DBH_cm)) %>% 
     group_by(plot_ID, SP_code) %>%
     # filter for plots that have at least 3 heights measured per species
-    filter(n() >= 5), ###change
+    filter(n() >= 3), 
   # creaing & joining in coeff_H_SP_P dataset 
   trees_total %>% 
     select(plot_ID, SP_code, H_m, DBH_cm) %>% 
@@ -135,7 +135,7 @@ coeff_H_SP <- left_join(trees_total %>%
                           select(SP_code, H_m, DBH_cm, DBH_class) %>% 
                           filter(!is.na(H_m) & !is.na(DBH_cm) & !is.na(DBH_class)) %>% 
                           group_by(SP_code) %>% 
-                          filter(n() >= 5),  ###change
+                          filter(n() >= 3), 
                         # dataset with height coefficients
                         trees_total %>% 
                           select(SP_code, H_m, DBH_cm, DBH_class) %>% 
