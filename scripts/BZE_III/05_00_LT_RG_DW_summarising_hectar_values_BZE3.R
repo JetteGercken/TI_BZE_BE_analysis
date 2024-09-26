@@ -36,7 +36,6 @@ DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_
 DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
-
 # CALCULATIONS ------------------------------------------------------------
 
 # 1. LIVING TREES -----------------------------------------------
@@ -207,7 +206,7 @@ LT_ST_BCNBAn_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha,
                                   c("B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "n_ha"), 
                                   operation = "sum_df") %>% 
   mutate(stand_component = "LT", 
-         SP_code = "all") 
+         SP_code = "all")
 
 
 # 1.4.4. Plot, species: stocks per hektar ------------------------------------------------------
@@ -282,14 +281,13 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   
   
   
+  # note to myself: i cannot use this CF BL share for the plotwise summary as it´s only for the main stand. 
   
   # exptract the share of coniferous or broadleafed species at the plot
   # if there are no broadleafed/ coniferous species and the search returns an empty variable, set the share to 0 
   my.CF.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "NB"])
   my.BL.share <- ifelse(length(my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) == 0, 0, my.BLCF.p.df$BA_per_LHNH[my.BLCF.p.df$LH_NH == "LB"]) 
   
-  # calcualte the ratio between broadleafed and coniferous trees as an indicator for the progress of forest transition
-  my.BLCF.ratio <- my.BL.share/my.CF.share
   
   # select the species with the highest basal area share: 
   # this only selects the one row with the highest value, 
@@ -355,7 +353,6 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
     plot_ID = c(my.plot.id), 
     inv = c(my.inv), 
     dom_SP = c(main.sp.p.df$SP_code),
-    BL_CF_ratio = c(my.BLCF.ratio),
     stand_type = c(besttype.final),
     n_stands = c(my.n.stand), 
     stand_component = c("LT")
@@ -442,7 +439,7 @@ LT_avg_P <- as.data.frame(rbindlist(LT_avg_P_list))
 
 # 1.7. binding LT data together -------------------------------------------------------------------------------------------------------
 
-# 1.7.1. LT Species data -------------------------------------------------------------------------------------------------------------
+# 1.7.1. LT Species stand plot data -------------------------------------------------------------------------------------------------------------
 LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>% 
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID'), as.integer),
@@ -452,7 +449,7 @@ LT_SP_ST_P <- LT_SP_ST_P_BCNBAn_ha  %>%
   select(-(n_ha))
 
 
-# 1.7.2. LT Species data -------------------------------------------------------------------------------------------------------------
+# 1.7.2. LT Species plot  data -------------------------------------------------------------------------------------------------------------
 LT_SP_P <- LT_SP_BCNBA_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID', 'n_stands'), as.integer),
@@ -461,7 +458,7 @@ LT_SP_P <- LT_SP_BCNBA_ha  %>%
             by = c("plot_ID", "inv", "stand_component", "SP_code", "stand")) 
 
 
-# 1.7.3. LT stand data ----------------------------------------------------
+# 1.7.3. LT stand plot data ----------------------------------------------------
 LT_ST_P <- LT_ST_BCNBAn_ha  %>%  
   left_join(., LT_stand_TY_P %>% 
               mutate_at(c('plot_ID'), as.integer),
@@ -476,7 +473,7 @@ LT_P <- LT_BCNBAn_ha %>%
   left_join(., LT_avg_P, 
             by = c("plot_ID", "inv", "stand_component", "SP_code", "stand")) %>% 
   left_join(., LT_n_SP_plot, 
-            by = c("plot_ID", "inv", "stand_component"))
+            by = c("plot_ID", "inv", "stand_component")) 
 
 
 
@@ -507,17 +504,12 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                           distinct(), 
                         RG_stat_2 %>% 
                           # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
-                          filter(!is.na(plot_ID))  %>% 
-                          # only bind those RG_stat_2 plots in, that don´t have any data, meaning all CCS are empty 
-                          semi_join(., 
-                                    RG_stat_2 %>% 
-                                      select(plot_ID, CCS_nr) %>% 
-                                      distinct() %>% 
-                                      group_by(plot_ID) %>% 
-                                      summarize(n_CCS = n()) %>% 
-                                      filter(n_CCS == 4), 
-                                    by = "plot_ID") %>% 
-                          select(plot_ID, inv, CCS_nr, plot_A_ha)) %>% 
+                          filter(!is.na(plot_ID))%>% 
+                          select(plot_ID, inv, CCS_nr, plot_A_ha) %>% 
+                          distinct()
+  )%>% 
+    select(plot_ID, inv, CCS_nr, plot_A_ha)  %>%  
+    arrange(plot_ID) %>% 
     group_by(plot_ID, inv) %>% 
     summarise(plot_A_ha = sum(as.numeric(plot_A_ha)))
 }else{
@@ -533,6 +525,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 # 2.2. number of RG  plants  per hectar ----------------------------------------------
 RG_n_ha <- RG_data %>% 
   filter(compartiment == "ag") %>% 
+  # join in area off all inventorable CCS of the respective plot
   left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
   group_by(plot_ID, inv) %>% 
   # sum number of trees  per sampling circuit
@@ -592,7 +585,8 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
     summarise(B_t_ha = sum(B_t_ha),
               C_t_ha = sum(C_t_ha),
               N_t_ha = sum(N_t_ha))%>% 
-    mutate(stand_component = "RG") 
+    mutate(stand_component = "RG")
+  
 }else{
   RG_SP_ST_BCN_ha <-     RG_data %>%group_by(plot_ID, CCS_nr, plot_A_ha, inv, stand, compartiment, SP_code) %>% 
     # sum stocks of trees  per sampling circuit, stand, compartiment, and SP_code
@@ -610,6 +604,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
 }
 
 
+
 ## RG big summary final
 RG_summary <- plyr::rbind.fill(
   # RG summray by plot, species, stand 
@@ -618,8 +613,7 @@ RG_summary <- plyr::rbind.fill(
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "SP_code"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
-                 operation = "sum_df") %>% # statistical operation 
-    mutate(stand = "all"),
+                 operation = "sum_df"), # statistical operation  
   # 2.4.3. RG summary by plot and stand, without grouping by species ---------------------------------------------------------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "stand"),  # variables to group by
@@ -845,7 +839,7 @@ LT_RG_DW_P <-
     )%>%  
       left_join(., LT_stand_TY_P %>% 
                   # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
-                  select(-c(stand_component, n_stands, BL_CF_ratio)) %>% 
+                  select(-c(stand_component, n_stands)) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
                   mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))%>%  
@@ -855,6 +849,10 @@ LT_RG_DW_P <-
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
                   mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))) %>%
+  # join in the NL LH category per SP_code so people can summarise data accordingly
+  # replace NA in LHNH with "all" in case stand component is %in% c("RG", "LT)
+  left_join(., SP_names_com_ID_tapeS%>% mutate(Chr_code_ger = tolower(Chr_code_ger)) %>% select(Chr_code_ger, LH_NH), by = c("SP_code" = "Chr_code_ger")) %>% 
+  mutate(LH_NH = ifelse(is.na(LH_NH) & stand_component  %in% c("RG", "LT") & SP_code == "all", "all", LH_NH)) %>% 
   arrange(plot_ID)
 
 

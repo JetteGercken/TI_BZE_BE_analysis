@@ -27,8 +27,8 @@ BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stoc
   
 # height coefficient 
 # recreate the same datasets we use in the height calculation script
-coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
-coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_HBI_BZE3.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
+coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
+coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
 
 
 # 0.4 data prep -----------------------------------------------------------

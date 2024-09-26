@@ -207,24 +207,7 @@ LT_ST_BCNBAn_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha,
                                   c("B_t_ha", "C_t_ha", "N_t_ha", "BA_m2_ha", "n_ha"), 
                                   operation = "sum_df") %>% 
    mutate(stand_component = "LT", 
-         SP_code = "all") %>% 
-  ## cahnge : remove!
-  left_join(., 
-    # take finest summary and add up the percent of broadleafed vs. confiferous species per stand 
-    LT_SP_ST_P_BCNBAn_ha %>% 
-      # make sure each tree is only selected once by using only one compartiment of each tree, namely "ag"
-      filter(compartiment == "ag") %>% 
-      # join in the category NH_LH
-      left_join(., SP_names_com_ID_tapeS %>% mutate(Chr_code_ger_lower = tolower(Chr_code_ger))%>% select(Chr_code_ger_lower, LH_NH), by = c("SP_code" = "Chr_code_ger_lower")) %>%
-      group_by(plot_ID, inv, stand, LH_NH) %>% 
-      summarise(LHNH_BA_percent = sum(BA_percent)) %>% 
-      # create separete columns for NH (CF = coniferous) and LH (BL = broadleaved) share
-      pivot_wider(., names_from =  "LH_NH", values_from = "LHNH_BA_percent") %>% 
-      # if the respective other share (NH  vs. LH) is NA we set it to 0 as the other tree type is not NA and thus dominates the stand by 100% BA share
-      mutate(CF_share = ifelse(!is.na(stand) & is.na(NB) & !is.na(LB), 0, NB),
-             BL_share = ifelse(!is.na(stand) & is.na(LB) & !is.na(NB), 0, LB)) %>% 
-      select( plot_ID, inv, stand, CF_share, BL_share),
-    by = c("plot_ID", "inv", "stand"))
+         SP_code = "all")
 
 
 # 1.4.4. Plot, species: stocks per hektar ------------------------------------------------------
@@ -491,25 +474,7 @@ LT_P <- LT_BCNBAn_ha %>%
   left_join(., LT_avg_P, 
             by = c("plot_ID", "inv", "stand_component", "SP_code", "stand")) %>% 
   left_join(., LT_n_SP_plot, 
-            by = c("plot_ID", "inv", "stand_component")) %>% 
-  ##change: remove !
-  # join in LH NH ratio: 
-  left_join(., 
-            # take finest summary and add up the percent of broadleafed vs. confiferous species per stand 
-            LT_SP_ST_P_BCNBAn_ha %>% 
-              # make sure each tree is only selected once by using only one compartiment of each tree, namely "ag"
-              filter(compartiment == "ag") %>% 
-              # join in the category NH_LH
-              left_join(., SP_names_com_ID_tapeS %>% mutate(Chr_code_ger_lower = tolower(Chr_code_ger))%>% select(Chr_code_ger_lower, LH_NH), by = c("SP_code" = "Chr_code_ger_lower")) %>%
-              group_by(plot_ID, inv, LH_NH) %>% 
-              summarise(LHNH_BA_percent = sum(BA_percent)) %>% 
-              # create separete columns for NH (CF = coniferous) and LH (BL = broadleaved) share
-              pivot_wider(., names_from =  "LH_NH", values_from = "LHNH_BA_percent") %>% 
-              # if the respective other share (NH  vs. LH) is NA we set it to 0 as the other tree type is not NA and thus dominates the stand by 100% BA share
-              mutate(CF_share = ifelse( is.na(NB) & !is.na(LB), 0, NB),
-                     BL_share = ifelse( is.na(LB) & !is.na(NB), 0, LB)) %>% 
-              select( plot_ID, inv, CF_share, BL_share),
-            by = c("plot_ID", "inv"))
+            by = c("plot_ID", "inv", "stand_component")) 
 
 
 
@@ -875,7 +840,7 @@ LT_RG_DW_P <-
     )%>%  
       left_join(., LT_stand_TY_P %>% 
                   # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
-                  select(-c(stand_component, n_stands, BL_CF_ratio)) %>% 
+                  select(-c(stand_component, n_stands)) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
                   mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))%>%  
@@ -885,6 +850,10 @@ LT_RG_DW_P <-
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
                   mutate_at(c('plot_ID'), as.integer),
                 by = c("plot_ID", "inv"))) %>%
+  # join in the NL LH category per SP_code so people can summarise data accordingly
+  # replace NA in LHNH with "all" in case stand component is %in% c("RG", "LT)
+  left_join(., SP_names_com_ID_tapeS%>% mutate(Chr_code_ger = tolower(Chr_code_ger)) %>% select(Chr_code_ger, LH_NH), by = c("SP_code" = "Chr_code_ger")) %>% 
+  mutate(LH_NH = ifelse(is.na(LH_NH) & stand_component  %in% c("RG", "LT") & SP_code == "all", "all", LH_NH)) %>% 
   arrange(plot_ID)
 
 
@@ -1637,3 +1606,6 @@ B_share_SP_P <-
   mutate(B_percent = (B_t_ha / B_tha_total)*100) %>% 
   # remove B_total again
   select(-c(B_tha_total ))
+
+
+## N. adding NH LH 
