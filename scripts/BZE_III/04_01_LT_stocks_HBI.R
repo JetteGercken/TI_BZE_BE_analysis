@@ -160,6 +160,12 @@ trees_data <- trees_data %>%
             by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
             multiple = "all") 
 
+(rbind(bio_ag_kg_df , 
+      bio_bg_kg_df, 
+      bio_total_kg_df) %>% 
+  distinct())[24895 ,]
+
+view(trees_data %>% filter(plot_ID == 30506 & tree_ID == 1) %>% distinct())
 
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
@@ -237,6 +243,8 @@ write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[
 
 stop("notes of 04_01_LT_stocks start here, no need to run")
 # NOTES:  -----------------------------------------------------------------
+
+
 
 
 # this was meant to create a columnwith the compartiments before adding the biomass in them but it took a lot of time and was after all not necesarry as

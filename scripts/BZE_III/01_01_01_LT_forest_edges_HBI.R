@@ -2182,9 +2182,13 @@ trees_update_1 <- trees_data %>%
 if(exists("all.edges.area.df.nogeo")){
   # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
   trees_update_1 <- trees_update_1 %>% 
+    # remove and rejoin edge info 
+    select(-c(e_ID, e_form, e_type)) %>% 
+    distinct() %>% 
     left_join(., all.edges.area.df.nogeo %>% 
-                select(plot_ID, inter_stat, CCS_r_m, stand, area_m2),
+                select(plot_ID, inter_stat, CCS_r_m, stand, area_m2, e_ID),
               by = c("plot_ID", "CCS_r_m", "stand"))%>% 
+    left_join(., forest_edges %>% select(plot_ID, e_ID, e_form, e_type), by = c("plot_ID", "e_ID")) %>% 
     # if there was no plot area claualted due to the fact that there is no edger at the plot, 
     # we calcualte the area from the sampling circuit diameter assign under CCD_r_m
     mutate(area_m2 = ifelse(is.na(e_ID) & is.na(area_m2) |
@@ -2199,10 +2203,13 @@ if(exists("all.edges.area.df.nogeo")){
            # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-           plot_A_ha = c_A(CCS_r_m)/10000)# %>%   # dividedd by 10 000 to transform m2 into hectar
+           plot_A_ha = c_A(CCS_r_m)/10000) #%>%   # dividedd by 10 000 to transform m2 into hectar
   # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
   # mutate(east_tree =  X_tree + RW_MED, 
   #        north_tree = Y_tree + HW_MED)
+    
+    
+    
 }else{
   trees_update_1 <- trees_update_1 %>%
     mutate(# this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter

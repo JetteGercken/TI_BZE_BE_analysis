@@ -660,7 +660,7 @@ DW_removed <-
       #remove trees that have a processing relevant variable as NA or below 0 
       filter(if_any(c( "tree_ID", "dw_type", "dw_sp", "d_cm", "l_dm", "decay"), ~ is.na(.x) | .x <0 ) |
                # remove DW trees that are standing or lying whole trees but don´t have a lenght above DBH measuring height
-               dw_type %in% c(2, 5) & decay %in% c(1, 2) & l_dm <= 13) %>% 
+               dw_type %in% c(2, 5, 3) & decay %in% c(1, 2) & l_dm <= 13) %>% 
       mutate(rem_reason = "single DW removed")
   ) # close rbindfill
 
