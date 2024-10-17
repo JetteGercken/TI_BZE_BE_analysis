@@ -1,234 +1,233 @@
-icode;kurzd;langd;genus;species;zu_bart_flora;laub_nadel;zu_icp_code;zu_bartgr_wze;zu_ba_bwi;anmerkung;bze_al;beginn;ende
--9;fehlt;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;-2;-2;;;0;;;;FALSCH;;
--2;nicht ausgepr‰gt;Merkmal nicht ausgepr‰gt/nicht vorhanden;-2;-2;;;;;;;FALSCH;;01-Apr-20
--1;nicht erhoben;Merkmal nicht erhoben;-2;-2;;;0;;;;FALSCH;31-Dez-05;
-100;Ah;Ahorn;Acer;spp.;095.001.999.DL;LB;215;30011;AH;;WAHR;31-Dez-86;
-101;SAh;Spitz-Ahorn;Acer;platanoides;095.001.001;LB;4;30011;SAH;;WAHR;31-Dez-86;
-102;BAh;Berg-Ahorn;Acer;pseudoplatanus;095.001.005;LB;227;30011;BAH;;WAHR;31-Dez-86;
-103;Er;Erle;Alnus;spp.;034.002.999;LB;216;30011;ERL;;WAHR;31-Dez-86;
-104;SEr;Schwarz-Erle;Alnus;glutinosa;034.002.002;LB;7;30011;ERL;;WAHR;31-Dez-86;
-105;WEr;Grau-Erle;Alnus;incana;034.002.004;LB;8;30011;ERL;;WAHR;31-Dez-89;
-106;Bi;Birke;Betula;spp.;034.001.999.DL;LB;212;30011;BI;;WAHR;31-Dez-86;
-107;SBi;Sand-Birke;Betula;pendula;034.001.001;LB;10;30011;BI;;WAHR;31-Dez-86;
-108;MBi;Moor-Birke;Betula;pubescens;034.001.002;LB;11;30011;BI;;WAHR;31-Dez-86;
-109;HBu;Hainbuche;Carpinus;betulus;035.001.001;LB;13;30011;HBU;;WAHR;31-Dez-86;
-110;EKa;Edel-Kastanie;Castanea;sativa;036.003.001;LB;15;30011;KA;(C. vesca);FALSCH;31-Dez-86;
-111;RBu;Rot-Buche;Fagus;sylvatica;036.001.001;LB;20;30016;BU;;WAHR;31-Dez-86;
-112;GEs;Gewoehnliche Esche;Fraxinus;excelsior;139.004.003;LB;22;30011;ES;;WAHR;31-Dez-86;
-113;Kir;Vogel-Kirsche;Prunus;avium;080.035.014;LB;36;30011;KIR;;WAHR;31-Dez-86;
-114;Pa;Pappel;Populus;spp.;031.002.999.DL;LB;211;30011;PA;;WAHR;31-Dez-86;
-115;Eis;Eiche;Quercus;spp.;036.004.999.DL;LB;99;30013;EI;;FALSCH;;01-Jan-00
-116;TEi;Trauben-Eiche;Quercus;petraea;036.004.011;LB;48;30013;EI;;WAHR;31-Dez-86;
-117;SEi;Stiel-Eiche;Quercus;robur ;036.004.014;LB;51;30013;EI;(Q. peduculata);WAHR;31-Dez-86;
-118;REi;Rot-Eiche;Quercus;rubra;036.004.001;LB;53;30011;REI;;WAHR;31-Dez-86;
-119;Rob;Robinie;Robinia;pseudoacacia;081.030.001;LB;56;30011;ROB;;WAHR;31-Dez-89;
-120;Wei;Weide;Salix;spp.;031.001.999.DL;LB;62;30011;SLB;;WAHR;31-Dez-91;
-121;Vbe;Vogelbeere;Sorbus;aucuparia;080.028.002;LB;64;30011;VB;;WAHR;31-Dez-86;
-122;Li;Linde;Tilia;spp.;105.001.999.DL;LB;210;30011;LI;;WAHR;31-Dez-86;
-123;WLi;Winter-Linde;Tilia;cordata;105.001.005;LB;68;30011;LI;;WAHR;31-Dez-86;
-124;SLi;Sommer-Linde;Tilia;platyphyllos;105.001.003;LB;69;30011;LI;;WAHR;31-Dez-86;
-125;Ul;Ulme;Ulmus;spp.;037.001.999.DL;LB;213;30011;UL;;WAHR;31-Dez-86;
-126;As;Aspe/Zitterpappel;Populus;tremula;031.002.004;LB;35;30011;PA;;WAHR;31-Dez-86;
-127;BPa;Balsampappel;Populus;balsamifera;;LB;230;30011;PA;;FALSCH;;
-128;BUl;Bergulme;Ulmus;glabra;037.001.001;LB;70;30011;UL;;WAHR;31-Dez-88;
-129;BWe;Bruchweide;Salix;fragilis;031.001.002;LB;61;30011;SLB;;FALSCH;31-Dez-08;
-130;Els;Elsbeere;Sorbus;torminalis;080.028.003;LB;66;30011;VB;;WAHR;31-Dez-86;
-131;Es;Esche;Fraxinus;excelsior;139.004.003;LB;22;30011;ES;;FALSCH;;31-Dez-14
-132;FAh;Feldahorn;Acer;campestre;095.001.003;LB;1;30011;FAH;;WAHR;31-Dez-89;
-133;FUl;Feldulme;Ulmus;campestris;;LB;72;30011;UL;;FALSCH;;
-134;FLu;Flatterulme;Ulmus;laevis (vorher effusa);;LB;71;30011;UL;;FALSCH;31-Dez-14;
-135;GPa;Graupappel;Populus;x canescens;031.002.002;LB;32;30011;PA;;FALSCH;;
-136;GEr;Gruenerle;Alnus;viridis;034.002.001;LB;9;30011;ERL;;FALSCH;31-Dez-05;
-137;Hi;Hickory;Carya;spp.;;LB;99;30011;SLB;;FALSCH;;
-138;HBi;Hybridbirke;Betula;x hybrida;;LB;214;30011;BI;;FALSCH;;
-139;JBi;Japanbirke;Betula;platyphylla var. Japonica;;LB;99;30011;BI;;WAHR;;
-140;Me;Mehlbeere;Sorbus;aria;080.028.005;LB;63;30011;VB;;WAHR;31-Dez-86;
-141;Mi;Mispel;Mespilus;germanica;080.033.001;LB;248;30011;SLB;;FALSCH;;
-142;Nu;Walnussbaum;Juglans;regia;033.001.001;LB;26;30011;SLB;;WAHR;31-Dez-04;
-143;Pl;Platane;Platanus;x hybrida;;LB;99;30011;SLB;;FALSCH;;
-144;RKa;Rosskastanie;Aesculus;hippocastanum;097.001.001;LB;221;30011;KA;;WAHR;31-Dez-15;
-145;SWe;Salweide;Salix;caprea;031.001.041;LB;58;30011;SLB;;WAHR;31-Dez-86;
-146;SNu;Schwarznuss;Juglans;nigra;033.001.002;LB;25;30011;SLB;;FALSCH;;
-147;SPa;Schwarzpappel;Populus;nigra;031.022.008;LB;34;30011;PA;;WAHR;31-Dez-89;
-148;Sp;Speierling;Sorbus;domestica;080.028.001;LB;65;30011;VB;;WAHR;31-Dez-05;
-150;SPi;Spirke;Pinus;uncinata;026.007.009;NB;135;30012;KI;;FALSCH;31-Dez-05;
-151;SuE;Sumpfeiche;Quercus;palustris;036.004.002;LB;237;30011;EI;;WAHR;;
-152;FTk;Fruehbl. Traubenkirsche;Prunus;padus;080.035.017;LB;38;30011;KIR;;WAHR;31-Dez-09;
-153;STk;Spaetbl. Traubenkirsche;Prunus;serotina;080.035.018;LB;39;30011;KIR;;WAHR;31-Dez-91;
-154;Tu;Tulpenbaum;Liriodendron;tulipifera;064.001.001;LB;247;30011;SLB;;WAHR;;
-156;WEs;Weiﬂesche;Fraxinus;americana;;LB;226;30011;ES;;FALSCH;;
-157;WAp;Wildapfel;Malus;sylvestris;080.027.003;LB;220;30011;SLB;;WAHR;31-Dez-13;
-158;WBi;Wildbirne;Pyrus;pyraster;080.026.004;LB;253;30011;SLB;;WAHR;;
-159;WZw;Wildzwetschge;Prunus;cerasifera;080.035.007;LB;232;30011;KIR;;FALSCH;;
-160;ZEi;Zerreiche;Quercus;cerris;036.004.008;LB;41;30011;EI;;WAHR;31-Dez-05;
-161;AsH;Aspenhybriden;Populus;hybrides;;LB;33;30011;PA;;FALSCH;;01-Jan-00
-162;Edl;Edellaubholz;alii;frons noble;;LB;99;30011;SLB;;FALSCH;;
-163;Ei;Eiche;Quercus;robur x petraea;036.004.999.DL;LB;98;30013;EI;;WAHR;31-Dez-86;
-164;WPa;Weisspappel;Populus;alba;031.022.001;LB;31;30011;PA;;FALSCH;;
-165;WWE;Weiﬂweide;Salix;alba;031.001.003;LB;57;30011;SLB;;FALSCH;31-Dez-03;
-166;WDe;Eingriffeliger Weiﬂdorn;Crataegus;monogyna;080.034.014;LB;90;30011;SLB;;FALSCH;;
-167;WDs;Weiﬂdorn;Crataegus;spp.;080.034.999.DL;LB;217;30011;SLB;;FALSCH;;01-Jan-00
-168;HPa;Hybrid Pappel;Populus;hybrides;;LB;33;30011;PA;;WAHR;31-Dez-05;
-199;sLb;sonstige Laubbaeume;alii;frons;999.999.001.DL;LB;99;30011;SLB;;WAHR;31-Dez-86;
-200;Ta;Tanne;Abies;spp.;026.001.999.DL;NB;198;30012;TA;;WAHR;31-Dez-04;
-201;WTa;Weiﬂ-Tanne;Abies;alba;026.001.006;NB;100;30012;TA;;WAHR;31-Dez-86;
-202;KTa;Kuesten-Tanne;Abies;grandis;026.001.002;NB;103;30012;TA;;WAHR;31-Dez-04;
-203;Lae;Laerche;Larix;spp.;026.005.999.DL;NB;197;30012;LAE;;WAHR;31-Dez-86;
-204;ELa;Europaeische Laerche;Larix;decidua;026.005.002;NB;116;30012;ELA;;WAHR;31-Dez-86;
-205;JLa;Japanische Laerche;Larix;kaempferi ;026.005.001;NB;117;30012;JLA;(L. leptolepis);WAHR;31-Dez-86;
-206;Fi;Fichte;Picea;spp.;026.004.999.DL;NB;199;30012;FI;;FALSCH;;01-Jan-00
-207;GFi;Gewoehnliche Fichte;Picea;abies ;026.004.001;NB;118;30014;FI;(P. excelsa);WAHR;31-Dez-86;
-208;SFi;Sitka-Fichte;Picea;sitchensis;026.004.006;NB;120;30012;FI;;WAHR;31-Dez-86;
-209;Ki;Kiefer;Pinus;spp.;026.007.999.DL;NB;199;30015;KI;;FALSCH;;31-Dez-08
-210;SKi;Schwarz-Kiefer;Pinus;nigra;026.007.006;NB;129;30012;KI;;WAHR;31-Dez-89;
-211;GKi;Gewoehnliche Kiefer;Pinus;sylvestris;026.007.007;NB;134;30015;KI;;WAHR;31-Dez-86;
-212;Dgl;Douglasie;Pseudotsuga;menziestii;026.002.001;NB;136;30012;DGL;;WAHR;31-Dez-86;
-213;KiB;Bankskiefer;Pinus;banksiana;026.007.004;NB;153;30012;KI;;WAHR;;
-214;BKi;Bergkiefer;Pinus;mugo;026.007.008;NB;128;30012;KI;;WAHR;31-Dez-05;
-215;SZy;Scheinzypresse;Chamaecyparis;lawsoniana;028.002.001;NB;140;30012;SNB;;FALSCH;;
-216;STa;Silbertanne;Abies;concolor;;NB;199;30012;TA;;FALSCH;;
-217;DKi;Drehkiefer;Pinus;contorta;026.007.001;NB;124;30012;KI;;FALSCH;;
-218;ETa;Edeltanne;Abies;procera;026.001.001;NB;106;30012;TA;;WAHR;31-Dez-05;
-219;Eib;Eibe;Taxus;baccata;029.001.001;NB;137;30012;EIB;;WAHR;;
-220;HTa;Hemlocktanne;Tsuga;spp.;;NB;139;30012;SNB;;WAHR;31-Dez-04;
-221;HL‰;Hybridlaerche;Larix;eurolepis;;NB;150;30012;LAE;;FALSCH;;
-222;Ara;Japantanne;Araucaria;araucana;;NB;157;30012;SNB;;FALSCH;;
-223;Le;Lebensbaum;Thuja;spp.;;NB;138;30012;SNB;;WAHR;31-Dez-07;
-224;LTa;Lowes Tanne;abies;Ö;;NB;199;30012;TA;;FALSCH;;
-225;Mes;Urweltmammutbaum;Metasequoia;glyptostroboides;;NB;160;30012;SNB;;FALSCH;;
-226;NTa;Nordmannstanne;Abies;nordmanniana;026.001.005;NB;104;30012;TA;;WAHR;31-Dez-04;
-227;OFi;Omorika Fichte;Picea;omorika;;NB;119;30012;FI;;FALSCH;;
-228;PKi;Pechkiefer;Pinus;rigida;;NB;155;30012;KI;;FALSCH;;
-229;PTa;Purpurtanne;Abies;amabilis;;NB;147;30012;TA;;FALSCH;;
-230;RZy;Rauchzypresse;Calocedrus;decurrens;;NB;158;30012;SNB;;FALSCH;;
-231;RFi;Rotfichte;Picea;abies;026.004.001;NB;118;30014;FI;;FALSCH;;01-Jan-00
-232;Se;Riesenmammutbaum;Sequoiadendron;giganteum;027.002.001;NB;161;30012;SNB;;FALSCH;;
-233;TaS;Sicheltanne;Cryptomeria;japonica;027.004.001;NB;159;30012;SNB;;FALSCH;;
-234;FiS;Stechfichte;Picea;pungens;026.004.005;NB;152;30012;FI;;FALSCH;;
-235;Str;Strobe;Pinus;strobus;026.007.018;NB;133;30012;WEY;;WAHR;31-Dez-86;
-236;SL‰;Sumpflaerche;Larix;laricina;;NB;199;30012;LAE;;FALSCH;;01-Jan-00
-237;VTa;Veits Tanne;Abies;veitchii;;NB;149;30012;TA;;FALSCH;;
-238;WFi;Weiﬂfichte;Picea;glauca;026.004.003;NB;151;30012;FI;;FALSCH;;
-239;ZKi;Zirbelkiefer;Pinus;cembra;026.007.014;NB;123;30012;KI;;WAHR;31-Dez-16;
-299;sNd;sonstige Nadelbaeume;alii;acus;999.999.002.DL;NB;199;30012;SNB;;WAHR;31-Dez-86;
-303;SWa;Stinkende Wacholder;Juniperus;foetidissima;028.005.008;NB;145;30012;SNB;;FALSCH;;
-304;KFi;Kaukasus-Fichte;Picea;orientalis;026.004.002;NB;146;30012;FI;;FALSCH;;
-305;LZe;Libanon-Zeder;Cedrus;libani;;NB;143;30012;SNB;;FALSCH;;
-306;CTa;Kilikische Tanne;Abies;cilicica;;NB;142;30012;TA;;FALSCH;;
-307;GWa;Gemeiner Wacholder;Juniperus;communis;028.005.002;NB;111;30012;SNB;;FALSCH;;
-308;FrA;Franzˆsische Ahorn;Acer;monspessulanum;095.001.013;LB;2;30011;AH;;WAHR;;
-309;SbA;Schneeball-Ahorn;Acer;opalus;095.001.008;LB;3;30011;AH;;WAHR;;
-310;KAp;Kulturapfel;Malus;domestica;080.027.006;LB;27;30011;SLB;;FALSCH;;
-311;KBi;Kulturbirne;Pyrus;communis;080.026.013;LB;40;30011;SLB;;WAHR;;
-312;HEr;"Herzbl‰ttrige Erle
-";Alnus;cordata ;034.002.005;LB;6;30011;ERL;;FALSCH;;
-313;÷Eb;÷stliche Erdbeerbaum;Arbutus;andrachne;132.012.002;LB;74;30011;SLB;;FALSCH;;
-314;WEb;Westlicher Erdbeerbaum;Arbutus;unedo;132.012.001;LB;73;30011;SLB;;FALSCH;;
-315;OBu;Orient-Buche;Fagus;orientalis;;LB;19;30011;BU;;FALSCH;;
-316;BSl;Breitbl‰ttrige Steinlinde;Phillyrea;latifolia;139.008.002;LB;82;30011;SLB;;FALSCH;;
-317;WPi;Wilde Pistazie;Pistacia;lentiscus;094.003.004;LB;84;30011;SLB;;FALSCH;;
-318;Eri;Erikagew‰chs Strauch;Erica;manipuliflora;132.001.012;LB;79;30011;SLB;;FALSCH;;
-319;EWa;Griechischer Wacholder;Juniperus;excelsa;028.005.009;NB;144;30012;SNB;;FALSCH;;
-320;OWa;Stech-Wacholder;Juniperus;oxycedrus;028.005.003;NB;112;30012;SNB;;FALSCH;;
-321;PWa;Phˆnizische Wacholder;Juniperus;phoenicea;028.005.006;NB;113;30012;SNB;;FALSCH;;
-322;SaW;Stink-Wacholder/Sadebaum;Juniperus;sabina;028.005.010;NB;114;30012;SNB;;FALSCH;;
-323;TWa;Spanischer Wacholder;Juniperus;thurifera;028.005.007;NB;115;30012;SNB;;FALSCH;;
-324;HZw;Hauszwetschge;Prunus;domestica;?;LB;233;30011;KIR;;FALSCH;06-Mai-20;
-325;GBu;Gewˆhnliche Buchsbaum;Buxus;sempervirens;;LB;12;30011;SLB;;FALSCH;01-Jan-20;
-326;Ohb;Orientalische Hainbuche;Carpinus;orientalis;;LB;14;30011;HBU;;WAHR;01-Jan-20;
-327;HaN;Haselnussstrauch;Corylus;avellana;;LB;16;30011;SLB;;FALSCH;01-Jan-20;
-328;Euk;Eukalypten;Eucalyptus;spp.;;LB;17;30011;SLB;;FALSCH;01-Jan-20;
-329;FaM;? Fagus moesiaca;Fagus;moesiaca;;LB;18;30011;BU;;FALSCH;01-Jan-20;
-330;SbE;Schmalbl‰ttrige Esche;Fraxinus;angustifolia spp. Oxycarpa;;LB;21;30011;ES;;FALSCH;01-Jan-20;
-331;MaE;Manna-Esche;Fraxinus;ornus;;LB;23;30011;ES;;FALSCH;01-Jan-20;
-332;ESt;Europ‰ische Stechpalme;Ilex;aquifolium;;LB;24;30011;SLB;;FALSCH;01-Jan-20;
-333;EOe;Echtem ÷lbaum;Olea;europaea;;LB;28;30011;SLB;;FALSCH;01-Jan-20;
-334;HoB;Hopfenbuche;Ostrya;carpinifolia;;LB;29;30011;SLB;;FALSCH;01-Jan-20;
-335;OPl;Orientalische Platane;Platanus;orientalis;;LB;30;30011;SLB;;FALSCH;01-Jan-20;
-336;MaB;Mandelbaum;Prunus;dulcis;;LB;37;30011;KIR;;FALSCH;01-Jan-20;
-337;StE;Stech-/Kermes-Eiche;Quercus;coccifera;;LB;42;30011;EI;;FALSCH;01-Jan-20;
-338;PoE;Portugiesische-/Zen-Eiche;Quercus;faginea;;LB;43;30011;EI;;FALSCH;01-Jan-20;
-339;UnE;Ungarische Eiche;Quercus;frainetto;;LB;44;30011;EI;;FALSCH;01-Jan-20;
-340;GaE;Gallen-/F‰rber-Eiche;Quercus;fruticosa;;LB;45;30011;EI;;FALSCH;01-Jan-20;
-341;SeE;Steineiche;Quercus;ilex;;LB;46;30011;EI;Bl‰tter: 7-14 Paar Seitennerven, lanzettlich;FALSCH;01-Jan-20;
-342;VaE;Valonia Eiche;Quercus;macrolepis;;LB;47;30011;EI;;FALSCH;01-Jan-20;
-343;FlE;Flaumeiche;Quercus;pubescens;;LB;49;30011;EI;;FALSCH;01-Jan-20;
-345;PyE;Pyren‰en-Eiche;Quercus;pyrenaica;;LB;50;30011;EI;;FALSCH;01-Jan-20;
-346;SiE;Steineiche;Quercus;rotundifolia;;LB;52;30011;EI;Bl‰tter: 5-8 Paar Seitennerven, rund-eliptisch;FALSCH;01-Jan-20;
-347;KoE;Korkeiche;Quercus;suber;;LB;54;30011;EI;;FALSCH;01-Jan-20;
-348;MzE;Mazedonische Eiche;Quercus;trojana;;LB;55;30011;EI;;FALSCH;01-Jan-20;
-349;AaW;Asch-Weide;Salix;cinerea;;LB;59;30011;SLB;;FALSCH;01-Jan-20;
-350;LaW;Lavendel-Weide;Salix;eleagnos;;LB;60;30011;SLB;;FALSCH;01-Jan-20;
-351;AfT;Afrikanische Tamariske;Tamarix;africana;;LB;67;30011;SLB;;FALSCH;01-Jan-20;
-352;Jbb;Johannisbrotbaum;Ceratonia;siliqua;;LB;75;30011;SLB;;FALSCH;01-Jan-20;
-353;GJb;Gewˆhnliche Judasbaum;Cercis;siliquastrum;;LB;76;30011;SLB;;FALSCH;01-Jan-20;
-354;BHe;Baumheide;Erica;arborea;;LB;77;30011;SLB;;FALSCH;01-Jan-20;
-355;SHe;Spanische Besen-Heide;Erica;scoparia;;LB;78;30011;SLB;;FALSCH;01-Jan-20;
-356;ELo;Echte Lorbeer;Laurus;nobilis;;LB;80;30011;SLB;;FALSCH;01-Jan-20;
-357;GMy;Gemeine Myrte;Myrtus;communis;;LB;81;30011;SLB;;FALSCH;01-Jan-20;
-358;SSL;Steinlinde;Phillyrea;angustifolia;;LB;83;30011;SLB;;FALSCH;01-Jan-20;
-359;TPi;Terpentin-Pistazie;Pistacia;terebinthus;;LB;85;30011;SLB;;FALSCH;01-Jan-20;
-360;SWd;Schwarzer Weiﬂdorn;Rhamnus;oleoides;;LB;86;30011;SLB;;FALSCH;01-Jan-20;
-361;SKd;Stechpalmen-Kreuzdorn;Rhamnus;alaternus;;LB;87;30011;SLB;;FALSCH;01-Jan-20;
-362;FjB;Fjellbirke;Betula;tortuosa;;LB;88;30011;BI;Deutschen Namen pr¸fen;FALSCH;01-Jan-20;
-363;KaS;Kanarische Stechpalme;Ilex;canariensis;;LB;91;30011;SLB;;FALSCH;01-Jan-20;
-364;AzL;Azoren-Lorbeer;Laurus;canariensis;;LB;92;30011;SLB;wahrscheinlich Laurus azorica;FALSCH;01-Jan-20;
-365;GaB;Gagelbaum;Myrica;faya;;LB;93;30011;SLB;;FALSCH;01-Jan-20;
-366;ZAE;Zentralanatolische Eichen;Quercus;?;;LB;94;30011;EI;;FALSCH;01-Jan-20;
-367;BTa;Bulgarische Tanne;Abies;borisii-regis;;NB;101;30012;TA;;FALSCH;01-Jan-20;
-368;GTa;Griechische Tanne;Abies;cephalonica;;NB;102;30012;TA;;FALSCH;01-Jan-20;
-369;SpT;Spanische Tanne;Abies;pinsapo;;NB;105;30012;TA;;FALSCH;01-Jan-20;
-370;AtZ;Atlas-Zeder;Cedrus;atlantica;;NB;107;30012;SNB;;FALSCH;01-Jan-20;
-371;HiZ;Himalaya-Zeder;Cedrus;deodara;;NB;108;30012;SNB;;FALSCH;01-Jan-20;
-372;WZe;Weiﬂe Zeder;Cupressus;lusitanica;;NB;109;30012;SNB;;FALSCH;01-Jan-20;
-373;MZy;Mittelmeerzypresse;Cupressus;sempervirens;;NB;110;30012;SNB;;FALSCH;01-Jan-20;
-374;KKi;Kalabrische Kiefer;Pinus;brutia;;NB;121;30012;KI;;FALSCH;01-Jan-20;
-375;KaK;Kanarische Kiefer;Pinus;canariensis;;NB;122;30012;KI;;FALSCH;01-Jan-20;
-376;AKi;Aleppo-Kiefer;Pinus;halepensis;;NB;125;30012;KI;;FALSCH;01-Jan-20;
-377;ScK;Schlangenhaut-Kiefer;Pinus;heldreichii;;NB;126;30012;KI;= 378 ?;FALSCH;01-Jan-20;
-378;ShK;Schlangenhaut-Kiefer;Pinus;leucodermis;;NB;127;30012;KI;= 377 ?;FALSCH;01-Jan-20;01-Jan-21
-379;SeK;See-Kiefer;Pinus;pinaster;;NB;130;30012;KI;;FALSCH;01-Jan-20;
-380;ISK;Italienische Steinkiefer;Pinus;pinea;;NB;131;30012;KI;;FALSCH;01-Jan-20;
-381;MoK;Monterey-Kiefer;Pinus;radiata;;NB;132;30012;KI;;FALSCH;01-Jan-20;
-382;ZyZ;Zypern-Zeder;Cedrus;brevifolia;;NB;141;30012;SNB;;FALSCH;01-Jan-20;
-383;Hei;Hartwiss-Eiche;Quercus;hartwissiana;;LB;201;30011;EI;;FALSCH;01-Jan-20;
-384;KEi;Kasnak-Eiche;Quercus;vulcanica;;LB;202;30011;EI;;FALSCH;01-Jan-20;
-385;AEi;Aleppo-Eiche;Quercus;infectoria;;LB;203;30011;EI;;FALSCH;01-Jan-20;
-386;PEi;Persische Eiche;Quercus;macranthera;;LB;204;30011;EI;;FALSCH;01-Jan-20;
-387;LEi;Libanon-Eiche;Quercus;libani;;LB;205;30011;EI;;FALSCH;01-Jan-20;
-388;BEi;Brant'sche Eiche;Quercus;brantii;;LB;206;30011;EI;;FALSCH;01-Jan-20;
-389;MEi;Mount Tabor-Eiche;Quercus;ithaburensis;;LB;207;30011;EI;;FALSCH;01-Jan-20;
-390;AuE;Auchers Eiche;Quercus;aucheri;;LB;208;30011;EI;;FALSCH;01-Jan-20;
-391;ArE;Armenische Eiche;Quercus;pontica;;LB;209;30011;EI;;FALSCH;01-Jan-20;
-392;EAh;Eschen-Ahorn / Eschenbl‰ttriger Ahorn;Acer;negundo;;LB;222;30011;AH;;FALSCH;01-Jan-21;
-393;ScA;Schneeball-Ahorn / Schneeballbl‰ttriger Ahorn;Acer;obtusatum;;LB;223;30011;AH;;FALSCH;01-Jan-21;
-394;SiA;Silber-Ahorn;Acer;saccharinum;;LB;224;30011;AH;;FALSCH;01-Jan-21;
-395;TSA;Tatarische Steppen-Ahorn;Acer;tataricum;;LB;225;30011;AH;;FALSCH;01-Jan-21;
-396;GˆB;Gˆtterbaum;Ailanthus;altissima;;LB;242;30011;SLB;;FALSCH;01-Jan-21;
-398;PMB; Papiermaulbeerbaum;Broussonetia;papyrifera;;LB;243;30011;SLB;;FALSCH;01-Jan-21;
-399;SHi;Schindelborkige Hickorynuss / Schuppenrinden-Hickorynus;Carya;ovata;;LB;244;30011;SLB;;FALSCH;01-Jan-21;
-400;BHa;Baum-Hasel, auch T‰rkische Hasel;Corylus;colurna;;LB;245;30011;SLB;;FALSCH;01-Jan-21;
-401;ZgW; Zweigriffelige Weiﬂdorn;Crataegus;laevigata;;LB;246;30011;SLB;;FALSCH;01-Jan-21;
-403;AGR;Alpen-Goldregen;Laburnum;alpinum;;LB;228;30011;SLB;;FALSCH;01-Jan-21;
-404;GGR;Gewˆhnlicher Goldregen;Laburnum;anagyroides;;LB;229;30011;SLB;;FALSCH;01-Jan-21;
-406;BGB;Blauglockenbaum;Paulownia;tomentosa;;LB;249;30011;SLB;Syn.: Paulownia imperialis;FALSCH;01-Jan-21;
-407;PET;Petterie;Petteria;ramentacea;;LB;250;30011;SLB;;FALSCH;01-Jan-21;
-408;BSt;Breitbl‰ttrige Steinlinde;Phillyrea;media;;LB;251;30011;SLB;;FALSCH;01-Jan-21;
-409;RuK;Rumelische Kiefer, Mazedonische Kiefer oder Balkankiefe;Pinus;peuce;;NB;154;30012;KI;;FALSCH;01-Jan-21;
-410;T‰K;Tr‰nenkiefer;Pinus;wallichiana;;NB;156;30012;KI;;FALSCH;01-Jan-21;
-411;APl;Ahornbl‰ttrige Platane/Bastard-Platane, Gewˆhnliche Pla;Platanus;x acerifolia;;LB;252;30011;SLB;Platanus x hispanica, Syn.: Platanus x acerifolia,;FALSCH;01-Jan-21;
-412;KSP;Kanadische Schwarz-Pappel oder Rosenkranz-Pappel;Populus;deltoides;;LB;231;30011;PA;;FALSCH;01-Jan-21;
-413;LoK;Lorbeerkirsche/Pontische Lorbeer-Kirsche und Kirschlorb;Prunus;laurocerasus;;LB;234;30011;KIR;;FALSCH;01-Jan-21;
-414;StW;Steinweichsel, Felsen-oder Weichselkirsche;Prunus;mahaleb;;LB;235;30011;KIR;;FALSCH;01-Jan-21;
-415;ScD;Schlehdorn, Schwarzdorn;Prunus;sppinosa;;LB;236;30011;KIR;;FALSCH;01-Jan-21;
-416;GbE;Gestieltbl‰tige Eiche;Quercus;pedunculiflora;;LB;238;30011;EI;Stieleiche Quercus robur (in der Unterart peduncul;FALSCH;01-Jan-21;
-417;PuW;Purpurweide / Bachweide;Salix;purpurea;;LB;239;30011;SLB;;FALSCH;01-Jan-21;
-418;MaW;Mandelweide;Salix;triandra;;LB;240;30011;SLB;;FALSCH;01-Jan-21;
-419;KoW;Korb-Weide / Hanf-Weide;Salix;viminalis;;LB;241;30011;SLB;;FALSCH;01-Jan-21;
-420;÷Mb;Ostalpen-Mehlbeere, Alpen-Mehlbeere und Alpen-Oxelbirne;Sorbus;austriaca;;LB;254;30011;VB;;FALSCH;01-Jan-21;
-421;SoT;Sommertamariske;Tamarix;ramosissima;;LB;162;30011;SLB;;FALSCH;01-Jan-21;
-422;ESZ;Echte Sumpfzypresse;Taxodium;distichum;;LB;163;30011;SLB;;FALSCH;01-Jan-21;
-423;SiL;Silber-Linde;Tilia;tomentosa;;LB;255;30011;LI;;FALSCH;01-Jan-21;
-424;HLT;Kanadische Hemlocktanne / Kanadische Schierlingstanne;Tsuga;canadensis;;NB;164;30012;SNB;;FALSCH;01-Jan-21;
-425;FUE;Flatterulme / Flatterr¸ster;Ulmus;laevis;;LB;71;30011;UL;;WAHR;01-Jan-21;01-Jan-21
-426;FeU;Feldulme / Iper;Ulmus;minor;;LB;72;30011;UL;;FALSCH;01-Jan-21;
+"id","kurz","lang","icode","genus","species","ba_bwi","laub_nadel","gueltig_ab","gueltig_bis"
+"eta","ETa","Edeltanne",218,"abies","procera","ta","nb",2005-12-31,NA
+"-9","fehlt","Merkmal vergessen, nicht rekonstruierbar oder unbekannt",-9,"-2","-2",NA,NA,NA,NA
+"-2","nicht ausgepr√§gt","Merkmal nicht ausgepr√§gt/nicht vorhanden",-2,"-2","-2",NA,NA,NA,2020-04-01
+"-1","nicht erhoben","Merkmal nicht erhoben",-1,"-2","-2",NA,NA,2005-12-31,NA
+"ah","Ah","Ahorn",100,"acer","spp.","ah","lb",1986-12-31,NA
+"sah","SAh","Spitz-Ahorn",101,"acer","platanoides","sah","lb",1986-12-31,NA
+"bah","BAh","Berg-Ahorn",102,"acer","pseudoplatanus","bah","lb",1986-12-31,NA
+"er","Er","Erle",103,"alnus","spp.","erl","lb",1986-12-31,NA
+"ser","SEr","Schwarz-Erle",104,"alnus","glutinosa","erl","lb",1986-12-31,NA
+"wer","WEr","Grau-Erle",105,"alnus","incana","erl","lb",1989-12-31,NA
+"bi","Bi","Birke",106,"betula","spp.","bi","lb",1986-12-31,NA
+"sbi","SBi","Sand-Birke",107,"betula","pendula","bi","lb",1986-12-31,NA
+"mbi","MBi","Moor-Birke",108,"betula","pubescens","bi","lb",1986-12-31,NA
+"hbu","HBu","Hainbuche",109,"carpinus","betulus","hbu","lb",1986-12-31,NA
+"eka","EKa","Edel-Kastanie",110,"castanea","sativa","ka","lb",1986-12-31,NA
+"rbu","RBu","Rot-Buche",111,"fagus","sylvatica","bu","lb",1986-12-31,NA
+"ges","GEs","Gewoehnliche Esche",112,"fraxinus","excelsior","es","lb",1986-12-31,NA
+"kir","Kir","Vogel-Kirsche",113,"prunus","avium","kir","lb",1986-12-31,NA
+"pa","Pa","Pappel",114,"populus","spp.","pa","lb",1986-12-31,NA
+"eis","Eis","Eiche",115,"quercus","spp.","ei","lb",NA,1899-12-31
+"tei","TEi","Trauben-Eiche",116,"quercus","petraea","ei","lb",1986-12-31,NA
+"sei","SEi","Stiel-Eiche",117,"quercus","robur","ei","lb",1986-12-31,NA
+"rei","REi","Rot-Eiche",118,"quercus","rubra","rei","lb",1986-12-31,NA
+"rob","Rob","Robinie",119,"robinia","pseudoacacia","rob","lb",1989-12-31,NA
+"wei","Wei","Weide",120,"salix","spp.","slb","lb",1991-12-31,NA
+"vbe","Vbe","Vogelbeere",121,"sorbus","aucuparia","vb","lb",1986-12-31,NA
+"li","Li","Linde",122,"tilia","spp.","li","lb",1986-12-31,NA
+"wli","WLi","Winter-Linde",123,"tilia","cordata","li","lb",1986-12-31,NA
+"sli","SLi","Sommer-Linde",124,"tilia","platyphyllos","li","lb",1986-12-31,NA
+"ul","Ul","Ulme",125,"ulmus","spp.","ul","lb",1986-12-31,NA
+"as","As","Aspe/Zitterpappel",126,"populus","tremula","pa","lb",1986-12-31,NA
+"bpa","BPa","Balsampappel",127,"populus","balsamifera","pa","lb",NA,NA
+"bul","BUl","Bergulme",128,"ulmus","glabra","ul","lb",1988-12-31,NA
+"bwe","BWe","Bruchweide",129,"salix","fragilis","slb","lb",2008-12-31,NA
+"els","Els","Elsbeere",130,"sorbus","torminalis","vb","lb",1986-12-31,NA
+"es","Es","Esche",131,"fraxinus","excelsior","es","lb",NA,2014-12-31
+"fah","FAh","Feldahorn",132,"acer","campestre","fah","lb",1989-12-31,NA
+"ful","FUl","Feldulme",133,"ulmus","campestris","ul","lb",NA,NA
+"flu","FLu","Flatterulme",134,"ulmus","laevis (vorher effusa)","ul","lb",2014-12-31,NA
+"gpa","GPa","Graupappel",135,"populus","x canescens","pa","lb",NA,NA
+"ger","GEr","Gruenerle",136,"alnus","viridis","erl","lb",2005-12-31,NA
+"hi","Hi","Hickory",137,"carya","spp.","slb","lb",NA,NA
+"hbi","HBi","Hybridbirke",138,"betula","x hybrida","bi","lb",NA,NA
+"jbi","JBi","Japanbirke",139,"betula","platyphylla var. japonica","bi","lb",NA,NA
+"me","Me","Mehlbeere",140,"sorbus","aria","vb","lb",1986-12-31,NA
+"mi","Mi","Mispel",141,"mespilus","germanica","slb","lb",NA,NA
+"nu","Nu","Walnussbaum",142,"juglans","regia","slb","lb",2004-12-31,NA
+"pl","Pl","Platane",143,"platanus","x hybrida","slb","lb",NA,NA
+"rka","RKa","Rosskastanie",144,"aesculus","hippocastanum","ka","lb",2015-12-31,NA
+"swe","SWe","Salweide",145,"salix","caprea","slb","lb",1986-12-31,NA
+"snu","SNu","Schwarznuss",146,"juglans","nigra","slb","lb",NA,NA
+"spa","SPa","Schwarzpappel",147,"populus","nigra","pa","lb",1989-12-31,NA
+"sp","Sp","Speierling",148,"sorbus","domestica","vb","lb",2005-12-31,NA
+"spi","SPi","Spirke",150,"pinus","uncinata","ki","nb",2005-12-31,NA
+"sue","SuE","Sumpfeiche",151,"quercus","palustris","ei","lb",NA,NA
+"ftk","FTk","Fruehbl. Traubenkirsche",152,"prunus","padus","kir","lb",2009-12-31,NA
+"stk","STk","Spaetbl. Traubenkirsche",153,"prunus","serotina","kir","lb",1991-12-31,NA
+"tu","Tu","Tulpenbaum",154,"liriodendron","tulipifera","slb","lb",NA,NA
+"wes","WEs","Wei√üesche",156,"fraxinus","americana","es","lb",NA,NA
+"wap","WAp","Wildapfel",157,"malus","sylvestris","slb","lb",2013-12-31,NA
+"wbi","WBi","Wildbirne",158,"pyrus","pyraster","slb","lb",NA,NA
+"wzw","WZw","Wildzwetschge",159,"prunus","cerasifera","kir","lb",NA,NA
+"zei","ZEi","Zerreiche",160,"quercus","cerris","ei","lb",2005-12-31,NA
+"ash","AsH","Aspenhybriden",161,"populus","hybrides","pa","lb",NA,1899-12-31
+"edl","Edl","Edellaubholz",162,"alii","frons noble","slb","lb",NA,NA
+"ei","Ei","Eiche",163,"quercus","robur x petraea","ei","lb",1986-12-31,NA
+"wpa","WPa","Weisspappel",164,"populus","alba","pa","lb",NA,NA
+"wwe","WWE","Wei√üweide",165,"salix","alba","slb","lb",2003-12-31,NA
+"wde","WDe","Eingriffeliger Wei√üdorn",166,"crataegus","monogyna","slb","lb",NA,NA
+"wds","WDs","Wei√üdorn",167,"crataegus","spp.","slb","lb",NA,1899-12-31
+"hpa","HPa","Hybrid Pappel",168,"populus","hybrides","pa","lb",2005-12-31,NA
+"slb","sLb","sonstige Laubbaeume",199,"alii","frons","slb","lb",1986-12-31,NA
+"ta","Ta","Tanne",200,"abies","spp.","ta","nb",2004-12-31,NA
+"wta","WTa","Wei√ü-Tanne",201,"abies","alba","ta","nb",1986-12-31,NA
+"kta","KTa","Kuesten-Tanne",202,"abies","grandis","ta","nb",2004-12-31,NA
+"lae","Lae","Laerche",203,"larix","spp.","lae","nb",1986-12-31,NA
+"ela","ELa","Europaeische Laerche",204,"larix","decidua","ela","nb",1986-12-31,NA
+"jla","JLa","Japanische Laerche",205,"larix","kaempferi","jla","nb",1986-12-31,NA
+"fi","Fi","Fichte",206,"picea","spp.","fi","nb",NA,1899-12-31
+"gfi","GFi","Gewoehnliche Fichte",207,"picea","abies","fi","nb",1986-12-31,NA
+"sfi","SFi","Sitka-Fichte",208,"picea","sitchensis","fi","nb",1986-12-31,NA
+"ki","Ki","Kiefer",209,"pinus","spp.","ki","nb",NA,2008-12-31
+"ski","SKi","Schwarz-Kiefer",210,"pinus","nigra","ki","nb",1989-12-31,NA
+"gki","GKi","Gewoehnliche Kiefer",211,"pinus","sylvestris","ki","nb",1986-12-31,NA
+"dgl","Dgl","Douglasie",212,"pseudotsuga","menziestii","dgl","nb",1986-12-31,NA
+"kib","KiB","Bankskiefer",213,"pinus","banksiana","ki","nb",NA,NA
+"bki","BKi","Bergkiefer",214,"pinus","mugo","ki","nb",2005-12-31,NA
+"szy","SZy","Scheinzypresse",215,"chamaecyparis","lawsoniana","snb","nb",NA,NA
+"sta","STa","Silbertanne",216,"abies","concolor","ta","nb",NA,NA
+"dki","DKi","Drehkiefer",217,"pinus","contorta","ki","nb",NA,NA
+"eib","Eib","Eibe",219,"taxus","baccata","eib","nb",NA,NA
+"hta","HTa","Hemlocktanne",220,"tsuga","spp.","snb","nb",2004-12-31,NA
+"hl√§","HL√§","Hybridlaerche",221,"larix","eurolepis","lae","nb",NA,NA
+"ara","Ara","Japantanne",222,"araucaria","araucana","snb","nb",NA,NA
+"le","Le","Lebensbaum",223,"thuja","spp.","snb","nb",2007-12-31,NA
+"lta","LTa","Lowes Tanne",224,"abies","‚Ä¶","ta","nb",NA,NA
+"mes","Mes","Urweltmammutbaum",225,"metasequoia","glyptostroboides","snb","nb",NA,NA
+"nta","NTa","Nordmannstanne",226,"abies","nordmanniana","ta","nb",2004-12-31,NA
+"ofi","OFi","Omorika Fichte",227,"picea","omorika","fi","nb",NA,NA
+"pki","PKi","Pechkiefer",228,"pinus","rigida","ki","nb",NA,NA
+"pta","PTa","Purpurtanne",229,"abies","amabilis","ta","nb",NA,NA
+"rzy","RZy","Rauchzypresse",230,"calocedrus","decurrens","snb","nb",NA,NA
+"rfi","RFi","Rotfichte",231,"picea","abies","fi","nb",NA,1899-12-31
+"se","Se","Riesenmammutbaum",232,"sequoiadendron","giganteum","snb","nb",NA,NA
+"tas","TaS","Sicheltanne",233,"cryptomeria","japonica","snb","nb",NA,NA
+"fis","FiS","Stechfichte",234,"picea","pungens","fi","nb",NA,NA
+"str","Str","Strobe",235,"pinus","strobus","wey","nb",1986-12-31,NA
+"sl√§","SL√§","Sumpflaerche",236,"larix","laricina","lae","nb",NA,1899-12-31
+"vta","VTa","Veits Tanne",237,"abies","veitchii","ta","nb",NA,NA
+"wfi","WFi","Wei√üfichte",238,"picea","glauca","fi","nb",NA,NA
+"zki","ZKi","Zirbelkiefer",239,"pinus","cembra","ki","nb",2016-12-31,NA
+"snd","sNd","sonstige Nadelbaeume",299,"alii","acus","snb","nb",1986-12-31,NA
+"swa","SWa","Stinkende Wacholder",303,"juniperus","foetidissima","snb","nb",NA,NA
+"kfi","KFi","Kaukasus-Fichte",304,"picea","orientalis","fi","nb",NA,NA
+"lze","LZe","Libanon-Zeder",305,"cedrus","libani","snb","nb",NA,NA
+"cta","CTa","Kilikische Tanne",306,"abies","cilicica","ta","nb",NA,NA
+"gwa","GWa","Gemeiner Wacholder",307,"juniperus","communis","snb","nb",NA,NA
+"fra","FrA","Franz√∂sische Ahorn",308,"acer","monspessulanum","ah","lb",NA,NA
+"sba","SbA","Schneeball-Ahorn",309,"acer","opalus","ah","lb",NA,NA
+"kap","KAp","Kulturapfel",310,"malus","domestica","slb","lb",NA,NA
+"kbi","KBi","Kulturbirne",311,"pyrus","communis","slb","lb",NA,NA
+"her","HEr","Herzbl√§ttrige Erle",312,"alnus","cordata","erl","lb",NA,NA
+"√∂eb","√ñEb","√ñstliche Erdbeerbaum",313,"arbutus","andrachne","slb","lb",NA,NA
+"web","WEb","Westlicher Erdbeerbaum",314,"arbutus","unedo","slb","lb",NA,NA
+"obu","OBu","Orient-Buche",315,"fagus","orientalis","bu","lb",NA,NA
+"bsl","BSl","Breitbl√§ttrige Steinlinde",316,"phillyrea","latifolia","slb","lb",NA,NA
+"wpi","WPi","Wilde Pistazie",317,"pistacia","lentiscus","slb","lb",NA,NA
+"eri","Eri","Erikagew√§chs Strauch",318,"erica","manipuliflora","slb","lb",NA,NA
+"ewa","EWa","Griechischer Wacholder",319,"juniperus","excelsa","snb","nb",NA,NA
+"owa","OWa","Stech-Wacholder",320,"juniperus","oxycedrus","snb","nb",NA,NA
+"pwa","PWa","Ph√∂nizische Wacholder",321,"juniperus","phoenicea","snb","nb",NA,NA
+"saw","SaW","Stink-Wacholder/Sadebaum",322,"juniperus","sabina","snb","nb",NA,NA
+"twa","TWa","Spanischer Wacholder",323,"juniperus","thurifera","snb","nb",NA,NA
+"hzw","HZw","Hauszwetschge",324,"prunus","domestica","kir","lb",2020-05-06,NA
+"gbu","GBu","Gew√∂hnliche Buchsbaum",325,"buxus","sempervirens","slb","lb",2020-01-01,NA
+"ohb","Ohb","Orientalische Hainbuche",326,"carpinus","orientalis","hbu","lb",2020-01-01,NA
+"han","HaN","Haselnussstrauch",327,"corylus","avellana","slb","lb",2020-01-01,NA
+"euk","Euk","Eukalypten",328,"eucalyptus","spp.","slb","lb",2020-01-01,NA
+"fam","FaM","? Fagus moesiaca",329,"fagus","moesiaca","bu","lb",2020-01-01,NA
+"sbe","SbE","Schmalbl√§ttrige Esche",330,"fraxinus","angustifolia spp. oxycarpa","es","lb",2020-01-01,NA
+"mae","MaE","Manna-Esche",331,"fraxinus","ornus","es","lb",2020-01-01,NA
+"est","ESt","Europ√§ische Stechpalme",332,"ilex","aquifolium","slb","lb",2020-01-01,NA
+"eoe","EOe","Echtem √ñlbaum",333,"olea","europaea","slb","lb",2020-01-01,NA
+"hob","HoB","Hopfenbuche",334,"ostrya","carpinifolia","slb","lb",2020-01-01,NA
+"opl","OPl","Orientalische Platane",335,"platanus","orientalis","slb","lb",2020-01-01,NA
+"mab","MaB","Mandelbaum",336,"prunus","dulcis","kir","lb",2020-01-01,NA
+"ste","StE","Stech-/Kermes-Eiche",337,"quercus","coccifera","ei","lb",2020-01-01,NA
+"poe","PoE","Portugiesische-/Zen-Eiche",338,"quercus","faginea","ei","lb",2020-01-01,NA
+"une","UnE","Ungarische Eiche",339,"quercus","frainetto","ei","lb",2020-01-01,NA
+"gae","GaE","Gallen-/F√§rber-Eiche",340,"quercus","fruticosa","ei","lb",2020-01-01,NA
+"see","SeE","Steineiche",341,"quercus","ilex","ei","lb",2020-01-01,NA
+"vae","VaE","Valonia Eiche",342,"quercus","macrolepis","ei","lb",2020-01-01,NA
+"fle","FlE","Flaumeiche",343,"quercus","pubescens","ei","lb",2020-01-01,NA
+"pye","PyE","Pyren√§en-Eiche",345,"quercus","pyrenaica","ei","lb",2020-01-01,NA
+"sie","SiE","Steineiche",346,"quercus","rotundifolia","ei","lb",2020-01-01,NA
+"koe","KoE","Korkeiche",347,"quercus","suber","ei","lb",2020-01-01,NA
+"mze","MzE","Mazedonische Eiche",348,"quercus","trojana","ei","lb",2020-01-01,NA
+"aaw","AaW","Asch-Weide",349,"salix","cinerea","slb","lb",2020-01-01,NA
+"law","LaW","Lavendel-Weide",350,"salix","eleagnos","slb","lb",2020-01-01,NA
+"aft","AfT","Afrikanische Tamariske",351,"tamarix","africana","slb","lb",2020-01-01,NA
+"jbb","Jbb","Johannisbrotbaum",352,"ceratonia","siliqua","slb","lb",2020-01-01,NA
+"gjb","GJb","Gew√∂hnliche Judasbaum",353,"cercis","siliquastrum","slb","lb",2020-01-01,NA
+"bhe","BHe","Baumheide",354,"erica","arborea","slb","lb",2020-01-01,NA
+"she","SHe","Spanische Besen-Heide",355,"erica","scoparia","slb","lb",2020-01-01,NA
+"elo","ELo","Echte Lorbeer",356,"laurus","nobilis","slb","lb",2020-01-01,NA
+"gmy","GMy","Gemeine Myrte",357,"myrtus","communis","slb","lb",2020-01-01,NA
+"ssl","SSL","Steinlinde",358,"phillyrea","angustifolia","slb","lb",2020-01-01,NA
+"tpi","TPi","Terpentin-Pistazie",359,"pistacia","terebinthus","slb","lb",2020-01-01,NA
+"swd","SWd","Schwarzer Wei√üdorn",360,"rhamnus","oleoides","slb","lb",2020-01-01,NA
+"skd","SKd","Stechpalmen-Kreuzdorn",361,"rhamnus","alaternus","slb","lb",2020-01-01,NA
+"fjb","FjB","Fjellbirke",362,"betula","tortuosa","bi","lb",2020-01-01,NA
+"kas","KaS","Kanarische Stechpalme",363,"ilex","canariensis","slb","lb",2020-01-01,NA
+"azl","AzL","Azoren-Lorbeer",364,"laurus","canariensis","slb","lb",2020-01-01,NA
+"gab","GaB","Gagelbaum",365,"myrica","faya","slb","lb",2020-01-01,NA
+"zae","ZAE","Zentralanatolische Eichen",366,"quercus","?","ei","lb",2020-01-01,NA
+"bta","BTa","Bulgarische Tanne",367,"abies","borisii-regis","ta","nb",2020-01-01,NA
+"gta","GTa","Griechische Tanne",368,"abies","cephalonica","ta","nb",2020-01-01,NA
+"spt","SpT","Spanische Tanne",369,"abies","pinsapo","ta","nb",2020-01-01,NA
+"atz","AtZ","Atlas-Zeder",370,"cedrus","atlantica","snb","nb",2020-01-01,NA
+"hiz","HiZ","Himalaya-Zeder",371,"cedrus","deodara","snb","nb",2020-01-01,NA
+"wze","WZe","Wei√üe Zeder",372,"cupressus","lusitanica","snb","nb",2020-01-01,NA
+"mzy","MZy","Mittelmeerzypresse",373,"cupressus","sempervirens","snb","nb",2020-01-01,NA
+"kki","KKi","Kalabrische Kiefer",374,"pinus","brutia","ki","nb",2020-01-01,NA
+"kak","KaK","Kanarische Kiefer",375,"pinus","canariensis","ki","nb",2020-01-01,NA
+"aki","AKi","Aleppo-Kiefer",376,"pinus","halepensis","ki","nb",2020-01-01,NA
+"sck","ScK","Schlangenhaut-Kiefer",377,"pinus","heldreichii","ki","nb",2020-01-01,NA
+"shk","ShK","Schlangenhaut-Kiefer",378,"pinus","leucodermis","ki","nb",2020-01-01,2021-01-01
+"sek","SeK","See-Kiefer",379,"pinus","pinaster","ki","nb",2020-01-01,NA
+"isk","ISK","Italienische Steinkiefer",380,"pinus","pinea","ki","nb",2020-01-01,NA
+"mok","MoK","Monterey-Kiefer",381,"pinus","radiata","ki","nb",2020-01-01,NA
+"zyz","ZyZ","Zypern-Zeder",382,"cedrus","brevifolia","snb","nb",2020-01-01,NA
+"hei","Hei","Hartwiss-Eiche",383,"quercus","hartwissiana","ei","lb",2020-01-01,NA
+"kei","KEi","Kasnak-Eiche",384,"quercus","vulcanica","ei","lb",2020-01-01,NA
+"aei","AEi","Aleppo-Eiche",385,"quercus","infectoria","ei","lb",2020-01-01,NA
+"pei","PEi","Persische Eiche",386,"quercus","macranthera","ei","lb",2020-01-01,NA
+"lei","LEi","Libanon-Eiche",387,"quercus","libani","ei","lb",2020-01-01,NA
+"bei","BEi","Brant'sche Eiche",388,"quercus","brantii","ei","lb",2020-01-01,NA
+"mei","MEi","Mount Tabor-Eiche",389,"quercus","ithaburensis","ei","lb",2020-01-01,NA
+"aue","AuE","Auchers Eiche",390,"quercus","aucheri","ei","lb",2020-01-01,NA
+"are","ArE","Armenische Eiche",391,"quercus","pontica","ei","lb",2020-01-01,NA
+"eah","EAh","Eschen-Ahorn / Eschenbl√§ttriger Ahorn",392,"acer","negundo","ah","lb",2021-01-01,NA
+"sca","ScA","Schneeball-Ahorn / Schneeballbl√§ttriger Ahorn",393,"acer","obtusatum","ah","lb",2021-01-01,NA
+"sia","SiA","Silber-Ahorn",394,"acer","saccharinum","ah","lb",2021-01-01,NA
+"tsa","TSA","Tatarische Steppen-Ahorn",395,"acer","tataricum","ah","lb",2021-01-01,NA
+"g√∂b","G√∂B","G√∂tterbaum",396,"ailanthus","altissima","slb","lb",2021-01-01,NA
+"pmb","PMB"," Papiermaulbeerbaum",398,"broussonetia","papyrifera","slb","lb",2021-01-01,NA
+"shi","SHi","Schindelborkige Hickorynuss / Schuppenrinden-Hickorynus",399,"carya","ovata","slb","lb",2021-01-01,NA
+"bha","BHa","Baum-Hasel, auch T√§rkische Hasel",400,"corylus","colurna","slb","lb",2021-01-01,NA
+"zgw","ZgW"," Zweigriffelige Wei√üdorn",401,"crataegus","laevigata","slb","lb",2021-01-01,NA
+"agr","AGR","Alpen-Goldregen",403,"laburnum","alpinum","slb","lb",2021-01-01,NA
+"ggr","GGR","Gew√∂hnlicher Goldregen",404,"laburnum","anagyroides","slb","lb",2021-01-01,NA
+"bgb","BGB","Blauglockenbaum",406,"paulownia","tomentosa","slb","lb",2021-01-01,NA
+"pet","PET","Petterie",407,"petteria","ramentacea","slb","lb",2021-01-01,NA
+"bst","BSt","Breitbl√§ttrige Steinlinde",408,"phillyrea","media","slb","lb",2021-01-01,NA
+"ruk","RuK","Rumelische Kiefer, Mazedonische Kiefer oder Balkankiefe",409,"pinus","peuce","ki","nb",2021-01-01,NA
+"t√§k","T√§K","Tr√§nenkiefer",410,"pinus","wallichiana","ki","nb",2021-01-01,NA
+"apl","APl","Ahornbl√§ttrige Platane/Bastard-Platane, Gew√∂hnliche Pla",411,"platanus","x acerifolia","slb","lb",2021-01-01,NA
+"ksp","KSP","Kanadische Schwarz-Pappel oder Rosenkranz-Pappel",412,"populus","deltoides","pa","lb",2021-01-01,NA
+"lok","LoK","Lorbeerkirsche/Pontische Lorbeer-Kirsche und Kirschlorb",413,"prunus","laurocerasus","kir","lb",2021-01-01,NA
+"stw","StW","Steinweichsel, Felsen-oder Weichselkirsche",414,"prunus","mahaleb","kir","lb",2021-01-01,NA
+"scd","ScD","Schlehdorn, Schwarzdorn",415,"prunus","sppinosa","kir","lb",2021-01-01,NA
+"gbe","GbE","Gestieltbl√§tige Eiche",416,"quercus","pedunculiflora","ei","lb",2021-01-01,NA
+"puw","PuW","Purpurweide / Bachweide",417,"salix","purpurea","slb","lb",2021-01-01,NA
+"maw","MaW","Mandelweide",418,"salix","triandra","slb","lb",2021-01-01,NA
+"kow","KoW","Korb-Weide / Hanf-Weide",419,"salix","viminalis","slb","lb",2021-01-01,NA
+"√∂mb","√ñMb","Ostalpen-Mehlbeere, Alpen-Mehlbeere und Alpen-Oxelbirne",420,"sorbus","austriaca","vb","lb",2021-01-01,NA
+"sot","SoT","Sommertamariske",421,"tamarix","ramosissima","slb","lb",2021-01-01,NA
+"esz","ESZ","Echte Sumpfzypresse",422,"taxodium","distichum","slb","lb",2021-01-01,NA
+"sil","SiL","Silber-Linde",423,"tilia","tomentosa","li","lb",2021-01-01,NA
+"hlt","HLT","Kanadische Hemlocktanne / Kanadische Schierlingstanne",424,"tsuga","canadensis","snb","nb",2021-01-01,NA
+"fue","FUE","Flatterulme / Flatterr√ºster",425,"ulmus","laevis","ul","lb",2021-01-01,2021-01-01
+"feu","FeU","Feldulme / Iper",426,"ulmus","minor","ul","lb",2021-01-01,NA
