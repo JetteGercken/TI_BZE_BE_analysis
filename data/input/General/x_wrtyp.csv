@@ -1,9 +1,3 @@
-id;kurz;lang;gueltig_ab;gueltig_bis
--9;fehlt;Merkmal vergessen, nicht rekonstruierbar oder unbekannt;01.01.1998;
--2;nicht ausgeprägt;Merkmal nicht ausgeprägt/nicht vorhanden;01.01.1998;01.01.2022
--1;nicht erhoben;Merkmal nicht erhoben;01.01.1998;
-0;kW;kein Waldrand und keine Bestandesgrenze;01.01.2022;
-1;WA;Waldaußenrand;01.01.1989;
-2;WI;Waldinnenrand;01.01.1989;
-3;BE;Bestandesgrenze;01.01.1989;
-4;sBE;sonst. Bestandesgrenze;01.01.1989;
+version https://git-lfs.github.com/spec/v1
+oid sha256:26651441df78517e8fb250cceaf68628259510dd14332fcf836f58c9a2cdd669
+size 443

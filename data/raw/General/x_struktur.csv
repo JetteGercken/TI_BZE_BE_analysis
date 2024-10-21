@@ -1,10 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,1989-01-01
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-1,einschichtig,einschichtig,1989-01-01,
-2,zweischichtig,zweischichtig,1989-01-01,
-3,zweischichtig Üb/Na,zweischichtig (Oberschicht: Überhälter oder Nachhiebsrest),2001-01-01,
-4,zweischichtig Vj,zweischichtig (Unterschicht: Vorausverjüngung),2001-01-01,
-5,zweischichtig Ub,zweischichtig (Unterschicht: Unterbau),2001-01-01,
-6,mehrschichtig/plenter,mehrschichtig oder plenterartig,1989-01-01,2022-01-01
+version https://git-lfs.github.com/spec/v1
+oid sha256:77d321459a83a9aebd14af3634013eee68c393b9fb9070430f0bff128d1d12a9
+size 656

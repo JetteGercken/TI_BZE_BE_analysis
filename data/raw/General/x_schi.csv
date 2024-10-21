@@ -1,9 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-0,keine Zuordnung,wird nicht beachtet / differenziert,1989-01-01,
-1,Haupt,Hauptbestand,2006-01-01,
-2,Unterstand,Unterstand,2006-01-01,
-3,Oberstand,Oberstand,2006-01-01,
-9,lieg. Baum,liegender Baum,1989-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:1d914f2d1aa79ca5913a6cf06f85883e81d920f3d43541a0f3ffadc09fcdf24c
+size 450

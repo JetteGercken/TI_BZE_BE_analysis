@@ -1,10 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-1,gedrängt,Kronen greifen tief in- und übereinander,1989-01-01,
-2,geschlossen,Kronen berühren sich in den Zweigspitzen,1989-01-01,
-3,locker,"Kronen haben einen Abstand, ohne dass eine weitere Krone dazwischen Platz findet",1989-01-01,
-4,licht,"Kronen haben einen so großen Abstand, dass eine weitere Krone dazwischen Platz findet",1989-01-01,
-5,räumdig,"Kronen haben einen so großen Abstand, dass mehr als eine weitere Krone dazwischen Platz findet",1989-01-01,
-6,lückig,durch Bestandeslücken unterbrochener Kronenschluss,1989-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:499f5116fc307b8fd12240b2d95e23b568755c392343069b24c3afda887daf55
+size 783

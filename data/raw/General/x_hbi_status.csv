@@ -1,7 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
--1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
-1,HBI Mittelpunkt,Aufnahme erfolgte am HBI-Mittelpunkt,2022-01-01,
-2,neuer Bezugspunkt,Aufnahme erfolgte an neuem Bezugspunkt,2022-01-01,
-3,BWI-Punkt,Aufnahme erfolgte an BWI-Punkt (nur BB/BY),2022-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:d1aa25c43addf4aad5669bc975de036fdd6c002459688511d5bcdccce3e118ec
+size 456

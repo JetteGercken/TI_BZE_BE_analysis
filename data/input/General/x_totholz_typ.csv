@@ -1,17 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2006-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2006-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,2006-01-01,
-1,lieg. Stück,"dickes, liegendes (Derb-)Totholz, D >= 10cm, beeinhaltet: Stamm, Teile des Baums, Geäst",2006-01-01,
-2,st. g. Baum,"stehender Baum(tot) mit Ästen, H >= 1,3m und D >= 10cm",2006-01-01,
-3,st. Bruchstück,"Baumstumpf/-stamm ohne Äste mit einer H >= 1,3 m und einem D  >= 10cm",2006-01-01,
-4,Wurzelstock,"Baumstumpf, Baumstumpf ohne Äste mit einer Höhe < 1,3 m und einem D >= 10cm",2006-01-01,
-5,lieg. Baum,"liegender ganzer Baum, von Stammfuß bis Wipfel, D >= 10cm",2006-01-01,
-6,Haufen,"in Haufen vorkommendes TH, D ≥ 10 cm am dickeren Ende",2022-01-01,
-11,lieg. Baum m. Wurzel,"liegender ganzer Baum mit Wurzelanlauf, D >= 10cm",2006-01-01,2022-01-01
-12,"lieg. Stück, m. Wurzel","liegend, Stammstück mit Wurzelanlauf, D >= 10cm",2006-01-01,2022-01-01
-13,lieg. Stück o. Wurzel,"liegend, Teilstück ohne Wurzelanlauf , D >= 10cm",2006-01-01,2022-01-01
-20,st. g. Baum_bwi,"stehend, ganzer Baum,  D >= 10cm",2006-01-01,2022-01-01
-30,st. Bruchst.,"stehend, Bruchstück,  H >= 1,3 m, D >= 10cm",2006-01-01,2022-01-01
-40,Wurzelstock_bwi,"Wurzelstock, H < 1,3 m, D >= 10cm",2006-01-01,2022-01-01
-50,Abfuhrreste,Abfuhrreste Aufgeschichtet,2006-01-01,2022-01-01
+version https://git-lfs.github.com/spec/v1
+oid sha256:102678a8a262563eca7ee9c22b6b05df23864f1fe3629ebb66e3c57da69bbdee
+size 1419

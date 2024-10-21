@@ -1,2 +1,3 @@
-plot_ID;Oberstand oberirdisch;Oberstand unterirdisch;Oberstand gesamt;Verjüngung oberirdisch;Verjüngung unterirdisch;Verjüngung gesamt;Totholz oberirdisch;Totholz unterirdisch;Totholz gesamt;Gesamter Bestand oberirdisch;Gesamter Bestand unterirdisch;Gesamter Bestand gesamt
-33300;50,82978935;2,936407335;55,84957159;1,338856332;0,159029597;1,569316409;4,291310971;0;4,291310971;56,45995665;3,095436933;61,71019897
+version https://git-lfs.github.com/spec/v1
+oid sha256:ddcab85d170d8e2b0d0778475617d5c89da5c25ce79876e678de4aa5793bba9b
+size 414

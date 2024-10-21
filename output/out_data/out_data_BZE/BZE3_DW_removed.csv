@@ -1,6 +1,3 @@
-"plot_ID","tree_ID","dw_type","dw_sp","count","d_cm","l_dm","decay","inv_year","inv","rem_reason"
-140049,35,-9,-9,-9,-9,-9,-9,2022,"BZE3","single DW removed"
-140050,35,-9,-9,-9,-9,-9,-9,2022,"BZE3","single DW removed"
-140039,38,-9,-9,-9,-9,-9,-9,2022,"BZE3","single DW removed"
-140054,23,-9,-9,-9,-9,-9,-9,2022,"BZE3","single DW removed"
-140187,17,-9,1,-9,79,5,2,2022,"BZE3","single DW removed"
+version https://git-lfs.github.com/spec/v1
+oid sha256:d1a7bd5cc34bac04b6c138934f991c158aac66a5c6f586668c6e9f2222438877
+size 395

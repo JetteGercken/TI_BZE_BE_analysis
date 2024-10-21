@@ -1,10 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,2006-01-01
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-0,Blöße,Blöße (unbestockter Wald) - zurzeit keine Bestockung (eine Charakterisie-rung der Bestockung entfällt),1989-01-01,
-1,Hochwald,"Hochwald - ein aus Pflanzung, Kernwüchsen oder Stockausschlag bzw. Wurzelbrut hervorgegangener Wald, der auf Grund seines Alters (> 40 Jahre) nicht mehr zum Niederwald gehört, ganze Bestände oder Teilflächen eines Bestandes werden durch Abtrieb oder während eines Verjüngungszeitraumes genutzt",1989-01-01,
-2,Plenterwald,"Plenterwald - eine Form des Hochwaldes, in der Bäume unter-schiedlichen Alters und unterschiedlicher Di-mension kleinflächig und auf Dauer gemischt sind",1989-01-01,
-3,Mittelwald,"Mittelwald - eine Mischform aus Niederwald und Hochwald, mit Oberholz aus aufgewachsenen Stockaus-schlägen und Kernwüchsen sowie Unterholz aus Stockausschlag, Wurzelbrut und Kernwuchs",1989-01-01,
-4,Niederwald,Niederwald - ein aus Stockausschlag oder Wurzelbrut hervor-gegangener Wald mit einem Alter bis 40 Jahre,1989-01-01,
-5,Kurzumtrieb,"Kurzumtriebsplantage - eine Anpflanzung schnell wachsender Bäume mit dem Ziel, innerhalb kurzer Umtriebszeiten Holz-Hackschnitzel als nachwachsenden Rohstoff zu produzieren",1989-01-01,2022-01-01
+version https://git-lfs.github.com/spec/v1
+oid sha256:090d57aec65b8e0b302ebbfafc65727902a3d988af29e06175aff77a647e2b5e
+size 1441

@@ -1,34 +1,3 @@
-"";"MoMoK_Nr";"Name";"Datum_Aufnahme";"Laenderverfahren";"Forstliche Standortseinheit";"Wasserhaushaltsstufe";"Nährkraftstufe";"Vor-/Nachnutzung";"Eigentumsart";"Schutzstatus";"BA Vorbestand";"Hist. Nutzungsform";"Fotos";"Betriebsart";"Bestockungstyp";"Vertikalstruktur";"Kronen SG1 (Hauptbestand)";"Kronen SG2 (Unterstand)";"Kronen SG3 (Oberstand)";"Kronen SG4 (Plenterartig)";"Mischungsform"
-"1";32020;"Postluch/Britz";2022-02-09;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"6";5;NA;NA;1
-"2";34010;"Gr. Eisenstraßenmoor/Johanngeorgenstadt";2021-10-12;NA;NA;NA;NA;52;2;4;NA;NA;"ja";1;1;1;"3";NA;NA;NA;1
-"3";32010;"Buxpfuhl/Melchow";2022-04-20;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"4";32050;"Stromtrasse/Spechti";2022-05-05;NA;NA;NA;NA;NA;NA;NA;NA;NA;"nein";1;8;1;"4";NA;NA;NA;1
-"5";32070;"Hellsee/Biesenthal";2022-07-04;NA;NA;NA;NA;NA;NA;NA;NA;NA;"nein";1;8;1;"2";NA;NA;NA;2
-"6";32090;"Pfauenfließ/Biesenthal";2022-06-27;NA;NA;NA;NA;NA;NA;NA;NA;NA;"nein";1;8;1;"5";NA;NA;NA;1
-"7";32080;"Plötzensee/Biesenthal";2022-07-12;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"8";33050;"Rätzsee/Fleeth";2022-08-08;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"9";33010;"Pälitzsee/Pelzkuhl";2022-08-10;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;NA;NA;NA;NA;NA;NA
-"10";34030;"Steinbach/Steinbach";2022-08-24;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"6";NA;NA;NA;1
-"11";34040;"Milchbach/Erlabrunn";2022-09-14;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"2";NA;NA;NA;1
-"12";34020;"Friedrichsheider Hochmoor/Erlabrunn";2022-09-13;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;2;1;"6";NA;NA;NA;1
-"13";33040;"Drewensee/Priepert";2022-09-06;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"14";29080;"Filzwald/Klingbrunn Bhf";2022-10-12;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"5";NA;NA;NA;1
-"15";29090;"Klosterfilz/Skt. Oswald";2022-10-11;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;2;1;"6";NA;NA;NA;1
-"16";35500;"Jävenitzer Moor/Gardelegen";2022-10-19;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"4";NA;NA;NA;1
-"17";27040;"Palmbruch/Morbach";2023-02-13;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"6";NA;NA;NA;1
-"18";27011;"Landstuhler Bruch";2023-02-08;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"2";NA;NA;NA;4
-"19";26010;"Brander Bruch/Münden";2023-02-06;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;2
-"20";26020;"Ellerhorst/Münden";2023-02-06;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;2
-"21";26030;"Krämersgrund/Wetter";2023-02-14;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"22";21030;"Schwonau";2023-05-01;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"6";NA;NA;NA;1
-"23";21020;"Krummsee";2023-05-04;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";6;NA;NA;2
-"24";23061;"Wildenkiel 2";2023-06-06;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"1";NA;NA;NA;1
-"25";23060;"Wildenkiel 1";2023-06-06;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"2";NA;NA;NA;1
-"26";23150;"Wildenloh";2023-06-29;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;9;6;"6";6;NA;NA;2
-"27";23170;"Holzurburg";2023-06-28;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;2;1;"6";NA;NA;NA;2
-"28";25100;"Ebbemoor";2023-07-04;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"5";NA;NA;NA;2
-"29";28040;"Hockenheimer Rheinbogen";2023-08-09;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;8;1;"2";NA;NA;NA;1
-"30";36041;"Sommerbachskopf 2";2023-08-22;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"6";NA;NA;NA;1
-"31";36010;"Siegmundsburg";2023-08-23;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;1;1;"2";NA;NA;NA;1
-"32";23110;"Brambosteler Moor";2023-09-12;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;2;1;"2";NA;NA;NA;1
-"33";23090;"Großes Moor bei Malloh";2023-09-11;NA;NA;NA;NA;NA;NA;NA;NA;NA;"ja";1;2;1;"4 / 6";NA;NA;NA;1
+version https://git-lfs.github.com/spec/v1
+oid sha256:4f4de74a2649d753c5d453fd5c00daf7349e983987abeee22389fceaed8c400e
+size 3558

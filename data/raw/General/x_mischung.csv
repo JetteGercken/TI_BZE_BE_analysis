@@ -1,11 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-1,Reinbestand,Reinbestand - keine Mischung (eine Baumart zu 100%),1989-01-01,
-2,stammweise,stammweise Einzelmischung,1989-01-01,
-3,truppweise,"truppweise Mischung (bis 0,5-faches der derzeitigen Bestandeshöhe)",1989-01-01,
-4,gruppenweise,"gruppenweise Mischung (0,5 bis 1-faches der derzeitigen Bestandeshöhe)",1989-01-01,
-5,horstweise,horstweise Mischung (1 bis 2-faches der derzeitigen Bestandeshöhe),1989-01-01,
-6,flächenweise,flächenweise Mischung (> 2-faches der derzeitigen Bestandeshöhe),1989-01-01,
-7,reihen/streifenweise,reihen/streifenweise Mischung (Breite bis 2-faches der derzeitigen Bestandeshöhe),1989-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:48916de4a0667bb8c87c3d29784476306d15f996a1e589682c083d1457bcd44f
+size 872

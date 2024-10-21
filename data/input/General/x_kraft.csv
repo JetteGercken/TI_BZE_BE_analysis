@@ -1,10 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",1989-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,1989-01-01,
--1,nicht erhoben,Merkmal nicht erhoben,1989-01-01,
-0,n. Hauptbestand,nicht im Hauptbestand,1989-01-01,
-1,vorherrschend,vorherrschender Baum,1989-01-01,
-2,herrschend,herrschender Baum,1989-01-01,
-3,mitherrschend,gering mitherrschender Baum,1989-01-01,
-4,beherrscht,beherrschter Baum,1989-01-01,
-5,unterständig,,1989-01-01,1989-01-01
+version https://git-lfs.github.com/spec/v1
+oid sha256:24ca858f9bdf72c85329dd0dfeebf2d66137d7d006f3bf410c63a3440ac3acb5
+size 523

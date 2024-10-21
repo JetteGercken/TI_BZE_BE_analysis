@@ -1,17 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal wurde vergessen, nicht rekonstruierbar oder unbekannt.",1989-01-01,
--2,nicht ausgeprägt,"Merkmal wurde erhoben, ist aber nicht ausgeprägt",1989-01-01,1989-01-01
--1,nicht erhoben,Merkmal wurde nicht erhoben.,1989-01-01,
-1,NN,1. Satellit (NN),2006-01-01,
-2,NE,2. Satellit (NE),2006-01-01,
-3,EE,3. Satellit (EE),2006-01-01,
-4,SE,4. Satellit (SE),2006-01-01,
-5,SS,5. Satellit (SS),2006-01-01,
-6,SW,6. Satellit (SW),2006-01-01,
-7,WW,7. Satellit (WW),2006-01-01,
-8,NW,8. Satellit (NW),2006-01-01,
-9,Mitte/Profil,9. Mitte/Profil: Beprobungsmittelpunkt,2006-01-01,
-18,Mix 1-8,Mix aus 1(N) bis 8(NW),1989-01-01,
-19,Mix 1-9,Mix aus 1(N) bis 8(NW) + 9(Mitte),1989-01-01,
-1357,Mix 1357,"Mix aus 1(N), 3(O), 5(S) und 7(W)",2006-01-01,
-13579,Mix 13579,"Mix aus 1(N), 3(O), 5(S), 7(W) und 9(Mitte)",2006-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:64ad23d51210a253ab62259aaba0850c158ba986c2b4f702d811b0c6dce70fab
+size 852

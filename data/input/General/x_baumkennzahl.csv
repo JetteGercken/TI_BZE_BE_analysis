@@ -1,12 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
--1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
-0,neu,neuer Probebaum ,2022-01-01,
-1,Wiederholung,wiederholt aufgenommener Probebaum der vorherigen Inventur,2022-01-01,
-2,entnommen,entnommener Probebaum der vorherigen Inventur,2022-01-01,
-3,ausgeschieden,"ausgeschiedener Probebaum der vorherigen Inventur (tot aber vorhanden, stehend oder liegend)",2022-01-01,
-4,ungültig,ungültiger Probebaum der letzten Inventur,2022-01-01,
-5,vergessen,vergessener Probebaum der letzten Inventur,2022-01-01,
-6,keine Probebaum mehr,Baum noch vorhanden jedoch kein Probebaum mehr,2022-01-01,
-7,nicht auffindbar,"nicht mehr auffindbarer Probebaum der vorherigen Inventur, auch nicht als Stock",2022-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:452de659b98fbdc06532f4bbb247f687f1d81db161535c1f93b0ba764cb1bd50
+size 894

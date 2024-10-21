@@ -1,2 +1,4 @@
 *.RDataTmp filter=lfs diff=lfs merge=lfs -text
 *RDataTmp filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
+output/out_data/out_data_BZE/HBI_LT_update_4.csv filter=lfs diff=lfs merge=lfs -text

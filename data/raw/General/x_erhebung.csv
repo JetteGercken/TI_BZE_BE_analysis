@@ -1,7 +1,3 @@
-id,kurz,lang,gueltig_ab,gueltig_bis
--9,fehlt,"Merkmal vergessen, nicht rekonstruierbar oder unbekannt",2022-01-01,
--2,nicht ausgeprägt,Merkmal nicht ausgeprägt/nicht vorhanden,2022-01-01,2022-01-01
--1,nicht erhoben,Merkmal nicht erhoben,2022-01-01,
-1,BZE I,Bodenzustandserhebung I   1989-1992,2022-01-01,
-2,BZE II,Bodenzustandserhebung II  2006-2008,2022-01-01,
-3,BZE III,Bodenzustandserhebung III 2022-2024,2022-01-01,
+version https://git-lfs.github.com/spec/v1
+oid sha256:21fd77f8645599a9c340bcbededa0e65db272b04faca1e031f3573c3fd74936f
+size 422
