@@ -314,16 +314,16 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
   c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
   # test 
-  # print(ggplot() +
-  #         ggtitle(my.plot.id)+
-  #         geom_sf(data = c.poly.60, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.17, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.12, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.5, aes(alpha = 0))+
-  #         geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
-  #         xlim(-80, 80)+
-  #         ylim(-80, 80))
-  
+   # print(ggplot() +
+   #         ggtitle(my.plot.id)+
+   #         geom_sf(data = c.poly.60, aes(alpha = 0))+
+   #         geom_sf(data = c.poly.17, aes(alpha = 0))+
+   #         geom_sf(data = c.poly.12, aes(alpha = 0))+
+   #         geom_sf(data = c.poly.5, aes(alpha = 0))+
+   #         geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
+   #         xlim(-80, 80)+
+   #         ylim(-80, 80))
+   # 
   #save polygones in list 
   triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e1.poly)
   
@@ -333,8 +333,6 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
 } # closing loop for square polys of edge form 1
 triangle.e1.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e1.list.nogeo, fill=TRUE)) 
 triangle.e1.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e1.coords.nogeo))
-
-
 
 
 # 3.2.1.2. nogeo creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2825,3 +2823,10 @@ ggplot() +
 # DF <- as.data.frame(SPDF)
 # 
 # plot(SpatialPolygonsDataFrame(as(st_as_sf(all.remaning.circles.poly %>% filter(plot_ID == 50131)), 'Spatial'), data=as.data.frame("yourData")))
+
+
+# export poly as gpkg
+sf_triangle_test <- st_as_sf(triangle.e1.poly.df.nogeo)
+st_write(sf_triangle_test, here(out.path.BZE3, "sf_triangle_test.gpkg"))
+
+
