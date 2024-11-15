@@ -140,9 +140,11 @@ colnames(trees_HBI) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_s
 trees_HBI <- trees_HBI %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # BZE3 forest edges
- forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ".")
- colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "A_azi",  "B_dist", "B_azi", "T_dist", "T_azi") # t = turning point
-
+ forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ".") %>% 
+   select(bund_nr, lfd_nr, randtyp, randform, anfang_dist, end_dist, knick_dist, anfang_azi, end_azi, knick_azi)
+# bund_nr lfd_nr randtyp randform anfang_dist end_dist knick_dist anfang_azi end_azi knick_azi
+ colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "B_dist", "T_dist", "A_azi", "B_azi","T_azi") # t = turning point
+ 
 
 
 ## REGENERATION                                                                                                  

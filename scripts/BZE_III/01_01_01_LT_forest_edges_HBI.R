@@ -1351,7 +1351,7 @@ outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(un
 
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
   #i = 30
-  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+  # i = which(grepl(60051, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
   
   #if(nrow(forest_edges.man.sub.2.outer.edges.nogeo) == 0){break}
   
@@ -2339,7 +2339,7 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 1
-  # i = which(grepl(160036, unique(trees_data$plot_ID)))
+  # i = which(grepl(60051, unique(trees_data$plot_ID)))[1]
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   
