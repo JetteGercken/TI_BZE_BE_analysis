@@ -203,8 +203,8 @@ forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1) # %>%
 triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID))
 triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
 for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
-  # i = 1
-  # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
+  # i = 2
+  # i = which(grepl(50121, forest_edges.man.sub.e1.nogeo$plot_ID))
   
   #if(nrow(forest_edges.man.sub.e1.nogeo) == 0){break}
   
@@ -229,13 +229,13 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   # point A 
   dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
   azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
-  x.A <- round(dist.A*sin(azi.A*pi/200), digits = 12)       # this is: easting, longitude, RW ##test*pi/200
-  y.A <- round(dist.A*cos(azi.A*pi/200), digits = 12)       # this is: northing, latitude, HW ##test*pi/200
+  x.A <- round(dist.A*sin(azi.A*(pi/200)), digits = 12)       # this is: easting, longitude, RW ##test*pi/200
+  y.A <- round(dist.A*cos(azi.A*(pi/200)), digits = 12)       # this is: northing, latitude, HW ##test*pi/200
   # point B
   dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
   azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
-  x.B <-  round(dist.B*sin(azi.B*pi/200), digits = 12)      # this is: easting, longitude, RW #test*pi/200
-  y.B <-  round(dist.B*cos(azi.B*pi/200), digits = 12)      # this is: northing, latitude, HW #test*pi/200
+  x.B <-  round(dist.B*sin(azi.B*(pi/200)), digits = 12)      # this is: easting, longitude, RW #test*pi/200
+  y.B <-  round(dist.B*cos(azi.B*(pi/200)), digits = 12)      # this is: northing, latitude, HW #test*pi/200
   
   # calcualte slope (b1) and intercept (b0)
   b1 <- (y.B- y.A)/(x.B - x.A)
@@ -314,16 +314,16 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
   c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
   # test 
-   # print(ggplot() +
-   #         ggtitle(my.plot.id)+
-   #         geom_sf(data = c.poly.60, aes(alpha = 0))+
-   #         geom_sf(data = c.poly.17, aes(alpha = 0))+
-   #         geom_sf(data = c.poly.12, aes(alpha = 0))+
-   #         geom_sf(data = c.poly.5, aes(alpha = 0))+
-   #         geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
-   #         xlim(-80, 80)+
-   #         ylim(-80, 80))
-   # 
+    print(ggplot() +
+            ggtitle(my.plot.id)+
+            geom_sf(data = c.poly.60, aes(alpha = 0))+
+            geom_sf(data = c.poly.17, aes(alpha = 0))+
+            geom_sf(data = c.poly.12, aes(alpha = 0))+
+            geom_sf(data = c.poly.5, aes(alpha = 0))+
+            geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
+            xlim(-80, 80)+
+            ylim(-80, 80))
+    
   #save polygones in list 
   triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e1.poly)
   
