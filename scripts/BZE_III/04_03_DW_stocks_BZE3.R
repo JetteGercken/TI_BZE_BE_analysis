@@ -371,6 +371,47 @@ DW_data <- DW_data %>% left_join(.,
 # 1.5 carbon stock per tree & compartiment -------------------------------------------------------
 DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
+# 1.6. assign total and belowground stocks --------------------------------
+# as we dont calcualte the belowground biomass for deadwood items there is also 
+# no total stock per item, which causes problems later. thus we create a "fake" belowground 
+# biomass of bg = 0 kg, which then allows us to calcualte a total biomass of ag+bg = total 
+# 1.6.1. assign belowground stocks --------------------------------
+bg_dw_bio_df <- DW_data %>%
+  # make sure only one row is selected by tree
+  filter(compartiment == "ag") %>% distinct() %>% 
+  mutate(compartiment = "bg",                                       # set compartiment to "bg"
+         across(contains("kg_tree"), ~ifelse(.x > 0, 0, .x)) )      # replace those stocks with 0 that are higher then 0, masses lowe 0 we still have to be able to exclude later
+
+# 1.6.2. assign total stocks --------------------------------
+# total
+total_dw_bio_df <- DW_data %>%  
+  # make sure there is only one row per tree
+  filter(compartiment == "ag") %>%  distinct() %>%
+  # deselect cols that we calcualte now: compartiement, stocks
+  select(-c("compartiment", contains("kg_tree"))) %>%
+  ## join in newly calcualted total stocks 
+  left_join(   
+    # bind all "ag" stocks and "bg" stocks together: 
+    plyr::rbind.fill(
+      DW_data[DW_data$compartiment == "ag", ], # ag stocks 
+      bg_dw_bio_df) %>%                        # bg stocks
+      # group by tree Id, plot id, inventory
+      group_by(plot_ID, tree_ID, inv) %>% 
+      # calcualte sum of ag and bg compartiment per stock column and tree
+      summarise(across(contains("kg_tree"), ~sum(.x))) %>% 
+      mutate(compartiment = "total"), 
+    by = c("plot_ID", "tree_ID", "inv")) 
+
+
+# 1.6.3. bind all dw stocks together --------------------------------
+DW_data <- 
+  rbind(
+    DW_data, 
+    bg_dw_bio_df, 
+    total_dw_bio_df
+  ) %>% 
+  arrange(plot_ID, tree_ID, compartiment) %>% distinct()
+
 
 
 # 2. data export ----------------------------------------------------------

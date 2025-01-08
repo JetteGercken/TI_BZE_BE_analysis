@@ -42,7 +42,6 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_D
 
 # 1.2. number of speices per plot -----------------------------------------
 LT_n_SP_plot <- trees_data %>%
-  filter(compartiment == "ag") %>%
   select(plot_ID, inv, SP_code) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 
@@ -613,7 +612,8 @@ RG_summary <- plyr::rbind.fill(
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "SP_code"),  # variables to group by
                  c("B_t_ha", "C_t_ha", "N_t_ha"), # variables to sum up
-                 operation = "sum_df"), # statistical operation  
+                 operation = "sum_df") %>% 
+    mutate(stand = "all"), # statistical operation  
   # 2.4.3. RG summary by plot and stand, without grouping by species ---------------------------------------------------------
   summarize_data(RG_SP_ST_BCN_ha,
                  c("stand_component", "plot_ID", "inv", "compartiment", "stand"),  # variables to group by

@@ -962,6 +962,7 @@ outer.rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(outer.rem.circle.poly.df.
 
 
 
+
 # 3.2.1.3.1. loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
@@ -1081,7 +1082,11 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.17.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.17.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.17.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.17.1.and.2.poly}
   #print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
+  
   
   ### 12m circle 
   my.circle = circle.12
@@ -1113,6 +1118,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.12.1.and.2.poly <- if(nrow(inter.poly.12.2)==0){remaining.circle.12.1}else{sf::st_difference(remaining.circle.12.1, inter.poly.12.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.12.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.12.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.12.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.12.1.and.2.poly}
   #print(plot(remaining.circle.12.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r2)))
   
   ### 5m circle 
@@ -1145,6 +1153,10 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.5.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.5.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.5.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.5.1.and.2.poly}
+  
   
   print( c(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)),
            plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
@@ -1503,6 +1515,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.17.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.17.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.17.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.17.1.and.2.poly}
   # print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
   
   ### 12m circle 
@@ -1539,6 +1554,10 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.12.1.and.2.poly <- if(nrow(inter.poly.12.2)==0){remaining.circle.12.1}else{sf::st_difference(remaining.circle.12.1, inter.poly.12.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.12.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.12.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.12.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.12.1.and.2.poly}
+  
   
   ### 5m circle 
   my.circle = circle.5
@@ -1575,7 +1594,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
-  
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.5.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.5.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.5.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.5.1.and.2.poly}
   
   #### calculate the area
   ## 17m cricle

@@ -160,13 +160,6 @@ trees_data <- trees_data %>%
             by = c("plot_ID", "tree_ID", "inv", "inv_year"), 
             multiple = "all") 
 
-(rbind(bio_ag_kg_df , 
-      bio_bg_kg_df, 
-      bio_total_kg_df) %>% 
-  distinct())[24895 ,]
-
-view(trees_data %>% filter(plot_ID == 30506 & tree_ID == 1) %>% distinct())
-
 # 1.2. Nitrogen calculation -----------------------------------------------
 # 1.2.1. Nitrogen stock in abofeground and belowgroung compartiments-----------------------------------------------
 N_ag_bg_kg_df <- trees_data %>%

@@ -303,6 +303,7 @@ bio_dw_pieces_kg_df <- DW_data %>%
 
 # 1.3.4. add biomass to DW dataframe -----------------------------
 # harmonise strings
+# aboveground and compartiments 
 all_dw_bio_df <- rbind(
   bio_dw_whole_kg_df,
   bio_dw_whole_ag_kg_df,
@@ -374,6 +375,48 @@ DW_data <- DW_data %>% mutate(C_kg_tree = carbon(B_kg_tree))
 
 
 
+# 1.6. assign total and belowground stocks --------------------------------
+# as we dont calcualte the belowground biomass for deadwood items there is also 
+# no total stock per item, which causes problems later. thus we create a "fake" belowground 
+# biomass of bg = 0 kg, which then allows us to calcualte a total biomass of ag+bg = total 
+# 1.6.1. assign belowground stocks --------------------------------
+bg_dw_bio_df <- DW_data %>%
+  # make sure only one row is selected by tree
+  filter(compartiment == "ag") %>% distinct() %>% 
+  mutate(compartiment = "bg",                                       # set compartiment to "bg"
+         across(contains("kg_tree"), ~ifelse(.x > 0, 0, .x)) )      # replace those stocks with 0 that are higher then 0, masses lowe 0 we still have to be able to exclude later
+
+# 1.6.2. assign total stocks --------------------------------
+# total
+total_dw_bio_df <- DW_data %>%  
+  # make sure there is only one row per tree
+  filter(compartiment == "ag") %>%  distinct() %>%
+  # deselect cols that we calcualte now: compartiement, stocks
+  select(-c("compartiment", contains("kg_tree"))) %>%
+   ## join in newly calcualted total stocks 
+  left_join(   
+    # bind all "ag" stocks and "bg" stocks together: 
+    plyr::rbind.fill(
+      DW_data[DW_data$compartiment == "ag", ], # ag stocks 
+      bg_dw_bio_df) %>%                        # bg stocks
+      # group by tree Id, plot id, inventory
+      group_by(plot_ID, tree_ID, inv) %>% 
+      # calcualte sum of ag and bg compartiment per stock column and tree
+      summarise(across(contains("kg_tree"), ~sum(.x))) %>% 
+      mutate(compartiment = "total"), 
+    by = c("plot_ID", "tree_ID", "inv")) 
+
+
+# 1.6.3. bind all dw stocks together --------------------------------
+DW_data <- 
+  rbind(
+    DW_data, 
+    bg_dw_bio_df, 
+    total_dw_bio_df
+  ) %>% 
+  arrange(plot_ID, tree_ID, compartiment) %>% distinct()
+
+
 # 2. data export ----------------------------------------------------------
 # create export dataset
 DW_data_update_4 <- DW_data %>% anti_join(., DW_data %>% filter(B_kg_tree <0 | is.na(B_kg_tree)) %>% select(plot_ID, tree_ID) %>% distinct(), by = c("plot_ID", "tree_ID"))
@@ -384,6 +427,8 @@ DW_removed_4 <- plyr::rbind.fill(
                           select(plot_ID, tree_ID) %>% distinct(), 
                         by = c("plot_ID", "tree_ID")) %>% 
     mutate(rem_reason = "DW excluded during stock calculation")) 
+
+
 
 write.csv(DW_data_update_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_update_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(DW_removed_4, paste0(out.path.BZE3, paste(unique(DW_data_update_4$inv)[1], "DW_removed_4", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")

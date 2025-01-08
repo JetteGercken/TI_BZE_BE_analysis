@@ -43,7 +43,6 @@ DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_D
 
 # 1.2. number of speices per plot -----------------------------------------
 LT_n_SP_plot <- trees_data %>%
-  filter(compartiment == "ag") %>%
   select(plot_ID, inv, SP_code) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 

@@ -423,7 +423,7 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 
          
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
-write.csv(SP_names_com_ID_tapeS, here("output/out_data/general_out/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(SP_names_com_ID_tapeS, here("output/out_data/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 write.csv(SP_names_com_ID_tapeS, here("data/input/general/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 stop("this is where species groups script of bze2 bze3 ends")

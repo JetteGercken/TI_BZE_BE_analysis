@@ -27,8 +27,8 @@ BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stoc
   
 # height coefficient 
 # recreate the same datasets we use in the height calculation script
-coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
-coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
+coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
+coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
 
 
 # 0.4 data prep -----------------------------------------------------------
@@ -185,7 +185,7 @@ growth_coeff <- left_join(
 
 dbh_incl_growth.list <- vector("list", length = length(unique(trees_harvested$tree_ID)))
 for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])) ) {
-  # i = 23 
+  # i = 1 
   my.plot.id <- trees_harvested[, "plot_ID"][i]
   my.tree.id <- trees_harvested[, "tree_ID"][i]
   my.dbh.cm <- trees_harvested[, "DBH_cm"][i]
@@ -194,14 +194,14 @@ for (i in 1:nrow(unique(trees_harvested[, c("plot_ID", "tree_ID")])) ) {
   my.dbh.class <- trees_harvested[, "DBH_class_10"][i]
   my.ld.icode <- trees_harvested[, "state"][i]#  ifelse(stringr::str_length(my.plot.id) == 5, substr(my.plot.id, 1, 1), substr(my.plot.id, 1, 2))
   
-  # look for annual diameter growth in cm in the plot, species, stand and canopy layer of my.tree
+  # look for annual diameter growth in cm in the plot, species, stand and DBH class of my.tree
   growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &
                                          growth$stand == my.stand & 
                                          growth$DBH_class_10 == my.dbh.class & 
                                          growth$SP_code == my.sp]
   growth.metod <- "growth_df P S DBHC SP"
   
-  # if we can´t find growth for the trees species, plot, stand and canopy layer
+  # if we can´t find growth for the trees species, plot, stand and DBH class
   # look for annual diameter growth in cm in the plot, stand and species of my.tree
   if(length(growth.cm) == 0){
     growth.cm <- growth$annual_growth_cm[growth$plot_ID == my.plot.id &

@@ -974,7 +974,6 @@ outer.rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(outer.rem.circle.poly.df.
 
 
 
-
 # 3.2.1.3.1. loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
@@ -1094,7 +1093,11 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.17.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.17.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.17.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.17.1.and.2.poly}
   #print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
+  
   
   ### 12m circle 
   my.circle = circle.12
@@ -1126,6 +1129,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.12.1.and.2.poly <- if(nrow(inter.poly.12.2)==0){remaining.circle.12.1}else{sf::st_difference(remaining.circle.12.1, inter.poly.12.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.12.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.12.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.12.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.12.1.and.2.poly}
   #print(plot(remaining.circle.12.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r2)))
   
   ### 5m circle 
@@ -1158,6 +1164,10 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.5.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.5.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.5.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.5.1.and.2.poly}
+  
   
   print( c(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)),
            plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
@@ -1351,7 +1361,7 @@ outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(un
 
 for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
   #i = 30
-  # i = which(grepl(60051, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
   
   #if(nrow(forest_edges.man.sub.2.outer.edges.nogeo) == 0){break}
   
@@ -1472,11 +1482,11 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   my.e.form.2 <- my.poly.2$e_form
   
   # # print edges and circle
-   # print(c(plot(circle.17$geometry),
-   #         plot(my.poly.1$geometry, col = "red", add = T),
-   #       plot(my.poly.2$geometry, col = "blue",  add = T), 
-   #       plot(st_geometry(tree.sf), add = TRUE)), 
-   #       plot(circle.pt$geometry, col = "green", add = T))
+  # print(c(plot(circle.17$geometry),
+  #         plot(my.poly.1$geometry, col = "red", add = T),
+  #       plot(my.poly.2$geometry, col = "blue",  add = T), 
+  #       plot(st_geometry(tree.sf), add = TRUE)), 
+  #       plot(circle.pt$geometry, col = "green", add = T))
   
   
   #### intersections between polygones and circles   
@@ -1499,8 +1509,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   inter.poly.17.1 <- if(nrow(st_intersection(inter.poly.17.1.a, circle.pt))==0){inter.poly.17.1.a}else{remaining.circle.17.1.a}
   remaining.circle.17.1 <- if(nrow(st_intersection(remaining.circle.17.1.a, circle.pt))!=0){remaining.circle.17.1.a}else{inter.poly.17.1.a}
   
-   # print(plot(inter.poly.17.1$geometry, col = "grey", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
-   # print(plot(remaining.circle.17.1$geometry, col = "white", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3), add = T)) 
+  # print(plot(inter.poly.17.1$geometry, col = "grey", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3))) 
+  # print(plot(remaining.circle.17.1$geometry, col = "white", main = paste0(my.plot.id, "-", my.e.form.1,  "-", c.r3), add = T)) 
   
   
   ## create polygone of intersecting area of second polygone with remaining circle
@@ -1516,6 +1526,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.17.1.and.2.poly <- if(nrow(inter.poly.17.2)==0){remaining.circle.17.1}else{sf::st_difference(remaining.circle.17.1, inter.poly.17.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.17.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.17.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.17.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.17.1.and.2.poly}
   # print(plot(remaining.circle.17.1.and.2.poly$geometry, main = paste0(my.plot.id, "-", my.e.form.2,  "-", c.r3))) 
   
   ### 12m circle 
@@ -1552,6 +1565,10 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.12.1.and.2.poly <- if(nrow(inter.poly.12.2)==0){remaining.circle.12.1}else{sf::st_difference(remaining.circle.12.1, inter.poly.12.2)}
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.12.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.12.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.12.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.12.1.and.2.poly}
+  
   
   ### 5m circle 
   my.circle = circle.5
@@ -1588,7 +1605,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   ## create polygone of the  remaining cricle after both intersects are decucted
   # so the area of the frst remining circle minus the area of the second remaining circle 
   remaining.circle.5.1.and.2.poly <- if(nrow(inter.poly.5.2)==0){remaining.circle.5.1}else{sf::st_difference(remaining.circle.5.1, inter.poly.5.2)}
-  
+  # as there was a problem with mutlipolygones and geometry collections being created in this step, we have to extract the collection into one poly
+  remaining.circle.5.1.and.2.poly <- if(isTRUE(sf::st_geometry_type(remaining.circle.5.1.and.2.poly) == "GEOMETRYCOLLECTION") == T){
+    sf::st_collection_extract(remaining.circle.5.1.and.2.poly, c("POLYGON"), warn = FALSE)} else{remaining.circle.5.1.and.2.poly}
   
   #### calculate the area
   ## 17m cricle
@@ -1649,8 +1668,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     mutate(across(c("plot_ID", "e_ID", "inv_year", "CCS_r_m", "area_m2"), as.numeric))
   
   # assing stand to the edges depedning on area and the stand with trees
-    # actually what i should do here is to identify which poly out of poly 1, poly2 and rem.circle holds the center of the 
-    # plot. this 
+  # actually what i should do here is to identify which poly out of poly 1, poly2 and rem.circle holds the center of the 
+  # plot. this 
   # all.polys.of.circle <- rbind(terra::vect(inter.poly.17.1), terra::vect(inter.poly.17.2), terra::vect(remaining.circle.17.1.and.2.poly))
   # plot(all.polys.of.circle)
   # text(all.polys.of.circle, labels = all.polys.of.circle$e_ID)
@@ -1720,17 +1739,17 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
                                                by = c("plot_ID", "e_ID", "inv_year"))
   
   try(print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form.1, " - ", my.e.form.2)), 
-             plot(remaining.circle.17.1.and.2.poly$geometry, col = "grey", add = T),
-             plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
-             plot(remaining.circle.5.1.and.2.poly$geometry, add = T),
-             plot(inter.poly.17.1$geometry, col = "green", add =TRUE),
-             plot(inter.poly.17.2$geometry, col = "blue", add =TRUE),
-             plot(circle.pt$geometry, col = "red",  add = TRUE),
-             legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.1$e_ID]),":",  my.poly.1$e_type), 
-                                        paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.2$e_ID]),":",  my.poly.2$e_type), 
-                                        paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
-                    col=c("green", "blue", "grey"), lty=1:2, cex=0.8),
-             plot(st_geometry(tree.sf), add = TRUE))), silent = T)
+                plot(remaining.circle.17.1.and.2.poly$geometry, col = "grey", add = T),
+                plot(remaining.circle.12.1.and.2.poly$geometry, add = T),
+                plot(remaining.circle.5.1.and.2.poly$geometry, add = T),
+                plot(inter.poly.17.1$geometry, col = "green", add =TRUE),
+                plot(inter.poly.17.2$geometry, col = "blue", add =TRUE),
+                plot(circle.pt$geometry, col = "red",  add = TRUE),
+                legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.1$e_ID]),":",  my.poly.1$e_type), 
+                                           paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly.2$e_ID]),":",  my.poly.2$e_type), 
+                                           paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+                       col=c("green", "blue", "grey"), lty=1:2, cex=0.8),
+                plot(st_geometry(tree.sf), add = TRUE))), silent = T)
   
   # save datacframe per plot in list
   outer.edges.list.two.edges.nogeo[[i]] <- inter.area.df
