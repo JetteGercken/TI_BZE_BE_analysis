@@ -199,6 +199,8 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
     select(-"BA_m2_ha_total")
 }
 
+
+
 # 1.4.3. Plot, stand: stocks per hektar ------------------------------------------------------
 LT_ST_BCNBAn_ha <- summarize_data(LT_SP_ST_P_BCNBAn_ha, 
                                   c("plot_ID", "inv", "compartiment", "stand"), 
@@ -1412,3 +1414,44 @@ LT_TY <- LT_P %>%
             by = c("plot_ID", "inv", "dw_sp", "dw_type", "decay"))
 
 
+# n. test diff stand area plot area for ha sum ----------------------------
+
+### test standwise
+sumary_ST_plot_A <- trees_data  %>% 
+  group_by(plot_ID, plot_A_ha, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
+  # convert Biomass into tons per hectar and sum it up per sampling circuit 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitve samplign circuit in ha 
+          C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
+          N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
+          BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
+          n_trees_CCS_ha = n()/plot_A_ha) %>% 
+  distinct() %>% filter(plot_ID %in% c(n_stand_P$plot_ID[n_stand_P$n_stands>1])) %>% 
+  # now we summarise all the t/ha values of the cirlces per plot
+  group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
+  summarise(B_t_ha = sum(B_CCS_t_ha), 
+            C_t_ha = sum(C_CCS_t_ha), 
+            N_t_ha = sum(N_CCS_t_ha), 
+            BA_m2_ha = sum(BA_CCS_m2_ha), 
+            n_ha = sum(n_trees_CCS_ha))
+
+sumary_ST_stand_A <- trees_data  %>% 
+  group_by(plot_ID, stand_plot_A_ha  , CCS_r_m, inv, stand, SP_code, compartiment) %>% 
+  # convert Biomass into tons per hectar and sum it up per sampling circuit 
+  reframe(B_CCS_t_ha = sum(ton(B_kg_tree))/stand_plot_A_ha  , # plot are is the area of the respecitve samplign circuit in ha 
+          C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha  ,
+          N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha  , 
+          BA_CCS_m2_ha = sum(BA_m2)/stand_plot_A_ha  , 
+          n_trees_CCS_ha = n()/stand_plot_A_ha  ) %>% 
+  distinct()%>% filter(plot_ID %in% c(n_stand_P$plot_ID[n_stand_P$n_stands>1])) %>% 
+  # now we summarise all the t/ha values of the cirlces per plot
+  group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
+  summarise(B_t_ha = sum(B_CCS_t_ha), 
+            C_t_ha = sum(C_CCS_t_ha), 
+            N_t_ha = sum(N_CCS_t_ha), 
+            BA_m2_ha = sum(BA_CCS_m2_ha), 
+            n_ha = sum(n_trees_CCS_ha))
+
+test_standA_vs_plotA <- left_join(sumary_ST_plot_A, 
+                                  sumary_ST_stand_A, 
+                                  by = c("plot_ID", "inv", "stand", "SP_code", "compartiment")) %>% 
+  filter(compartiment == "ag")

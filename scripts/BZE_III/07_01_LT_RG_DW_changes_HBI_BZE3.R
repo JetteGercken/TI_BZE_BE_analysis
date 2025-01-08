@@ -502,12 +502,20 @@ TY_stock_changes_P[, paste0(stringr::str_sub(pre_vars, end=-5), "_diff")] <- TY_
 TY_stock_changes <- TY_stock_changes_P %>% 
   select("stand_type", "stand_component", "plot_ID","dom_SP", "stand", "SP_code", "compartiment", contains("diff"))
 
+# 5.4. binding all forest datasets (LT, RG, DW) together ------------------
+LT_RG_DW_TY_changes <- plyr::rbind.fill(LT_changes, 
+                                       RG_changes,
+                                       DW_changes, 
+                                       all_components_changes, 
+                                       TY_stock_changes) %>% 
+  arrange(plot_ID)
 
 
 
 
 
-# 5. FSI changes ----------------------------------------------------------
+
+# 6. FSI changes ----------------------------------------------------------
 FSI_changes_P <- 
   BZE3_FSI %>% 
   select(plot_ID, contains("FSI")) %>% 
@@ -558,6 +566,8 @@ write.csv(FSI_changes_P, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_tree
 # forest type wise summarised changes
 write.csv(TY_stock_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_RG_DW_changes_all_groups_TY", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
+# plotwise: Lt, RG, DW and Typewise in one csv
+write.csv(LT_RG_DW_TY_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_RG_DW_changes_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 stop("this is where notes of growth script hbi bze3 start")
 
