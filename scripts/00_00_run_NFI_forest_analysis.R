@@ -127,8 +127,23 @@ source(paste0(here(), "/scripts/BZE_III/04_03_DW_stocks_BZE3.R"))
 
 ##### summarising hectar values ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI summarising hectar values
+# living trees
+source(paste0(here(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_HBI.R"))
+# regeneration trees
+source(paste0(here(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_HBI.R"))
+# deadwood
+source(paste0(here(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_HBI.R"))
+# all stand components
 source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_HBI.R"))
+
 ## BZE3 summarising hectar values
+# living trees
+source(paste0(here(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_BZE3.R"))
+# regeneration
+source(paste0(here(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_BZE3.R"))
+# deadwood
+source(paste0(here(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_BZE3.R"))
+# all stand components 
 source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_BZE3.R"))
 
 
