@@ -1,66 +1,66 @@
-# Thuenen Institute - Bodenschutz und Waldzustand
-# Analysis of the forest inventory accompanying the peat land soil inventory
-# Functions & require
-
-
-# ----- 0. SETUP ---------------------------------------------------------------
-# ----- 0.1. Packages  ---------------------------------------------------------
-## datamanagement
-  install.packages("usethis")
-   install.packages('RPostgreSQL')
-   install.packages("RPostgres")
-   install.packages("DBI")
-    install.packages("here")
-    install.packages("readr")
-    install.packages("tidyverse")
-  install.packages("tidyr")
-    install.packages("tibble")
-    install.packages("dplyr")
-    install.packages("data.table")
-    install.packages("broom")
-    install.packages("purrr")
-  install.packages("devtools")
-  install.packages("plyr")
-   install.packages("RODBC")
-   install.packages("rstudioapi")
-   install.packages("gsubfn")
-   install.packages("sjmisc")
-    ## laTex
-    install.packages("stargazer")  #for compatability with Latex
-    install.packages("tikzDevice") #for compatability with Latex#
-    # visualisation
-    install.packages("ggthemes")
-    install.packages("ggplot2")
-    install.packages("reshape2") #for multiple y values
-    install.packages("ggforce") #for zooming in parts of the plot
-    install.packages("ggrepel")
-    options(tz="CA")
-    install.packages("reshape2")
-    install.packages("gridExtra")
-  # analysis
-    install.packages("corrplot")
-  install.packages("AICcmodavg")
-  # forest related
-     install.packages("forestmangr")
-    install.packages("rBDAT")
-    install.packages("TapeR")
-   install.packages("pkgbuild")
-  require("devtools")
-    if (! require("remotes")) 
-      install.packages("remotes")
- #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
- #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-   install.packages("magrittr")
- 
-   if(!require(devtools)) install.packages("devtools")
-   devtools::install_github("kassambara/ggcorrplot")
- 
-#  # spatial
-   install.packages("sf")
-   install.packages("rgdal")
-  # install.packages("terra")
-   install.packages("sfheaders")
- install.packages("splancs")
+# # Thuenen Institute - Bodenschutz und Waldzustand
+# # Analysis of the forest inventory accompanying the peat land soil inventory
+# # Functions & require
+# 
+# 
+# # ----- 0. SETUP ---------------------------------------------------------------
+# # ----- 0.1. Packages  ---------------------------------------------------------
+# ## datamanagement
+#   install.packages("usethis")
+#    install.packages('RPostgreSQL')
+#    install.packages("RPostgres")
+#    install.packages("DBI")
+#     install.packages("here")
+#     install.packages("readr")
+#     install.packages("tidyverse")
+#   install.packages("tidyr")
+#     install.packages("tibble")
+#     install.packages("dplyr")
+#     install.packages("data.table")
+#     install.packages("broom")
+#     install.packages("purrr")
+#   install.packages("devtools")
+#   install.packages("plyr")
+#    install.packages("RODBC")
+#    install.packages("rstudioapi")
+#    install.packages("gsubfn")
+#    install.packages("sjmisc")
+#     ## laTex
+#     install.packages("stargazer")  #for compatability with Latex
+#     install.packages("tikzDevice") #for compatability with Latex#
+#     # visualisation
+#     install.packages("ggthemes")
+#     install.packages("ggplot2")
+#     install.packages("reshape2") #for multiple y values
+#     install.packages("ggforce") #for zooming in parts of the plot
+#     install.packages("ggrepel")
+#     options(tz="CA")
+#     install.packages("reshape2")
+#     install.packages("gridExtra")
+#   # analysis
+#     install.packages("corrplot")
+#   install.packages("AICcmodavg")
+#   # forest related
+#      install.packages("forestmangr")
+#     install.packages("rBDAT")
+#     install.packages("TapeR")
+#    install.packages("pkgbuild")
+#   require("devtools")
+#     if (! require("remotes")) 
+#       install.packages("remotes")
+#  #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
+#  #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#    install.packages("magrittr")
+#  
+#    if(!require(devtools)) install.packages("devtools")
+#    devtools::install_github("kassambara/ggcorrplot")
+#  
+# #  # spatial
+#    install.packages("sf")
+#    install.packages("rgdal")
+#   # install.packages("terra")
+#    install.packages("sfheaders")
+#  install.packages("splancs")
 
 
 # ----- 0.2. require   ---------------------------------------------------------
