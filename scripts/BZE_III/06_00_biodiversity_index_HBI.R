@@ -95,7 +95,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                select(plot_ID, CCS_r_m) %>% 
                                distinct()%>% 
                                group_by(plot_ID) %>% 
-                               summarise(n_CCS = n()) %>% 
+                               summarise(n_CCS = dplyr::n()) %>% 
                                filter(n_CCS == 3) %>% 
                                select(plot_ID) ) %>% 
     # if the Rbind caused NAs to appear because there were whole plots without a any tree CCS then we have to set the respective variable to 0
@@ -181,7 +181,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   select(plot_ID, inv, bark_TY) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(LT_n_bark_TY = as.numeric(n())),
+                  summarise(LT_n_bark_TY = as.numeric(dplyr::n())),
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
@@ -190,7 +190,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_CCS = n()) %>% 
+                  summarise(n_CCS = dplyr::n()) %>% 
                   filter(n_CCS == 3) %>% 
                   select(plot_ID, inv)
               ) %>% 
@@ -211,7 +211,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
       select(plot_ID, inv, bark_TY) %>% 
       distinct() %>% 
       group_by(plot_ID, inv) %>% 
-      summarise(LT_n_bark_TY = as.numeric(n())), 
+      summarise(LT_n_bark_TY = as.numeric(dplyr::n())), 
     # calculate FSI of bark diversity     
     "LT_FSI_bark_TY" = c(FSI(as.numeric((( trees_data %>% filter(compartiment == "ag") %>% 
                                              rowwise() %>% 
@@ -221,7 +221,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                              select(plot_ID, inv, bark_TY) %>% 
                                              distinct() %>% 
                                              group_by(plot_ID, inv) %>% 
-                                             summarise(LT_n_bark_TY = as.numeric(n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
+                                             summarise(LT_n_bark_TY = as.numeric(dplyr::n())))$LT_n_bark_TY))))), # select number of barktypes per plot from summary 
     by = c("plot_ID")) %>% 
     distinct()
 }
@@ -294,7 +294,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_CCS = n()) %>% 
+                  summarise(n_CCS = dplyr::n()) %>% 
                   filter(n_CCS == 3) %>% 
                   select(plot_ID, inv)
               ) %>% 
@@ -354,7 +354,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   select(plot_ID, inv, fruit_TY) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(LT_n_fruit_TY = as.numeric(n())),
+                  summarise(LT_n_fruit_TY = as.numeric(dplyr::n())),
                 # select only those plots with empty sampling circuits that have all 3 circuits empty
                 # by counting the circuits per plot and filtering for those with n_CCS ==3
                 trees_stat_2 %>% 
@@ -363,7 +363,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                   select(plot_ID, inv, CCS_r_m) %>% 
                   distinct()%>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_CCS = n()) %>% 
+                  summarise(n_CCS = dplyr::n()) %>% 
                   filter(n_CCS == 3) %>% 
                   select(plot_ID, inv)
               ) %>% 
@@ -381,14 +381,14 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
       select(plot_ID, inv, fruit_TY) %>% 
       distinct() %>% 
       group_by(plot_ID, inv) %>% 
-      summarise(LT_n_fruit_TY = as.numeric(n())), 
+      summarise(LT_n_fruit_TY = as.numeric(dplyr::n())), 
     # calculate FSI of bark diversity     
     "LT_FSI_fruit_TY" = c(FSI(as.numeric((trees_data %>% 
                                             left_join(., LT_fruit_type_df, by = c("plot_ID", "tree_ID", "inv"), multiple = "all") %>%  # multiple = all because every tree is repeated mulptipe times due to the many compartiments per tree
                                             select(plot_ID, inv, fruit_TY) %>% 
                                             distinct() %>% 
                                             group_by(plot_ID, inv) %>% 
-                                            summarise(LT_n_fruit_TY = as.numeric(n())))$LT_n_fruit_TY)))
+                                            summarise(LT_n_fruit_TY = as.numeric(dplyr::n())))$LT_n_fruit_TY)))
   ), # select number of barktypes per plot from summary 
   by = c("plot_ID", "inv")) %>% # close left join into FSI dataset
     distinct()
@@ -426,7 +426,7 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
                     select(plot_ID,ST_LY_type, inv) %>% 
                     distinct() %>% 
                     group_by(plot_ID, inv) %>% 
-                    summarise(n_S_L_TY = n()) %>% 
+                    summarise(n_S_L_TY = dplyr::n()) %>% 
                     # check if the plot has 2 different S/L types or not
                     filter(n_S_L_TY < 2) %>% 
                     select(plot_ID), 
@@ -479,7 +479,7 @@ if(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!= 0){
                     select(plot_ID,ST_LY_type, inv) %>% 
                     distinct() %>% 
                     group_by(plot_ID, inv) %>% 
-                    summarise(n_S_L_TY = n()) %>% 
+                    summarise(n_S_L_TY = dplyr::n()) %>% 
                     filter(n_S_L_TY < 2) %>% 
                     select(plot_ID), 
                   by = "plot_ID") %>% 

@@ -57,7 +57,7 @@ n_stand_P <- plyr::rbind.fill(trees_data %>%
   select(plot_ID, inv, stand) %>% 
   distinct() %>% 
   group_by(plot_ID, inv) %>% 
-  summarise(n_stands = n()) %>% 
+  summarise(n_stands = dplyr::n()) %>% 
   mutate(stand_component = "all")
 
 

@@ -35,7 +35,7 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
                                               reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
                                                       C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                                       N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-                                                      n_ha = n()/plot_A_ha) %>% 
+                                                      n_ha = dplyr::n()/plot_A_ha) %>% 
                                               distinct() , 
                                             DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))
   ) %>% 
@@ -47,7 +47,7 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
     reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
             N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-            n_ha = n()/plot_A_ha) %>% 
+            n_ha = dplyr::n()/plot_A_ha) %>% 
     distinct()
 }
 
@@ -155,7 +155,7 @@ DW_summary <-
       left_join(., DW_data %>% 
                   filter(compartiment == "ag") %>% 
                   group_by(plot_ID, inv) %>% 
-                  reframe(n_ha = n()/plot_A_ha) %>% 
+                  reframe(n_ha = dplyr::n()/plot_A_ha) %>% 
                   distinct(), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
@@ -165,7 +165,7 @@ DW_summary <-
                   select(plot_ID, inv, decay) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_dec = n()), 
+                  summarise(n_dec = dplyr::n()), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
       # number of deadwood types per plot
@@ -174,7 +174,7 @@ DW_summary <-
                   select(plot_ID, inv, dw_type) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_dw_TY = n()), 
+                  summarise(n_dw_TY = dplyr::n()), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
       mutate(decay = "all", 

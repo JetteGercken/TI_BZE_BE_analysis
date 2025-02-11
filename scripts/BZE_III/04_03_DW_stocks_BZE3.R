@@ -351,7 +351,7 @@ N_dw_ag_kg_df <- N_dw_ag_comps_kg_df %>%
   # select only compartitionated trees 
   filter(dw_type %in% c(2, 5, 3, 4) & compartiment != "ag" )%>% 
   group_by(plot_ID, tree_ID, inv, inv_year, dw_type) %>% 
-  summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+  dplyr::summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
   mutate(compartiment = "ag") %>% 
   select("plot_ID", "tree_ID", "inv", 
          "inv_year", "dw_type", "compartiment", "N_kg_tree")
