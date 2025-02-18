@@ -49,45 +49,45 @@
 # functions & packages
 source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
-source(paste0(here::here(),"/scripts/02_00_connect_R_PostgreSQL.R"))
+source(paste0(getwd(),"/scripts/02_00_connect_R_PostgreSQL.R"))
 # data wrangling & sorting for bark and fruit types for forest structural indeyx calcualtion
-source(paste0(here(), "/scripts/03_00_bark_fruit_types_FSI.R"))
+source(paste0(getwd(), "/scripts/03_00_bark_fruit_types_FSI.R"))
 # sort species into species groups required for data sorting & analysis
-source(paste0(here(), "/scripts/04_00_species_groups.R"))
+source(paste0(getwd(), "/scripts/04_00_species_groups.R"))
 
 
 
 
 ##### inventory status of the plot and sampling circles -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI sorting by inventory status of the plot
-source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_HBI.R"))
 ## BZE3 sorting by inventory status of the plot
-source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE3.R"))
 
 
 ##### forest edges -------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI forest edges
 # LT
- georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_01_01_LT_forest_edges_HBI.R")), 
-               source(paste0(here(), "/scripts/BZE_III/01_01_02_LT_forest_edges_georef_HBI.R"))
+ georef_on_off(source(paste0(getwd(), "/scripts/BZE_III/01_01_01_LT_forest_edges_HBI.R")), 
+               source(paste0(getwd(), "/scripts/BZE_III/01_01_02_LT_forest_edges_georef_HBI.R"))
       ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
 # RG
- georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_02_01_RG_forest_edges_HBI.R")), 
-               source(paste0(here(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_HBI.R"))
+ georef_on_off(source(paste0(getwd(), "/scripts/BZE_III/01_02_01_RG_forest_edges_HBI.R")), 
+               source(paste0(getwd(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_HBI.R"))
                ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
  
 
 ## BZE forest edges
 # LT
- georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_01_01_LT_forest_edges_BZE3.R")), 
-               source(paste0(here(), "/scripts/BZE_III/01_01_02_LT_forest_edges_georef_BZE3.R"))
+ georef_on_off(source(paste0(getwd(), "/scripts/BZE_III/01_01_01_LT_forest_edges_BZE3.R")), 
+               source(paste0(getwd(), "/scripts/BZE_III/01_01_02_LT_forest_edges_georef_BZE3.R"))
      ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
  # RG
- georef_on_off(source(paste0(here(), "/scripts/BZE_III/01_02_01_RG_forest_edges_BZE3.R")), 
-               source(paste0(here(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_BZE3.R"))
+ georef_on_off(source(paste0(getwd(), "/scripts/BZE_III/01_02_01_RG_forest_edges_BZE3.R")), 
+               source(paste0(getwd(), "/scripts/BZE_III/01_02_02_RG_forest_edges_georef_BZE3.R"))
                ## !!!! here one can select to work with the georefferenced or not georeffrenced plots and forest edges, default is not georefferenced
                , georefference = "not_georefferenced")
  
@@ -95,83 +95,83 @@ source(paste0(here(), "/scripts/BZE_III/01_00_RG_LT_DW_inventory_plot_status_BZE
 
 
 ##### tree inventory status ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
-source(paste0(here(), "/scripts/BZE_III/02_01_LT_invetory_status_HBI_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/02_01_LT_invetory_status_HBI_BZE3.R"))
 
 
 
 ##### tree heights ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 ## HBI & BZE3 together: LT tree height
-source(paste0(here(), "/scripts/BZE_III/03_01_LT_heights_HBI_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/03_01_LT_heights_HBI_BZE3.R"))
 
 
 
 ##### stocks ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI stocks
 # LT
-source(paste0(here(), "/scripts/BZE_III/04_01_LT_stocks_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_01_LT_stocks_HBI.R"))
 # RG
-source(paste0(here(), "/scripts/BZE_III/04_02_RG_stocks_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_02_RG_stocks_HBI.R"))
 # DW
-source(paste0(here(), "/scripts/BZE_III/04_03_DW_stocks_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_03_DW_stocks_HBI.R"))
 
 
 ## BZE3 stocks
 # LT
-source(paste0(here(), "/scripts/BZE_III/04_01_LT_stocks_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_01_LT_stocks_BZE3.R"))
 # RG
-source(paste0(here(), "/scripts/BZE_III/04_02_RG_stocks_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_02_RG_stocks_BZE3.R"))
 # DW
-source(paste0(here(), "/scripts/BZE_III/04_03_DW_stocks_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/04_03_DW_stocks_BZE3.R"))
 
 
 
 ##### summarising hectar values ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI summarising hectar values
 # living trees
-source(paste0(here(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_HBI.R"))
 # regeneration trees
-source(paste0(here(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_HBI.R"))
 # deadwood
-source(paste0(here(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_HBI.R"))
 # all stand components
-source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_04_LT_RG_DW_summarising_hectar_values_HBI.R"))
 
 ## BZE3 summarising hectar values
 # living trees
-source(paste0(here(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_01_LT_summarising_hectar_values_BZE3.R"))
 # regeneration
-source(paste0(here(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_02_RG_summarising_hectar_values_BZE3.R"))
 # deadwood
-source(paste0(here(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_03_DW_summarising_hectar_values_BZE3.R"))
 # all stand components 
-source(paste0(here(), "/scripts/BZE_III/05_00_LT_RG_DW_summarising_hectar_values_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/05_04_LT_RG_DW_summarising_hectar_values_BZE3.R"))
 
 
 
 ##### biodiversity: forest structural diversity index (FSI) ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## HBI structural diversity
-source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_HBI.R"))
+source(paste0(getwd(), "/scripts/BZE_III/06_00_biodiversity_index_HBI.R"))
 
 ## BZE3 structural diversity
-source(paste0(here(), "/scripts/BZE_III/06_00_biodiversity_index_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/06_00_biodiversity_index_BZE3.R"))
 
 
 
 ##### growth & changes -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # LT, RG, DW growth HBI & BZE3 together
-source(paste0(here(), "/scripts/BZE_III/07_01_LT_RG_DW_changes_HBI_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/07_01_LT_RG_DW_changes_HBI_BZE3.R"))
 
 # extraced wood mass
-source(paste0(here(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R"))
+source(paste0(getwd(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R"))
  
  
  
 ##### competition  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  # LT competition index calcualtion HBI 
- source(paste0(here(), "/scripts/BZE_III/09_01_LT_competition.R"))
+ source(paste0(getwd(), "/scripts/BZE_III/09_01_LT_competition.R"))
  
 
 
 ##### optional: Plausibility -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-source(paste0(here(), "/scripts/BZE_III/10_00_RG_LT_DW_stock_plausi.R"))
+source(paste0(getwd(), "/scripts/BZE_III/10_00_RG_LT_DW_stock_plausi.R"))
 

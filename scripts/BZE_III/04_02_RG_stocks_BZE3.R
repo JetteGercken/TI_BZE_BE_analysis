@@ -146,7 +146,11 @@ bio.total.kg.RG.df <-
     bio.bg.kg.RG.below.1.3.df
   ) %>% 
   group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+<<<<<<< HEAD
   summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+=======
+  dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
   mutate(compartiment = "total") %>% 
   select("plot_ID","CCS_nr", "tree_ID", "inv", 
          "inv_year", "compartiment", "B_kg_tree")
@@ -190,7 +194,11 @@ N_total_kg_df <-
       # select compartiments "ndl", "fwb",  and add them together
       filter(!(compartiment %in% c("ag", "bg", "total"))) %>% 
       group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+<<<<<<< HEAD
       summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+=======
+      dplyr::summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
       mutate(compartiment = "ag") %>% 
       select("plot_ID","CCS_nr", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"),
@@ -204,7 +212,11 @@ N_total_kg_df <-
       # select compartiments "ndl", "fwb", "bg" and add them together
       # filter(!(compartiment %in% c("ag", "total"))) %>% 
       group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+<<<<<<< HEAD
       summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+=======
+      dplyr::summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
       mutate(compartiment = "total") %>% 
       select("plot_ID","CCS_nr", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree")) %>% 
@@ -642,14 +654,22 @@ RG_data %>% left_join(.,
                         rbind(
                           bio.ag.kg.RG.above.1.3.df, bio.bg.kg.RG.above.1.3.df) %>% 
                           group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+<<<<<<< HEAD
                           summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+=======
+                          dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
                           mutate(compartiment = "total") %>% 
                           select("plot_ID", "CCS_nr", "tree_ID", "inv", 
                                  "inv_year", "compartiment", "B_kg_tree"),
                         # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
                         bio.ag.kg.RG.above.1.3.df%>% 
                           group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
+<<<<<<< HEAD
                           summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+=======
+                          dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
                           mutate(compartiment = "ag")%>% 
                           select("plot_ID","CCS_nr", "tree_ID", "inv", 
                                  "inv_year", "compartiment", "B_kg_tree"), 

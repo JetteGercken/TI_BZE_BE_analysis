@@ -49,8 +49,13 @@ bark_div <- structure(list(Tree.species = c("Abies alba", "Acer campestre",
                                  "> 35 cm", "> 40 cm", "> 40 cm", "> 30 cm", "> 25 cm", "> 35 cm", 
                                  "omitted", "> 40 cm", "omitted", "omitted", "omitted", "> 35 cm", 
                                  "> 35 cm")), class = "data.frame", row.names = c(NA, -34L))
+<<<<<<< HEAD
 write.csv(bark_div, paste0(here("data/raw/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
 write.csv(bark_div, paste0(here("data/input/general"), "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+=======
+write.csv(bark_div, paste0(getwd(), "/data/raw/general", "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+write.csv(bark_div, paste0(getwd(), "/data/input/general", "/", "barkdiv_FSI_storch_2018.csv"), row.names = FALSE)
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 
 ## fruit diversity for storch FSI index
 # fruit_div <- read.delim(file = here("data/input/general/fruitdiv_FSI_storch_2018.csv"),  sep = ",", dec = ".")
@@ -87,9 +92,15 @@ fruit_div <- as.data.frame(structure(list(
                "apple fruit", "apple fruit")), class = "data.frame", row.names = c(NA, 
                                                                                    -34L)))
 # export FSI fruitdiv "raw" original dataframe by felix storch                                                                                                                                                                                                                                        -34L)))
+<<<<<<< HEAD
 write.csv(fruit_div, paste0(here("data/raw/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
 write.csv(fruit_div, paste0(here("data/input/general"), "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
 SP_names <- read.delim(file = here("data/input/general/x_bart.csv"), sep = ",", dec = ".")
+=======
+write.csv(fruit_div, paste0(getwd(), "/data/raw/general", "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+write.csv(fruit_div, paste0(getwd(), "/data/raw/general", "/", "fruitdiv_FSI_storch_2018.csv"), row.names = FALSE)
+SP_names <- read.delim(file = paste0(getwd(), "/data/input/general/x_bart.csv"), sep = ",", dec = ".")
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 
 
 # ----- 0.3. dataprep & colnames --------------------------------------------------------------
@@ -97,7 +108,11 @@ SP_names <- read.delim(file = here("data/input/general/x_bart.csv"), sep = ",", 
 SP_names <- SP_names  %>% 
   select(- c(gueltig_ab, gueltig_bis)) %>% 
   # https://stackoverflow.com/questions/21003311/how-to-combine-multiple-character-columns-into-a-single-column-in-an-r-data-fram
+<<<<<<< HEAD
   unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
+=======
+  tidyr::unite(bot_name, genus, species, sep = " ", remove = FALSE) %>%  # creating one column with complete botanic name
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
   mutate(bot_name = ifelse(bot_name == "-2 -2", -2, bot_name))   # the error codes are joined in one column too, which i don´t want, so I´ll keep them single
 colnames(SP_names) <- c("Nr_code", "Chr_code_ger", "name", "icode", "bot_name", "bot_genus", 
                         "bot_species","BWI",  "LH_NH")
@@ -164,7 +179,11 @@ try( # "try" statement needed so the run_NDI script can run, since the coercion 
                       mutate(u_border_cm_TY2 = ifelse(DBH_type_2 %in% c("omitted", "?") | startsWith(DBH_type_2, ">"), DBH_type_2, gsub('^....|..$', '', DBH_type_2))) %>% 
                       mutate(u_border_cm_TY2 = ifelse(startsWith(u_border_cm_TY2, ">"), "omitted", u_border_cm_TY2)) %>% 
                       mutate(l_border_cm_TY3 = ifelse(DBH_type_3 %in% c("omitted", "?"), DBH_type_3, gsub('^.|..$', '', DBH_type_3))) %>% 
+<<<<<<< HEAD
                       # semi join (filter) for those trees that have multiple species listed and summarize their bark type and create a common group for them 
+=======
+                      # semi join (filter) for those trees that have multiple species listed and summarise their bark type and create a common group for them 
+>>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
                       # withthe bot_species spp. 
                       semi_join(
                         bark_div %>%

@@ -1,66 +1,66 @@
-# Thuenen Institute - Bodenschutz und Waldzustand
-# Analysis of the forest inventory accompanying the peat land soil inventory
-# Functions & require
-
-
-# ----- 0. SETUP ---------------------------------------------------------------
-# ----- 0.1. Packages  ---------------------------------------------------------
-## datamanagement
- #  install.packages("usethis")
- #   install.packages('RPostgreSQL')
- #   install.packages("RPostgres")
- #   install.packages("DBI")
- #    install.packages("here")
- #    install.packages("readr")
- #    install.packages("tidyverse")
- #    install.packages("tidyr")
- #    install.packages("tibble")
- #    install.packages("dplyr")
- #    install.packages("data.table")
- #    install.packages("broom")
- #    install.packages("purrr")
- #    install.packages("devtools")
- #    install.packages("plyr")
- #   install.packages("RODBC")
- #   install.packages("rstudioapi")
- #   install.packages("gsubfn")
- #   install.packages("sjmisc")
- #    ## laTex
- #    install.packages("stargazer")  #for compatability with Latex
- #    install.packages("tikzDevice") #for compatability with Latex#
- #    # visualisation
- #    install.packages("ggthemes")
- #    install.packages("ggplot2")
- #    install.packages("reshape2") #for multiple y values
- #    install.packages("ggforce") #for zooming in parts of the plot
- #    install.packages("ggrepel")
- #    options(tz="CA")
- #    install.packages("reshape2")
- #    install.packages("gridExtra")
- #  # analysis
- #    install.packages("corrplot")
- #    install.packages("AICcmodavg")
- #  # forest related
- #     install.packages("forestmangr")
- #    install.packages("rBDAT")
- #    install.packages("TapeR")
- #   install.packages("pkgbuild")
- #  require("devtools")
- #    if (! require("remotes")) 
- #      install.packages("remotes")
- # #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
- # #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
- #   install.packages("magrittr")
- # 
- #   if(!require(devtools)) install.packages("devtools")
- #   devtools::install_github("kassambara/ggcorrplot")
- # 
- #  # spatial
- #   install.packages("sf")
- #   install.packages("rgdal")
- #   install.packages("terra")
- #  install.packages("sfheaders")
- # install.packages("splancs")
+# # Thuenen Institute - Bodenschutz und Waldzustand
+# # Analysis of the forest inventory accompanying the peat land soil inventory
+# # Functions & require
+# 
+# 
+# # ----- 0. SETUP ---------------------------------------------------------------
+# # ----- 0.1. Packages  ---------------------------------------------------------
+# ## datamanagement
+#   install.packages("usethis")
+#    install.packages('RPostgreSQL')
+#    install.packages("RPostgres")
+#    install.packages("DBI")
+#     install.packages("here")
+#     install.packages("readr")
+#     install.packages("tidyverse")
+#   install.packages("tidyr")
+#     install.packages("tibble")
+#     install.packages("dplyr")
+#     install.packages("data.table")
+#     install.packages("broom")
+#     install.packages("purrr")
+#   install.packages("devtools")
+#   install.packages("plyr")
+#    install.packages("RODBC")
+#    install.packages("rstudioapi")
+#    install.packages("gsubfn")
+#    install.packages("sjmisc")
+#     ## laTex
+#     install.packages("stargazer")  #for compatability with Latex
+#     install.packages("tikzDevice") #for compatability with Latex#
+#     # visualisation
+#     install.packages("ggthemes")
+#     install.packages("ggplot2")
+#     install.packages("reshape2") #for multiple y values
+#     install.packages("ggforce") #for zooming in parts of the plot
+#     install.packages("ggrepel")
+#     options(tz="CA")
+#     install.packages("reshape2")
+#     install.packages("gridExtra")
+#   # analysis
+#     install.packages("corrplot")
+#   install.packages("AICcmodavg")
+#   # forest related
+#      install.packages("forestmangr")
+#     install.packages("rBDAT")
+#     install.packages("TapeR")
+#    install.packages("pkgbuild")
+#   require("devtools")
+#     if (! require("remotes")) 
+#       install.packages("remotes")
+#  #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
+#  #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#    install.packages("magrittr")
+#  
+#    if(!require(devtools)) install.packages("devtools")
+#    devtools::install_github("kassambara/ggcorrplot")
+#  
+# #  # spatial
+#    install.packages("sf")
+#    install.packages("rgdal")
+#   # install.packages("terra")
+#    install.packages("sfheaders")
+#  install.packages("splancs")
 
 
 # ----- 0.2. require   ---------------------------------------------------------
@@ -92,15 +92,15 @@ library(tikzDevice) #for compatability with Latex
 library(ggthemes)
 library(ggplot2)
 library(reshape2) #for multiple y values
-library(ggforce) #for zooming in parts of the plot
-library(ggrepel)
+#library(ggforce) #for zooming in parts of the plot
+# library(ggrepel)
 library(gridExtra)
 options(tz="CA")
 # analysis
 library(corrplot)
-library(AICcmodavg)
-library(ggcorrplot)
-# forest related
+# library(AICcmodavg)
+# library(ggcorrplot)
+## forest related
 library(forestmangr)
 library(rBDAT)
 require(TapeR)
@@ -109,7 +109,7 @@ if (! require("remotes"))
 require(remotes)
 #devtools::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 #remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
-require(TapeS)
+#require(TapeS)
 #require(tapes)
 library(magrittr)
 library(sjmisc)
@@ -117,7 +117,7 @@ library(ggforce)                      # Load ggforce package
 # spatial 
 library(sf)
 # require(rgdal)
-library(terra)
+#library(terra)
 library(sfheaders)
 library(splancs)
 
@@ -133,12 +133,12 @@ here::here()
 # ----- 0.4.1. diameter correction Dahm parameters ------------------------
 # change region sheet to x_ld_neu aus code tables
 try({
-DBH_region <- read.delim(file = here("data/input/general/x_ld.csv"), sep = ",", dec = ".")
+DBH_region <- read.delim(file = paste0(getwd(), "/data/input/general/x_ld.csv"), sep = ",", dec = ".")
 DBH_region <- DBH_region %>% dplyr::select(id, kurz, lang, region)
 colnames(DBH_region) <- c("icode_reg", "reg_shortG", "country",  "region")
 
 # change tangenz csv to neu_k_tangens from code tabellen in 
-DBH_tan <- read.delim(file = here("data/input/general/k_tangenz.csv"), sep = ",", dec = ".")
+DBH_tan <- read.delim(file = paste0(getwd(), "/data/input/general/k_tangenz.csv"), sep = ",", dec = ".")
 DBH_tan <- DBH_tan %>% dplyr::select( ba_bwi, region, tangenz)
 colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz")
 
@@ -148,7 +148,7 @@ colnames(DBH_tan) <- c("SP_BWI1",  "region", "tangenz")
 try({
 ## nitrogen content in foliage based on nitrgen content in leafe samples of the national soil inventory 
   # import
-N_con_f <-  read.delim(file = here("output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ".")
+N_con_f <-  read.delim(file = paste0(getwd(), "/output/out_data/out_data_momok/N_con_foliage_MOMOK.csv"), sep = ",", dec = ".")
   # harmonize N_con_f compartiment names with trees compartiments names, which are based on TapeS compartiment names
 N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl",
                                                        TRUE ~ compartiment))
@@ -158,7 +158,7 @@ N_con_f <- N_con_f %>% mutate(compartiment = case_when(compartiment == "f" ~ "nd
   # https://www.researchgate.net/publication/329912524_Biometrische_Schatzmodelle_fur_Nahrelementgehalte_in_Baumkompartimenten, 
   # Tab.: 3.2 - 3.6, S. 10
   # import
-N_con_w <-  read.delim(file = here("output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ".")
+N_con_w <-  read.delim(file = paste0(getwd(), "/output/out_data/out_data_momok/N_con_wood_Rumpf.csv"), sep = ",", dec = ".")
   # hamronizing compartimebnt names between nitrogen datasets and TapeS based trees dataset compartiment names
 N_con_w <- N_con_w %>% mutate(compartiment = case_when(compartiment == "f" ~ "ndl", 
                                                        compartiment == "swb" ~ "sb", 
@@ -183,7 +183,7 @@ N_con_bg <- as.data.frame(cbind("SP_group" = c("EI", "BU" , "FI" , "KI", "KIN" ,
 # 0.4.3. import species names dataest x_bart ------------------------------
 try({
 # species names & codes 
-SP_names_com_ID_tapeS <- read.delim(file = here("data/input/general/x_bart_tapeS.csv"), sep = ",", dec = ".", 
+SP_names_com_ID_tapeS <- read.delim(file = paste0(getwd(), "/data/input/general/x_bart_tapeS.csv"), sep = ",", dec = ".", 
                                     encoding = "UTF-8", 
                                     stringsAsFactors=FALSE
                                     ) 

@@ -126,14 +126,14 @@ bio_total_kg_df <-
     rbind(
       bio_ag_kg_df, bio_bg_kg_df) %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+      summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"),
     # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
     bio_ag_kg_df%>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+      summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
       mutate(compartiment = "ag")%>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"))
@@ -172,7 +172,7 @@ N_total_kg_df <-
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
     N_ag_bg_kg_df %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"),
@@ -180,7 +180,7 @@ N_total_kg_df <-
     N_ag_bg_kg_df%>% 
       filter(compartiment != "bg") %>%  # select only aboveground compartiments by exxlduing bg compartiment from N.ab.bg. dataframe 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
       mutate(compartiment = "ag")%>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"))

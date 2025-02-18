@@ -139,14 +139,14 @@ growth_coeff <- left_join(
     filter(!is.na(annual_growth_cm) & !is.na(BZE3_DBH_cm)) %>% 
     group_by(state, SP_code) %>%
     # filter for plots that have at least 3 dbh growths measured per species and dbh class
-     filter(n() >= 3),
+     filter(dplyr::n() >= 3),
   # creating & joining in growth coefficients dataset 
   dbh_growth_tree %>% select(state, SP_code, annual_growth_cm, BZE3_DBH_cm) %>% 
     # make sure only trees with calcualted growth are inlcuded in modelling 
     filter(!is.na(annual_growth_cm) & !is.na(BZE3_DBH_cm)) %>% 
     group_by(state, SP_code) %>%
     # filter for plots that have at least 3 dbh growths measured per species and dbh class
-    filter(n() >= 3)%>%    
+    filter(dplyr::n() >= 3)%>%    
     group_by(state, SP_code) %>%
     # model mean annual dbh growth in cm in relation to BZE3 diameter 
     nls_table( annual_growth_cm ~ b0 * (1 - exp( -b1 * BZE3_DBH_cm))^b2, 
@@ -171,7 +171,7 @@ growth_coeff <- left_join(
              SStot = sum((annual_growth_cm-mean_growth)^2), 
              pseu_R2 = 1-(SSres/SStot), 
              diff_growth = mean(annual_growth_cm - growth_est) ,
-             n = n())
+             n = dplyr::n())
 
 
 # 1.3. DBH estimation --------------------------------------------------------------------------------------
@@ -421,14 +421,14 @@ bio_total_kg_df <-
     rbind(
       bio_ag_kg_df, bio_bg_kg_df) %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+      dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"),
     # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments
     bio_ag_kg_df%>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+      dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
       mutate(compartiment = "ag")%>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "B_kg_tree"))
@@ -466,7 +466,7 @@ N_total_kg_df <-
     # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
     N_ag_bg_kg_df %>% 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      dplyr::summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
       mutate(compartiment = "total") %>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"),
@@ -474,7 +474,7 @@ N_total_kg_df <-
     N_ag_bg_kg_df%>% 
       filter(compartiment != "bg") %>%  # select only aboveground compartiments by exxlduing bg compartiment from N.ab.bg. dataframe 
       group_by(plot_ID, tree_ID, inv, inv_year) %>% 
-      summarize(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
+      dplyr::summarise(N_kg_tree = sum(as.numeric(N_kg_tree))) %>% 
       mutate(compartiment = "ag")%>% 
       select("plot_ID", "tree_ID", "inv", 
              "inv_year", "compartiment", "N_kg_tree"))
@@ -501,7 +501,7 @@ LT_n_SP_plot <- trees_harvested %>%
   select(plot_ID, inv, SP_code) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 
-  summarise(n_SP = n()) %>% 
+  summarise(n_SP = dplyr::n()) %>% 
   mutate(stand_component = "LT")
 
 
@@ -511,7 +511,7 @@ LT_n_stand_P <- trees_harvested %>%
   select(plot_ID, inv, stand) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 
-  summarise(n_stand = n()) %>% 
+  summarise(n_stand = dplyr::n()) %>% 
   mutate(stand_component = "LT")
 
 
@@ -526,7 +526,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/stand_plot_A_ha, 
-              n_trees_CCS_ha = n()/stand_plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/stand_plot_A_ha) %>% 
       distinct(), 
     trees_harvested  %>% 
       group_by(plot_ID, stand_plot_A_ha, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
@@ -535,7 +535,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/stand_plot_A_ha, 
-              n_trees_CCS_ha = n()/stand_plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/stand_plot_A_ha) %>% 
       distinct() %>% 
       mutate(tree_inventory_status = "all"), 
      HBI_trees_stat_2 %>% 
@@ -589,7 +589,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/stand_plot_A_ha, 
-              n_trees_CCS_ha = n()/stand_plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/stand_plot_A_ha) %>% 
       distinct(), 
     trees_harvested  %>% 
       group_by(plot_ID, stand_plot_A_ha, CCS_r_m, inv, stand, SP_code, compartiment) %>% 
@@ -598,7 +598,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/stand_plot_A_ha, 
-              n_trees_CCS_ha = n()/stand_plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/stand_plot_A_ha) %>% 
       distinct() %>% 
       mutate(tree_inventory_status = "all")
   ) %>% # close bind 
@@ -653,7 +653,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/plot_A_ha, 
-              n_trees_CCS_ha = n()/plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
       distinct() , 
     trees_harvested  %>% 
       group_by(plot_ID, plot_A_ha, CCS_r_m, inv, SP_code, compartiment) %>% 
@@ -662,7 +662,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/plot_A_ha, 
-              n_trees_CCS_ha = n()/plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
       distinct() %>% 
       mutate(tree_inventory_status = "all"), 
     HBI_trees_stat_2 %>% 
@@ -718,7 +718,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/plot_A_ha, 
-              n_trees_CCS_ha = n()/plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
            distinct(), 
     trees_harvested  %>% 
       group_by(plot_ID, plot_A_ha, CCS_r_m, inv, SP_code, compartiment) %>% 
@@ -727,7 +727,7 @@ if(exists('HBI_trees_stat_2') == TRUE && nrow(HBI_trees_stat_2)!= 0){
               C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
               N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
               BA_CCS_m2_ha = sum(BA_m2_incl_growth)/plot_A_ha, 
-              n_trees_CCS_ha = n()/plot_A_ha) %>% 
+              n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
       distinct() %>% 
       mutate(tree_inventory_status = "all")
   ) %>% 
@@ -826,8 +826,8 @@ for (i in 1:length(unique(trees_harvested$plot_ID))) {
   my.plot.id <- unique(trees_harvested$plot_ID)[i]
   # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
   my.tree.df <- trees_harvested[trees_harvested$plot_ID == my.plot.id & trees_harvested$compartiment == "ag", ] 
-  my.n.ha.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = n()/plot_A_ha) %>% distinct()
-  my.n.plot.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
+  my.n.ha.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = dplyr::n()/plot_A_ha) %>% distinct()
+  my.n.plot.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = dplyr::n()) %>% distinct()
   
   my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
   
@@ -895,9 +895,9 @@ for (i in 1:nrow(unique(trees_harvested[,c("plot_ID", "stand")])) ) {
   # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
   my.tree.df <- trees_harvested[trees_harvested$plot_ID == my.plot.id & trees_harvested$stand == my.stand & trees_harvested$compartiment == "ag", ] 
   # count trees per hectar per CCS per stand and plot
-  my.n.ha.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id & stand == my.stand) %>% group_by(plot_ID, stand, CCS_r_m) %>% reframe(n_ha_CCS = n()/stand_plot_A_ha) %>% distinct()
+  my.n.ha.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id & stand == my.stand) %>% group_by(plot_ID, stand, CCS_r_m) %>% reframe(n_ha_CCS = dplyr::n()/stand_plot_A_ha) %>% distinct()
   # count trees per CCS per stand per plot 
-  my.n.plot.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id & stand == my.stand) %>% group_by(plot_ID, stand, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
+  my.n.plot.df <- trees_harvested %>% filter(compartiment == "ag" & plot_ID == my.plot.id & stand == my.stand) %>% group_by(plot_ID, stand, CCS_r_m) %>% reframe(n_CCS = dplyr::n()) %>% distinct()
   
   # calculate how often each tree has to be dublicated to resebmle a hectar
   # by dividing number of trees in that circle by number of trees per hectar in that CCS  

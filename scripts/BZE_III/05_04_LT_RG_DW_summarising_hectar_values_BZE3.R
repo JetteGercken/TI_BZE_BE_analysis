@@ -57,7 +57,7 @@ n_stand_P <- plyr::rbind.fill(trees_data %>%
   select(plot_ID, inv, stand) %>% 
   distinct() %>% 
   group_by(plot_ID, inv) %>% 
-  summarise(n_stands = n()) %>% 
+  summarise(n_stands = dplyr::n()) %>% 
   mutate(stand_component = "all")
 
 
@@ -654,7 +654,7 @@ LT_TY <- LT_P %>%
               distinct() %>% 
               group_by(plot_ID, inv, dw_sp, dw_type, decay) %>% 
               # convert Biomass into tons per hectar and divide it by the plot area to calculate stock per hectar
-              reframe(n_ha = n()/plot_A_ha) %>% 
+              reframe(n_ha = dplyr::n()/plot_A_ha) %>% 
               distinct(), 
             by = c("plot_ID", "inv", "dw_sp", "dw_type", "decay"))
 
@@ -669,7 +669,7 @@ sumary_ST_plot_A <- trees_data  %>%
           C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
           N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
           BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
-          n_trees_CCS_ha = n()/plot_A_ha) %>% 
+          n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
   distinct() %>% filter(plot_ID %in% c(n_stand_P$plot_ID[n_stand_P$n_stands>1])) %>% 
   # now we summarise all the t/ha values of the cirlces per plot
   group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
@@ -686,7 +686,7 @@ sumary_ST_stand_A <- trees_data  %>%
           C_CCS_t_ha = sum(ton(C_kg_tree))/stand_plot_A_ha  ,
           N_CCS_t_ha = sum(ton(N_kg_tree))/stand_plot_A_ha  , 
           BA_CCS_m2_ha = sum(BA_m2)/stand_plot_A_ha  , 
-          n_trees_CCS_ha = n()/stand_plot_A_ha  ) %>% 
+          n_trees_CCS_ha = dplyr::n()/stand_plot_A_ha  ) %>% 
   distinct()%>% filter(plot_ID %in% c(n_stand_P$plot_ID[n_stand_P$n_stands>1])) %>% 
   # now we summarise all the t/ha values of the cirlces per plot
   group_by(plot_ID, inv, stand, SP_code, compartiment) %>% 
@@ -716,7 +716,7 @@ LT_n_SP_plot <- trees_data %>%
   select(plot_ID, inv, SP_code) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 
-  summarise(n_SP = n()) %>% 
+  summarise(n_SP = dplyr::n()) %>% 
   mutate(stand_component = "LT")
 
 
@@ -729,7 +729,7 @@ n_stand_P <- plyr::rbind.fill(trees_data %>%
   select(plot_ID, inv, stand) %>% 
   distinct() %>% 
   group_by(plot_ID, inv) %>% 
-  summarise(n_stands = n()) %>% 
+  summarise(n_stands = dplyr::n()) %>% 
   mutate(stand_component = "all")
 
 # 1.4. stocks per hektar ------------------------------------------------------
@@ -742,7 +742,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                              C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                              N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
                                              BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
-                                             n_trees_CCS_ha = n()/plot_A_ha) %>% 
+                                             n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
                                      distinct(),
                                    # add status 2 plots if all circles are existing but empty 
                                    trees_stat_2 %>% 
@@ -753,7 +753,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                  select(plot_ID, CCS_r_m) %>% 
                                                  distinct() %>% 
                                                  group_by(plot_ID) %>% 
-                                                 summarize(n_CCS = n()) %>% 
+                                                 dplyr::summarise(n_CCS = dplyr::n()) %>% 
                                                  filter(n_CCS == 3), 
                                                by = "plot_ID")) %>%  
     # now we summarise all the t/ha values of the cirlces per plot
@@ -774,7 +774,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
             C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
             N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
             BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
-            n_trees_CCS_ha = n()/plot_A_ha) %>% 
+            n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
     distinct()%>% 
     # now we summarise all the t/ha values of the cirlces per plot
     group_by(plot_ID, inv, compartiment) %>% 
@@ -814,7 +814,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                      C_CCS_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                                      N_CCS_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
                                                      BA_CCS_m2_ha = sum(BA_m2)/plot_A_ha, 
-                                                     n_trees_CCS_ha = n()/plot_A_ha) %>% 
+                                                     n_trees_CCS_ha = dplyr::n()/plot_A_ha) %>% 
                                              distinct(), 
                                            trees_stat_2 %>% 
                                              # this is in case in 01_00_RG_LT_DW_plot_inv_status_sorting there were stat_2 datasets produced that do not hold any data but only NAs
@@ -824,7 +824,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                          select(plot_ID, CCS_r_m) %>% 
                                                          distinct() %>% 
                                                          group_by(plot_ID) %>% 
-                                                         summarize(n_CCS = n()) %>% 
+                                                         dplyr::summarise(n_CCS = dplyr::n()) %>% 
                                                          filter(n_CCS == 3), 
                                                        by = "plot_ID")
   ) %>% 
@@ -948,7 +948,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
                 select(char_code_ger_lowcase, LH_NH), 
               by = c("SP_code" = "char_code_ger_lowcase")) %>% 
     group_by(plot_ID, inv, LH_NH) %>% 
-    summarize(BA_m2_ha = sum(BA_m2_ha), 
+    dplyr::summarise(BA_m2_ha = sum(BA_m2_ha), 
               BA_per_LHNH = sum(BA_percent))
   
   
@@ -1046,8 +1046,8 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
   my.plot.id <- unique(trees_data$plot_ID)[i]
   # select all trees by only one compartiment of each tree to make sure the tree enters the dataframe only once
   my.tree.df <- trees_data[trees_data$plot_ID == my.plot.id & trees_data$compartiment == "ag", ] 
-  my.n.ha.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = n()/plot_A_ha) %>% distinct()
-  my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = n()) %>% distinct()
+  my.n.ha.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_ha_CCS = dplyr::n()/plot_A_ha) %>% distinct()
+  my.n.plot.df <- trees_data %>% filter(compartiment == "ag" & plot_ID == my.plot.id) %>% group_by(plot_ID, CCS_r_m) %>% reframe(n_CCS = dplyr::n()) %>% distinct()
   
   my.n.ha.df$n.rep.each.tree <- round(my.n.ha.df$n_ha_CCS/my.n.plot.df$n_CCS)
   
@@ -1201,7 +1201,7 @@ RG_n_ha <- RG_data %>%
   left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
   group_by(plot_ID, inv) %>% 
   # sum number of trees  per sampling circuit
-  reframe(n_ha = n()/plot_A_ha) %>% 
+  reframe(n_ha = dplyr::n()/plot_A_ha) %>% 
   distinct() %>% 
   mutate(stand_component = "RG")
 
@@ -1210,7 +1210,7 @@ RG_n_ha_ST <- RG_data %>%
   left_join(., RG_plot_A_ha, by = c("plot_ID", "inv")) %>% 
   group_by(plot_ID, inv, stand) %>% 
   # sum number of trees  per sampling circuit
-  reframe(n_ha = n()/plot_A_ha) %>% 
+  reframe(n_ha = dplyr::n()/plot_A_ha) %>% 
   distinct() %>% 
   mutate(stand_component = "RG")
 
@@ -1220,7 +1220,7 @@ RG_n_SP_plot <- RG_data %>%
   select(plot_ID, inv, SP_code) %>% 
   group_by(plot_ID, inv) %>% 
   distinct() %>% 
-  summarise(n_SP = n()) %>% 
+  summarise(n_SP = dplyr::n()) %>% 
   mutate(stand_component = "RG")
 
 
@@ -1247,7 +1247,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                   select(plot_ID, CCS_nr) %>% 
                   distinct() %>% 
                   group_by(plot_ID) %>% 
-                  summarize(n_CCS = n()) %>% 
+                  dplyr::summarise(n_CCS = dplyr::n()) %>% 
                   filter(n_CCS == 4), 
                 by = "plot_ID") %>% 
       select(plot_ID, CCS_nr, plot_A_ha, inv, compartiment, B_t_ha, C_t_ha, N_t_ha)
@@ -1329,7 +1329,7 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
                                               reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
                                                       C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
                                                       N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-                                                      n_ha = n()/plot_A_ha) %>% 
+                                                      n_ha = dplyr::n()/plot_A_ha) %>% 
                                               distinct() , 
                                             DW_stat_2 %>% filter(!is.na(plot_ID)) %>% select(-c( plot_A_ha))
   ) %>% 
@@ -1341,7 +1341,7 @@ if(isTRUE(exists('DW_stat_2') == TRUE && nrow(DW_stat_2)!=0) ==T ){
     reframe(B_t_ha = sum(ton(B_kg_tree))/plot_A_ha, # plot are is the area of the respecitive sampling circuit in ha 
             C_t_ha = sum(ton(C_kg_tree))/plot_A_ha,
             N_t_ha = sum(ton(N_kg_tree))/plot_A_ha, 
-            n_ha = n()/plot_A_ha) %>% 
+            n_ha = dplyr::n()/plot_A_ha) %>% 
     distinct()
 }
 
@@ -1449,7 +1449,7 @@ DW_summary <-
       left_join(., DW_data %>% 
                   filter(compartiment == "ag") %>% 
                   group_by(plot_ID, inv) %>% 
-                  reframe(n_ha = n()/plot_A_ha) %>% 
+                  reframe(n_ha = dplyr::n()/plot_A_ha) %>% 
                   distinct(), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
@@ -1459,7 +1459,7 @@ DW_summary <-
                   select(plot_ID, inv, decay) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_dec = n()), 
+                  summarise(n_dec = dplyr::n()), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
       # number of deadwood types per plot
@@ -1468,7 +1468,7 @@ DW_summary <-
                   select(plot_ID, inv, dw_type) %>% 
                   distinct() %>% 
                   group_by(plot_ID, inv) %>% 
-                  summarise(n_dw_TY = n()), 
+                  summarise(n_dw_TY = dplyr::n()), 
                 multiple = "all",
                 by = c("plot_ID", "inv")) %>% 
       mutate(decay = "all", 

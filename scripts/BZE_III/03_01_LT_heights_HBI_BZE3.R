@@ -13,22 +13,22 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # hbi BE dataset: 
   # this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
   # here we import a dataset called "HBI_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
-HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_2.csv")), sep = ",", dec = ".")
-HBI_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, (HBI_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_update_2.csv"), sep = ",", dec = ".")
+HBI_trees_removed <- read.delim(file = paste0(out.path.BZE3, (HBI_trees$inv)[1], "_LT_removed.csv"), sep = ",", dec = ".")
 
 # BZE3 BE dataset: 
 # this dataset contains the inventory data of the tree inventory accompanying the third national soil inventory
 # here we import a dataset called "BZE3_LT_update_2.csv" which contains plot area and stand data additionally to the original tree data
 try({
-  BZE3_trees <- read.delim(file = here(out.path.BZE3, "BZE3_LT_update_2.csv"), sep = ",", dec = ".")
-  BZE3_trees_removed <- read.delim(file = here(out.path.BZE3, paste0((BZE3_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")},
+  BZE3_trees <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_update_2.csv"), sep = ",", dec = ".")
+  BZE3_trees_removed <- read.delim(file = paste0(out.path.BZE3, paste0((BZE3_trees$inv)[1], "_LT_removed.csv")), sep = ",", dec = ".")},
   silent = T)
 
 

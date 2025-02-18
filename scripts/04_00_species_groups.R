@@ -21,7 +21,7 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
   #           by = c("SP_code" = "char_code_ger_lowcase"))
 
 
-SP_names <- read.delim(file = here("data/input/general/x_bart.csv"), sep = ",", dec = ".", encoding = "latin1") %>% 
+SP_names <- read.delim(file = paste0(getwd(), "/data/input/general/x_bart.csv"), sep = ",", dec = ".", encoding = "latin1") %>% 
    select(- c(gueltig_ab, gueltig_bis)) %>%
   # change first letter of botanic genus to capital: https://bookdown.org/asadow/rtist/opening-the-data.html
   mutate(genus = stringr::str_to_title(genus), 
@@ -35,9 +35,8 @@ SP_TapeS <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL)
 SP_TapeS_test <- TapeS::tprSpeciesCode(inSp = NULL, outSp = NULL) #to test if species codes correspong between TapeS dataset and SP_names from BZE 
 
 # import species list of FSI
-bark_div <- read.delim(file = here("data/input/general/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
-fruit_div <- read.delim(file = here("data/input/general/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
-
+bark_div <- read.delim(file = paste0(getwd(), "/data/input/general/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
+fruit_div <- read.delim(file = paste0(getwd(), "/data/input/general/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
 
 
 # ----- 1.2.2. species list BZE --------------------------------------------------------------
@@ -423,8 +422,8 @@ SP_names_com_ID_tapeS <- left_join(rbind(
 
          
 # export x_bart with TapeS common ID: https://stackoverflow.com/questions/53089219/specify-path-in-write-csv-function
-write.csv(SP_names_com_ID_tapeS, here("output/out_data/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
-write.csv(SP_names_com_ID_tapeS, here("data/input/general/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(SP_names_com_ID_tapeS, paste0(getwd(), "/output/out_data/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(SP_names_com_ID_tapeS, paste0(getwd(), "/data/input/general/x_bart_tapeS.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
 stop("this is where species groups script of bze2 bze3 ends")
 
