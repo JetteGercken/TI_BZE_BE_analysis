@@ -11,28 +11,14 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-<<<<<<< HEAD
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
-=======
+
 out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
+
 
 
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 (BZE2) 
-<<<<<<< HEAD
-RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv")), sep = ",", dec = ".") 
-
-# this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3 (BZE2), including stand and area info
-RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ",", dec = ".")
-
-# this dataset contains the BZE3 forest edges info
-forest_edges <- read.delim(file = here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_forest_edges_update_1.csv")), sep = ",", dec = ".")
-# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-# HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_HBI", ".csv")), sep = ",", dec = ".")
-=======
 RG_loc <- read.delim(file = paste0(out.path.BZE3, "BZE3_RG_loc_update_1.csv"), sep = ",", dec = ".") 
 
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3 (BZE2), including stand and area info
@@ -43,7 +29,7 @@ forest_edges <- read.delim(file = paste0(out.path.BZE3, inv_name((RG_loc$inv_yea
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 HBI_loc <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/location_HBI", ".csv"), sep = ",", dec = ".")
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
+
 # HBI locations
 HBI_loc <- HBI_loc[1:3] 
 colnames(HBI_loc) <- c("plot_ID",  "RW_MED", "HW_MED") 
@@ -51,17 +37,10 @@ colnames(HBI_loc) <- c("plot_ID",  "RW_MED", "HW_MED")
 
 
 # import coordinates of polygones along all edges iin triangle shape based on inv of RG dataset -----------------------------------------------------------------------------------------------
-<<<<<<< HEAD
-all_edge_intersections_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv")), sep = ",", dec = ".")
-all_rem_circles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_rem_circles_coords.csv")), sep = ",", dec = ".")
-all_edge_triangles_coords <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv")), sep = ",", dec = ".")
-all_areas_stands <- read.delim(file = here(paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_rem_circles.csv")), sep = ",", dec = ".")
-=======
 all_edge_intersections_coords <- read.delim(file = paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_intersection_coords.csv"), sep = ",", dec = ".")
 all_rem_circles_coords <- read.delim(file = paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_rem_circles_coords.csv"), sep = ",", dec = ".")
 all_edge_triangles_coords <- read.delim(file = paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_triangle_coords.csv"), sep = ",", dec = ".")
 all_areas_stands <- read.delim(file = paste0(out.path.BZE3, inv_name(RG_loc$inv_year[1]), "_all_edges_rem_circles.csv"), sep = ",", dec = ".")
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 
 
 
