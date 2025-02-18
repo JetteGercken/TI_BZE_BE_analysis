@@ -168,10 +168,10 @@ source(paste0(getwd(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R
  
 ##### competition  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  # LT competition index calcualtion HBI 
- source(paste0(getwd(), "/scripts/BZE_III/09_01_LT_competition.R"))
+# source(paste0(getwd(), "/scripts/BZE_III/09_01_LT_competition.R"))
  
 
 
 ##### optional: Plausibility -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-source(paste0(getwd(), "/scripts/BZE_III/10_00_RG_LT_DW_stock_plausi.R"))
+#source(paste0(getwd(), "/scripts/BZE_III/10_00_RG_LT_DW_stock_plausi.R"))
 

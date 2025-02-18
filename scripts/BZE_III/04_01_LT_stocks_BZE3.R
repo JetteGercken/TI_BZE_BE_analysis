@@ -10,15 +10,15 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # hbi BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here we should actually import a dataset called "HBI_trees_update_3.csv" which contains plot area and stand data additionally to 
 # tree data
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_3.csv")), sep = ",", dec = ".") 
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3,(trees_data$inv)[1] ,"_LT_removed.csv")), sep = ",", dec = ".")
+trees_data <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_update_3.csv"), sep = ",", dec = ".") 
+trees_removed <- read.delim(file = paste0(out.path.BZE3,(trees_data$inv)[1] ,"_LT_removed.csv"), sep = ",", dec = ".")
 
 
 
@@ -229,3 +229,4 @@ write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[
 
 
 stop("this is where stock calculation of BZE3 ends")
+

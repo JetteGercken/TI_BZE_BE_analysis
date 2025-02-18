@@ -87,7 +87,7 @@ LT_RG_DW_P <-
                SP_code = "all"))
     )%>%  
       left_join(.,  # # # add stand type to the RG data accprding to plot ID
-                LT_summary %>% select(inv, plot_ID, stand_type, n_stands, dom_SP) %>% distinct() %>% 
+                LT_summary %>% select(inv, plot_ID, stand_type, dom_SP) %>% distinct() %>% 
                   # # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
                   # select(-c(stand_component, n_stands)) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
