@@ -119,7 +119,7 @@ library(sf)
 # require(rgdal)
 #library(terra)
 library(sfheaders)
-library(splancs)
+#library(splancs)
 
 
 
