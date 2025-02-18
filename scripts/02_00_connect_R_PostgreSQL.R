@@ -88,30 +88,18 @@ for (i in 1:length(code_table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
-<<<<<<< HEAD
-  write.csv(df, paste0(here("data/raw/general"), "/", my.table.name, ".csv"), row.names = FALSE)
-=======
   write.csv(df, paste0(paste0(getwd(), "/data/raw/general"), "/", my.table.name, ".csv"), row.names = FALSE)
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 }
 
 
 # 2.1.2. copy code files from raw data general to input general fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # copy everything imported from database from raw folder to input folder
 # 1. create raw data path: 
-<<<<<<< HEAD
-raw.path.code <- paste0(here("data/raw/general"), "/")
-# 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
-code.in.files <- list.files(raw.path.code) 
-# 3. create input path
-input.path.code <- paste0(here("data/input/general"), "/")
-=======
 raw.path.code <- paste0(getwd(), "/data/raw/general/")
 # 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
 code.in.files <- list.files(raw.path.code) 
 # 3. create input path
 input.path.code <- paste0(getwd(), "/data/input/general/")
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 # copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
 file.copy(from = paste0(raw.path.code, code.in.files),
           to = paste0(input.path.code, code.in.files),
@@ -134,12 +122,7 @@ for (i in 1:length(data_table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
-<<<<<<< HEAD
-  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", my.table.name, ".csv"), row.names = FALSE)
-=======
   write.csv(df, paste0(getwd(), "/data/raw/BZE2_HBI/", my.table.name, ".csv"), row.names = FALSE)
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
-  
 }
 
 # get HBI locations
@@ -156,29 +139,17 @@ for (i in 1:length(data_table_names_2)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
-<<<<<<< HEAD
-  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", "location_HBI", ".csv"), row.names = FALSE)
-=======
-  write.csv(df, paste0(getwd(), "/data/raw/BZE2_HBI/", "location_HBI", ".csv"), row.names = FALSE)
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
-  
+ write.csv(df, paste0(getwd(), "/data/raw/BZE2_HBI/", "location_HBI", ".csv"), row.names = FALSE)
+ 
 }
 # 2.2.2. copy data files from raw data bze2 to input bze2 fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # save everything imported from database from raw folder to input folder
 # 1. create raw data path: 
-<<<<<<< HEAD
-raw.path.bze2 <- paste0(here("data/raw/BZE2_HBI"), "/")
-# 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
-bze2.in.files <- list.files(raw.path.bze2) 
-# 3. create input path
-input.path.bze2 <- paste0(here("data/input/BZE2_HBI"), "/")
-=======
 raw.path.bze2 <- paste0(getwd(), "/data/raw/BZE2_HBI/")
 # 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
 bze2.in.files <- list.files(raw.path.bze2) 
 # 3. create input path
 input.path.bze2 <- paste0(getwd(), "/data/input/BZE2_HBI/")
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 # copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
 file.copy(from = paste0(raw.path.bze2, bze2.in.files),
           to = paste0(input.path.bze2, bze2.in.files),
@@ -200,33 +171,18 @@ for (i in 1:length(data_table_names)) {
   # get table from database and transform into dataframe
   df <- dbGetQuery(con, paste0("SELECT * FROM"," ", my.schema.name,".", my.table.name))
   # name dataframe and export it to raw data folder
-<<<<<<< HEAD
-  write.csv(df, paste0(here("data/raw/BZE2_HBI"), "/", "location_HBI", ".csv"), row.names = FALSE)
-  # name dataframe 
-  write.csv(df, paste0(here("data/input/BZE3"), "/", my.table.name, ".csv"), row.names = FALSE)
-=======
   write.csv(df, paste0(getwd(), "/data/raw/BZE2_HBI/", "location_HBI", ".csv"), row.names = FALSE)
   # name dataframe 
   write.csv(df, paste0(getwd(), "/data/input/BZE3/", my.table.name, ".csv"), row.names = FALSE)
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
-
 }
 # 2.3.2. copy data files from raw data bze3 to input bze3 fo -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # save everything imported from database from raw folder to input folder
 # 1. create raw data path: 
-<<<<<<< HEAD
-raw.path.bze3 <- paste0(here("data/raw/BZE3"), "/")
-# 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
-bze3.in.files <- list.files(raw.path.bze3) 
-# 3. create input path
-input.path.bze3 <- paste0(here("data/input/BZE3"), "/")
-=======
 raw.path.bze3 <- paste0(getwd(), "/data/raw/BZE3", "/")
 # 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
 bze3.in.files <- list.files(raw.path.bze3) 
 # 3. create input path
 input.path.bze3 <- paste0(getwd(), "/data/input/BZE3/")
->>>>>>> 82e1a3cc33e801f69a55f3fb28bc06ef984dd01b
 # copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
 file.copy(from = paste0(raw.path.bze3, bze3.in.files),
           to = paste0(input.path.bze3, bze3.in.files),
