@@ -47,9 +47,9 @@
 #    install.packages("pkgbuild")
 #   require("devtools")
 #     if (! require("remotes")) 
-#       install.packages("remotes")
-#  #   remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
-#  #  remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
+#      install.packages("remotes")
+#     remotes::install_gitlab("vochr/tapes", build_vignettes = TRUE)
+#   # remotes::install_gitlab("vochr/TapeS", build_vignettes = TRUE)
 #    install.packages("magrittr")
 #  
 #    if(!require(devtools)) install.packages("devtools")
