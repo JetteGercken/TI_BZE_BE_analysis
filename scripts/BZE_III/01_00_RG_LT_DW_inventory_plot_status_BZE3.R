@@ -96,14 +96,14 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # ----- 0.2. working directory -------------------------------------------------
 here::here()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # ----- 0.4 importing data -----------------------------------------------------
 ## BZE 2
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
 # as we don´t have a  dataset for the current inventory BZE3, we have to use a tit_1 of the previous years. This however, leads to problems with the sortinmg of the plots by plot_status
-inv_info <- read.delim(file = here("data/input/BZE2_HBI/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
+inv_info <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
@@ -114,7 +114,7 @@ inv_info$inv <- inv_name(inv_info$inv_year)
 
 ## LIVING TREES
 # this dataset contains information about the inventory of the respective individual sampling circuits as well as stand realted info like stand type & - structure
-tree_inv_info <-  read.delim(file = here("data/input/BZE3/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% # be
+tree_inv_info <-  read.delim(file = paste0(getwd(), "/data/input/BZE3/be.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% # be
   select(bund_nr, team,  datum,  beart, besttyp, struktur,  pk1_aufnahme,   pk2_aufnahme, pk3_aufnahme, hbi_status)
 colnames(tree_inv_info) <- c("plot_ID", "team", "date", "stand_spec", "stand_type", "structure", "CCS_5_inv_status",  "CCS_12_inv_status",  "CCS_17_inv_status", "hbi_status")
 
@@ -127,20 +127,20 @@ tree_inv_info <- tree_inv_info %>% mutate(inv = inv_name(inv_year))
 
 
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
-trees_data <- read.delim(file = here("data/input/BZE3/beab.csv"), sep = ",", dec = ".") %>% 
+trees_data <- read.delim(file = paste0(getwd(), "/data/input/BZE3/beab.csv"), sep = ",", dec = ".") %>% 
   select(bund_nr, lfd_nr, baumkennzahl,zwiesel,bart, alter,alter_methode, d_mess, bhd_hoehe,  hoehe, kransatz, azi, hori, kraft,  schi       )
 # BZE3 trees
 colnames(trees_data) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_data <- trees_data %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # HBI/ BZE2 BEAB dataset
-trees_HBI <- read.delim(file = here("data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ".")
+trees_HBI <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/beab.csv"), sep = ",", dec = ".")
 # BZE3 trees
 colnames(trees_HBI) <- c("plot_ID", "tree_ID", "tree_inventory_status", "multi_stem",  "SP_code", "age", "age_meth", "D_mm", "DBH_h_cm", "H_dm", "C_h_dm", "azi_gon", "dist_cm", "Kraft",  "C_layer")
 trees_HBI <- trees_HBI %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_status ,  multi_stem , dist_cm ,  azi_gon ,
                                            age ,  age_meth ,  SP_code ,  Kraft , C_layer , H_dm ,  C_h_dm , D_mm ,   DBH_h_cm )
 # BZE3 forest edges
- forest_edges <- read.delim(file = here("data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ".") %>% 
+ forest_edges <- read.delim(file = paste0(getwd(), "/data/input/BZE3/be_waldraender.csv"), sep = ",", dec = ".") %>% 
    select(bund_nr, lfd_nr, randtyp, randform, anfang_dist, end_dist, knick_dist, anfang_azi, end_azi, knick_azi)
 # bund_nr lfd_nr randtyp randform anfang_dist end_dist knick_dist anfang_azi end_azi knick_azi
  colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", "A_dist", "B_dist", "T_dist", "A_azi", "B_azi","T_azi") # t = turning point
@@ -149,21 +149,21 @@ trees_HBI <- trees_HBI %>% dplyr::select(plot_ID,  tree_ID ,  tree_inventory_sta
 
 ## REGENERATION                                                                                                  
 # this dataset contains the inventory status, position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 
-RG_loc_info <- read.delim(file = here("data/input/BZE3/bej.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
+RG_loc_info <- read.delim(file = paste0(getwd(), "/data/input/BZE3/bej.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
 # assign column names    # bund_nr     pk_nr      pk_richtung     pk_dist     pk_aufnahme      pk_maxdist
 colnames(RG_loc_info) <- c("plot_ID", "CCS_nr", "CCS_position",  "CCS_dist", "CCS_RG_inv_status", "CCS_max_dist_cm")
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3, including stand and area info
-RG_data <- read.delim(file = here("data/input/BZE3/bejb.csv"), sep = ",", dec = "-")
+RG_data <- read.delim(file = paste0(getwd(), "/data/input/BZE3/bejb.csv"), sep = ",", dec = "-")
 #  "bund_nr"  "pk_nr"  "lfd_nr"   "bart"  "hoehe"    "grklasse"
 colnames(RG_data) <- c("plot_ID", "CCS_nr", "tree_ID", "SP_code", "H_cm", "D_class_cm")
 
 
 ##DEADWOOD
 # deadwood inventory info 
-DW_inv_info <- read.delim(file = here("data/input/BZE3/be_totholz_punkt.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
+DW_inv_info <- read.delim(file = paste0(getwd(), "/data/input/BZE3/be_totholz_punkt.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) 
 colnames(DW_inv_info) <- c("plot_ID", "CCS_DW_inv_status",  "dist_cm", "azi")
 # deadwood single item data
-DW_data <- read.delim(file = here("data/input/BZE3/be_totholz_liste.csv"), sep = ",", dec = ".") %>% 
+DW_data <- read.delim(file = paste0(getwd(), "/data/input/BZE3/be_totholz_liste.csv"), sep = ",", dec = ".") %>% 
   select( bund_nr, lfd_nr, typ, baumgruppe, anzahl,  durchmesser, laenge, zersetzung)
 #  bund_nr lfd_nr typ      baumgruppe anzahl  durchmesser laenge zersetzung
 colnames(DW_data) <- c("plot_ID", "tree_ID", "dw_type", "dw_sp", "count", "d_cm", "l_dm", "decay")

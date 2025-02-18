@@ -13,21 +13,21 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # ----- 0.3 data import --------------------------------------------------------
 # LIVING TREES
 # HBI BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_0.csv which includes only trees that are already sortet according to the inventory stati (PK_aufnahme, Punktstatus)
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_0.csv")), sep = ",", dec = ".")
+trees_data <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_update_0.csv"), sep = ",", dec = ".")
 # this dataset contains the removed trees that evolved from the inventory status sorting. 
 # we import it to continuously collect removed data in one dataset
-trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_removed.csv")), sep = ",", dec = ".")
+trees_removed <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_removed.csv"), sep = ",", dec = ".")
 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-geo_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv")), sep = ",", dec = ".")
+geo_loc <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/location_",  trees_data$inv[1], ".csv"), sep = ",", dec = ".")
 # HBI forest edges (Waldränder) info
-forest_edges <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv")), sep = ",", dec = ".")
+forest_edges <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv"), sep = ",", dec = ".")
 
 
 

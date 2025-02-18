@@ -11,24 +11,24 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration                                                                                                   inv = inv_name(inv_year))
 # this dataset contains the position and extend of the sampling circle satelites of the regeneration inventory of the BZE3 (BZE2) 
-RG_loc <- read.delim(file = here(paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv")), sep = ",", dec = ".") 
+RG_loc <- read.delim(file = paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv"), sep = ",", dec = ".") 
 
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the BZE3 (BZE2), including stand and area info
-RG_data <- read.delim(file =  here(paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv")), sep = ",", dec = ".")
+RG_data <- read.delim(file =  paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv"), sep = ",", dec = ".")
 
 # this dataset contains the BZE3 forest edges info
-forest_edges <- read.delim(file = here("data/input/BZE2_HBI/be_waldraender.csv"), sep = ",", dec = ".") 
+forest_edges <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/be_waldraender.csv"), sep = ",", dec = ".") 
 colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                             "A_dist", "A_azi",  "B_dist", "B_azi", 
                             "T_dist", "T_azi") # t = turning point 
 # HBI BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
-HBI_loc <- read.delim(file = here(paste0("data/input/BZE2_HBI/location_",  inv_name((RG_loc$inv_year)[1]), ".csv")), sep = ",", dec = ".")
+HBI_loc <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/location_",  inv_name((RG_loc$inv_year)[1]), ".csv"), sep = ",", dec = ".")
 # HBI locations
 HBI_loc <- HBI_loc[1:3] 
 colnames(HBI_loc) <- c("plot_ID",  "RW_MED", "HW_MED") 
