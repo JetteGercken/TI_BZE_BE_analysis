@@ -641,9 +641,14 @@ RG_data %>% left_join(.,
                         # calculate total biomass (aboveground + belowground) by summing up biomass in kg per tree in all compartiments
                         rbind(
                           bio.ag.kg.RG.above.1.3.df, bio.bg.kg.RG.above.1.3.df) %>% 
+<<<<<<< HEAD
                           group_by(plot_ID, CCS_nr, tree_ID, inv, inv_year) %>% 
                           dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
                          mutate(compartiment = "total") %>% 
+=======
+                          dplyr::summarise(B_kg_tree = sum(as.numeric(B_kg_tree))) %>% 
+                          mutate(compartiment = "total") %>% 
+>>>>>>> 917d640349def25f10d853dce323ec56cf7ed3d9
                           select("plot_ID", "CCS_nr", "tree_ID", "inv", 
                                  "inv_year", "compartiment", "B_kg_tree"),
                         # calculate total aboveground biomass by summing up biomass in kg per tree in all aboveground compartiments

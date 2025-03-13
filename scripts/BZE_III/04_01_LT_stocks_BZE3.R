@@ -229,3 +229,4 @@ write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_4$inv)[
 
 
 stop("this is where stock calculation of BZE3 ends")
+

@@ -15,6 +15,10 @@ here::here()
 getwd()
 
 out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 917d640349def25f10d853dce323ec56cf7ed3d9
 
 # ----- 0.3 data import --------------------------------------------------------
 # regeneration
