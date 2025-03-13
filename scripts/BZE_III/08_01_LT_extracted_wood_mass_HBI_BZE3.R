@@ -10,25 +10,25 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # 0.3. data import --------------------------------------------------------
 # tree data
-BZE3_trees_removed <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_removed.csv")), sep = ",", dec = ".")
-BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
-HBI_trees <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".") 
-HBI_trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".") %>% 
+BZE3_trees_removed <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_removed.csv"), sep = ",", dec = ".")
+BZE3_trees <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_update_4.csv"), sep = ",", dec = ".")
+HBI_trees <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_update_4.csv"), sep = ",", dec = ".") 
+HBI_trees_stat_2 <- read.delim(file = paste0(out.path.BZE3, HBI_trees$inv[1], "_LT_stat_2.csv"), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 # tree summaries 
-HBI_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".") 
-BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".") 
+HBI_summary <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_RG_DW_stocks_ha_all_groups.csv"), sep = ",", dec = ".") 
+BZE3_summary <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv"), sep = ",", dec = ".") 
 
   
 # height coefficient 
 # recreate the same datasets we use in the height calculation script
-coeff_H_SP_P <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv")), sep = ",", dec = ".") %>% filter(plot_ID != "all")
-coeff_H_SP <- read.delim(file = here(paste0(out.path.BZE3,"coef_H_nls.csv")), sep = ",", dec = ".") %>% filter(plot_ID == "all")
+coeff_H_SP_P <- read.delim(file = paste0(out.path.BZE3,"coef_H_nls.csv"), sep = ",", dec = ".") %>% filter(plot_ID != "all")
+coeff_H_SP <- read.delim(file = paste0(out.path.BZE3,"coef_H_nls.csv"), sep = ",", dec = ".") %>% filter(plot_ID == "all")
 
 
 # 0.4 data prep -----------------------------------------------------------

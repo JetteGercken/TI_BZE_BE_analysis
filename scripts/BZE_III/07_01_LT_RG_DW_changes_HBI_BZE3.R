@@ -12,7 +12,7 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 # vorräte: über alle jahre 
 # einzelbaumdurchmesser
@@ -22,9 +22,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 # 0.3. data import --------------------------------------------------------
 # BZE3
 # living trees
-BZE3_trees <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_update_4.csv")), sep = ",", dec = ".")
+BZE3_trees <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_update_4.csv"), sep = ",", dec = ".")
 # all LT, RG, DW summmaries together and total plot stock bze3
-BZE3_summary <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+BZE3_summary <- read.delim(file = paste0(out.path.BZE3, BZE3_trees$inv[1], "_LT_RG_DW_stocks_ha_all_groups.csv"), sep = ",", dec = ".")
+
 # standtype wise summary
 BZE3_TY_summary <-  BZE3_summary %>% filter(plot_ID == "all") %>%  
   select(-c(plot_A_ha , n_stands, BA_percent, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY)) %>% 
@@ -34,16 +35,16 @@ BZE3_LT_summary <- BZE3_summary %>% filter(stand_component == "LT" & plot_ID != 
   select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
 # regeneration
 # this dataset contains single plant data of regeneration inventory of BZE3
-BZE3_RG <-  read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
+BZE3_RG <-  read.delim(file = paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_update_4.csv"), sep = ",", dec = ".")
 # this dataset contains regeneration data summarized per hectar BZE3
 BZE3_RG_summary <- BZE3_summary %>% filter(stand_component == "RG" & plot_ID != "all") #read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_RG_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 # deadwood
 # this dataset contains single plant data of deadwood inventory of HBI
-BZE3_DW <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+BZE3_DW <- read.delim(file = paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_update_4.csv"), sep = ",", dec = ".")
 # this dataset contains deadwood data summarized per hectar HBI
 BZE3_DW_summary <- BZE3_summary %>% filter(stand_component == "DW" & plot_ID != "all") # read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_DW_stocks_ha_all_groups.csv")), sep = ";", dec = ",")
 #FSI
-BZE3_FSI <- read.delim(file = here(paste0(out.path.BZE3, BZE3_trees$inv[1], "_FSI.csv")), sep = ",", dec = ".")
+BZE3_FSI <- read.delim(file = paste0(out.path.BZE3, BZE3_trees$inv[1], "_FSI.csv"), sep = ",", dec = ".")
 
 
 

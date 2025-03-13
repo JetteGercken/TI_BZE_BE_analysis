@@ -24,7 +24,7 @@ RG_loc <- read.delim(file = paste0(out.path.BZE3, "HBI_RG_loc_update_1.csv"), se
 RG_data <- read.delim(file =  paste0(out.path.BZE3, inv_name((RG_loc$inv_year)[1]), "_RG_update_1.csv"), sep = ",", dec = ".")
 
 # this dataset contains the BZE3 forest edges info
-forest_edges <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/be_waldraender.csv"), sep = ",", dec = ".") 
+forest_edges <- read.delim(file = paste0(out.path, inv_name((RG_loc$inv_year)[1]), "_forest_edges_update_1.csv"), sep = ",", dec = ".")
 
 colnames(forest_edges) <- c("plot_ID", "e_ID", "e_type", "e_form", 
                             "A_dist", "A_azi",  "B_dist", "B_azi", 

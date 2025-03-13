@@ -14,37 +14,38 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 here::here()
 getwd()
 
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
+
 
 
 # ----- 0.3 data import --------------------------------------------------------
 # livgn trees
 # this dataset contains the data of the tree inventory of the BZE3, including stand and area info,  species groups and B, C, N stocks per tree 
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_update_4.csv")), sep = ",", dec = ".")
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".") %>% 
+trees_data <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_update_4.csv"), sep = ",", dec = ".")
+trees_stat_2 <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_LT_stat_2.csv"), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 # regeneration
 # this dataset contains the plant specific inventory data of the regenertaion inventory of the HBI (BZE2), including stand and area info,  species groups and B, C, N stocks per tree 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv")),sep = ",", dec = ".")
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".") %>% 
+RG_data <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_RG_update_4.csv"),sep = ",", dec = ".")
+RG_stat_2 <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_RG_stat_2.csv"), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 # deadwood
 # this dataset contains the data of the deadwood inventory of the HBI (BZE2), including info about species groups and B, C, N stocks per tree 
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".") %>% 
+DW_data <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_DW_update_4.csv"), sep = ",", dec = ".")
+DW_stat_2 <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_DW_stat_2.csv"), sep = ",", dec = ".") %>% 
   mutate(inv = inv_name(inv_year))
 
 
 # import stand component wise summaries:
 # these dataset contain the LT, DW and RG values summarised per ha on different levels of data grouping
 # living trees
-LT_summary <- read.delim(file = here(paste0(out.path.BZE3, "HBI_LT_stocks_ha_all_groups.csv")),sep = ",", dec = ".")
+LT_summary <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
 # regeneration
-RG_summary <- read.delim(file = here(paste0(out.path.BZE3, LT_summary$inv[1], "_RG_stocks_ha_all_groups.csv")),sep = ",", dec = ".")
+RG_summary <- read.delim(file = paste0(out.path.BZE3, LT_summary$inv[1], "_RG_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
 # deadwood
-DW_summary <- read.delim(file = here(paste0(out.path.BZE3, LT_summary$inv[1], "_DW_stocks_ha_all_groups.csv")),sep = ",", dec = ".")
+DW_summary <- read.delim(file = paste0(out.path.BZE3, LT_summary$inv[1], "_DW_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
 
 # CALCULATIONS ------------------------------------------------------------
 
@@ -906,7 +907,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                  select(plot_ID, CCS_r_m) %>% 
                                                  distinct() %>% 
                                                  group_by(plot_ID) %>% 
-                                                 summarize(n_CCS = n()) %>% 
+                                                 dplyr::summarise(n_CCS = n()) %>% 
                                                  filter(n_CCS == 3), 
                                                by = "plot_ID")) %>%  
     # now we summarise all the t/ha values of the cirlces per plot
@@ -977,7 +978,7 @@ if(exists('trees_stat_2') == TRUE && nrow(trees_stat_2)!= 0){
                                                          select(plot_ID, CCS_r_m) %>% 
                                                          distinct() %>% 
                                                          group_by(plot_ID) %>% 
-                                                         summarize(n_CCS = n()) %>% 
+                                                         dplyr::summarise(n_CCS = n()) %>% 
                                                          filter(n_CCS == 3), 
                                                        by = "plot_ID")
   ) %>% 
@@ -1099,7 +1100,7 @@ for (i in 1:length(unique(trees_data$plot_ID))) {
                 select(char_code_ger_lowcase, LH_NH), 
               by = c("SP_code" = "char_code_ger_lowcase")) %>% 
     group_by(plot_ID, inv, LH_NH) %>% 
-    summarize(BA_m2_ha = sum(BA_m2_ha), 
+    dplyr::summarise(BA_m2_ha = sum(BA_m2_ha), 
               BA_per_LHNH = sum(BA_percent))
   
   
@@ -1398,7 +1399,7 @@ if(exists('RG_stat_2') == TRUE && nrow(RG_stat_2) != 0){
                   select(plot_ID, CCS_nr) %>% 
                   distinct() %>% 
                   group_by(plot_ID) %>% 
-                  summarize(n_CCS = n()) %>% 
+                  dplyr::summarise(n_CCS = n()) %>% 
                   filter(n_CCS == 4), 
                 by = "plot_ID") %>% 
       select(plot_ID, CCS_nr, plot_A_ha, inv, compartiment, B_t_ha, C_t_ha, N_t_ha)

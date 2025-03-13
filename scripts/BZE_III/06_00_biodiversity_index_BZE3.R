@@ -41,32 +41,33 @@ source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 
 # 0.2. working directory ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 here::here()
-out.path.BZE3 <- ("output/out_data/out_data_BZE/") 
+out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
 
 # 0.3 import data ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # all LT, RG, DW summmaries together and total plot stock bze3
-all_summary <- read.delim(file = here(paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv")), sep = ",", dec = ".")
+all_summary <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_RG_DW_stocks_ha_all_groups.csv"), sep = ",", dec = ".")
 
 # livign trees
-trees_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_update_4.csv")), sep = ",", dec = ".")
+trees_data <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_LT_update_4.csv"), sep = ",", dec = ".")
 LT_summary <-  all_summary %>% filter(stand_component == "LT") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
-trees_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_LT_stat_2.csv")), sep = ",", dec = ".")
+trees_stat_2 <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_LT_stat_2.csv"), sep = ",", dec = ".")
 
 # regeneration 
-RG_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_update_4.csv")), sep = ",", dec = ".")
+RG_data <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_RG_update_4.csv"), sep = ",", dec = ".")
 RG_summary <- all_summary %>% filter(stand_component == "RG") %>% select(-c(dw_sp, dw_type, decay, inv_year, ST_LY_type, mean_d_cm, sd_d_cm, mean_l_m, sd_l_m, n_dec, n_dw_TY))
-RG_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_RG_stat_2.csv")), sep = ",", dec = ".")
+RG_stat_2 <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_RG_stat_2.csv"), sep = ",", dec = ".")
 
 # deadwood
-DW_data <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_update_4.csv")), sep = ",", dec = ".")
+DW_data <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_DW_update_4.csv"), sep = ",", dec = ".")
 DW_summary <- all_summary %>% filter(stand_component == "DW") %>% select(-c(stand, SP_code, BA_m2_ha, BA_percent, mean_DBH_cm, sd_DBH_cm, Dg_cm, mean_BA_m2, mean_H_m, sd_H_m, Hg_m))
-DW_stat_2 <- read.delim(file = here(paste0(out.path.BZE3, all_summary$inv[1], "_DW_stat_2.csv")), sep = ",", dec = ".")
+DW_stat_2 <- read.delim(file = paste0(out.path.BZE3, all_summary$inv[1], "_DW_stat_2.csv"), sep = ",", dec = ".")
 
 
 # bark and fruit types
-bark_div <- read.delim(file = here("data/input/general/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
-fruit_div <- read.delim(file = here("data/input/general/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
+bark_div <- read.delim(file = paste0(getwd(), "/data/input/general/barkdiv_FSI_modified.csv"), sep = ",", dec = ".")
+fruit_div <- read.delim(file = paste0(getwd(), "/data/input/general/fruitdiv_FSI_modified.csv"), sep = ",", dec = ".")
+
 
 
 

@@ -103,7 +103,7 @@ out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/")
 # this dataset contains the BZE file tit_1 which displays info about the BZE inventory in general
 # so info that´s base of all sub inventories like trees, deadwood, regeneration
 # as we don´t have a  dataset for the current inventory BZE3, we have to use a tit_1 of the previous years. This however, leads to problems with the sortinmg of the plots by plot_status
-inv_info <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
+inv_info <- read.delim(file = paste0(getwd(), "/data/input/BZE3/tit.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE) %>% ##changebacklater BZE3 folder
   select(-c("re_form", "re_lage", "neigung", "exposition", "anmerkung"))
 colnames(inv_info) <- c("plot_ID", "team", "date", "plot_inv_status")
 # create column that just contains year of inventory: https://www.geeksforgeeks.org/how-to-extract-year-from-date-in-r/
