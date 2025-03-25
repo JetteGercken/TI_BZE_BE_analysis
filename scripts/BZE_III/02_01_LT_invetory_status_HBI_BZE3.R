@@ -710,11 +710,15 @@ if(exists('BZE3_trees') == T){   #important# you can find the end of the stateme
 
 # HBI Update
 HBI_trees_update_02 <- HBI_trees %>% filter(tree_inventory_status %in% c(0, 1, -9, -1))
-HBI_trees_removed <- plyr::rbind.fill(HBI_trees_removed, 
-                                      HBI_trees %>% 
-                                        filter(!(tree_inventory_status %in% c(0, 1, -9, -1))) %>% 
-                                        mutate(rem_reason = "LT excluded during tree inventory status sorting (Baumkennzahl)")
-)
+# if there are trees to exclude, add them to the excluded tree dataset: 
+if(isTRUE(
+  nrow(HBI_trees %>% filter(!(tree_inventory_status %in% c(0, 1, -9, -1)))) >0) == T){
+  HBI_trees_removed <-  plyr::rbind.fill(HBI_trees_removed, 
+                                         HBI_trees %>% 
+                                           filter(!(tree_inventory_status %in% c(0, 1, -9, -1))) %>% 
+                                           mutate(rem_reason = "LT excluded during tree inventory status sorting (Baumkennzahl)")
+  )}else{
+    HBI_trees_removed <- HBI_trees_removed}
 
 # export data -------------------------------------------------------------
 write.csv(HBI_trees_update_02, paste0(out.path.BZE3, paste(unique(HBI_trees_update_02$inv)[1], "LT", "update", "2", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
