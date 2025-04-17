@@ -56,6 +56,8 @@ install_necessary <- rstudioapi::showQuestion(title,  "Are you running the scrip
   }else{
     source(paste0(getwd(), "/scripts/01_00_functions_library_install.R"))  }                   # installation necessary
 
+# run all functions and librabries
+source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
 # datasets import from postgres databank
 source(paste0(getwd(),"/scripts/02_00_connect_R_PostgreSQL.R"))
 # data wrangling & sorting for bark and fruit types for forest structural indeyx calcualtion

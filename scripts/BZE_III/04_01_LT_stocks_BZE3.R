@@ -50,10 +50,10 @@ for (i in 1:nrow(unique(trees_data[, c("plot_ID", "tree_ID")]))) {
   comp <- as.character(c("stw","stb","sw", "sb", "fwb", "ndl" ))
   
   # create object  
-  obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.trees <- TapeS::tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   # calculate biomass per compartiment
-  bio.df <- as.data.frame(tprBiomass(obj = obj.trees, component = comp)) %>% 
+  bio.df <- as.data.frame(TapeS::tprBiomass(obj = obj.trees, component = comp)) %>% 
     pivot_longer(cols = stw:ndl,
                  names_to = "compartiment", 
                  values_to = "B_kg_tree")
