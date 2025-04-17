@@ -35,8 +35,9 @@
 
 
 
-
+########################################################################
 # !!!!!!!!!!!!!! ENTER YOUR CREDENTIAL HERE !!!!!!!!!!!!!!!!!!!!!!!!!!
+########################################################################
  db_name <- "bze3_altdaten"
  db_server <- "134.110.100.88"
  db_port <- "5432"
@@ -47,7 +48,14 @@
 
 #### common/ general operations -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 # functions & packages
-source(paste0(getwd(), "/scripts/01_00_functions_library.R"))
+ # if you run the script for the first time you will have to install all the packages
+ # so this part will ask you if if its necesarry to run the installations or not: 
+install_necessary <- rstudioapi::showQuestion(title,  "Are you running the script for the first time?",   ok = "yes",  cancel = "no", timeout = 90)
+ if(isTRUE(install_necessary) == F){
+   source(paste0(getwd(), "/scripts/01_00_functions_library.R"))  # installation not necessary
+  }else{
+    source(paste0(getwd(), "/scripts/01_00_functions_library_install.R"))  }                   # installation necessary
+
 # datasets import from postgres databank
 source(paste0(getwd(),"/scripts/02_00_connect_R_PostgreSQL.R"))
 # data wrangling & sorting for bark and fruit types for forest structural indeyx calcualtion
