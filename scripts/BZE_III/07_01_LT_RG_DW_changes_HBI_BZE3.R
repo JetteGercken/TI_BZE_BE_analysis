@@ -570,7 +570,7 @@ write.csv(TY_stock_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_t
 # plotwise: Lt, RG, DW and Typewise in one csv
 write.csv(LT_RG_DW_TY_changes, paste0(out.path.BZE3, paste(HBI_trees$inv[1], BZE3_trees$inv[1], "LT_RG_DW_changes_all_groups", sep = "_"), ".csv"), row.names = FALSE, fileEncoding = "UTF-8")
 
-stop("this is where notes of growth script hbi bze3 start")
+stop("this is where notes of changes script hbi bze3 start")
 
 
 # notes -------------------------------------------------------------------

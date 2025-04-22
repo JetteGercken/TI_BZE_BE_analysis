@@ -23,6 +23,7 @@ DW_removed <-  read.delim(file =  paste0(out.path.BZE3, unique(DW_data$inv)[1] ,
 # and if th estocking species fall in the category broadleafes the other tapes species code"
 forest_info <- read.delim(file = paste0(out.path.BZE3, unique(DW_data$inv)[1], "_LT_inv_update_1.csv"), sep = ",", dec = ".", stringsAsFactors=FALSE)
 
+
 # 0.4 dataprep  -----------------------------------------------------------
 
 # 0.4.2. species names -------------------------------------------------------------
@@ -36,11 +37,12 @@ DW_data <- DW_data %>%
   left_join(., 
             forest_info %>% 
               # assign forest types into coniferus vs broadleaved categories based on x_forest code table
-              mutate(LH_NH_stand = case_when(besttyp %in% c(4, 5, 7, 8, 10, 91 ) ~ "LB",
-                                             besttyp %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
+              mutate(LH_NH_stand = case_when(stand_type  %in% c(4, 5, 7, 8, 10, 91 ) ~ "LB",
+                                             stand_type  %in% c(92, 1, 2, 3, 6, 9 ) ~ "NB", 
                                              TRUE ~ NA)) %>% 
-              select(bund_nr, LH_NH_stand), 
-            by = c("plot_ID" = "bund_nr")) %>% 
+              select(plot_ID, LH_NH_stand) %>% 
+              distinct(), 
+            by = "plot_ID")%>% 
   mutate(SP_code =  case_when(dw_sp == 1 | (dw_sp == 4 & LH_NH_stand == "NB") ~ "gfi",  # Fi
                               dw_sp == 2 | (dw_sp == 4 & LH_NH_stand == "LB") ~ "rbu", # BU
                               dw_sp == 3 ~ "sei",                                   # EI   
@@ -93,23 +95,23 @@ for (i in 1:nrow( DW_data_whole)){
   comp <- as.character(c("stw","stb","sw", "sb", "fwb"))
   
   # create object  
-  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.dw <- TapeS::tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   
   
   # calculate biomass
   # check if there is an error withthe monotone settings: https://stackoverflow.com/questions/2158780/catching-an-error-and-then-branching-logic 
-  t <- try(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp))
+  t <- try(TapeS::tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp))
   # if there is an error, don´t use monotone == TRUE 
   if("try-error" %in% class(t)){
-    bio.df <- as.data.frame(tprBiomass(obj = obj.dw, component = comp)) %>% 
+    bio.df <- as.data.frame(TapeS::tprBiomass(obj = obj.dw, component = comp)) %>% 
       pivot_longer(cols = stw:fwb,
                    names_to = "compartiment", 
                    values_to = "B_kg_tree") %>% 
       # apply the biomass reduction factor to the biomass of deadwood to account for decay state
       mutate(B_kg_tree = rdB_DW(B_kg_tree, my.decay.type, my.dw.spec, my.CF.BL))
   }else{
-    bio.df <- as.data.frame(tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
+    bio.df <- as.data.frame(TapeS::tprBiomass(obj = obj.dw[obj.dw@monotone == TRUE], component = comp)) %>% 
       pivot_longer(cols = stw:fwb,
                    names_to = "compartiment", 
                    values_to = "B_kg_tree") %>% 
@@ -167,7 +169,7 @@ for (i in 1:nrow(DW_data_broken)){
   Ht = na.omit(as.numeric(unique(DW_data_broken$l_dm[DW_data_broken$plot_ID==my.plot.id & DW_data_broken$tree_ID==my.tree.id]))/10) # lenth in meter m
   
   # create object  
-  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.dw <- TapeS::tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   # create the deimitation of the stem section we want TapeS to caluculate the volume for
   A <- 0 # lower limit
@@ -175,9 +177,9 @@ for (i in 1:nrow(DW_data_broken)){
   
   # calcualte volume for stem segment 0 to length 
   bio.df <- as.data.frame(cbind(
-    "vol_m3" = c((tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H") - tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")), 
-                 (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")),
-                 (tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H"))), 
+    "vol_m3" = c((TapeS::tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H") - TapeS::tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")), 
+                 (TapeS::tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = FALSE, AB = list(A = A, B = B), iAB = "H")),
+                 (TapeS::tprVolume(obj.dw[obj.dw@monotone == TRUE], bark = TRUE, AB = list(A = A, B = B), iAB = "H"))), 
     "compartiment" = c("sb", "sw", "ag"))) %>% 
     # calculate biomass
     mutate(B_kg_tree = B_DW(as.numeric(vol_m3), my.decay.type, my.dw.spec, my.CF.BL))
@@ -223,7 +225,7 @@ for (i in 1:nrow(DW_data_stump)){
   Dm = as.list(DBH_Dahm(my.plot.id, as.numeric(d.cm)*10, l.m, bwi.spp))
   # estimate height a tree with the estimated DBH diameter would have
   Hm = as.list(as.numeric(1.3))
-  Ht = (as.numeric(estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
+  Ht = (as.numeric(TapeS::estHeight(d13 = as.numeric(Dm), sp = spp))) # lenth in meter m
   
   
   
@@ -231,16 +233,16 @@ for (i in 1:nrow(DW_data_stump)){
   comp <- c("stw", "stb")
   
   # create object with estimated DBH and height 
-  obj.dw <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.dw <- TapeS::tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   
   
   ## calcualte biomass and bark-stump ratio for the "pseudo" tree 
   # deal with error for small trees: # https://stackoverflow.com/questions/2158780/catching-an-error-and-then-branching-logic
-  t <- try(tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp))
+  t <- try(TapeS::tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp))
   if("try-error" %in% class(t)){
     ratio.df <- as.data.frame(
-      tprBiomass(obj = obj.dw[obj.dw@monotone == F], component = comp)
+      TapeS::tprBiomass(obj = obj.dw[obj.dw@monotone == F], component = comp)
     ) %>% # momo = F if heigh low, mono = T if height normal
       mutate(ag = stw + stb) %>% 
       #apply the biomass reduction factor to the biomass of deadwoodto account for decay state
@@ -250,7 +252,7 @@ for (i in 1:nrow(DW_data_stump)){
              wood_ag_ratio = stw/ag)
   }else{
     ratio.df <- as.data.frame(
-      tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp)
+      TapeS::tprBiomass(obj = obj.dw[obj.dw@monotone == T], component = comp)
     ) %>% # momo = F if heigh low, mono = T if height normal
       mutate(ag = stw + stb) %>% 
       #apply the biomass reduction factor to the biomass of deadwoodto account for decay state
@@ -389,7 +391,8 @@ bg_dw_bio_df <- DW_data %>%
 
 # 1.6.2. assign total stocks --------------------------------
 # total
-total_dw_bio_df <- DW_data %>%  
+total_dw_bio_df <- DW_data %>% 
+  arrange(plot_ID, tree_ID) %>% 
   # make sure there is only one row per tree
   filter(compartiment == "ag") %>%  distinct() %>%
   # deselect cols that we calcualte now: compartiement, stocks

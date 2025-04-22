@@ -176,11 +176,43 @@ source(paste0(getwd(), "/scripts/BZE_III/08_01_LT_extracted_wood_mass_HBI_BZE3.R
  
  
  
-##### competition  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- # LT competition index calcualtion HBI 
-# source(paste0(getwd(), "/scripts/BZE_III/09_01_LT_competition.R"))
- 
+##### output files  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+## copy all main output files to output_BZE_main
+ # save everything imported from database from raw folder to input folder
+ # 1. create raw data path: 
+ output.path.all <- paste0(getwd(), "/output/out_data/out_data_BZE/")
+ # 2. get names of all files in the momok outout folder: https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/list.files
+ all.out.files <- list.files(output.path.all) 
+ # 3. select only main out files
+ main.out.files <- c(
+    all.out.files[endsWith(all.out.files, "LT_RG_DW_stocks_ha_all_groups.csv")] 
+   , all.out.files[endsWith(all.out.files, "FSI.csv")]
+   , all.out.files[endsWith(all.out.files, "LT_RG_DW_changes_all_groups.csv")]
+   , all.out.files[endsWith(all.out.files, "update_4.csv")]
+   , all.out.files[endsWith(all.out.files, "extracted.csv")])
+ # 4. create input path
+ output.path.main <- paste0(getwd(), "/output/out_data/out_data_BZE_main/")
+ # 5. copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
+ file.copy(from = paste0(output.path.all, main.out.files),
+           to = paste0(output.path.main, main.out.files),
+           overwrite = TRUE)
+ 
+ 
+ 
+## copy main warning files containing removed data to out_data_BZE_warning
+ # 3. select only main out files
+ removed.out.files <- all.out.files[endsWith(all.out.files, "removed.csv")] 
+ # 4. create input path
+ output.path.warning <- paste0(getwd(), "/output/out_data/out_data_BZE_warning/")
+ # 5. copy the files from one filder to the other: https://statisticsglobe.com/move-files-between-folders-r
+ file.copy(from = paste0(output.path.all, removed.out.files),
+           to = paste0(output.path.warning, removed.out.files),
+           overwrite = TRUE)
+ 
+ 
+ 
+ 
 
 ##### optional: Plausibility -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #source(paste0(getwd(), "/scripts/BZE_III/10_00_RG_LT_DW_stock_plausi.R"))

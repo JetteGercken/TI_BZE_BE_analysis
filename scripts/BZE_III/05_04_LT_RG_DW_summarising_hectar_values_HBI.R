@@ -16,8 +16,6 @@ getwd()
 
 out.path.BZE3 <- paste0(getwd(), "/output/out_data/out_data_BZE/") 
 
-
-
 # ----- 0.3 data import --------------------------------------------------------
 # livgn trees
 # this dataset contains the data of the tree inventory of the BZE3, including stand and area info,  species groups and B, C, N stocks per tree 
@@ -41,7 +39,7 @@ DW_stat_2 <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_DW_sta
 # import stand component wise summaries:
 # these dataset contain the LT, DW and RG values summarised per ha on different levels of data grouping
 # living trees
-LT_summary <- read.delim(file = paste0(out.path.BZE3, "BZE3_LT_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
+LT_summary <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
 # regeneration
 RG_summary <- read.delim(file = paste0(out.path.BZE3, LT_summary$inv[1], "_RG_stocks_ha_all_groups.csv"),sep = ",", dec = ".")
 # deadwood
@@ -88,7 +86,7 @@ LT_RG_DW_P <-
                SP_code = "all"))
     )%>%  
       left_join(.,  # # # add stand type to the RG data accprding to plot ID
-                LT_summary %>% select(inv, plot_ID, stand_type, n_stands, dom_SP) %>% distinct() %>% 
+                LT_summary %>% select(inv, plot_ID, stand_type, dom_SP) %>% distinct() %>% 
                   # # we have to deselec the number of stnad here, since there are plots where only RG is present and contributes info about the number of stands 
                   # select(-c(stand_component, n_stands)) %>% 
                   mutate_at(c('inv', 'plot_ID'), as.character) %>% 
@@ -160,12 +158,7 @@ write.csv(LT_RG_DW, paste0(out.path.BZE3, paste(LT_RG_DW_P$inv[1], "LT_RG_DW_sto
 
 
 
-
-stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values HBI starts")
-
-
-
-stop("there the visualization of 05_00_RG_LT_DW_summarizing_hevtar_values HBI starts")
+stop("there the visualization of 05_04_RG_LT_DW_summarizing_hevtar_values HBI starts")
 
 # 5. visuals --------------------------------------------------------------
 

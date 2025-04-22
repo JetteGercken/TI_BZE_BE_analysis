@@ -247,10 +247,10 @@ for (i in 1:nrow(trees_above_DBH_40)) {
   Ht = na.omit(as.numeric(unique(trees_above_DBH_40$H_m[trees_above_DBH_40$plot_ID==my.plot.id & trees_above_DBH_40$tree_ID==my.tree.id])))
   
   # create object  
-  obj.trees <- tprTrees(spp, Dm, Hm, Ht, inv = 4)
+  obj.trees <- TapeS::tprTrees(spp, Dm, Hm, Ht, inv = 4)
   
   # calculate biomass per compartiment
-  V.df <- as.data.frame(tprVolume(obj = obj.trees))[, 1] 
+  V.df <- as.data.frame(TapeS::tprVolume(obj = obj.trees))[, 1] 
   
   # save volume and tree info into dataframe 
   V.info.df <- as.data.frame(cbind(

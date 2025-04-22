@@ -16,10 +16,10 @@ out.path.BZE3 <- ("output/out_data/out_data_BZE/")
 
 
 # 0.3 import data --------------------------------------------------------------------------------------------------------------
-trees_data <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_4.csv")), sep = ";", dec = ",")
-trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"), sep = ";", dec = ",") %>% select(-X)
-HBI_summary <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_stocks_ha_P_SP_TY.csv")), sep = ";", dec = ",")
-BWI_LT_stocks <- read.delim(file = here("data/input/General/BWI_NW_LT_stocks_zielmerkmale.csv"), sep = ";", dec = ",")
+trees_data <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_update_4.csv")), sep = ",", dec = ".")
+trees_stat_2 <- read.delim(file = here("output/out_data/out_data_BZE/HBI_LT_stat_2.csv"),  sep = ",", dec = ".") 
+HBI_summary <- read.delim(file = here(paste0(out.path.BZE3,"HBI_LT_RG_DW_stocks_ha_all_groups.csv")),  sep = ",", dec = ".")
+BWI_LT_stocks <- read.delim(file = here("data/input/general/BWI_NW_LT_stocks_zielmerkmale.csv"), sep = ";", dec = ",")
 
 # create pseudo monocultures:
 # carbon stock of species per hectar divided by 1 Hektar mulitplied with the actual area covered by the species according to basal area 
