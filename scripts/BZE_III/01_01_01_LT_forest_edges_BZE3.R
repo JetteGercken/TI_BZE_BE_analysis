@@ -2337,12 +2337,13 @@ write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_up
 
 stop("this is where visualization of forest edges BZE3 starts")
 # 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
+trees_data <- read_csv(paste0(out.path.BZE3, "BZE3_LT_update_1.csv"))
 
 for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 1
-  # i = which(grepl(50124, unique(trees_data$plot_ID)))
+  # i = which(grepl(140043, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   
@@ -2367,9 +2368,9 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
           geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
           geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+ 
           geom_sf(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
-                  aes(color = all.trees.points.df.nogeo.sp$t_stat[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
+                  aes(color = all.trees.points.df.nogeo.sp$SP_code[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
                       size =  all.trees.points.df.nogeo.sp$DBH_cm[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
-          guides(color=guide_legend(title="tree status"))+
+          guides(color=guide_legend(title="species"))+
           guides(size=guide_legend(title="DBH cm"))+
           geom_sf_text(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
                        aes(label = all.trees.points.df.nogeo.sp$tree_ID[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
