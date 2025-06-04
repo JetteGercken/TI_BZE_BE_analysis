@@ -730,7 +730,7 @@ write.csv(RG_CCS_to_exclude, paste0(out.path.BZE3, paste(unique(RG_loc_info$inv)
 # this we just export so the inventory name and year are in the dataset and we don´t have to 
 # extract the date in the next data processing steps
 write.csv(inv_info, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1], "inv_info", sep = "_"), ".csv"), row.names = FALSE)
-write.csv(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1], "plots_to_exclude", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(plots_to_exclude, paste0(out.path.BZE3, paste(unique(inv_info$inv)[1], "plots_removed", sep = "_"), ".csv"), row.names = FALSE)
 
 # forest edges 
 write.csv(forest_edges_update_1, paste0(out.path.BZE3, paste(unique(tree_inv_info$inv)[1], "forest_edges_update_1", sep = "_"), ".csv"), row.names = FALSE)
