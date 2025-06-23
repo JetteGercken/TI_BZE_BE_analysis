@@ -19,14 +19,14 @@ out.path.BZE3 <- ("/output/out_data/out_data_BZE/")
 # LIVING TREES
 # BZE3 BE dataset: this dataset contains the inventory data of the tree inventory accompanying the second national soil inventory
 # here one should immport the the dataset called HBI_trees_update_01.csv which includes only trees that are already sortet according to their inventory status (Baumkennzahl)
-trees_data <- read.delim(file = paste0(out.path.BZE3, "HBI_LT_update_0.csv"), sep = ",", dec = ".")
+trees_data <- read.delim(file = paste0(getwd(), out.path.BZE3, "HBI_LT_update_0.csv"), sep = ",", dec = ".")
 # this dataset contains the removed trees that evolved from the inventory status sorting. 
 # we import it to continuously collect removed data in one dataset
-trees_removed <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_LT_removed.csv"), sep = ",", dec = ".")
+trees_removed <- read.delim(file = paste0(getwd(), out.path.BZE3, trees_data$inv[1], "_LT_removed.csv"), sep = ",", dec = ".")
 # BZE3 BE locations dataset: this dataset contains the coordinates of the center point of the tree inventory accompanying the second national soil inventory
 geo_loc <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/location_",  "HBI", ".csv"), sep = ",", dec = ",")
 # BZE3 forest edges (Waldränder) info
-forest_edges <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv"), sep = ",", dec = ".")
+forest_edges <- read.delim(file = paste0(getwd(), out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv"), sep = ",", dec = ".")
 
 
 # ----- 0.6 harmonising column names & structure  -------------------------
@@ -182,7 +182,7 @@ forest_edges.man <- forest_edges %>%
 
 
 
-# 3.2.1. plots with forest edge form 1 (line) --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1. edge form 1: creating triangles based on line  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 forest_edges.man.sub.e1.geo <-  forest_edges.man%>% filter(e_form == 1)  %>% ##georef
   semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
@@ -327,7 +327,7 @@ triangle.e1.coords.df.geo <- as.data.frame(rbindlist(triangle.e1.coords.geo))
 
 
 
-# 3.2.1.2. geo creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1.2. edge form 2: creating triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## loop to create list of polygones for edge form 1
 forest_edges.man.sub.e2.geo <- forest_edges.man %>%
@@ -454,12 +454,12 @@ triangle.e2.coords.df.geo <- as.data.frame(rbindlist(triangle.e2.coords.geo))
 
 
 
-# 3.2.1.3. loop for intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1.3. intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # bind polygone dataframes together
 edge.poly.df.geo <- plyr::rbind.fill(triangle.e1.poly.df.geo, triangle.e2.poly.df.geo) # rows: 83
 
-# 3.2.1.3.1. loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1.3.1. plots with 1 edge: loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
 # createa dataframe with plots that have only one forest edges
 forest_edges.man.sub.1.edge.geo <- forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
@@ -666,7 +666,7 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.geo$plot_ID))){
 edges.area.df.geo <- as.data.frame( rbindlist(edges.list.geo))
 
 # list of polygones of forest edges 
-inter.poly.one.edge.df.geo <- as.data.frame(rbindlist(inter.poly.list.geo, fill=TRUE))#[,c(2, 1, 3, 5)]%>% arrange(id, e_id)
+inter.poly.one.edge.df.geo <- as.data.frame(rbindlist(inter.poly.list.geo, fill=TRUE))
 
 # list of polygones of remainign circles 
 rem.circle.poly.df.geo <- as.data.frame(rbindlist(remaining.circle.poly.list.geo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
@@ -676,7 +676,7 @@ rem.circle.multipoly.df.geo <- as.data.frame(rbindlist(remaining.circle.multipol
 rem.circle.one.edge.df.geo <- plyr::rbind.fill(rem.circle.poly.df.geo, rem.circle.multipoly.df.geo)
 
 
-# 3.2.1.3.2.outer forest edge: loop for intersections for plots with once adge and edge type %in% c(1, 2) --------
+# 3.2.1.3.2. plots with 1 outer edge: loop for intersections for plots with once adge and edge type %in% c(1, 2) --------
 
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
@@ -976,7 +976,7 @@ outer.rem.circle.one.edge.df.geo <- plyr::rbind.fill(outer.rem.circle.poly.df.ge
 
 
 
-# 3.2.1.3.1. loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
+# 3.2.1.3.1. plots with 2 edges: loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
 forest_edges.man.sub.2.edges.geo <- forest_edges.man %>% # rows:84
@@ -1286,9 +1286,9 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.geo$plot_ID))){
   remaining.circle.17.1.and.2.poly$e_form <- 0
   remaining.circle.17.1.and.2.poly$geometry <- remaining.circle.17.1.and.2.poly$geometry
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  rem.circle.poly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  rem.circle.poly.2.edges.list.geo[[i]] <- if(isTRUE(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON") == T){c(remaining.circle.17.1.and.2.poly)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  rem.circle.multipoly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  rem.circle.multipoly.2.edges.list.geo[[i]] <- if(isTRUE(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON") ==T){c(remaining.circle.17.1.and.2.poly)}else{}
   
 }
 # save areas into dataframe
@@ -1306,7 +1306,7 @@ inter.poly.2.two.edges.df.geo <-  plyr::rbind.fill(as.data.frame(rbindlist(inter
 
 
 # bind the both edges per plot together
-inter.poly.two.edges.df.geo <- plyr::rbind.fill(inter.poly.1.two.edges.df.geo, inter.poly.2.two.edges.df.geo) %>% arrange(plot_ID, e_ID)
+inter.poly.two.edges.df.geo <- plyr::rbind.fill(inter.poly.1.two.edges.df.geo, inter.poly.2.two.edges.df.geo)
 
 # list of polygones of remainign circles 
 rem.circle.poly.two.edges.df.geo <- if(nrow(as.data.frame(rbindlist(rem.circle.poly.2.edges.list.geo)))!= 0){
@@ -1327,7 +1327,7 @@ rem.circle.two.edges.df.geo <- if(isTRUE(nrow(rem.circle.poly.two.edges.df.geo) 
 
 
 
-# 3.2.1.3.2. outer edge: loop for intersection of plots with 2 edges, edge type 1, 2 ---------------------------------------------------------------
+# 3.2.1.3.2. plots with 2 (outer) edges: loop for intersection of plots with 2 edges, edge type 1, 2 ---------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
 forest_edges.man.sub.2.outer.edges.geo <-
@@ -1839,6 +1839,15 @@ all.edges.area.df.geo <- plyr::rbind.fill(edges.area.df.geo,
                                              edges.area.two.edges.df.geo, 
                                             outer.edges.area.df.geo, 
                                             outer.edges.area.two.edges.df.geo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
+
+# assign stand to edge one 
+inter.poly.one.edge.df.geo <- inter.poly.one.edge.df.geo %>% 
+  # join in edge type: 
+  left_join(edges.area.df.geo %>% mutate(plot_ID = as.integer(plot_ID),
+                                         inv_year = as.integer(inv_year),
+                                         e_ID = as.integer(e_ID)) %>% filter(CCS_r_m == 17.84) %>% select(plot_ID,inv_year, e_ID, stand),  
+            by =c("plot_ID","inv_year", "e_ID"))   
+
 inter.poly.one.edge.df.geo <- plyr::rbind.fill(inter.poly.one.edge.df.geo, outer.inter.poly.one.edge.df.geo) # %>% select(colnames(inter.poly.one.edge.df.geo)))
 rem.circle.one.edge.df.geo <- plyr::rbind.fill(rem.circle.one.edge.df.geo, outer.rem.circle.one.edge.df.geo) # %>% select(colnames(rem.circle.one.edge.df.geo)))
 
@@ -2072,7 +2081,7 @@ two.and.one.edge.trees.points.df.geo <- two.and.one.edge.trees.points.df.geo %>%
 
 
 
-# 3.2.2.4 plots with no edge edge: sorting trees into circle ---------
+# 3.2.2.4 plots with no edge: sorting trees into circle ---------
 trees.no.edge.geo <- anti_join(trees_data, forest_edges.man %>% 
                                    # filter only for trees that are located in plots with a forest edge
                                    semi_join(forest_edges.man %>% 
@@ -2196,15 +2205,14 @@ all.trees.status.df <-
                    tree.status.two.edges.df.geo)
 
 
-# 3.3. data export ---------------------------------------------------------------------------------------------------------
-# 3.3.1. data prep for export -----------------------------------------------------------------------------------------------
-# 3.3.1.1. harmonzing strings for join --------------------------------------------------------
+# 4.prep for data export ---------------------------------------------------------------------------------------------------------
+# 4.1. harmonzing strings for join --------------------------------------------------------
 # harmonize strings of all.trees.status.df and   
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4, 5)], as.numeric)
 all.edges.area.df.geo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.geo[,c(1,2, 3, 4, 6)], as.numeric) 
 
-# 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
+# 4.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
 trees_update_1 <- trees_data %>%  
   # join in stand of each tree
   left_join(., all.trees.status.df %>% 
@@ -2241,8 +2249,12 @@ if(exists("all.edges.area.df.geo")){
            plot_A_ha = c_A(CCS_r_m)/10000) %>%   # dividedd by 10 000 to transform m2 into hectar ##georef
    left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% ##georef
    mutate(east_tree =  X_tree + as.numeric(RW_MED), ##georef
-          north_tree = Y_tree + as.numeric(HW_MED)) ##georef
-  
+          north_tree = Y_tree + as.numeric(HW_MED)) %>%  ##georef
+    # add column with epsg (if georef then respective epsg, if not georef then "polar)
+    mutate(EPSG = ifelse(east_tree < 6, 32631, 
+                  ifelse(east_tree >= 6 & east_tree < 12, 32632, 
+                         ifelse(east_tree >= 12, 32633, NA)))
+    ) 
   
   
 }else{
@@ -2253,12 +2265,19 @@ if(exists("all.edges.area.df.geo")){
       area_m2 = c_A(CCS_r_m), 
       # if there are no edges this column contains the same area s the plot and the area column this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
       stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
-      inter_stat = NA) 
-}
+      inter_stat = NA)  %>% ##georef
+    mutate(east_tree =  X_tree + as.numeric(RW_MED), ##georef
+           north_tree = Y_tree + as.numeric(HW_MED),  ##georef
+           # add column with epsg (if georef then respective epsg, if not georef then "polar)
+           EPSG = ifelse(east_tree < 6, 32631, 
+                         ifelse(east_tree >= 6 & east_tree < 12, 32632, 
+                                ifelse(east_tree >= 12, 32633, NA)))
+           ) 
+  }
 
 
 
-# 3.3.1.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
+# 4.3. sort trees into remove and process on datasets by status "warning" --------------------------------------------------------
 trees_removed <- plyr::rbind.fill(trees_removed, 
                                   trees_update_1 %>% 
                                     anti_join(., trees_removed, by = c("plot_ID", "tree_ID")) %>% 
@@ -2268,7 +2287,7 @@ trees_removed <- plyr::rbind.fill(trees_removed,
 trees_update_1 <- trees_update_1 %>% filter(!(stringr::str_detect(stand, "warning"))) 
 
 
-# 3.3.1.4.  binding datasets together ----------------------------------------------------------
+# 4.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.geo <- plyr::rbind.fill(triangle.e1.poly.df.geo, triangle.e2.poly.df.geo)
 all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.geo , inter.poly.two.edges.df.geo)#%>% nest("geometry" = geometry)
 all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.geo, rem.circle.two.edges.df.geo) #%>% nest("geometry" = geometry)
@@ -2282,23 +2301,23 @@ all.triangle.coords.df.geo <- plyr::rbind.fill(triangle.e1.coords.df.geo, triang
 
 
 
-# 3.3.2. EXPORT ---------------------------------------------------
+# 5. EXPORT ---------------------------------------------------
 # exporting tree and edge/ plot area data
-write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
-if(nrow(trees_removed)!=0){write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
+write.csv(trees_update_1, paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
+if(nrow(trees_removed)!=0){write.csv(trees_removed, paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
 
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
-write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.trees.status.df, paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand_georef", sep = "_"), ".csv"), row.names = FALSE)
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv(all.edges.area.df.geo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.edges.area.df.geo,  paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles_georef", sep = "_"), ".csv"), row.names = FALSE)
 
 # export list of plots where the both edge polygones intersect within the 17.84 radius
-write.csv(intersection.two.edges.warning.df.geo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(intersection.two.edges.warning.df.geo,  paste0(getwd(),out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning_georef", sep = "_"), ".csv"), row.names = FALSE)
 
 # exporting edge triangle polygones
-write.csv(all.triangle.polys.df.geo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.triangle.polys.df.geo, paste0(getwd(),out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly_georef", sep = "_"), ".csv"), row.names = FALSE)
 # exporting edge triangle coordiantes
-write.csv(all.triangle.coords.df.geo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.triangle.coords.df.geo, paste0(getwd(),out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords_georef", sep = "_"), ".csv"), row.names = FALSE)
 
 
 # exporting edge intersection polygones 
@@ -2306,9 +2325,9 @@ write.csv(all.triangle.coords.df.geo, paste0(out.path.BZE3, paste(unique(trees_u
 # to export the dataframes with long geometries and keep the geometries in list format for better processing later 
 # thus we export them with the following function, that enables to save the whole geometry list in 1 Table
 # https://stackoverflow.com/questions/48024266/save-a-data-frame-with-list-columns-as-csv-file
-tibble_with_lists_to_csv(all.edge.intersections.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_poly", sep = "_"), ".csv"))
+tibble_with_lists_to_csv(all.edge.intersections.poly %>% nest("geometry" = geometry), paste0(getwd(),out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_poly_georef", sep = "_"), ".csv"))
 # exporting all remaining circles polygones
-tibble_with_lists_to_csv(all.remaning.circles.poly %>% nest("geometry" = geometry), paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles_poly", sep = "_"), ".csv"))
+tibble_with_lists_to_csv(all.remaning.circles.poly %>% nest("geometry" = geometry), paste0(getwd(),out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles_poly_georef", sep = "_"), ".csv"))
 
 
 ## export coordiantes of all edge-triangle-circle-intersections polygones  to  dataframes 
@@ -2330,7 +2349,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.geo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.edge.intersections.coords.df,  paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords_georef", sep = "_"), ".csv"), row.names = FALSE)
 
 
 
@@ -2353,7 +2372,14 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   # join in the stand info by plot_ID, e_ID, CCS_r_M
   left_join(., all.edges.area.df.geo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
-write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.rem.circle.coords.df,  paste0(getwd(), out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords_georef", sep = "_"), ".csv"), row.names = FALSE)
+
+
+
+
+
+
+
 
 stop("this is where forest edges georef HBI ends")
 
