@@ -1815,6 +1815,7 @@ outer.rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(outer.rem.circle.poly.two.
 
 # bind all edges area dataframes together
 all.edges.area.df.nogeo <- plyr::rbind.fill(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
+
 inter.poly.one.edge.df.nogeo <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo, outer.inter.poly.one.edge.df.nogeo) # %>% select(colnames(inter.poly.one.edge.df.nogeo)))
 rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, outer.rem.circle.one.edge.df.nogeo) # %>% select(colnames(rem.circle.one.edge.df.nogeo)))
 
@@ -1841,7 +1842,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   #if(nrow(trees.one.edge.nogeo) == 0){break}
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <-trees.one.edge.nogeo [i, "plot_ID"] 
+  my.plot.id <-  trees.one.edge.nogeo [i, "plot_ID"] 
   my.tree.id <- trees.one.edge.nogeo[i, "tree_ID"]
   my.inv.year <- trees.one.edge.nogeo[i, "inv_year"]
   
@@ -2209,10 +2210,11 @@ if(exists("all.edges.area.df.nogeo")){
            # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-           plot_A_ha = c_A(CCS_r_m)/10000) #%>%   # dividedd by 10 000 to transform m2 into hectar
+           plot_A_ha = c_A(CCS_r_m)/10000) %>%   # dividedd by 10 000 to transform m2 into hectar
   # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
   # mutate(east_tree =  X_tree + RW_MED, 
-  #        north_tree = Y_tree + HW_MED)
+  #        north_tree = Y_tree + HW_MED) %>% 
+    mutate(EPSG = "polar")
   
   
   
@@ -2224,7 +2226,8 @@ if(exists("all.edges.area.df.nogeo")){
       area_m2 = c_A(CCS_r_m), 
       # if there are no edges this column contains the same area s the plot and the area column this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
       stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
-      inter_stat = NA) 
+      inter_stat = NA) %>% 
+    mutate(EPSG = "polar")
 }
 
 
@@ -2241,7 +2244,7 @@ trees_update_1 <- trees_update_1 %>% filter(!(stringr::str_detect(stand, "warnin
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
-all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
+all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo, inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
 all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) #%>% nest("geometry" = geometry)
 all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, triangle.e2.coords.df.nogeo) %>% 
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius

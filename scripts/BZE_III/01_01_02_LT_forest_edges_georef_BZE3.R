@@ -1016,6 +1016,7 @@ rem.circle.multipoly.2.edges.list.geo <- vector("list", length = length(unique(f
 # list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
 intersection.warning.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 
+if(isTRUE(nrow(forest_edges.man.sub.2.edges.geo) != 0) == T){
 for (i in 1:length(unique(forest_edges.man.sub.2.edges.geo$plot_ID))){ 
   #i = 13
   # i = which(grepl(60076, unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
@@ -1291,6 +1292,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.geo$plot_ID))){
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
   rem.circle.multipoly.2.edges.list.geo[[i]] <- if(isTRUE(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON") ==T){c(remaining.circle.17.1.and.2.poly)}else{}
   
+}
 }
 # save areas into dataframe
 edges.area.two.edges.df.geo <- as.data.frame(rbindlist(edges.list.two.edges.geo)) 
@@ -1840,17 +1842,9 @@ all.edges.area.df.geo <- plyr::rbind.fill(edges.area.df.geo,
                                           edges.area.two.edges.df.geo, 
                                           outer.edges.area.df.geo, 
                                           outer.edges.area.two.edges.df.geo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
-
-# assign stand to edge one 
-inter.poly.one.edge.df.geo <- inter.poly.one.edge.df.geo %>% 
-  # join in edge type: 
-  left_join(edges.area.df.geo %>% mutate(plot_ID = as.integer(plot_ID),
-                                         inv_year = as.integer(inv_year),
-                                         e_ID = as.integer(e_ID)) %>% filter(CCS_r_m == 17.84) %>% select(plot_ID,inv_year, e_ID, stand),  
-            by =c("plot_ID","inv_year", "e_ID"))   
-
 inter.poly.one.edge.df.geo <- plyr::rbind.fill(inter.poly.one.edge.df.geo, outer.inter.poly.one.edge.df.geo) # %>% select(colnames(inter.poly.one.edge.df.geo)))
 rem.circle.one.edge.df.geo <- plyr::rbind.fill(rem.circle.one.edge.df.geo, outer.rem.circle.one.edge.df.geo) # %>% select(colnames(rem.circle.one.edge.df.geo)))
+
 
 # 3.2.2. sorting TREES into edge and remaining circle polygones ---------
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
@@ -2288,10 +2282,37 @@ trees_removed <- plyr::rbind.fill(trees_removed,
 trees_update_1 <- trees_update_1 %>% filter(!(stringr::str_detect(stand, "warning"))) 
 
 
+
 # 4.4.  binding datasets together ----------------------------------------------------------
 all.triangle.polys.df.geo <- plyr::rbind.fill(triangle.e1.poly.df.geo, triangle.e2.poly.df.geo)
 all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.geo , inter.poly.two.edges.df.geo)#%>% nest("geometry" = geometry)
+# add missing stands to all intersection polygones dataframe 
+all.edge.intersections.poly <- all.edge.intersections.poly %>% 
+  left_join(., all.edges.area.df.geo %>%
+              filter(CCS_r_m == 17.84) %>%
+              distinct() %>% 
+              mutate(stand_of_area_df = stand, 
+                     plot_ID= as.integer(plot_ID), 
+                     e_ID = as.integer(e_ID) ) %>% 
+              select(plot_ID, e_ID,  stand_of_area_df), 
+            by = c("plot_ID", "e_ID")) %>% 
+  mutate(stand = ifelse(is.na(stand), stand_of_area_df, stand)) %>% 
+  select(-c(stand_of_area_df))
+
 all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.geo, rem.circle.two.edges.df.geo) #%>% nest("geometry" = geometry)
+# add missing stands to rem cirlces dataframe 
+all.remaning.circles.poly <- all.remaning.circles.poly %>% 
+  left_join(., all.edges.area.df.geo %>%
+              filter(CCS_r_m == 17.84) %>%
+              distinct() %>% 
+              mutate(stand_of_area_df = stand, 
+                     plot_ID= as.integer(plot_ID), 
+                     e_ID = as.integer(e_ID) ) %>% 
+              select(plot_ID, e_ID,  stand_of_area_df), 
+            by = c("plot_ID", "e_ID")) %>% 
+  mutate(stand = ifelse(is.na(stand), stand_of_area_df, stand)) %>% 
+  select(-c(stand_of_area_df))
+
 all.triangle.coords.df.geo <- plyr::rbind.fill(triangle.e1.coords.df.geo, triangle.e2.coords.df.geo) %>% 
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
   mutate(CCS_r_m = 17.84) %>% 

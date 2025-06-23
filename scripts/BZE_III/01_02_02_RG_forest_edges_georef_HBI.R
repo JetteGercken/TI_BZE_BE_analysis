@@ -132,9 +132,8 @@ forest_edges <- forest_edges %>%
 # 1. calculations --------------------------------------------------------------------------------------------------------------------------------------------------------
 # 1.1. assign gon according to exposition --------------------------------------------------------------------------------------------------------------------------------
 RG_loc <- RG_loc %>% 
-  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", 
-            # we have to set the relationship many-to-many cause there are multiple cirles per plot but also somethimes multiple edges per plot 
-            relationship = "many-to-many") %>% 
+  # relationship = "many-to-many" because there are multiple edges per plot in forest edges but also multiple CCS in RG loc
+  left_join(., forest_edges %>% select(plot_ID, e_ID, e_form), by = "plot_ID", relationship = "many-to-many") %>% 
   mutate(CCS_gon = case_when(CCS_position == "n" ~ 0,
                              CCS_position == "o" ~ 100,
                              CCS_position == "s" ~ 200,
@@ -146,7 +145,6 @@ RG_loc <- RG_loc %>%
                              TRUE ~ NA), 
          # if the max distance of the last plant in the RG CCS is not measured we assume it´s 5m or 500cm
          CCS_max_dist_cm = ifelse(CCS_max_dist_cm == -9 | is.na(CCS_max_dist_cm), 500, CCS_max_dist_cm))
-
 
 
 
@@ -581,7 +579,7 @@ RG_data_update_2 <- RG_data %>%
             by = c("plot_ID", "CCS_nr"), 
             multiple = "all") %>% 
   arrange(plot_ID, CCS_nr, tree_ID) %>% # add column with epsg (if georef then respective epsg, if not georef then "polar)
-  left_join(HBI_loc, by = plot_ID) %>% 
+  left_join(HBI_loc, by = "plot_ID") %>% 
   mutate(EPSG = ifelse(RW_MED < 6, 32631, 
                        ifelse(RW_MED >= 6 & RW_MED < 12, 32632, 
                               ifelse(RW_MED >= 12, 32633, NA)))
@@ -591,8 +589,8 @@ RG_data_update_2 <- RG_data %>%
 
 
 # 3.2. export  ------------------------------------------------------------
-write.csv2(RG_loc_update_2, paste0(out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
-write.csv2(RG_data_update_2, paste0(out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
+write.csv2(RG_loc_update_2, paste0(getwd(), out.path.BZE3, paste(unique(RG_loc_update_2$inv)[1], "RG_loc_update_2", sep = "_"), ".csv"))
+write.csv2(RG_data_update_2, paste0(getwd(), out.path.BZE3, paste(unique(RG_data_update_2$inv)[1], "RG_update_2", sep = "_"), ".csv"))
 
 
 

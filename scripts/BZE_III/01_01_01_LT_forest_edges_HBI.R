@@ -2220,10 +2220,11 @@ if(exists("all.edges.area.df.nogeo")){
            # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-           plot_A_ha = c_A(CCS_r_m)/10000) #%>%   # dividedd by 10 000 to transform m2 into hectar
+           plot_A_ha = c_A(CCS_r_m)/10000) %>%  #%>%   # dividedd by 10 000 to transform m2 into hectar
   # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
   # mutate(east_tree =  X_tree + RW_MED, 
   #        north_tree = Y_tree + HW_MED)
+    mutate(EPSG = "polar")
     
     
     
@@ -2235,7 +2236,8 @@ if(exists("all.edges.area.df.nogeo")){
       area_m2 = c_A(CCS_r_m), 
       # if there are no edges this column contains the same area s the plot and the area column this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
       stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
-      inter_stat = NA) 
+      inter_stat = NA) %>% 
+    mutate(EPSG = "polar")
 }
 
 

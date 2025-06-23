@@ -550,7 +550,8 @@ RG_data_update_2 <- RG_data %>%
               distinct(),
             by = c("plot_ID", "CCS_nr"), 
             multiple = "all") %>% 
-  arrange(plot_ID, CCS_nr, tree_ID)
+  arrange(plot_ID, CCS_nr, tree_ID) %>% 
+  mutate(EPSG = "polar")
 
 
 # 3.2. export  ------------------------------------------------------------
