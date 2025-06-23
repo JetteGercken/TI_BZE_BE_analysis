@@ -28,7 +28,6 @@ geo_loc <- read.delim(file = paste0(getwd(), "/data/input/BZE2_HBI/location_",  
 # BZE3 forest edges (Waldränder) info
 forest_edges <- read.delim(file = paste0(out.path.BZE3, trees_data$inv[1], "_forest_edges_update_1.csv"), sep = ",", dec = ".")
 
-
 # ----- 0.6 harmonising column names & structure  -------------------------
 # HBI locations
 geo_loc <- geo_loc[1:3] 
@@ -67,6 +66,8 @@ colnames(geo_loc) <- c("plot_ID",  "RW_MED", "HW_MED")
 #     check if y at respeective x is higher then y andfang or y ende
 # 3b) filter for trees with Y < Y forest edge function at given X
 
+
+# geo means the dataset is georefferenced and has an attributed crs
 
 # ----- 1.1.2.1. join in edge info to tree dataset ------------------------
 # ----- 1.1.2.1.1. HBI join in forest edge info per plot -----------------------------------------------
@@ -180,29 +181,29 @@ forest_edges.man <- forest_edges %>%
 
 
 
-# 3.2.1. georefferencing trough separate loops  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1. plots with forest edge form 1 (line) --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-forest_edges.man.sub.e1.nogeo <-  forest_edges.man%>% filter(e_form == 1)  %>% ##georef
- semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
+forest_edges.man.sub.e1.geo <-  forest_edges.man%>% filter(e_form == 1)  %>% ##georef
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # 62
 
-triangle.e1.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID))
-triangle.e1.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e1.nogeo$plot_ID)*4)
-for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
+triangle.e1.list.geo <- vector("list", length = length(forest_edges.man.sub.e1.geo$plot_ID))
+triangle.e1.coords.geo <- vector("list", length = length(forest_edges.man.sub.e1.geo$plot_ID)*4)
+for(i in 1:length(forest_edges.man.sub.e1.geo$plot_ID) ) {
   # i = 1
-  # i = which(grepl(50086, forest_edges.man.sub.e1.nogeo$plot_ID))
+  # i = which(grepl(50086, forest_edges.man.sub.e1.geo$plot_ID))
   
-  #if(nrow(forest_edges.man.sub.e1.nogeo) == 0){break}
+  #if(nrow(forest_edges.man.sub.e1.geo) == 0){break}
   
   # select plot ID, edge form and edge_ID accordint to positioin in the list
-  my.plot.id <- forest_edges.man.sub.e1.nogeo[i, "plot_ID"] 
-  my.e.id <- forest_edges.man.sub.e1.nogeo[i, "e_ID"]
-  my.e.form <- forest_edges.man.sub.e1.nogeo[i, "e_form"]
-  my.inv.year <- forest_edges.man.sub.e1.nogeo[i, "inv_year"]
+  my.plot.id <- forest_edges.man.sub.e1.geo[i, "plot_ID"] 
+  my.e.id <- forest_edges.man.sub.e1.geo[i, "e_ID"]
+  my.e.form <- forest_edges.man.sub.e1.geo[i, "e_form"]
+  my.inv.year <- forest_edges.man.sub.e1.geo[i, "inv_year"]
   
   ## georef
   ## select UTM corrdinates of the plot center by plot ID
-   my.center.easting <-  geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <-  as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"])
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])
   
   # circle center and radius to calcualte intersections 
   c.x0 = 0 
@@ -213,13 +214,13 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <-  forest_edges.man.sub.e1.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges.man.sub.e1.nogeo[i, "A_azi"] 
+  dist.A <-  forest_edges.man.sub.e1.geo[i, "A_dist"] 
+  azi.A <- forest_edges.man.sub.e1.geo[i, "A_azi"] 
   x.A <- round(dist.A*sin(azi.A*pi/200), digits = 12)       # this is: easting, longitude, RW ##test*pi/200
   y.A <- round(dist.A*cos(azi.A*pi/200), digits = 12)       # this is: northing, latitude, HW ##test*pi/200
   # point B
-  dist.B <- forest_edges.man.sub.e1.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges.man.sub.e1.nogeo[i, "B_azi"] 
+  dist.B <- forest_edges.man.sub.e1.geo[i, "B_dist"] 
+  azi.B <- forest_edges.man.sub.e1.geo[i, "B_azi"] 
   x.B <-  round(dist.B*sin(azi.B*pi/200), digits = 12)      # this is: easting, longitude, RW #test*pi/200
   y.B <-  round(dist.B*cos(azi.B*pi/200), digits = 12)      # this is: northing, latitude, HW #test*pi/200
   
@@ -267,10 +268,10 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   turning.north <- Y_inter_MC_shorter_side  + my.center.northing ## georef
   
   # UTM coordiantes of corner points 
-  x1.east <- x.1    + my.center.easting 
-  y1.north <- y.1   + my.center.northing 
-  x2.east <- x.2    + my.center.easting 
-  y2.north <- y.2   + my.center.northing 
+  x1.east <- x.1 + my.center.easting 
+  y1.north <- y.1 + my.center.northing 
+  x2.east <- x.2  + my.center.easting 
+  y2.north <- y.2 + my.center.northing 
   
   # create dataframe that holds coordinates of the intersections of the AB line with a 60m radius and the turning pint of a diagonal line through the AB line with a 60m radius circle
   triangle.e1.df <- as.data.frame(cbind("lon" = c(turning.east, x1.east, x2.east, turning.east),
@@ -288,70 +289,72 @@ for(i in 1:length(forest_edges.man.sub.e1.nogeo$plot_ID) ) {
   
   ## georef
   #  assign crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   ## assing crs
-   sf::st_crs(triangle.e1.poly) <- my.utm.epsg
+  sf::st_crs(triangle.e1.poly) <- my.utm.epsg
   
   print(plot(triangle.e1.poly, main = my.plot.id))
-  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
   c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  sf::st_crs(c.pt) <- my.utm.epsg
   c.poly.17 <- sf::st_buffer(c.pt, 17.84)
   c.poly.12 <- sf::st_buffer(c.pt, 12.62)
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
   c.poly.60 <-  sf::st_buffer(c.pt, 60.0)
+  
   # test 
-  # print(ggplot() +
-  #         ggtitle(my.plot.id)+
-  #         geom_sf(data = c.poly.60, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.17, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.12, aes(alpha = 0))+
-  #         geom_sf(data = c.poly.5, aes(alpha = 0))+
-  #         geom_sf(data = triangle.e1.poly, aes(alpha = 0))+
-  #         xlim(-80, 80)+
-  #         ylim(-80, 80))
+  print(ggplot() +
+          ggtitle(my.plot.id)+
+          geom_sf(data = c.poly.60, aes(alpha = 0))+
+          geom_sf(data = c.poly.17, aes(alpha = 0))+
+          geom_sf(data = c.poly.12, aes(alpha = 0))+
+          geom_sf(data = c.poly.5, aes(alpha = 0))+
+          geom_sf(data = triangle.e1.poly, aes(alpha = 0)))
+  # xlim(-80, 80)+
+  # ylim(-80, 80))
   
   #save polygones in list 
-  triangle.e1.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e1.poly)
+  triangle.e1.list.geo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e1.poly)
   
   # save coordiantes of polygones in list
-  triangle.e1.coords.nogeo[[i]] <- triangle.e1.df %>% mutate(e_form = my.e.form)
+  triangle.e1.coords.geo[[i]] <- triangle.e1.df %>% mutate(e_form = my.e.form)
   
 } # closing loop for square polys of edge form 1
-triangle.e1.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e1.list.nogeo, fill=TRUE)) 
-triangle.e1.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e1.coords.nogeo))
+triangle.e1.poly.df.geo <- as.data.frame(rbindlist(triangle.e1.list.geo, fill=TRUE)) 
+triangle.e1.coords.df.geo <- as.data.frame(rbindlist(triangle.e1.coords.geo))
 
 
 
 
-# 3.2.1.2. nogeo creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3.2.1.2. geo creating list of triangle polygons for edge form 2 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## loop to create list of polygones for edge form 1
-forest_edges.man.sub.e2.nogeo <- forest_edges.man %>%
+forest_edges.man.sub.e2.geo <- forest_edges.man %>%
   filter(e_form == 2) %>%  # nrow = 21
   filter(inter_status_AT_17 == "two I" | inter_status_BT_17 == "two I") %>% 
   arrange(plot_ID) %>% ## georef
- semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
-             select(plot_ID)  %>% distinct(), 
-           by = "plot_ID")  # nrow = 21 ## georef
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
+              select(plot_ID)  %>% distinct(), 
+            by = "plot_ID")  # nrow = 21 ## georef
 
 # preparing output dataset
-triangle.e2.list.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID) )
-triangle.e2.coords.nogeo <- vector("list", length = length(forest_edges.man.sub.e2.nogeo$plot_ID))
-for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
-  # i = 6
-  # i = which(grepl(140058, forest_edges.man.sub.e2.nogeo$plot_ID))
+triangle.e2.list.geo <- vector("list", length = length(forest_edges.man.sub.e2.geo$plot_ID) )
+triangle.e2.coords.geo <- vector("list", length = length(forest_edges.man.sub.e2.geo$plot_ID))
+for(i in 1:length(forest_edges.man.sub.e2.geo$plot_ID) ) {
+  # i = 1
+  # i = which(grepl(140058, forest_edges.man.sub.e2.geo$plot_ID))
   
-  #if(nrow(forest_edges.man.sub.e2.nogeo) == 0){break}
+  #if(nrow(forest_edges.man.sub.e2.geo) == 0){break}
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <- forest_edges.man.sub.e2.nogeo[i, "plot_ID"] 
-  my.e.id <- forest_edges.man.sub.e2.nogeo[i, "e_ID"] 
-  my.e.form <- forest_edges.man.sub.e2.nogeo[i, "e_form"]
-  my.inv.year <- forest_edges.man.sub.e2.nogeo[i, "inv_year"]
+  my.plot.id <- forest_edges.man.sub.e2.geo[i, "plot_ID"] 
+  my.e.id <- forest_edges.man.sub.e2.geo[i, "e_ID"] 
+  my.e.form <- forest_edges.man.sub.e2.geo[i, "e_form"]
+  my.inv.year <- forest_edges.man.sub.e2.geo[i, "inv_year"]
   
   ## select UTM corrdinates of the plot center
-   my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"] ## georef
-  my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"] ## georef
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]) ## georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]) ## georef
   
   # circle data
   c.x0 = 0 
@@ -361,20 +364,20 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.A <- forest_edges.man.sub.e2.nogeo[i, "A_dist"] 
-  azi.A <- forest_edges.man.sub.e2.nogeo[i, "A_azi"] 
+  dist.A <- forest_edges.man.sub.e2.geo[i, "A_dist"] 
+  azi.A <- forest_edges.man.sub.e2.geo[i, "A_azi"] 
   x.A <- dist.A*sin(azi.A*pi/200)   # longitude, easting, RW, X
   y.A <- dist.A*cos(azi.A*pi/200)   # latitude, northing, HW, y 
   
   # point B
-  dist.B <- forest_edges.man.sub.e2.nogeo[i, "B_dist"] 
-  azi.B <- forest_edges.man.sub.e2.nogeo[i, "B_azi"] 
+  dist.B <- forest_edges.man.sub.e2.geo[i, "B_dist"] 
+  azi.B <- forest_edges.man.sub.e2.geo[i, "B_azi"] 
   x.B <- dist.B*sin(azi.B*pi/200)   # longitude, easting, RW, X
   y.B <- dist.B*cos(azi.B*pi/200)   # latitude, northing, HW, y 
   
   # point T
-  dist.T <- forest_edges.man.sub.e2.nogeo[i, "T_dist"] 
-  azi.T <- forest_edges.man.sub.e2.nogeo[i, "T_azi"] 
+  dist.T <- forest_edges.man.sub.e2.geo[i, "T_dist"] 
+  azi.T <- forest_edges.man.sub.e2.geo[i, "T_azi"] 
   x.T <- dist.T*sin(azi.T*pi/200)   # longitude, easting, RW, X
   y.T <- dist.T*cos(azi.T*pi/200)   # latitude, northing, HW, y 
   
@@ -413,12 +416,13 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
                                             , polygon_id = "e_ID")
   ## georef
   ## select crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   ## assing crs
-   sf::st_crs(triangle.e2.poly) <- my.utm.epsg
+  sf::st_crs(triangle.e2.poly) <- my.utm.epsg
   
-  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  c.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
   c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  sf::st_crs(c.pt) <- my.utm.epsg
   c.poly.17 <- sf::st_buffer(c.pt, 17.84)
   c.poly.12 <- sf::st_buffer(c.pt, 12.62)
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
@@ -430,73 +434,71 @@ for(i in 1:length(forest_edges.man.sub.e2.nogeo$plot_ID) ) {
           geom_sf(data = c.poly.17, aes(alpha = 0))+
           geom_sf(data = c.poly.12, aes(alpha = 0))+
           geom_sf(data = c.poly.5, aes(alpha = 0))+
-          geom_sf(data = triangle.e2.poly, aes(alpha = 0))+
-          xlim(-80, 80)+
-          ylim(-80, 80))
+          geom_sf(data = triangle.e2.poly, aes(alpha = 0)))
   
   # print triangle
   print(plot(triangle.e2.poly$geometry, main = my.plot.id))
   
   # save polygones in list
-  triangle.e2.list.nogeo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e2.poly)
+  triangle.e2.list.geo[[i]] <- c("plot_ID" = my.plot.id, "inv_year" = my.inv.year, "e_form" = my.e.form, triangle.e2.poly)
   
   # save coordiantes of polygones in list
-  triangle.e2.coords.nogeo[[i]] <- triangle.e2.df %>% mutate(e_form = my.e.form)
+  triangle.e2.coords.geo[[i]] <- triangle.e2.df %>% mutate(e_form = my.e.form)
 }
 # list of polygones
-triangle.e2.poly.df.nogeo <- as.data.frame(rbindlist(triangle.e2.list.nogeo))
+triangle.e2.poly.df.geo <- as.data.frame(rbindlist(triangle.e2.list.geo))
 
 #list of coordiantes of triangle.e2 polygones
-triangle.e2.coords.df.nogeo <- as.data.frame(rbindlist(triangle.e2.coords.nogeo)) 
+triangle.e2.coords.df.geo <- as.data.frame(rbindlist(triangle.e2.coords.geo)) 
 
 
 
 # 3.2.1.3. loop for intersections between circles and edges -------------------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # bind polygone dataframes together
-edge.poly.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo) # rows: 83
+edge.poly.df.geo <- plyr::rbind.fill(triangle.e1.poly.df.geo, triangle.e2.poly.df.geo) # rows: 83
 
 # 3.2.1.3.1. loop for intersections for plots with only one edge  -------------------------------------------------------------------------------------------------------------------------------
 # createa dataframe with plots that have only one forest edges
-forest_edges.man.sub.1.edge.nogeo <- forest_edges.man %>% # rows:84
+forest_edges.man.sub.1.edge.geo <- forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
   # remove plots that have two edges
   anti_join(forest_edges.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
   anti_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID) %>% distinct(), by = "plot_ID")  %>% ## georef # 14 plots with 2 edges --> 28 rows -> 53 left
-## remove plots that do now have a corresponding center coordiante in the HBI loc document ## georef
- semi_join(geo_loc %>% 
-             filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
-             select(plot_ID)  %>% distinct(), 
-           by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
+  ## remove plots that do now have a corresponding center coordiante in the HBI loc document ## georef
+  semi_join(geo_loc %>% 
+              filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
+              select(plot_ID)  %>% distinct(), 
+            by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
 
 # prepare output datasets
-edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID)))
-inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.geo$plot_ID)))
+inter.poly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.geo$plot_ID)))
 #inter.poly.NA.list <- vector("list", length = length(unique(forest_edges.man.sub.1.edge$plot_ID)))
-remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID)))
-remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+remaining.circle.poly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.geo$plot_ID)))
+remaining.circle.multipoly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.edge.geo$plot_ID)))
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
-for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){ 
+for (i in 1:length(unique(forest_edges.man.sub.1.edge.geo$plot_ID))){ 
   # i = 1
-  #i = which(grepl(50131, (forest_edges.man.sub.1.edge.nogeo$plot_ID)))
+  #i = which(grepl(50131, (forest_edges.man.sub.1.edge.geo$plot_ID)))
   
-  # if(nrow(forest_edges.man.sub.1.edge.nogeo) == 0){break}
+  # if(nrow(forest_edges.man.sub.1.edge.geo) == 0){break}
   
   # select plot ID of the respective circle 
-  my.plot.id <- forest_edges.man.sub.1.edge.nogeo[i, "plot_ID"]
-  my.e.form <- edge.poly.df.nogeo$e_form[edge.poly.df.nogeo$plot_ID == my.plot.id]
-  my.e.id <- edge.poly.df.nogeo$e_ID[edge.poly.df.nogeo$plot_ID == my.plot.id]
-  my.inv.year <- forest_edges.man.sub.1.edge.nogeo[i, "inv_year"]
+  my.plot.id <- forest_edges.man.sub.1.edge.geo[i, "plot_ID"]
+  my.e.form <- edge.poly.df.geo$e_form[edge.poly.df.geo$plot_ID == my.plot.id]
+  my.e.id <- edge.poly.df.geo$e_ID[edge.poly.df.geo$plot_ID == my.plot.id]
+  my.inv.year <- forest_edges.man.sub.1.edge.geo[i, "inv_year"]
   
   ## georef
   ##  select UTM corrdinates of the plot center
-   my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-    my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"])
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])
   ## select crs ## georef
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
   
   # circle data
@@ -510,14 +512,14 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
   # build polygon (circlular buffer) around center point
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
   ## assing crs to cirlce corodiantes
-   sf::st_crs(circle.pt) <- my.utm.epsg ## georef
+  sf::st_crs(circle.pt) <- my.utm.epsg ## georef
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
   
   
   ## select the respective polygones the circle is intersected by
-  my.poly <- sf::st_as_sf(edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id))
+  my.poly <- sf::st_as_sf(edge.poly.df.geo %>% filter(plot_ID == my.plot.id))
   
   # print the cirlce and edge polygone
   print(c(plot(circle.17$geometry, main = paste0("plot:", " ", my.plot.id, ",", " ", "e_form:"," ", my.e.form)), 
@@ -633,10 +635,10 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
   
   
   # list with inter and remaining circle areas areas
-  edges.list.nogeo[[i]] <- inter.area.df
+  edges.list.geo[[i]] <- inter.area.df
   
   # create lists with polgons of intersections if there are intersections, if there is non, save the edge triangle polygone instead. 
-  inter.poly.list.nogeo[[i]] <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
+  inter.poly.list.geo[[i]] <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
   
   # testing if corect inter was saved: 
   #  i.plot <- if(isTRUE(nrow(inter.poly.17)!= 0)){c(inter.poly.17)}else{c(my.poly)}
@@ -653,69 +655,69 @@ for (i in 1:length(unique(forest_edges.man.sub.1.edge.nogeo$plot_ID))){
   # remaining.circle.poly.17$stand <- stand.df$stand[stand.df$e_ID == remaining.circle.poly.17$e_ID]
   # #plot(remaining.circle.poly.17)
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  remaining.circle.poly.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "POLYGON"){c(remaining.circle.poly.17)}else{}
+  remaining.circle.poly.list.geo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "POLYGON"){c(remaining.circle.poly.17)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  remaining.circle.multipoly.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "MULTIPOLYGON"){c(remaining.circle.poly.17)}else{}
+  remaining.circle.multipoly.list.geo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "MULTIPOLYGON"){c(remaining.circle.poly.17)}else{}
   
   
 }
 # list of areas
-edges.area.df.nogeo <- as.data.frame( rbindlist(edges.list.nogeo))
+edges.area.df.geo <- as.data.frame( rbindlist(edges.list.geo))
 
 # list of polygones of forest edges 
-inter.poly.one.edge.df.nogeo <- as.data.frame(rbindlist(inter.poly.list.nogeo, fill=TRUE))#[,c(2, 1, 3, 5)]%>% arrange(id, e_id)
+inter.poly.one.edge.df.geo <- as.data.frame(rbindlist(inter.poly.list.geo, fill=TRUE))#[,c(2, 1, 3, 5)]%>% arrange(id, e_id)
 
 # list of polygones of remainign circles 
-rem.circle.poly.df.nogeo <- as.data.frame(rbindlist(remaining.circle.poly.list.nogeo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
+rem.circle.poly.df.geo <- as.data.frame(rbindlist(remaining.circle.poly.list.geo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
 # list of multipolygones of remaining circles
-rem.circle.multipoly.df.nogeo <- as.data.frame(rbindlist(remaining.circle.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
+rem.circle.multipoly.df.geo <- as.data.frame(rbindlist(remaining.circle.multipoly.list.geo))#[,c(2,1,4)] %>% distinct()
 # binding the both circle lists back together 
-rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(rem.circle.poly.df.nogeo, rem.circle.multipoly.df.nogeo)
+rem.circle.one.edge.df.geo <- plyr::rbind.fill(rem.circle.poly.df.geo, rem.circle.multipoly.df.geo)
 
 
 # 3.2.1.3.2.outer forest edge: loop for intersections for plots with once adge and edge type %in% c(1, 2) --------
 
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
-forest_edges.man.sub.1.outer.edge.nogeo <- forest_edges.man %>% # rows:84
+forest_edges.man.sub.1.outer.edge.geo <- forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
   filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>%  # rows:81
   # remove plots that have two edges
   anti_join(forest_edges.man %>%  filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID")  %>% # 14 plots with 2 edges --> 28 rows -> 53 left
   filter(e_type %in% c(1, 2)) %>% ## georef
-## remove plots that do now have a corresponding center coordiante in the HBI loc document
+  ## remove plots that do now have a corresponding center coordiante in the HBI loc document
   ## georef
- semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 52 --> there is 1 plots without corresponding
 
 # prepare output datasets
-outer.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+outer.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
 
-outer.inter.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
-outer.inter.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+outer.inter.poly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
+outer.inter.multipoly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
 #inter.poly.NA.list <- vector("list", length = length(unique(forest_edges.man.sub.1.edge$plot_ID)))
-outer.remaining.circle.poly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
-outer.remaining.circle.multipoly.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+outer.remaining.circle.poly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
+outer.remaining.circle.multipoly.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
 
 # loop for intersection of all edge triablge polygoens woth their respective sampling cirlce for plots with one edge only
-for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){ 
-  # i = 38
-  #i = which(grepl(60130    , (forest_edges.man.sub.1.outer.edge.nogeo$plot_ID)))
+for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.geo$plot_ID))){ 
+  # i = 1
+  #i = which(grepl(60130    , (forest_edges.man.sub.1.outer.edge.geo$plot_ID)))
   
   
   # select plot ID of the respective circle 
-  my.plot.id <- forest_edges.man.sub.1.outer.edge.nogeo[i, "plot_ID"]
-  my.e.form <- edge.poly.df.nogeo$e_form[edge.poly.df.nogeo$plot_ID == my.plot.id]
-  my.e.id <- edge.poly.df.nogeo$e_ID[edge.poly.df.nogeo$plot_ID == my.plot.id]
-  my.inv.year <- forest_edges.man.sub.1.outer.edge.nogeo[i, "inv_year"]
+  my.plot.id <- forest_edges.man.sub.1.outer.edge.geo[i, "plot_ID"]
+  my.e.form <- edge.poly.df.geo$e_form[edge.poly.df.geo$plot_ID == my.plot.id]
+  my.e.id <- edge.poly.df.geo$e_ID[edge.poly.df.geo$plot_ID == my.plot.id]
+  my.inv.year <- forest_edges.man.sub.1.outer.edge.geo[i, "inv_year"]
   
   
   ## georef
   ##  select UTM corrdinates of the plot center
-   my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"])
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])
   ## select crs ## georef
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
   
   # circle data
@@ -729,7 +731,7 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   # build polygon (circlular buffer) around center point
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
   ## assing crs to cirlce corodiantes
-   sf::st_crs(circle.pt) <- my.utm.epsg ## georef
+  sf::st_crs(circle.pt) <- my.utm.epsg ## georef
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
@@ -743,18 +745,18 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     mutate(dist_tree = dist_cm/100, 
            x_tree = dist_tree*sin(azi_gon*pi/200), 
            y_tree = dist_tree*cos(azi_gon*pi/200), 
-           lon = x_tree, #+ my.center.easting, 
-           lat =  y_tree ) %>% # + my.center.northing)
+           lon = x_tree + my.center.easting, ##georef
+           lat =  y_tree + my.center.northing) %>%  ##georef
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
   tree.sf <-  sf::st_as_sf(tree.coord.df, coords = c("lon", "lat"), remove = FALSE)
   ## assing CRS to points
-  #sf::st_crs(tree.sf) <- my.utm.epsg
+  sf::st_crs(tree.sf) <- my.utm.epsg ##georef
   
   
   ## select the respective polygones the circle is intersected by
-  my.poly <- sf::st_as_sf(edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id)) %>% 
+  my.poly <- sf::st_as_sf(edge.poly.df.geo %>% filter(plot_ID == my.plot.id)) %>% 
     left_join(forest_edges.man %>% select(plot_ID, e_ID, e_type), by = c("plot_ID", "e_ID"))
   
   # print the cirlce and edge polygone
@@ -905,29 +907,29 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
     select(plot_ID, e_ID, inv_year, CCS_r_m ,inter_stat, area_m2,stand)
   
   
-  # print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)), 
+  # print(  c(plot(circle.17$geometry, main = paste0(my.plot.id, " - ", my.e.form, " - ", my.e.form)),
   #           plot(remaining.circle.poly.17$geometry, col = "grey", add = T),
   #           plot(remaining.circle.poly.12$geometry, add = T),
   #           plot(remaining.circle.poly.5$geometry, add = T),
   #           plot(inter.poly.17$geometry, col = "green", add =TRUE),
   #           plot(circle.pt$geometry, col = "red",  add = TRUE),
-  #           legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type), 
-  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")), 
+  #           legend("topleft", legend=c(paste0(unique(inter.area.df$stand[inter.area.df$e_ID == my.poly$e_ID]),":",  my.poly$e_type),
+  #                                      paste0(unique(inter.area.df$stand[inter.area.df$e_ID == 0]),":","rem_circle")),
   #                  col=c("green", "grey"), lty=1:2, cex=0.8),
   #           plot(st_geometry(tree.sf), add = TRUE)))
   
   
   # list with inter and remaining circle areas areas
-  outer.edges.list.nogeo[[i]] <- inter.area.df
+  outer.edges.list.geo[[i]] <- inter.area.df
   
   # create lists with polgons of intersections if there are intersections, if there is non, save the edge triangle polygone instead. 
   edge.poly <- if(isTRUE(nrow(inter.poly.17)!= 0)){inter.poly.17}else{my.poly}
   # if the edge.poly doesn´t have a stand yet we have to assign it later
   edge.poly <- if(isTRUE(length(edge.poly$stand)== 0)){edge.poly %>% mutate(stand = my.poly$stand) }else{edge.poly}
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  outer.inter.poly.list.nogeo[[i]] <- if(st_geometry_type(edge.poly)== "POLYGON"){c(edge.poly)}else{}
+  outer.inter.poly.list.geo[[i]] <- if(st_geometry_type(edge.poly)== "POLYGON"){c(edge.poly)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  outer.inter.multipoly.list.nogeo[[i]] <- if(st_geometry_type(edge.poly)== "MULTIPOLYGON"){c(edge.poly)}else{}
+  outer.inter.multipoly.list.geo[[i]] <- if(st_geometry_type(edge.poly)== "MULTIPOLYGON"){c(edge.poly)}else{}
   
   
   # testing if corect inter was saved: 
@@ -942,29 +944,29 @@ for (i in 1:length(unique(forest_edges.man.sub.1.outer.edge.nogeo$plot_ID))){
   remaining.circle.poly.17$inv_year <- my.inv.year
   remaining.circle.poly.17$e_form <- 0
   remaining.circle.poly.17$geometry <- remaining.circle.poly.17$geometry
-  #plot(remaining.circle.poly.17)
+  # plot(remaining.circle.poly.17)
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  outer.remaining.circle.poly.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "POLYGON"){c(remaining.circle.poly.17)}else{}
+  outer.remaining.circle.poly.list.geo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "POLYGON"){c(remaining.circle.poly.17)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  outer.remaining.circle.multipoly.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "MULTIPOLYGON"){c(remaining.circle.poly.17)}else{}
+  outer.remaining.circle.multipoly.list.geo[[i]] <- if(st_geometry_type(remaining.circle.poly.17)== "MULTIPOLYGON"){c(remaining.circle.poly.17)}else{}
   
   
 }
 # list of areas
-outer.edges.area.df.nogeo <- as.data.frame( rbindlist(outer.edges.list.nogeo))
+outer.edges.area.df.geo <- as.data.frame( rbindlist(outer.edges.list.geo))
 # list of polygones of forest edges 
-outer.inter.poly.df.nogeo <- as.data.frame(rbindlist(outer.inter.poly.list.nogeo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
+outer.inter.poly.df.geo <- as.data.frame(rbindlist(outer.inter.poly.list.geo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
 # list of multipolygones of remaining circles
-outer.inter.multipoly.df.nogeo <- as.data.frame(rbindlist(outer.inter.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
+outer.inter.multipoly.df.geo <- as.data.frame(rbindlist(outer.inter.multipoly.list.geo))#[,c(2,1,4)] %>% distinct()
 # binding the both circle lists back together 
-outer.inter.poly.one.edge.df.nogeo <- plyr::rbind.fill(outer.inter.poly.df.nogeo, outer.inter.multipoly.df.nogeo)
+outer.inter.poly.one.edge.df.geo <- plyr::rbind.fill(outer.inter.poly.df.geo, outer.inter.multipoly.df.geo)
 
 # list of polygones of remainign circles 
-outer.rem.circle.poly.df.nogeo <- as.data.frame(rbindlist(outer.remaining.circle.poly.list.nogeo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
+outer.rem.circle.poly.df.geo <- as.data.frame(rbindlist(outer.remaining.circle.poly.list.geo, fill = TRUE))#[,c(2,1,4)]  %>% distinct()
 # list of multipolygones of remaining circles
-outer.rem.circle.multipoly.df.nogeo <- as.data.frame(rbindlist(outer.remaining.circle.multipoly.list.nogeo))#[,c(2,1,4)] %>% distinct()
+outer.rem.circle.multipoly.df.geo <- as.data.frame(rbindlist(outer.remaining.circle.multipoly.list.geo))#[,c(2,1,4)] %>% distinct()
 # binding the both circle lists back together 
-outer.rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(outer.rem.circle.poly.df.nogeo, outer.rem.circle.multipoly.df.nogeo)
+outer.rem.circle.one.edge.df.geo <- plyr::rbind.fill(outer.rem.circle.poly.df.geo, outer.rem.circle.multipoly.df.geo)
 
 
 
@@ -976,7 +978,7 @@ outer.rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(outer.rem.circle.poly.df.
 # 3.2.1.3.1. loop for intersections for plots with two edges ----------------------------------------------------------------------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
-forest_edges.man.sub.2.edges.nogeo <- forest_edges.man %>% # rows:84
+forest_edges.man.sub.2.edges.geo <- forest_edges.man %>% # rows:84
   # select only plots with a known edge form and for edge 2 only those that actually intersect the 17m circle
   filter(e_form == 1 | 
            e_form == 2 & inter_status_AT_17 == "two I" | 
@@ -988,44 +990,46 @@ forest_edges.man.sub.2.edges.nogeo <- forest_edges.man %>% # rows:84
                                           e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
   anti_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
-  arrange(plot_ID, e_ID)# %>% # 14 plots iwth 2 edges --> 28 rows
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
+  arrange(plot_ID, e_ID) %>% # 14 plots iwth 2 edges --> 28 rows ##georef
+  # remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(geo_loc %>% 
+              filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
+              select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
 
 
 # prepare output lists
 # list to save areas in
-edges.list.two.edges.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+edges.list.two.edges.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 # list to save the first intersection polygone per plot in
-inter.poly.1.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
-inter.multipoly.1.list.nogeo<- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+inter.poly.1.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
+inter.multipoly.1.list.geo<- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 # list to save the second intersection polygone per plot in
-inter.poly.2.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
-inter.multipoly.2.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+inter.poly.2.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
+inter.multipoly.2.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 
 # list to save the remaining circle polygones per plot in
-rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+rem.circle.poly.2.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 # list to save the remaining circle MULTIpolygones per plot in
-rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+rem.circle.multipoly.2.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 # list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
-intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+intersection.warning.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
 
-for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){ 
+for (i in 1:length(unique(forest_edges.man.sub.2.edges.geo$plot_ID))){ 
   #i = 13
-  # i = which(grepl(60076, unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)))
+  # i = which(grepl(60076, unique(forest_edges.man.sub.2.edges.geo$plot_ID)))
   
-  #if(nrow(forest_edges.man.sub.2.edges.nogeo) == 0){break}
+  #if(nrow(forest_edges.man.sub.2.edges.geo) == 0){break}
   
   # select plot ID of the respective circle 
-  my.plot.id <- unique(forest_edges.man.sub.2.edges.nogeo$plot_ID)[i]
-  my.inv.year <- unique(forest_edges.man.sub.2.edges.nogeo[i, c("plot_ID", "inv_year")])[, "inv_year"]
+  my.plot.id <- unique(forest_edges.man.sub.2.edges.geo$plot_ID)[i]
+  my.inv.year <- unique(forest_edges.man.sub.2.edges.geo[i, c("plot_ID", "inv_year")])[, "inv_year"]
   
   ## georef
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-   my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]) ## georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]) ## georef
   ## select crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs") ## georef
   
   
   #### build circle
@@ -1037,17 +1041,17 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   c.r1 = 5.64
   # build polygon (circlular buffer) around center point
   center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))   ## georef
   ## georef
   ## assing crs to cirlce corodiantes
-  sf::st_crs(circle.pt) <- my.utm.epsg
-  circle.17 <- sf::st_buffer(circle.pt, c.r3)
-  circle.12 <- sf::st_buffer(circle.pt, c.r2)
-  circle.5 <- sf::st_buffer(circle.pt, c.r1)
+  sf::st_crs(circle.pt) <- my.utm.epsg   ## georef
+  circle.17 <- sf::st_buffer(circle.pt, c.r3)   ## georef
+  circle.12 <- sf::st_buffer(circle.pt, c.r2)     ## georef
+  circle.5 <- sf::st_buffer(circle.pt, c.r1)   ## georef
   
   #### select the  polygones the circle is intersected by
   # select the polygones with the same plot ID as the cirlce
-  my.plot.polys.df <- edge.poly.df.nogeo %>% filter(plot_ID == my.plot.id) %>% arrange(e_ID)
+  my.plot.polys.df <- edge.poly.df.geo %>% filter(plot_ID == my.plot.id) %>% arrange(e_ID)
   # create the polygones of the edge geometries
   my.poly.1 <- sf::st_as_sf(my.plot.polys.df[1,])
   my.poly.2 <- sf::st_as_sf(my.plot.polys.df[2,])
@@ -1252,7 +1256,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
                                                by = c("plot_ID", "e_ID", "inv_year"))
   
   # save datacframe per plot in list
-  edges.list.two.edges.nogeo[[i]] <- inter.area.df
+  edges.list.two.edges.geo[[i]] <- inter.area.df
   
   
   # create list with those plot ID where the two edges intersect within the radius of 17.84m
@@ -1260,18 +1264,18 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
     sf::st_intersection(my.poly.1, circle.17), # intersection poly 1 and cirlce 17
     sf::st_intersection(my.poly.2, circle.17)) # intersection poly 2 and cirlce 17
   intersection.warning.edges <- ifelse(nrow(intersection.between.edges.17) == 0, NA, intersection.between.edges.17$plot_ID)
-  intersection.warning.edges.list.nogeo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
+  intersection.warning.edges.list.geo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
   
   ## save intersection polygones in list
   # poly.1
   inter.poly.both.types.1 <- if(nrow(inter.poly.17.1)!= 0){inter.poly.17.1}else{my.poly.1}
-  inter.poly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.1) == "POLYGON") == T){c(inter.poly.both.types.1)}else{}
-  inter.multipoly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.1) == "MULTIPOLYGON") == T){c(inter.poly.both.types.1)}else{}
+  inter.poly.1.list.geo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.1) == "POLYGON") == T){c(inter.poly.both.types.1)}else{}
+  inter.multipoly.1.list.geo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.1) == "MULTIPOLYGON") == T){c(inter.poly.both.types.1)}else{}
   
   # poly.2
   inter.poly.both.types.2 <- if(nrow(inter.poly.17.2)!= 0){inter.poly.17.2}else{my.poly.2}
-  inter.poly.2.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.2) == "POLYGON") == T){c(inter.poly.both.types.2)}else{}
-  inter.multipoly.2.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.2) == "MULTIPOLYGON") == T){c(inter.poly.both.types.2)}else{}
+  inter.poly.2.list.geo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.2) == "POLYGON") == T){c(inter.poly.both.types.2)}else{}
+  inter.multipoly.2.list.geo[[i]] <- if(isTRUE(st_geometry_type(inter.poly.both.types.2) == "MULTIPOLYGON") == T){c(inter.poly.both.types.2)}else{}
   
   
   ## save the reimaingf circle polygones in a list
@@ -1281,38 +1285,40 @@ for (i in 1:length(unique(forest_edges.man.sub.2.edges.nogeo$plot_ID))){
   remaining.circle.17.1.and.2.poly$e_form <- 0
   remaining.circle.17.1.and.2.poly$geometry <- remaining.circle.17.1.and.2.poly$geometry
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  rem.circle.poly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  rem.circle.poly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  rem.circle.multipoly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  rem.circle.multipoly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
   
 }
 # save areas into dataframe
-edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(edges.list.two.edges.nogeo)) 
+edges.area.two.edges.df.geo <- as.data.frame(rbindlist(edges.list.two.edges.geo)) 
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
-intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame( rbindlist(intersection.warning.edges.list.nogeo, fill=TRUE)))
-if(nrow(intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
-                                                           Please check dataset intersection.two.edges.warning.df.nogeo")}
+intersection.two.edges.warning.df.geo <- na.omit(as.data.frame( rbindlist(intersection.warning.edges.list.geo, fill=TRUE)))
+if(nrow(intersection.two.edges.warning.df.geo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
+                                                           Please check dataset intersection.two.edges.warning.df.geo")}
 
 # save intersection polygones into dataframe 
 # list of polygones 1 of forest edges 
-inter.poly.1.two.edges.df.nogeo <-  plyr::rbind.fill(as.data.frame(rbindlist(inter.poly.1.list.nogeo, fill=TRUE)),as.data.frame(rbindlist(inter.multipoly.1.list.nogeo, fill=TRUE)))
+inter.poly.1.two.edges.df.geo <-  plyr::rbind.fill(as.data.frame(rbindlist(inter.poly.1.list.geo, fill=TRUE)),as.data.frame(rbindlist(inter.multipoly.1.list.geo, fill=TRUE)))
 # list of polygones 2 of forest edges 
-inter.poly.2.two.edges.df.nogeo <-  plyr::rbind.fill(as.data.frame(rbindlist(inter.poly.2.list.nogeo, fill=TRUE)),as.data.frame(rbindlist(inter.multipoly.2.list.nogeo, fill=TRUE)))
+inter.poly.2.two.edges.df.geo <-  plyr::rbind.fill(as.data.frame(rbindlist(inter.poly.2.list.geo, fill=TRUE)),as.data.frame(rbindlist(inter.multipoly.2.list.geo, fill=TRUE)))
 
 
 # bind the both edges per plot together
-inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(inter.poly.1.two.edges.df.nogeo, inter.poly.2.two.edges.df.nogeo) %>% arrange(plot_ID, e_ID)
+inter.poly.two.edges.df.geo <- plyr::rbind.fill(inter.poly.1.two.edges.df.geo, inter.poly.2.two.edges.df.geo) %>% arrange(plot_ID, e_ID)
 
 # list of polygones of remainign circles 
-rem.circle.poly.two.edges.df.nogeo <- as.data.frame(rbindlist(rem.circle.poly.2.edges.list.nogeo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")]  %>% distinct()
+rem.circle.poly.two.edges.df.geo <- if(nrow(as.data.frame(rbindlist(rem.circle.poly.2.edges.list.geo)))!= 0){
+  as.data.frame(rbindlist(rem.circle.poly.2.edges.list.geo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")] %>% distinct()
+}else{  data.frame()}
 # list of multipolygones of remaining circles
-rem.circle.multipoly.two.edges.df.nogeo <- if(nrow(as.data.frame(rbindlist(rem.circle.multipoly.2.edges.list.nogeo)))!= 0){
-  as.data.frame(rbindlist(rem.circle.multipoly.2.edges.list.nogeo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")] %>% distinct()
+rem.circle.multipoly.two.edges.df.geo <- if(nrow(as.data.frame(rbindlist(rem.circle.multipoly.2.edges.list.geo)))!= 0){
+  as.data.frame(rbindlist(rem.circle.multipoly.2.edges.list.geo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")] %>% distinct()
 }else{  data.frame()}
 # binding the both circle lists back together 
-rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(rem.circle.multipoly.two.edges.df.nogeo) != 0) == T){
-  plyr::rbind.fill(rem.circle.poly.two.edges.df.nogeo, rem.circle.multipoly.two.edges.df.nogeo)
-}else{rem.circle.poly.two.edges.df.nogeo}
+rem.circle.two.edges.df.geo <- if(isTRUE(nrow(rem.circle.poly.two.edges.df.geo) != 0 && nrow(rem.circle.multipoly.two.edges.df.geo) != 0) == T){
+  plyr::rbind.fill(rem.circle.poly.two.edges.df.geo, rem.circle.multipoly.two.edges.df.geo)
+}else{rem.circle.poly.two.edges.df.geo}
 
 
 
@@ -1323,7 +1329,7 @@ rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(rem.circle.poly.two.edges.df.nog
 # 3.2.1.3.2. outer edge: loop for intersection of plots with 2 edges, edge type 1, 2 ---------------------------------------------------------------
 # dataprep for loop
 # createa dataframe with plots that have only one forest edges
-forest_edges.man.sub.2.outer.edges.nogeo <-
+forest_edges.man.sub.2.outer.edges.geo <-
   # check for plots with two edges that have an edge labelled type 1 or 2 
   forest_edges.man %>%
   # select only plots with a known edge form and for edge 2 
@@ -1341,41 +1347,41 @@ forest_edges.man.sub.2.outer.edges.nogeo <-
   semi_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID), 
             by = "plot_ID") %>% 
   arrange(plot_ID, e_ID) %>% ## georef  # 14 plots iwth 2 edges --> 28 rows
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
- semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
+  # remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID") # nrow = 28 
 
 
 # prepare output lists
 # list to save areas in
-outer.edges.list.two.edges.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.edges.list.two.edges.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 # list to save the first intersection polygone per plot in
-outer.inter.poly.1.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
-outer.inter.multipoly.1.list.nogeo  <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.inter.poly.1.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
+outer.inter.multipoly.1.list.geo  <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 # list to save the second intersection polygone per plot in
-outer.inter.poly.2.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
-outer.inter.multipoly.2.list.nogeo  <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.inter.poly.2.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
+outer.inter.multipoly.2.list.geo  <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 # list to save the remaining circle polygones per plot in
-outer.rem.circle.poly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.rem.circle.poly.2.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 # list to save the remaining circle MULTIpolygones per plot in
-outer.rem.circle.multipoly.2.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.rem.circle.multipoly.2.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 # list for plop IDs of those plots where the edge lines/ polygones intersect within the 17.84m circle
-outer.intersection.warning.edges.list.nogeo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+outer.intersection.warning.edges.list.geo <- vector("list", length = length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
 
-for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){ 
-  #i = 30
-  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)))
+for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID))){ 
+  #i = 1
+  # i = which(grepl(50009, unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)))
   
-  #if(nrow(forest_edges.man.sub.2.outer.edges.nogeo) == 0){break}
+  #if(nrow(forest_edges.man.sub.2.outer.edges.geo) == 0){break}
   
   # select plot ID of the respective circle 
-  my.plot.id <- unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID)[i]
-  my.inv.year <- unique(forest_edges.man.sub.2.outer.edges.nogeo[i, c("plot_ID", "inv_year")])[, "inv_year"]
+  my.plot.id <- unique(forest_edges.man.sub.2.outer.edges.geo$plot_ID)[i]
+  my.inv.year <- unique(forest_edges.man.sub.2.outer.edges.geo[i, c("plot_ID", "inv_year")])[, "inv_year"]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"] ## georef
-   my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"] ## georef
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]) ## georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]) ## georef
   ## select crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
   
   
   #### build circle
@@ -1389,7 +1395,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
   circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
   ## assing crs to cirlce corodiantes
-   sf::st_crs(circle.pt) <- my.utm.epsg ## georef
+  sf::st_crs(circle.pt) <- my.utm.epsg ## georef
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
@@ -1403,8 +1409,8 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     mutate(dist_tree = dist_cm/100, 
            x_tree = dist_tree*sin(azi_gon*pi/200), 
            y_tree = dist_tree*cos(azi_gon*pi/200), 
-           lon = x_tree, #+ my.center.easting, 
-           lat =  y_tree ) %>% # + my.center.northing)
+           lon = x_tree+ my.center.easting,   ## georef
+           lat =  y_tree + my.center.northing) %>%    ## georef
     select(plot_ID, tree_ID, inv_year, lon, lat) %>% distinct()
   # create sf point object from dataframe
   #https://stackoverflow.com/questions/52551016/creating-sf-points-from-multiple-lat-longs
@@ -1416,7 +1422,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   
   #### select the  polygones the circle is intersected by
   # select the polygones with the same plot ID as the cirlce
-  my.plot.polys.df <- edge.poly.df.nogeo %>% 
+  my.plot.polys.df <- edge.poly.df.geo %>% 
     filter(plot_ID == my.plot.id ) %>% arrange(e_ID) %>% 
     left_join(., forest_edges.man %>% select(plot_ID, e_ID, e_type), by = c("plot_ID", "e_ID"))
   #  this part is about whicht polgone to priotiise if there are two overlapping edges: 
@@ -1755,7 +1761,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
                 plot(st_geometry(tree.sf), add = TRUE))), silent = T)
   
   # save datacframe per plot in list
-  outer.edges.list.two.edges.nogeo[[i]] <- inter.area.df
+  outer.edges.list.two.edges.geo[[i]] <- inter.area.df
   
   
   # create list with those plot ID where the two edges intersect within the radius of 17.84m
@@ -1763,7 +1769,7 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     sf::st_intersection(my.poly.1, circle.17), # intersection poly 1 and cirlce 17
     sf::st_intersection(my.poly.2, circle.17)) # intersection poly 2 and cirlce 17
   intersection.warning.edges <- ifelse(nrow(intersection.between.edges.17) == 0, NA, intersection.between.edges.17$plot_ID)
-  outer.intersection.warning.edges.list.nogeo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
+  outer.intersection.warning.edges.list.geo[[i]] <- as.data.frame(cbind("plot_ID" = c(intersection.warning.edges)))
   
   ## save intersection polygones in list
   # poly.1
@@ -1771,16 +1777,16 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
     # this is in case one of the inter polys is empty but we still want to transport the stand info with the polygone
     my.poly.1[1:6]}
   # in case one of the poly is multipolygones geometry type
-  outer.inter.poly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "POLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
-  outer.inter.multipoly.1.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "MULTIPOLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
+  outer.inter.poly.1.list.geo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "POLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
+  outer.inter.multipoly.1.list.geo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.1.both.types) == "MULTIPOLYGON") == T){c(outer.inter.poly.1.both.types)}else{}
   
   # poly.2
   outer.inter.poly.2.both.types <- if(nrow(inter.poly.17.2)!= 0){inter.poly.17.2}else{
     # this is in case one of the inter polys is empty but we still want to transport the stand info with the polygone
     my.poly.2[1:6]}
   # in case one of the poly is multipolygones geometry type
-  outer.inter.poly.2.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.2.both.types) == "POLYGON") == T){c(outer.inter.poly.2.both.types)}else{}
-  outer.inter.multipoly.2.list.nogeo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.2.both.types) == "MULTIPOLYGON") == T){c(outer.inter.poly.2.both.types)}else{}
+  outer.inter.poly.2.list.geo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.2.both.types) == "POLYGON") == T){c(outer.inter.poly.2.both.types)}else{}
+  outer.inter.multipoly.2.list.geo[[i]] <- if(isTRUE(st_geometry_type(outer.inter.poly.2.both.types) == "MULTIPOLYGON") == T){c(outer.inter.poly.2.both.types)}else{}
   
   
   ## save the reimaingf circle polygones in a list
@@ -1790,36 +1796,36 @@ for (i in 1:length(unique(forest_edges.man.sub.2.outer.edges.nogeo$plot_ID))){
   remaining.circle.17.1.and.2.poly$e_form <- 0
   remaining.circle.17.1.and.2.poly$geometry <- remaining.circle.17.1.and.2.poly$geometry
   # create list wit polygones of the remaining cirlce when it´s only one polygone
-  outer.rem.circle.poly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  outer.rem.circle.poly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "POLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
   # create list wit polygones of the remaining cirlce when it´s a multipoligone
-  outer.rem.circle.multipoly.2.edges.list.nogeo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
+  outer.rem.circle.multipoly.2.edges.list.geo[[i]] <- if(st_geometry_type(remaining.circle.17.1.and.2.poly)== "MULTIPOLYGON"){c(remaining.circle.17.1.and.2.poly)}else{}
   
 }
 # save areas into dataframe
-outer.edges.area.two.edges.df.nogeo <- as.data.frame(rbindlist(outer.edges.list.two.edges.nogeo))
+outer.edges.area.two.edges.df.geo <- as.data.frame(rbindlist(outer.edges.list.two.edges.geo))
 # save plot IDs with overlappig edges within the 17.84m circle into dataframe
-outer.intersection.two.edges.warning.df.nogeo <- na.omit(as.data.frame(rbindlist(outer.intersection.warning.edges.list.nogeo, fill=TRUE)))
-if(nrow(outer.intersection.two.edges.warning.df.nogeo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
-                                                           Please check dataset intersection.two.edges.warning.df.nogeo")}
+outer.intersection.two.edges.warning.df.geo <- na.omit(as.data.frame(rbindlist(outer.intersection.warning.edges.list.geo, fill=TRUE)))
+if(nrow(outer.intersection.two.edges.warning.df.geo)!=0){print("There are plots with overlapping edges within a 17.84m radius around the plot center. 
+                                                           Please check dataset intersection.two.edges.warning.df.geo")}
 # save intersection polygones into dataframe 
 # list of polygones 1 of forest edges 
-outer.inter.poly.1.two.edges.df.nogeo <- plyr::rbind.fill(as.data.frame(rbindlist(outer.inter.poly.1.list.nogeo, fill=TRUE)), as.data.frame(rbindlist(outer.inter.multipoly.1.list.nogeo, fill=TRUE)))
+outer.inter.poly.1.two.edges.df.geo <- plyr::rbind.fill(as.data.frame(rbindlist(outer.inter.poly.1.list.geo, fill=TRUE)), as.data.frame(rbindlist(outer.inter.multipoly.1.list.geo, fill=TRUE)))
 # list of polygones 2 of forest edges 
-outer.inter.poly.2.two.edges.df.nogeo <- plyr::rbind.fill(as.data.frame(rbindlist(outer.inter.poly.2.list.nogeo, fill=TRUE)), as.data.frame(rbindlist(outer.inter.multipoly.2.list.nogeo, fill=TRUE)))
+outer.inter.poly.2.two.edges.df.geo <- plyr::rbind.fill(as.data.frame(rbindlist(outer.inter.poly.2.list.geo, fill=TRUE)), as.data.frame(rbindlist(outer.inter.multipoly.2.list.geo, fill=TRUE)))
 # bind the both edges per plot together
-outer.inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(outer.inter.poly.1.two.edges.df.nogeo, outer.inter.poly.2.two.edges.df.nogeo)
+outer.inter.poly.two.edges.df.geo <- plyr::rbind.fill(outer.inter.poly.1.two.edges.df.geo, outer.inter.poly.2.two.edges.df.geo)
 
 # list of polygones of remainign circles 
-outer.rem.circle.poly.two.edges.list.final.nogeo <- rbindlist(outer.rem.circle.poly.2.edges.list.nogeo, fill = TRUE)
-outer.rem.circle.poly.two.edges.df.nogeo <- as.data.frame(outer.rem.circle.poly.two.edges.list.final.nogeo)[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")]  %>% distinct()
+outer.rem.circle.poly.two.edges.list.final.geo <- rbindlist(outer.rem.circle.poly.2.edges.list.geo, fill = TRUE)
+outer.rem.circle.poly.two.edges.df.geo <- as.data.frame(outer.rem.circle.poly.two.edges.list.final.geo)[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")]  %>% distinct()
 # list of multipolygones of remaining circles
-outer.rem.circle.multipoly.two.edges.df.nogeo <- if(nrow(as.data.frame(rbindlist(outer.rem.circle.multipoly.2.edges.list.nogeo)))!= 0){
-  as.data.frame(rbindlist(outer.rem.circle.multipoly.2.edges.list.nogeo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")] %>% distinct()
+outer.rem.circle.multipoly.two.edges.df.geo <- if(nrow(as.data.frame(rbindlist(outer.rem.circle.multipoly.2.edges.list.geo)))!= 0){
+  as.data.frame(rbindlist(outer.rem.circle.multipoly.2.edges.list.geo, fill = TRUE))[,c("plot_ID", "inv_year","e_ID",  "e_form","geometry")] %>% distinct()
 }else{  data.frame()}
 # binding the both circle lists back together 
-outer.rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(outer.rem.circle.poly.two.edges.df.nogeo) != 0 && nrow(outer.rem.circle.multipoly.two.edges.df.nogeo) != 0) == T){
-  plyr::rbind.fill(outer.rem.circle.poly.two.edges.df.nogeo, outer.rem.circle.multipoly.two.edges.df.nogeo)
-}else{outer.rem.circle.poly.two.edges.df.nogeo}
+outer.rem.circle.two.edges.df.geo <- if(isTRUE(nrow(outer.rem.circle.poly.two.edges.df.geo) != 0 && nrow(outer.rem.circle.multipoly.two.edges.df.geo) != 0) == T){
+  plyr::rbind.fill(outer.rem.circle.poly.two.edges.df.geo, outer.rem.circle.multipoly.two.edges.df.geo)
+}else{outer.rem.circle.poly.two.edges.df.geo}
 
 
 
@@ -1828,51 +1834,54 @@ outer.rem.circle.two.edges.df.nogeo <- if(isTRUE(nrow(outer.rem.circle.poly.two.
 # 3.2.1.4. binding all egde and remaining circle areas and polys tog --------
 
 # bind all edges area dataframes together
-all.edges.area.df.nogeo <- plyr::rbind.fill(edges.area.df.nogeo, edges.area.two.edges.df.nogeo, outer.edges.area.df.nogeo, outer.edges.area.two.edges.df.nogeo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
-inter.poly.one.edge.df.nogeo <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo, outer.inter.poly.one.edge.df.nogeo) # %>% select(colnames(inter.poly.one.edge.df.nogeo)))
-rem.circle.one.edge.df.nogeo <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, outer.rem.circle.one.edge.df.nogeo) # %>% select(colnames(rem.circle.one.edge.df.nogeo)))
+all.edges.area.df.geo <- plyr::rbind.fill(edges.area.df.geo,
+                                          edges.area.two.edges.df.geo, 
+                                          outer.edges.area.df.geo, 
+                                          outer.edges.area.two.edges.df.geo) %>% mutate(area_m2 = as.numeric(area_m2)) %>% filter(!is.na(plot_ID))
+inter.poly.one.edge.df.geo <- plyr::rbind.fill(inter.poly.one.edge.df.geo, outer.inter.poly.one.edge.df.geo) # %>% select(colnames(inter.poly.one.edge.df.geo)))
+rem.circle.one.edge.df.geo <- plyr::rbind.fill(rem.circle.one.edge.df.geo, outer.rem.circle.one.edge.df.geo) # %>% select(colnames(rem.circle.one.edge.df.geo)))
 
 # 3.2.2. sorting TREES into edge and remaining circle polygones ---------
 # 3.2.2.1. plots with one edge: sorting trees into edge and remaining circle polygones ---------
-trees.one.edge.nogeo <- trees_data %>%
+trees.one.edge.geo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
   # filter for trees located in plots htat haev only one forest edge
   anti_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
-              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") #%>% 
-# anti_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID), by = "plot_ID") #%>% 
-## remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+              group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% select(plot_ID), by = "plot_ID") %>% 
+  # anti_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID), by = "plot_ID") %>% 
+  ## ## georef remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
 
-tree.status.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
-tree.points.list.nogeo <- vector("list", length = length(trees.one.edge.nogeo$tree_ID))
-for (i in 1:length(trees.one.edge.nogeo$tree_ID)){ 
+tree.status.list.geo <- vector("list", length = length(trees.one.edge.geo$tree_ID))
+tree.points.list.geo <- vector("list", length = length(trees.one.edge.geo$tree_ID))
+for (i in 1:length(trees.one.edge.geo$tree_ID)){ 
   #i = 356 
-  # i = which(grepl(140042, (trees.one.edge.nogeo$plot_ID)))
+  # i = which(grepl(140042, (trees.one.edge.geo$plot_ID)))
   
-  #if(nrow(trees.one.edge.nogeo) == 0){break}
+  #if(nrow(trees.one.edge.geo) == 0){break}
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <-trees.one.edge.nogeo [i, "plot_ID"] 
-  my.tree.id <- trees.one.edge.nogeo[i, "tree_ID"]
-  my.inv.year <- trees.one.edge.nogeo[i, "inv_year"]
+  my.plot.id <-trees.one.edge.geo [i, "plot_ID"] 
+  my.tree.id <- trees.one.edge.geo[i, "tree_ID"]
+  my.inv.year <- trees.one.edge.geo[i, "inv_year"]
   
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-  # my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-  # my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]) ##georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])##georef
   ## select crs
-  # my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")##georef
   
   # select the remaining cirlce we want to intersect the tree with
-  my.rem.circle <- sf::st_as_sf(rem.circle.one.edge.df.nogeo %>% filter(plot_ID == my.plot.id) %>% distinct())
-  my.inter <- sf::st_as_sf(inter.poly.one.edge.df.nogeo  %>% filter(plot_ID == my.plot.id) %>% distinct())
+  my.rem.circle <- sf::st_as_sf(rem.circle.one.edge.df.geo %>% filter(plot_ID == my.plot.id) %>% distinct())
+  my.inter <- sf::st_as_sf(inter.poly.one.edge.df.geo  %>% filter(plot_ID == my.plot.id) %>% distinct())
   
   # sort area dataframe by size of cirlce fragments if it is not a : 
   # bigger polygone/ polygone with greater area is assigned to category A, smaller area polygone is assigned to B
   
-  area.plot.df <- all.edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84)
+  area.plot.df <- all.edges.area.df.geo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84)
   # assign stand category to the polygones depending on which one is bigger/ smaller
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter$stand <- area.plot.df$stand[area.plot.df$e_ID == 1 | area.plot.df$e_ID == 2]
@@ -1880,8 +1889,8 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.one.edge.nogeo[i, "dist_cm"]/100 
-  azi.tree <- trees.one.edge.nogeo[i, "azi_gon"] 
+  dist.tree <- trees.one.edge.geo[i, "dist_cm"]/100 
+  azi.tree <- trees.one.edge.geo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   # transform polar into cartesian coordiantes
@@ -1903,8 +1912,8 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
   ## assing CRS to points
   sf::st_crs(tree.sf) <- my.utm.epsg
   
-  # print(c(plot(my.inter$geometry, main = paste0(my.plot.id)), 
-  #         plot(my.rem.circle$geometry, add = T), 
+  # print(c(plot(my.inter$geometry, main = paste0(my.plot.id)),
+  #         plot(my.rem.circle$geometry, add = T),
   #         plot(tree.sf$geometry, add = T))
   # )
   
@@ -1916,7 +1925,7 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
                         ifelse(nrow(inter.tree.circle) != 0,  my.rem.circle$stand,
                                "warning"))
   
-  tree.status.list.nogeo[[i]] <- as.data.frame(cbind(
+  tree.status.list.geo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
     "inv_year" = c(my.inv.year),
@@ -1925,25 +1934,27 @@ for (i in 1:length(trees.one.edge.nogeo$tree_ID)){
     "t_stat" = c(tree_status))) 
   
   # export tree points as sf
-  tree.points.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  tree.points.list.geo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
   print(paste(my.plot.id, my.tree.id))
 }
 # save tree corodiantes and status into dataframe
-tree.status.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.status.list.nogeo))
+tree.status.one.edge.df.geo <- as.data.frame(rbindlist(tree.status.list.geo))
 # save tree sf into dataframe
-tree.points.one.edge.df.nogeo <- as.data.frame(rbindlist(tree.points.list.nogeo))
+tree.points.one.edge.df.geo <- as.data.frame(rbindlist(tree.points.list.geo))
 
 
 
 
 # 3.2.2.2. plots with 2 edges: sorting trees into edge and remaining circle polygones ---------
 # bind all edges area dataframes together
-inter.poly.two.edges.df.nogeo <- plyr::rbind.fill(inter.poly.two.edges.df.nogeo, outer.inter.poly.two.edges.df.nogeo)# %>% select(colnames(inter.poly.two.edges.df.nogeo)))%>% arrange(plot_ID)
-rem.circle.two.edges.df.nogeo <- plyr::rbind.fill(rem.circle.two.edges.df.nogeo, outer.rem.circle.two.edges.df.nogeo)# %>% select(colnames(rem.circle.two.edges.df.nogeo)))%>% arrange(plot_ID)
+inter.poly.two.edges.df.geo <- plyr::rbind.fill(inter.poly.two.edges.df.geo,
+                                                outer.inter.poly.two.edges.df.geo)# %>% select(colnames(inter.poly.two.edges.df.geo)))%>% arrange(plot_ID)
+rem.circle.two.edges.df.geo <- plyr::rbind.fill(rem.circle.two.edges.df.geo, 
+                                                outer.rem.circle.two.edges.df.geo)# %>% select(colnames(rem.circle.two.edges.df.geo)))%>% arrange(plot_ID)
 
 # intersection of trees with 2 edges
-trees.two.edges.nogeo <- trees_data %>%
+trees.two.edges.geo <- trees_data %>%
   # filter only for trees that are located in plots with a forest edge
   semi_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2) %>% 
               #& inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
@@ -1952,38 +1963,38 @@ trees.two.edges.nogeo <- trees_data %>%
   semi_join(forest_edges.man %>% filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
               group_by(plot_ID) %>% summarise(n = n()) %>% filter(n > 1) %>% 
               select(plot_ID), by = "plot_ID") %>% ## georef 
-## remove plots that do now have a corresponding center coordiante in the HBI loc document
- semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+  ## remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
 
-tree.status.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
-tree.points.two.edges.list.nogeo <- vector("list", length = length(trees.two.edges.nogeo$tree_ID))
-for (i in 1:length(trees.two.edges.nogeo$tree_ID)){ 
+tree.status.two.edges.list.geo <- vector("list", length = length(trees.two.edges.geo$tree_ID))
+tree.points.two.edges.list.geo <- vector("list", length = length(trees.two.edges.geo$tree_ID))
+for (i in 1:length(trees.two.edges.geo$tree_ID)){ 
   # i = 3225
-  # i = which(grepl(50122, (trees.two.edges.nogeo$plot_ID)))[2]
+  # i = which(grepl(50122, (trees.two.edges.geo$plot_ID)))[2]
   
-  #if(nrow(trees.two.edges.nogeo) == 0){break}
+  #if(nrow(trees.two.edges.geo) == 0){break}
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <- trees.two.edges.nogeo[i, "plot_ID"] 
-  my.tree.id <- trees.two.edges.nogeo[i, "tree_ID"]
-  my.inv.year <- trees.two.edges.nogeo[i, "inv_year"]
+  my.plot.id <- trees.two.edges.geo[i, "plot_ID"] 
+  my.tree.id <- trees.two.edges.geo[i, "tree_ID"]
+  my.inv.year <- trees.two.edges.geo[i, "inv_year"]
   
   ## georef
   ## select the UTM coordiantes of the center of the cirlce corresponding with the plot ID
-   my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-   my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"])##georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])##georef
   ## select crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")##georef
   
   # select the remaining cirlce we want to intersect the tree with
-  my.rem.circle <- sf::st_as_sf(rem.circle.two.edges.df.nogeo %>% filter(plot_ID == my.plot.id) %>% distinct())
-  my.edges.df <- inter.poly.two.edges.df.nogeo %>% filter(plot_ID == my.plot.id) %>% distinct() %>% arrange(e_ID)
+  my.rem.circle <- sf::st_as_sf(rem.circle.two.edges.df.geo %>% filter(plot_ID == my.plot.id) %>% distinct())
+  my.edges.df <- inter.poly.two.edges.df.geo %>% filter(plot_ID == my.plot.id) %>% distinct() %>% arrange(e_ID)
   my.inter.1 <- sf::st_as_sf(my.edges.df[1,])
   my.inter.2 <- sf::st_as_sf(my.edges.df[2,])
   
   # assign stand category to the polygones depending on which one is bigger/ smaller: 
   # bigger polygone/ polygone with greater area is assigned to category A, smaller area polygone is assigned to B
-  area.plot.df <- all.edges.area.df.nogeo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84) 
+  area.plot.df <- all.edges.area.df.geo %>% filter(plot_ID == my.plot.id & CCS_r_m == 17.84) 
   # assign stand category to the polygones depending on which one is bigger/ smaller
   my.rem.circle$stand <- area.plot.df$stand[area.plot.df$e_ID == 0]
   my.inter.1$stand <- area.plot.df$stand[area.plot.df$e_ID == 1]
@@ -1991,8 +2002,8 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.two.edges.nogeo[i, "dist_cm"]/100 
-  azi.tree <- trees.two.edges.nogeo[i, "azi_gon"] 
+  dist.tree <- trees.two.edges.geo[i, "dist_cm"]/100 
+  azi.tree <- trees.two.edges.geo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
@@ -2031,7 +2042,7 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
                                       #ifelse(nrow(inter.tree.circle)== 0 & nrow(inter.tree.edge.1)!= 0 & nrow(inter.tree.edge.2)!= 0,  "warning",       # if tree is in two edges
                                       "warning")))                                                                                             # if tree is nowhere
   
-  tree.status.two.edges.list.nogeo[[i]] <- as.data.frame(cbind(
+  tree.status.two.edges.list.geo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
     "inv_year" = c(my.inv.year),
@@ -2039,63 +2050,64 @@ for (i in 1:length(trees.two.edges.nogeo$tree_ID)){
     "lat" = c(as.numeric(tree.coord.df$lat)),
     "t_stat" = c(tree_status))) 
   
-  tree.points.two.edges.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  tree.points.two.edges.list.geo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
   print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
-tree.status.two.edges.df.nogeo <- as.data.frame(rbindlist(tree.status.two.edges.list.nogeo))
+tree.status.two.edges.df.geo <- as.data.frame(rbindlist(tree.status.two.edges.list.geo))
 # save tree sf into dataframe
-tree.points.two.edges.df.nogeo <- as.data.frame( rbindlist(tree.points.two.edges.list.nogeo))
+tree.points.two.edges.df.geo <- as.data.frame( rbindlist(tree.points.two.edges.list.geo))
 
 
 # 3.2.2.3. binding datasets together --------------------------------------
 # bind the tree point datafarmes of one and two edges plots together
-two.and.one.edge.trees.points.df.nogeo <- plyr::rbind.fill(tree.points.one.edge.df.nogeo,tree.points.two.edges.df.nogeo) 
+two.and.one.edge.trees.points.df.geo <- plyr::rbind.fill(tree.points.one.edge.df.geo,tree.points.two.edges.df.geo) 
 # this step i separated in case both of the rbinded dfs are empty and the mutate wouldn´t grip
-two.and.one.edge.trees.points.df.nogeo <- two.and.one.edge.trees.points.df.nogeo %>% mutate(plot_ID = as.integer(plot_ID)) 
+two.and.one.edge.trees.points.df.geo <- two.and.one.edge.trees.points.df.geo %>% mutate(plot_ID = as.integer(plot_ID)) 
 
 
 
 
 
 # 3.2.2.4 plots with no edge edge: sorting trees into circle ---------
-trees.no.edge.nogeo <- anti_join(trees_data, forest_edges.man %>% 
-                                   # filter only for trees that are located in plots with a forest edge
-                                   semi_join(forest_edges.man %>% 
-                                               filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
-                                               select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
-                                   select(plot_ID) %>% 
-                                   distinct(), by = "plot_ID")#%>% 
-# remove plots that do now have a corresponding center coordiante in the HBI loc document
-# semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  select(plot_ID)  %>% distinct(), by = "plot_ID")
+trees.no.edge.geo <- anti_join(trees_data, forest_edges.man %>% 
+                                 # filter only for trees that are located in plots with a forest edge
+                                 semi_join(forest_edges.man %>% 
+                                             filter(e_form == 1 | e_form == 2 & inter_status_AT_17 == "two I" | e_form == 2 & inter_status_BT_17 == "two I") %>% 
+                                             select(plot_ID) %>% distinct(), by = "plot_ID") %>% 
+                                 select(plot_ID) %>% 
+                                 distinct(), by = "plot_ID") %>% ##georef
+  # remove plots that do now have a corresponding center coordiante in the HBI loc document
+  semi_join(geo_loc %>% filter(!is.na( RW_MED) & !is.na(HW_MED)) %>%  
+              select(plot_ID)  %>% distinct(), by = "plot_ID") ##georef
 
 
-tree.status.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
-tree.points.no.edge.list.nogeo <- vector("list", length = length(trees.no.edge.nogeo$tree_ID))
-for (i in 1:length(trees.no.edge.nogeo$tree_ID)){ 
+tree.status.no.edge.list.geo <- vector("list", length = length(trees.no.edge.geo$tree_ID))
+tree.points.no.edge.list.geo <- vector("list", length = length(trees.no.edge.geo$tree_ID))
+for (i in 1:length(trees.no.edge.geo$tree_ID)){ 
   #i = 2173
-  #i = which(grepl(50124, unique(trees.no.edge.nogeo$plot_ID)))
+  #i = which(grepl(50124, unique(trees.no.edge.geo$plot_ID)))
   
-  #if(nrow(trees.no.edge.nogeo) == 0){break}
+  #if(nrow(trees.no.edge.geo) == 0){break}
   
   # select plot ID accordint to positioin in the list
-  my.plot.id <- trees.no.edge.nogeo[i, "plot_ID"] 
-  my.tree.id <- trees.no.edge.nogeo[i, "tree_ID"]
-  my.inv.year <- trees.no.edge.nogeo[i, "inv_year"]
+  my.plot.id <- trees.no.edge.geo[i, "plot_ID"] 
+  my.tree.id <- trees.no.edge.geo[i, "tree_ID"]
+  my.inv.year <- trees.no.edge.geo[i, "inv_year"]
   
   ## georeference
   ## select UTM corrdinates of the plot center
-  my.center.easting <- geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]
-  my.center.northing <- geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]
+  my.center.easting <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"]) ##georef
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"]) ##georef
   ## select crs
-   my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")
+  my.utm.epsg <-  paste0("+proj=utm +zone=", pick_utm(my.center.easting)," ", "+datum=WGS84 +units=m +no_defs +type=crs")##georef
   
   # extract polar coordiantes of forest edge
   # point A 
-  dist.tree <- trees.no.edge.nogeo[i, "dist_cm"]/100 
-  azi.tree <- trees.no.edge.nogeo[i, "azi_gon"] 
+  dist.tree <- trees.no.edge.geo[i, "dist_cm"]/100 
+  azi.tree <- trees.no.edge.geo[i, "azi_gon"] 
   x.tree <- dist.tree*sin(azi.tree*pi/200)   # longitude, easting, RW, X
   y.tree <- dist.tree*cos(azi.tree*pi/200)   # latitude, northing, HW, y 
   
@@ -2129,9 +2141,9 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   c.r1 = 5.64
   # build polygon (circlular buffer) around center point
   center.df<- as.data.frame(cbind("lon" = c.x0, "lat" = c.y0))
-  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat"))
+  circle.pt <- sf::st_as_sf(center.df, coords = c("lon", "lat")) ##georef
   ## assing crs to cirlce corodiantes
-  # sf::st_crs(circle.pt) <- my.utm.epsg
+  sf::st_crs(circle.pt) <- my.utm.epsg ##georef
   circle.17 <- sf::st_buffer(circle.pt, c.r3)
   circle.12 <- sf::st_buffer(circle.pt, c.r2)
   circle.5 <- sf::st_buffer(circle.pt, c.r1)
@@ -2143,7 +2155,7 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
   # which is why trees only receive the status "warning" if they are acturally situated outside of the circle
   tree_status <- ifelse(nrow(inter.tree.circle.17) == 0 & dist.tree > 17.84,  "warning", "A")                                                                                            # if tree is nowhere
   
-  tree.status.no.edge.list.nogeo[[i]] <- as.data.frame(cbind(
+  tree.status.no.edge.list.geo[[i]] <- as.data.frame(cbind(
     "plot_ID" = c(as.integer(my.plot.id)), 
     "tree_ID" = c(as.integer(my.tree.id)),
     "inv_year" = c(my.inv.year),
@@ -2152,22 +2164,22 @@ for (i in 1:length(trees.no.edge.nogeo$tree_ID)){
     "t_stat" = c(tree_status))
   )
   
-  tree.points.no.edge.list.nogeo[[i]] <- c("t_stat" = tree_status, tree.sf)
+  tree.points.no.edge.list.geo[[i]] <- c("t_stat" = tree_status, tree.sf)
   
   print(paste(my.plot.id, my.tree.id))
   
 }
 # save tree corodiantes and status into dataframe
-tree.status.no.edges.df.nogeo <- as.data.frame(rbindlist(tree.status.no.edge.list.nogeo))
+tree.status.no.edges.df.geo <- as.data.frame(rbindlist(tree.status.no.edge.list.geo))
 # save tree sf into dataframe
-tree.points.no.edges.df.nogeo <- as.data.frame(rbindlist(tree.points.no.edge.list.nogeo))
+tree.points.no.edges.df.geo <- as.data.frame(rbindlist(tree.points.no.edge.list.geo))
 
 
 # bind all tree point.sf dataframes (with & without edges together)
-all.trees.points.df.nogeo <- 
-  plyr::rbind.fill(tree.points.one.edge.df.nogeo , 
-                   tree.points.two.edges.df.nogeo,
-                   tree.points.no.edges.df.nogeo) %>% 
+all.trees.points.df.geo <- 
+  plyr::rbind.fill(tree.points.one.edge.df.geo , 
+                   tree.points.two.edges.df.geo,
+                   tree.points.no.edges.df.geo) %>% 
   mutate(across(plot_ID:tree_ID, ~ as.integer(.x))) %>% 
   distinct() %>% 
   left_join(., trees_data %>% 
@@ -2178,9 +2190,9 @@ all.trees.points.df.nogeo <-
 
 # bind all tree status dataframes together (one edge, two edges, no edge plots)
 all.trees.status.df <- 
-  plyr::rbind.fill(tree.status.no.edges.df.nogeo, 
-                   tree.status.one.edge.df.nogeo, 
-                   tree.status.two.edges.df.nogeo)
+  plyr::rbind.fill(tree.status.no.edges.df.geo, 
+                   tree.status.one.edge.df.geo, 
+                   tree.status.two.edges.df.geo)
 
 
 # 3.3. data export ---------------------------------------------------------------------------------------------------------
@@ -2189,7 +2201,7 @@ all.trees.status.df <-
 # harmonize strings of all.trees.status.df and   
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4, 5)], as.numeric)
-all.edges.area.df.nogeo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 4, 6)], as.numeric) 
+all.edges.area.df.geo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.geo[,c(1,2, 3, 4, 6)], as.numeric) 
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
 trees_update_1 <- trees_data %>%  
@@ -2201,13 +2213,13 @@ trees_update_1 <- trees_data %>%
   rename(stand = t_stat) 
 
 # this if statement is in case there are no forest edges for that dataset... which is unlikely
-if(exists("all.edges.area.df.nogeo")){
+if(exists("all.edges.area.df.geo")){
   # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
   trees_update_1 <- trees_update_1 %>% 
     # remove and rejoin edge info 
     select(-c(e_ID, e_form, e_type)) %>% 
     distinct() %>% 
-    left_join(., all.edges.area.df.nogeo %>% 
+    left_join(., all.edges.area.df.geo %>% 
                 select(plot_ID, inter_stat, CCS_r_m, stand, area_m2, e_ID),
               by = c("plot_ID", "CCS_r_m", "stand"))%>% 
     left_join(., forest_edges %>% select(plot_ID, e_ID, e_form, e_type), by = c("plot_ID", "e_ID")) %>% 
@@ -2217,7 +2229,7 @@ if(exists("all.edges.area.df.nogeo")){
                               # for trees alloceted to a in a cirlce without intersections wil not run throuhg the loops
                               # thus they do  have an edge ID but no calcualted areas or assigned intersection status
                               # therefore we have to calculate their area manually subsequently
-                              # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.nogeo" assigned
+                              # trees with the status "warning" will not have any stand and area from the dataset "all.edges.area.df.geo" assigned
                               # as this stand category doesn´t exist
                               # trees with the status "warning" will be excluded from the analysis
                               stand == "A" & inter_stat != "partly intersecting" & is.na(area_m2) | 
@@ -2225,10 +2237,10 @@ if(exists("all.edges.area.df.nogeo")){
            # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
-           plot_A_ha = c_A(CCS_r_m)/10000) #%>%   # dividedd by 10 000 to transform m2 into hectar
-  # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
-  # mutate(east_tree =  X_tree + RW_MED, 
-  #        north_tree = Y_tree + HW_MED)
+           plot_A_ha = c_A(CCS_r_m)/10000) %>%   # dividedd by 10 000 to transform m2 into hectar ##georef
+    left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% ##georef
+    mutate(east_tree =  X_tree + as.numeric(RW_MED), ##georef
+           north_tree = Y_tree + as.numeric(HW_MED)) ##georef
   
   
   
@@ -2256,20 +2268,20 @@ trees_update_1 <- trees_update_1 %>% filter(!(stringr::str_detect(stand, "warnin
 
 
 # 3.3.1.4.  binding datasets together ----------------------------------------------------------
-all.triangle.polys.df.nogeo <- plyr::rbind.fill(triangle.e1.poly.df.nogeo, triangle.e2.poly.df.nogeo)
-all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.nogeo , inter.poly.two.edges.df.nogeo)#%>% nest("geometry" = geometry)
-all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.nogeo, rem.circle.two.edges.df.nogeo) #%>% nest("geometry" = geometry)
-all.triangle.coords.df.nogeo <- plyr::rbind.fill(triangle.e1.coords.df.nogeo, triangle.e2.coords.df.nogeo) %>% 
+all.triangle.polys.df.geo <- plyr::rbind.fill(triangle.e1.poly.df.geo, triangle.e2.poly.df.geo)
+all.edge.intersections.poly  <- plyr::rbind.fill(inter.poly.one.edge.df.geo , inter.poly.two.edges.df.geo)#%>% nest("geometry" = geometry)
+all.remaning.circles.poly <- plyr::rbind.fill(rem.circle.one.edge.df.geo, rem.circle.two.edges.df.geo) #%>% nest("geometry" = geometry)
+all.triangle.coords.df.geo <- plyr::rbind.fill(triangle.e1.coords.df.geo, triangle.e2.coords.df.geo) %>% 
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
   mutate(CCS_r_m = 17.84) %>% 
   # join in the stand info by plot_ID, e_ID, CCS_r_M
-  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+  left_join(., all.edges.area.df.geo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 
 
 
 
-# 3.3.2. exporting data ---------------------------------------------------
+# 3.3.2. EXPORT ---------------------------------------------------
 # exporting tree and edge/ plot area data
 write.csv(trees_update_1, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_update_1", sep = "_"), ".csv"), row.names = FALSE)
 if(nrow(trees_removed)!=0){write.csv(trees_removed, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "LT_removed", sep = "_"), ".csv"), row.names = FALSE)}
@@ -2277,15 +2289,15 @@ if(nrow(trees_removed)!=0){write.csv(trees_removed, paste0(out.path.BZE3, paste(
 # export tree stand status of all trees nomatter if they have one, two or no forest edges at their plot
 write.csv(all.trees.status.df, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_LT_stand", sep = "_"), ".csv"), row.names = FALSE)
 # export areas and stand info of all sampling circuits, edges and remaining circles
-write.csv(all.edges.area.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.edges.area.df.geo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_rem_circles", sep = "_"), ".csv"), row.names = FALSE)
 
 # export list of plots where the both edge polygones intersect within the 17.84 radius
-write.csv(intersection.two.edges.warning.df.nogeo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(intersection.two.edges.warning.df.geo,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "edges_intersecting_warning", sep = "_"), ".csv"), row.names = FALSE)
 
 # exporting edge triangle polygones
-write.csv(all.triangle.polys.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.triangle.polys.df.geo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_poly", sep = "_"), ".csv"), row.names = FALSE)
 # exporting edge triangle coordiantes
-write.csv(all.triangle.coords.df.nogeo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"), row.names = FALSE)
+write.csv(all.triangle.coords.df.geo, paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_triangle_coords", sep = "_"), ".csv"), row.names = FALSE)
 
 
 # exporting edge intersection polygones 
@@ -2315,7 +2327,7 @@ all.edge.intersections.coords.df <- as.data.frame(all.edge.intersections.coords.
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
   mutate(CCS_r_m = 17.84) %>% 
   # join in the stand info by plot_ID, e_ID, CCS_r_M
-  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+  left_join(., all.edges.area.df.geo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv(all.edge.intersections.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_edges_intersection_coords", sep = "_"), ".csv"), row.names = FALSE)
 
@@ -2338,64 +2350,59 @@ all.rem.circle.coords.df <- as.data.frame(all.rem.circle.coords.list.final) %>%
   # the exportet polygones only include the widest cirlce intersection at 17.84m radius
   mutate(CCS_r_m = 17.84) %>% 
   # join in the stand info by plot_ID, e_ID, CCS_r_M
-  left_join(., all.edges.area.df.nogeo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
+  left_join(., all.edges.area.df.geo %>% select(plot_ID, e_ID, CCS_r_m, stand), 
             by = c("plot_ID", "e_ID", "CCS_r_m"))
 write.csv(all.rem.circle.coords.df,  paste0(out.path.BZE3, paste(unique(trees_update_1$inv)[1], "all_rem_circles_coords", sep = "_"), ".csv"), row.names = FALSE)
 
+stop("this is where forest edges georef bze3 ends")
 
+# ----- 2. VISUALISATION  -------------------------------------------------
 
+# 2.1.. visulaizing for all plots, edges, trees -------------------------
 
-
-
-
-
-
-
-stop("this is where visualization of forest edges BZE3 starts")
-# 3.4. visulaizing for all plots, edges, trees ---------------------------------------------------------------------------------------------------
-trees_data <- read_csv(paste0(out.path.BZE3, "BZE3_LT_update_1.csv"))
-
-for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
+for(i in 1:(nrow(trees_update_1 %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
-  #i = 1
-  # i = which(grepl(140043, unique(trees_data$plot_ID)))
-  my.plot.id = unique(trees_data$plot_ID)[i]
+  #i = 2
+  # i = which(grepl( 80003 , unique(trees_update_1$plot_ID)))
+  my.plot.id = unique(trees_update_1$plot_ID)[i]
   #print(my.plot.id)
   
-  c.df <- as.data.frame(cbind("lon" = 0, "lat" = 0))
+  my.center.easting <-  as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "RW_MED"])
+  my.center.northing <- as.numeric(geo_loc[geo_loc$plot_ID == my.plot.id, "HW_MED"])
+  
+  c.df <- as.data.frame(cbind("lon" = my.center.easting, "lat" = my.center.northing))
   c.pt <- sf::st_as_sf(c.df, coords = c("lon", "lat"))
+  sf::st_crs(c.pt) <- my.utm.epsg
   c.poly.17 <- sf::st_buffer(c.pt, 17.84)
   c.poly.12 <- sf::st_buffer(c.pt, 12.62)
   c.poly.5 <- sf::st_buffer(c.pt, 5.64)
   
-  all.trees.points.df.nogeo.sp <- all.trees.points.df.nogeo %>% 
+  all.trees.points.df.geo.sp <- all.trees.points.df.geo %>% 
     filter(plot_ID == my.plot.id) %>% 
     left_join(trees_data %>% 
                 filter(plot_ID == my.plot.id) %>%
-                select(plot_ID, tree_ID, SP_code), by = c("plot_ID", "tree_ID"),
-              multiple = "all")
+                select(plot_ID, tree_ID, SP_code), by = c("plot_ID", "tree_ID"))
   
   print(ggplot() +
           ggtitle(my.plot.id)+
           geom_sf(data = c.poly.17, aes(alpha = 0))+
           geom_sf(data = c.poly.12, aes(alpha = 0))+
           geom_sf(data = c.poly.5, aes(alpha = 0))+
-          geom_sf(data = triangle.e1.poly.df.nogeo$geometry[triangle.e1.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+
-          geom_sf(data = triangle.e2.poly.df.nogeo$geometry[triangle.e2.poly.df.nogeo$plot_ID == my.plot.id], aes(alpha = 0))+ 
-          geom_sf(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
-                  aes(color = all.trees.points.df.nogeo.sp$SP_code[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
-                      size =  all.trees.points.df.nogeo.sp$DBH_cm[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
-          guides(color=guide_legend(title="species"))+
+          geom_sf(data = triangle.e1.poly.df.geo$geometry[triangle.e1.poly.df.geo$plot_ID == my.plot.id], aes(alpha = 0))+
+          geom_sf(data = triangle.e2.poly.df.geo$geometry[triangle.e2.poly.df.geo$plot_ID == my.plot.id], aes(alpha = 0))+ 
+          geom_sf(data = all.trees.points.df.geo.sp$geometry[all.trees.points.df.geo.sp$plot_ID == my.plot.id], 
+                  aes(color = all.trees.points.df.geo.sp$t_stat[all.trees.points.df.geo.sp$plot_ID == my.plot.id], 
+                      size =  all.trees.points.df.geo.sp$DBH_cm[all.trees.points.df.geo.sp$plot_ID == my.plot.id]))+
+          guides(color=guide_legend(title="tree status"))+
           guides(size=guide_legend(title="DBH cm"))+
-          geom_sf_text(data = all.trees.points.df.nogeo.sp$geometry[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id], 
-                       aes(label = all.trees.points.df.nogeo.sp$tree_ID[all.trees.points.df.nogeo.sp$plot_ID == my.plot.id]))+
-          xlim(-30, 30)+
-          ylim(-30, 30)
+          geom_sf_text(data = all.trees.points.df.geo.sp$geometry[all.trees.points.df.geo.sp$plot_ID == my.plot.id], 
+                       aes(label = all.trees.points.df.geo.sp$tree_ID[all.trees.points.df.geo.sp$plot_ID == my.plot.id]))
         
   )
   
 }
+
 
 
 
