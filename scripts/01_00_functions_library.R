@@ -91,7 +91,7 @@ library(tikzDevice) #for compatability with Latex
 # visualisation
 library(ggthemes)
 library(ggplot2)
-library(reshape2) #for multiple y values
+# library(reshape2) #for multiple y values
 #library(ggforce) #for zooming in parts of the plot
 # library(ggrepel)
 library(gridExtra)
