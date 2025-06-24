@@ -2168,13 +2168,27 @@ all.trees.status.df <-
                    tree.status.two.edges.df.nogeo)
 
 
-# 3.3. data export ---------------------------------------------------------------------------------------------------------
-# 3.3.1. data prep for export -----------------------------------------------------------------------------------------------
-# 3.3.1.1. harmonzing strings for join --------------------------------------------------------
+# 3.3. data prep for export -----------------------------------------------------------------------------------------------
+# 3.3.1. harmonzing strings for join --------------------------------------------------------
 # harmonize strings of all.trees.status.df and   
 # https://stackoverflow.com/questions/20637360/convert-all-data-frame-character-columns-to-factors
 all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4, 5)], as.numeric)
 all.edges.area.df.nogeo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.nogeo[,c(1,2, 3, 4, 6)], as.numeric) 
+
+
+
+# 3.3.2. calculate plot area for plots with outer edge --------------------
+##noforestground
+# find plots with no forest polygones
+outer_edge_area_per_CCS <- all.edges.area.df.nogeo %>% 
+  # filter only for plots that have a "no forest" status or edge type 1 or 2
+  semi_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID) %>% distinct(), 
+            by = "plot_ID") %>% 
+# the only select those stands that are forestred
+  filter(stand != "no forest") %>% 
+  group_by(plot_ID, CCS_r_m) %>%  # and sum their area up per sampling circuit to get the adequate total area of the plot 
+  summarise(area_ha_reduced = sum(area_m2)/10000) # divide by 10000 to male m2 to ha 
+
 
 # 3.3.1.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
 trees_update_1 <- trees_data %>%  
@@ -2188,6 +2202,7 @@ trees_update_1 <- trees_data %>%
 # this if statement is in case there are no forest edges for that dataset... which is unlikely
 if(exists("all.edges.area.df.nogeo")){
   # join in the area that belongs to the tree according to the CCS the tree was measured in/ belongs to
+  
   trees_update_1 <- trees_update_1 %>% 
     # remove and rejoin edge info 
     select(-c(e_ID, e_form, e_type)) %>% 
@@ -2210,11 +2225,29 @@ if(exists("all.edges.area.df.nogeo")){
            # this column is for stand-wise analysis and contains the plot area per tree according to the stand and the sampling circuit it is located in according to its diameter
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
+           # if the plot has an outer forest edge that cuts the
            plot_A_ha = c_A(CCS_r_m)/10000) %>%   # dividedd by 10 000 to transform m2 into hectar
-  # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% 
-  # mutate(east_tree =  X_tree + RW_MED, 
-  #        north_tree = Y_tree + HW_MED) %>% 
-    mutate(EPSG = "polar")
+    ##noforestground
+    # if we are dealing with a plot with an outer edge that cuts part of the plot, the total plot area has to be reduced 
+    # by the area of the outer edge, saved in the outer_edge_area_per_CCS dataset
+    # thus we will join in the dataset and then replace the plot_A_ha where its available 
+    left_join(outer_edge_area_per_CCS, by = c("plot_ID", "CCS_r_m")) %>% 
+    # so if the plot is in the list of plots with outer edge that actually have an outer edge ans an interception between the both 
+    # we replace the plot are based on the CCS radius witht the plot area that we calculated earlier
+    mutate(plot_A_ha_new = ifelse(plot_ID %in% 
+                                    c(unique(all.edges.area.df.nogeo$plot_ID[all.edges.area.df.nogeo$inter_stat == "partly intersecting" &
+                                                                       all.edges.area.df.nogeo$stand == "no forest"])) , 
+                                  # we select the reduced area           
+                                  area_ha_reduced, 
+                                             plot_A_ha )) %>% 
+  # left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>%  ##georef
+  # mutate(east_tree =  X_tree + RW_MED,  ##georef
+  #        north_tree = Y_tree + HW_MED) %>%  ##georef
+    mutate(EPSG = "polar") %>%  ##georef
+    # remove helper columns 
+    select(-c(area_ha_reduced))
+   
+
   
   
   
@@ -2346,7 +2379,7 @@ for(i in 1:(nrow(trees_data %>% select(plot_ID) %>% distinct()))){
   # https://ggplot2.tidyverse.org/reference/ggsf.html
   
   #i = 1
-  # i = which(grepl(140043, unique(trees_data$plot_ID)))
+  # i = which(grepl(140056, unique(trees_data$plot_ID)))
   my.plot.id = unique(trees_data$plot_ID)[i]
   #print(my.plot.id)
   

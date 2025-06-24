@@ -2205,6 +2205,19 @@ all.trees.status.df <-
 all.trees.status.df[,c(1,2,3, 4, 5)] <- lapply(all.trees.status.df[,c(1,2, 3, 4, 5)], as.numeric)
 all.edges.area.df.geo[,c(1,2, 3,4, 6)] <- lapply(all.edges.area.df.geo[,c(1,2, 3, 4, 6)], as.numeric) 
 
+# 3.3.2. calculate plot area for plots with outer edge --------------------
+##noforestground
+# find plots with no forest polygones
+outer_edge_area_per_CCS <- all.edges.area.df.nogeo %>% 
+  # filter only for plots that have a "no forest" status or edge type 1 or 2
+  semi_join(., forest_edges.man %>% filter(e_type %in% c(1, 2)) %>% select(plot_ID) %>% distinct(), 
+            by = "plot_ID") %>% 
+  # the only select those stands that are forestred
+  filter(stand != "no forest") %>% 
+  group_by(plot_ID, CCS_r_m) %>%  # and sum their area up per sampling circuit to get the adequate total area of the plot 
+  summarise(area_ha_reduced = sum(area_m2)/10000) # divide by 10000 to male m2 to ha 
+
+
 # 4.2. join tree stand status and plot areas into trees dataset  --------------------------------------------------------
 trees_update_1 <- trees_data %>%  
   # join in stand of each tree
@@ -2240,7 +2253,20 @@ if(exists("all.edges.area.df.geo")){
            stand_plot_A_ha = as.numeric(area_m2)/10000,# dividedd by 10 000 to transform m2 into hectar
            # this column is for not stand wise analysis and contains the plot area per ptree according to the sampling circiont it is located in according to its diameter
            plot_A_ha = c_A(CCS_r_m)/10000) %>%   # dividedd by 10 000 to transform m2 into hectar ##georef
-   left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% ##georef
+    ##noforestground
+    # if we are dealing with a plot with an outer edge that cuts part of the plot, the total plot area has to be reduced 
+    # by the area of the outer edge, saved in the outer_edge_area_per_CCS dataset
+    # thus we will join in the dataset and then replace the plot_A_ha where its available 
+    left_join(outer_edge_area_per_CCS, by = c("plot_ID", "CCS_r_m")) %>% 
+    # so if the plot is in the list of plots with outer edge that actually have an outer edge ans an interception between the both 
+    # we replace the plot are based on the CCS radius witht the plot area that we calculated earlier
+    mutate(plot_A_ha_new = ifelse(plot_ID %in% 
+                                    c(unique(all.edges.area.df.nogeo$plot_ID[all.edges.area.df.nogeo$inter_stat == "partly intersecting" &
+                                                                               all.edges.area.df.nogeo$stand == "no forest"])) , 
+                                  # we select the reduced area           
+                                  area_ha_reduced, 
+                                  plot_A_ha )) %>%
+    left_join(geo_loc %>% select(plot_ID, RW_MED, HW_MED), by = "plot_ID") %>% ##georef
    mutate(east_tree =  X_tree + as.numeric(RW_MED), ##georef
           north_tree = Y_tree + as.numeric(HW_MED)) %>%  ##georef
     # add column with epsg (if georef then respective epsg, if not georef then "polar)
